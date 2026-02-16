@@ -1,228 +1,186 @@
 <!DOCTYPE html>
 <html lang="sq">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MatteoTeam</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MatteoTeam</title>
 
-  <meta name="theme-color" content="#0b1a2b" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="MatteoTeam" />
-
-  <style>
-    :root{
-      --bg1:#071025; --bg2:#0c1b33; --card:rgba(255,255,255,.06);
-      --border:rgba(255,255,255,.10); --text:#e8eefc; --muted:rgba(232,238,252,.72);
-      --green:#22c55e; --red:#ef4444; --blue:#60a5fa;
-      --shadow:0 14px 40px rgba(0,0,0,.35);
-      --r:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: radial-gradient(1000px 600px at 20% 10%, rgba(96,165,250,.18), transparent 60%),
-                  radial-gradient(900px 550px at 90% 20%, rgba(34,197,94,.14), transparent 60%),
-                  linear-gradient(135deg,var(--bg1),var(--bg2));
-      color:var(--text);
-    }
-    .wrap{max-width:980px; margin:0 auto; padding:18px 14px 86px;}
-    header{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 4px 16px;}
-    .brand{display:flex; align-items:center; gap:12px}
-    .logo{
-      width:44px; height:44px; border-radius:14px; overflow:hidden;
-      box-shadow: var(--shadow);
-      background: rgba(255,255,255,.08);
-      display:grid; place-items:center;
-    }
-    .logo img{width:100%; height:100%; object-fit:cover; display:block}
-    .brand h1{margin:0; font-size:34px; letter-spacing:.2px}
-    .sub{margin-top:4px; color:var(--muted); font-size:13px}
-    .badge{
-      display:flex; align-items:center; gap:10px;
-      padding:10px 12px; border-radius:999px;
-      background: rgba(0,0,0,.18); border:1px solid var(--border);
-      box-shadow: var(--shadow);
-      font-size:13px; color:var(--muted);
-      white-space:nowrap;
-    }
-    .dot{width:10px; height:10px; border-radius:50%}
-    .dot.bad{background:var(--red)} .dot.ok{background:var(--green)}
-
-    .grid{display:grid; grid-template-columns: 1fr; gap:14px}
-    @media(min-width: 920px){ .grid.two{grid-template-columns: 1.1fr .9fr} }
-    .card{
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 14px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-    .card h2{margin:0 0 10px; font-size:20px}
-    label{display:block; margin:10px 0 6px; color:var(--muted); font-size:13px}
-    input, textarea, select{
-      width:100%;
-      border-radius:14px;
-      padding:12px 12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
-      color: var(--text);
-      outline:none;
-    }
-    textarea{min-height:92px; resize:vertical}
-    .row{display:grid; grid-template-columns: 1fr; gap:10px}
-    @media(min-width: 650px){ .row.two{grid-template-columns: 1fr 1fr} .row.three{grid-template-columns: 1fr 1fr 1fr} }
-    .btns{display:flex; gap:10px; margin-top:12px; flex-wrap:wrap}
-    button{
-      border:0; cursor:pointer; border-radius:14px; padding:12px 14px;
-      font-weight:800; color: var(--text);
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.10);
-    }
-    button:disabled{opacity:.55; cursor:not-allowed}
-    .greenBtn{background: rgba(34,197,94,.18); border-color: rgba(34,197,94,.35)}
-    .redBtn{background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.35)}
-    .blueBtn{background: rgba(96,165,250,.18); border-color: rgba(96,165,250,.35)}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border-radius:999px;
-      border:1px dashed rgba(255,255,255,.18);
-      color:var(--muted); font-size:12px;
-    }
-    .statusBox{
-      margin-top:12px; padding:10px 12px;
-      border-radius:14px;
-      border:1px dashed rgba(255,255,255,.18);
-      color: var(--muted);
-      background: rgba(0,0,0,.12);
-    }
-    .list{margin-top:12px; display:flex; flex-direction:column; gap:10px}
-    .item{
-      padding:12px; border-radius:14px;
-      background: rgba(0,0,0,.16);
-      border: 1px solid rgba(255,255,255,.10);
-    }
-    .item .t{font-weight:900}
-    .item .m{margin-top:6px; color:var(--muted)}
-    .item .meta{margin-top:8px; font-size:12px; color:rgba(232,238,252,.55)}
-    .item .actions{margin-top:10px; display:flex; gap:10px; flex-wrap:wrap}
-    .tabs{
-      position:fixed; left:0; right:0; bottom:0;
-      padding:10px 10px calc(10px + env(safe-area-inset-bottom));
-      background: rgba(0,0,0,.35);
-      backdrop-filter: blur(14px);
-      border-top:1px solid rgba(255,255,255,.10);
-      display:flex; gap:10px; justify-content:center;
-    }
-    .tab{
-      flex:1; max-width:210px;
-      padding:12px 10px;
-      border-radius:16px;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
-      color:var(--muted);
-      font-weight:900;
-    }
-    .tab.active{
-      color: var(--text);
-      background: rgba(96,165,250,.14);
-      border-color: rgba(96,165,250,.35);
-    }
-    .hidden{display:none!important}
-    footer{margin-top:14px; color:rgba(232,238,252,.55); font-size:12px; text-align:center}
-  </style>
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,#071025,#0c1b33);
+  color:white;
+}
+.wrap{max-width:900px;margin:auto;padding:20px}
+.card{
+  background:rgba(255,255,255,0.06);
+  padding:15px;
+  border-radius:14px;
+  margin-bottom:15px;
+}
+h1{margin:0}
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:8px;
+  border:none;
+}
+button{
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  margin-top:10px;
+  cursor:pointer;
+}
+.green{background:#22c55e}
+.red{background:#ef4444}
+.blue{background:#3b82f6}
+.list{margin-top:10px}
+.item{
+  background:rgba(0,0,0,0.2);
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:8px;
+}
+.tabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:15px;
+}
+.tab{
+  flex:1;
+  padding:10px;
+  background:#111827;
+  text-align:center;
+  border-radius:8px;
+  cursor:pointer;
+}
+.tab.active{background:#3b82f6}
+.hidden{display:none}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <header>
-      <div class="brand">
-        <div class="logo" title="MatteoTeam">
-          <!-- LOGO: ngarko ne repo si logo.png -->
-          <img src="./logo.png" alt="MatteoTeam logo"
-               onerror="this.style.display='none'; this.parentElement.textContent='M';" />
-        </div>
-        <div>
-          <h1>MatteoTeam</h1>
-          <div class="sub">Panel: Auth + Firestore (GitHub Pages)</div>
-        </div>
-      </div>
+<div class="wrap">
 
-      <div class="badge" id="fbBadge">
-        <span class="dot bad" id="fbDot"></span>
-        <span id="fbText">Firebase: jo lidhur</span>
-      </div>
-    </header>
+<h1>MatteoTeam</h1>
 
-    <!-- AUTH -->
-    <section class="card" id="authCard">
-      <h2>Hyrja / Regjistrimi</h2>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('njoftime')">Njoftime</div>
+  <div class="tab" onclick="showTab('orar')">Orar</div>
+  <div class="tab" onclick="showTab('inventar')">Inventar</div>
+</div>
 
-      <div class="row two" id="loggedOut">
-        <div>
-          <label>Email</label>
-          <input id="email" type="email" placeholder="p.sh. staff@matteoteam.com" />
-        </div>
-        <div>
-          <label>Password</label>
-          <input id="password" type="password" placeholder="••••••••" />
-        </div>
-      </div>
+<div id="njoftime">
+  <div class="card">
+    <h3>Shto Njoftim</h3>
+    <input id="title" placeholder="Titulli">
+    <textarea id="body" placeholder="Mesazhi"></textarea>
+    <button class="green" onclick="addPost()">Ruaj</button>
+  </div>
+  <div id="postList" class="list"></div>
+</div>
 
-      <div class="btns" id="authBtns">
-        <button class="greenBtn" id="btnLogin">Login</button>
-        <button class="blueBtn" id="btnRegister">Register</button>
-      </div>
+<div id="orar" class="hidden">
+  <div class="card">
+    <h3>Orari Javor</h3>
+    <input id="dita" placeholder="Dita (p.sh Hënë)">
+    <input id="orari" placeholder="Orari (10:00 - 18:00)">
+    <button class="green" onclick="addSchedule()">Ruaj Orarin</button>
+  </div>
+  <div id="scheduleList" class="list"></div>
+</div>
 
-      <div class="statusBox" id="authStatus">Status: Gati.</div>
+<div id="inventar" class="hidden">
+  <div class="card">
+    <h3>Inventari</h3>
+    <input id="itemName" placeholder="Produkti">
+    <input id="itemQty" placeholder="Sasia">
+    <button class="green" onclick="addItem()">Ruaj Produktin</button>
+  </div>
+  <div id="inventoryList" class="list"></div>
+</div>
 
-      <div class="statusBox hidden" id="loggedInBox">
-        <div><b>Logged in:</b> <span id="meEmail">-</span></div>
-        <div><b>uid:</b> <span id="meUid">-</span></div>
-        <div><b>role:</b> <span id="meRole">-</span></div>
-        <div><b>name:</b> <span id="meName">-</span></div>
+</div>
 
-        <div class="btns">
-          <button class="redBtn" id="btnLogout">Logout</button>
-          <button id="btnReloadProfile">Reload profile</button>
-        </div>
-      </div>
-    </section>
+<script type="module">
 
-    <div class="grid two">
-      <!-- LEFT -->
-      <div>
-        <!-- NJOFTIME -->
-        <section class="card" id="tabNjoftime">
-          <h2>Njoftime</h2>
-          <div class="pill">Admin/Manager krijon • Stafi lexon</div>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-          <div id="postForm" class="hidden">
-            <label>Titulli</label>
-            <input id="postTitle" placeholder="p.sh. Njoftim për staf" />
-            <label>Mesazhi</label>
-            <textarea id="postBody" placeholder="Shkruaj tekstin..."></textarea>
-            <div class="btns">
-              <button class="greenBtn" id="btnAddPost">Shto njoftim</button>
-            </div>
-          </div>
+const firebaseConfig = {
+  apiKey: "AIzaSyBTq_1aKrXLXq20",
+  authDomain: "matteoteam-test.firebaseapp.com",
+  projectId: "matteoteam-test",
+  storageBucket: "matteoteam-test.appspot.com",
+  messagingSenderId: "1084486170913",
+  appId: "1:1084486170913:web:d68cf328becefe226a6660",
+  measurementId: "G-9V887087P0"
+};
 
-          <div class="btns">
-            <button id="btnLoadPosts">Ngarko njoftime</button>
-          </div>
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-          <div class="statusBox" id="postStatus">Status: Gati.</div>
-          <div class="list" id="postList"></div>
-        </section>
+window.showTab = function(tab){
+  document.getElementById("njoftime").classList.add("hidden");
+  document.getElementById("orar").classList.add("hidden");
+  document.getElementById("inventar").classList.add("hidden");
+  document.getElementById(tab).classList.remove("hidden");
+}
 
-        <!-- ORARI -->
-        <section class="card hidden" id="tabOrari">
-          <h2>Orari Javor</h2>
-          <div class="pill">Admin/Manager vendos • Stafi e sheh</div>
+window.addPost = async function(){
+  await addDoc(collection(db,"posts"),{
+    title: title.value,
+    body: body.value
+  });
+  loadPosts();
+}
 
-          <div id="scheduleForm" class="hidden">
-            <div class="row two">
-              <div>
-                <label>Dita</label>
-                <select id="daySelect
+async function loadPosts(){
+  const snap = await getDocs(collection(db,"posts"));
+  postList.innerHTML="";
+  snap.forEach(doc=>{
+    postList.innerHTML+=`<div class="item"><b>${doc.data().title}</b><br>${doc.data().body}</div>`;
+  });
+}
+loadPosts();
+
+window.addSchedule = async function(){
+  await addDoc(collection(db,"schedule"),{
+    dita: dita.value,
+    orari: orari.value
+  });
+  loadSchedule();
+}
+
+async function loadSchedule(){
+  const snap = await getDocs(collection(db,"schedule"));
+  scheduleList.innerHTML="";
+  snap.forEach(doc=>{
+    scheduleList.innerHTML+=`<div class="item"><b>${doc.data().dita}</b><br>${doc.data().orari}</div>`;
+  });
+}
+loadSchedule();
+
+window.addItem = async function(){
+  await addDoc(collection(db,"inventory"),{
+    name: itemName.value,
+    qty: itemQty.value
+  });
+  loadInventory();
+}
+
+async function loadInventory(){
+  const snap = await getDocs(collection(db,"inventory"));
+  inventoryList.innerHTML="";
+  snap.forEach(doc=>{
+    inventoryList.innerHTML+=`<div class="item">${doc.data().name} - ${doc.data().qty}</div>`;
+  });
+}
+loadInventory();
+
+</script>
+</body>
+</html>
