@@ -104,7 +104,45 @@
 </head>
 
 <body>
-  <div class="wrap">
+// ===========================
+// ORARI JAVOR - FIRESTORE
+// ===========================
+
+const weekDay = document.getElementById("weekDay");
+const weekStart = document.getElementById("weekStart");
+const weekEnd = document.getElementById("weekEnd");
+const saveWeek = document.getElementById("saveWeek");
+const loadWeek = document.getElementById("loadWeek");
+const weekOutput = document.getElementById("weekOutput");
+
+saveWeek.addEventListener("click", async () => {
+  if (!currentUser) return alert("Duhet login");
+
+  await setDoc(doc(db, "schedule", weekDay.value), {
+    day: weekDay.value,
+    start: weekStart.value,
+    end: weekEnd.value,
+    updated_by: currentUser.email,
+    updated_at: serverTimestamp()
+  });
+
+  weekOutput.innerHTML = "Orari u ruajt ✅";
+});
+
+loadWeek.addEventListener("click", async () => {
+  const snap = await getDoc(doc(db, "schedule", weekDay.value));
+
+  if (!snap.exists()) {
+    weekOutput.innerHTML = "Nuk ka orar për këtë ditë";
+    return;
+  }
+
+  const d = snap.data();
+  weekOutput.innerHTML =
+    "<b>" + d.day + "</b><br>" +
+    "Ora: " + d.start + " - " + d.end + "<br>" +
+    "Nga: " + d.updated_by;
+});  <div class="wrap">
     <header>
       <div>
         <h1>MatteoTeam</h1>
