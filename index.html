@@ -314,7 +314,7 @@
 
     // Tabs
     const tabs = document.querySelectorAll(".tab");
-    const cards = ["postsCard","adminCard","profileCard"].map(id => document.getElementById(id));
+    const cards = ["postsCard","scheduleCard","adminCard","profileCard"].map(id => document.getElementById(id));
     tabs.forEach(t => t.addEventListener("click", () => {
       tabs.forEach(x=>x.classList.remove("active"));
       t.classList.add("active");
