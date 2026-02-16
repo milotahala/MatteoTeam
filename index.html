@@ -1,169 +1,583 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="sq">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MatteoTeam</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MatteoTeam</title>
 
-<style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#071025,#0c1b33);
-  color:white;
-}
-.wrap{max-width:900px;margin:auto;padding:20px;}
-.card{
-  background:rgba(255,255,255,0.06);
-  padding:15px;
-  border-radius:14px;
-  margin-bottom:15px;
-}
-button{
-  padding:10px 15px;
-  border-radius:8px;
-  border:none;
-  cursor:pointer;
-}
-.green{background:#1cc26b;color:white;}
-.red{background:#e74c3c;color:white;}
-.blue{background:#3498db;color:white;}
-input,select{
-  width:100%;
-  padding:8px;
-  margin:5px 0;
-  border-radius:6px;
-  border:none;
-}
-.tabbar{
-  display:flex;
-  gap:10px;
-  margin-top:15px;
-}
-.tab{
-  flex:1;
-  text-align:center;
-  padding:10px;
-  background:#16233d;
-  border-radius:10px;
-  cursor:pointer;
-}
-.active{background:#1cc26b;}
-.hidden{display:none;}
-</style>
+  <!-- PWA -->
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MatteoTeam">
+  <!-- Nëse i ke icons/manifest në repo, lëri kështu -->
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+
+  <style>
+    :root{
+      --bg1:#071025; --bg2:#0c1b33; --card:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.10); --txt:#eaf1ff; --muted:rgba(255,255,255,.72);
+      --green:#22c55e; --red:#ef4444; --blue:#60a5fa;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% 0%, rgba(96,165,250,.18), transparent 60%),
+        radial-gradient(1000px 700px at 90% 10%, rgba(34,197,94,.14), transparent 60%),
+        linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:var(--txt);
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:18px}
+    header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+    h1{margin:0;font-size:34px;letter-spacing:.2px}
+    .sub{margin-top:6px;color:var(--muted);font-size:13px}
+    .badge{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px;border-radius:999px;border:1px solid var(--border);
+      background:rgba(0,0,0,.18); box-shadow:var(--shadow); font-size:13px; white-space:nowrap;
+    }
+    .dot{width:10px;height:10px;border-radius:50%}
+    .dot.ok{background:var(--green); box-shadow:0 0 0 6px rgba(34,197,94,.16)}
+    .dot.bad{background:var(--red); box-shadow:0 0 0 6px rgba(239,68,68,.14)}
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:var(--r);
+      padding:16px; margin:14px 0; box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+    .grid{display:grid;grid-template-columns:1fr 1fr; gap:14px}
+    @media(max-width:900px){ .grid{grid-template-columns:1fr} }
+    h2{margin:0 0 10px 0;font-size:20px}
+    label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
+    input, textarea, select{
+      width:100%; padding:12px 12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22); color:var(--txt); outline:none;
+    }
+    textarea{min-height:90px;resize:vertical}
+    .row{display:flex;gap:12px;align-items:center}
+    .row > *{flex:1}
+    .btn{
+      border:none; border-radius:14px; padding:12px 14px; font-weight:800;
+      cursor:pointer; transition:.15s transform, .15s opacity; width:100%;
+    }
+    .btn:active{transform:scale(.99)}
+    .btn.green{background:var(--green); color:#06210f}
+    .btn.gray{background:rgba(255,255,255,.12); color:var(--txt); border:1px solid rgba(255,255,255,.12)}
+    .btn.red{background:var(--red); color:#fff}
+    .status{
+      margin-top:12px; padding:10px 12px; border-radius:14px; border:1px dashed rgba(255,255,255,.18);
+      color:var(--muted); font-size:13px
+    }
+    .tabs{
+      display:flex; gap:10px; margin-top:10px;
+      position:sticky; bottom:10px; padding:10px; border-radius:16px;
+      background:rgba(0,0,0,.22); border:1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+    }
+    .tab{
+      flex:1; padding:11px 10px; border-radius:14px; cursor:pointer;
+      border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.16);
+      color:var(--muted); font-weight:700
+    }
+    .tab.active{background:rgba(96,165,250,.18); color:var(--txt)}
+    .hidden{display:none !important}
+
+    /* List */
+    .list{margin:12px 0;display:flex;flex-direction:column;gap:10px}
+    .item{
+      padding:12px; border-radius:14px;
+      background:rgba(0,0,0,.16);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .item .t{font-weight:800}
+    .item .m{margin-top:6px; color:var(--txt)}
+    .item .meta{margin-top:8px; color:rgba(255,255,255,.65); font-size:12px}
+    footer{margin-top:14px;color:rgba(255,255,255,.45);font-size:12px;text-align:center}
+    a{color:var(--blue); text-decoration:none}
+  </style>
 </head>
 
 <body>
-<div class="wrap">
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>MatteoTeam</h1>
+        <div class="sub">Panel: Auth + Firestore (GitHub Pages)</div>
+      </div>
+      <div class="badge" id="fbBadge">
+        <span class="dot bad" id="fbDot"></span>
+        <span id="fbText">Firebase: jo lidhur</span>
+      </div>
+    </header>
 
-<h1>MatteoTeam</h1>
+    <!-- AUTH + PROFILE -->
+    <section class="card" id="authCard">
+      <h2>Hyrja / Regjistrimi</h2>
 
-<!-- LOGIN -->
-<div class="card" id="loginCard">
-<h3>Hyrja</h3>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button class="green" onclick="login()">Login</button>
-</div>
+      <div id="loggedOut">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="p.sh. punetori@matteoteam.com" />
+        <label>Password</label>
+        <input id="password" type="password" placeholder="••••••••" />
+        <div class="row" style="margin-top:12px">
+          <button class="btn green" id="btnLogin">Login</button>
+          <button class="btn gray" id="btnRegister">Register</button>
+        </div>
+        <div class="status" id="authStatus">Status: Shkruaj email+password.</div>
+      </div>
 
-<!-- PANEL -->
-<div id="app" class="hidden">
+      <div id="loggedIn" class="hidden">
+        <div class="item" style="border-style:dashed">
+          <div class="t">Logged in: <span id="meEmail">-</span></div>
+          <div class="meta">uid: <span id="meUid">-</span></div>
+          <div class="meta">role: <span id="meRole">-</span></div>
+          <div class="meta">name: <span id="meName">-</span></div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn red" id="btnLogout">Logout</button>
+          <button class="btn gray" id="btnReloadProfile">Reload profile</button>
+        </div>
+        <div class="status" id="meStatus">
+          Nëse s’punon Auth në GitHub Pages: shto domain-in te Firebase → Authentication → Settings → Authorized domains.
+        </div>
+      </div>
+    </section>
 
-<div class="tabbar">
-<div class="tab active" onclick="showTab('posts')">Njoftime</div>
-<div class="tab" onclick="showTab('schedule')">Orari</div>
-<div class="tab" onclick="showTab('admin')">Admin</div>
-<div class="tab" onclick="showTab('profile')">Profil</div>
-</div>
+    <div class="grid">
+      <!-- POSTS -->
+      <section class="card" id="postsCard">
+        <h2>Njoftime</h2>
+        <div class="sub" style="margin-bottom:8px">
+          Këtu admini bën njoftime për staf. User-at i shohin (read), por vetëm admin krijon/fshin.
+        </div>
 
-<!-- POSTS -->
-<div id="posts" class="card">
-<h3>Njoftime</h3>
-<input id="postTitle" placeholder="Titulli">
-<input id="postBody" placeholder="Mesazhi">
-<button class="green" onclick="addPost()">Shto</button>
-<div id="postList"></div>
-</div>
+        <label>Titulli</label>
+        <input id="postTitle" placeholder="p.sh. Njoftim për stafin" />
+        <label>Mesazhi</label>
+        <textarea id="postBody" placeholder="Shkruaj tekstin..."></textarea>
 
-<!-- SCHEDULE -->
-<div id="schedule" class="card hidden">
-<h3>Orari Javor</h3>
-<input id="day" placeholder="Dita (p.sh Monday)">
-<input id="shift" placeholder="Orari (10:00 - 18:00)">
-<button class="green" onclick="saveSchedule()">Ruaj</button>
-<div id="scheduleList"></div>
-</div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn green" id="btnAddPost">Shto post</button>
+          <button class="btn gray" id="btnStartListen">Start listen</button>
+        </div>
 
-<!-- ADMIN -->
-<div id="admin" class="card hidden">
-<h3>Admin Panel</h3>
-<input id="uid" placeholder="UID i user-it">
-<select id="role">
-<option value="user">User</option>
-<option value="admin">Admin</option>
-</select>
-<button class="blue" onclick="setRole()">Ruaj rolin</button>
-</div>
+        <div class="status" id="postStatus">Status: Gati.</div>
 
-<!-- PROFILE -->
-<div id="profile" class="card hidden">
-<h3>Profili</h3>
-<div id="profileData"></div>
-<button class="red" onclick="logout()">Logout</button>
-</div>
+        <div class="list" id="postsList"></div>
+      </section>
 
-</div>
+      <!-- ADMIN PANEL -->
+      <section class="card" id="adminCard">
+        <h2>Admin Panel</h2>
+        <div class="sub">
+          Këtu ruajmë profilin e user-it në Firestore te <b>users/{uid}</b>.
+          <br>⚠️ Krijimi i user-it në Authentication bëhet në Firebase Console.
+        </div>
 
-</div>
+        <div class="item" style="border-style:dashed;margin-top:10px">
+          <div class="t">Si i shton punëtorët:</div>
+          <div class="meta">
+            1) Firebase → Authentication → Add user (email+password)<br>
+            2) Punëtori bën Login në app<br>
+            3) Ti vendos rolin (user/manager) duke ruajtur profilin poshtë
+          </div>
+        </div>
 
-<script type="module">
+        <label>UID i user-it (nga Authentication ose nga “Logged in uid”)</label>
+        <input id="uUid" placeholder="p.sh. zHJssSqBb4W1iffwCs9RJm..." />
+        <label>Emri</label>
+        <input id="uName" placeholder="p.sh. Ardit" />
+        <label>Roli</label>
+        <select id="uRole">
+          <option value="user">user</option>
+          <option value="manager">manager</option>
+          <option value="admin">admin</option>
+        </select>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        <div class="row" style="margin-top:12px">
+          <button class="btn green" id="btnSaveUser">Ruaj profilin</button>
+          <button class="btn gray" id="btnLoadUser">Ngarko profilin</button>
+        </div>
 
-const firebaseConfig = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE_AUTH_DOMAIN",
-  projectId: "PASTE_PROJECT_ID",
-  storageBucket: "PASTE_BUCKET",
-  messagingSenderId: "PASTE_MSG_ID",
-  appId: "PASTE_APP_ID"
-};
+        <div class="status" id="adminStatus">Status: Gati ✅</div>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore();
+        <div class="item" style="margin-top:10px">
+          <div class="t">Shënim i rëndësishëm</div>
+          <div class="meta">
+            Nëse del “Missing or insufficient permissions”, duhet t’i rregullosh Firestore Rules.
+          </div>
+        </div>
+      </section>
+    </div>
 
-window.login = async function(){
-  await signInWithEmailAndPassword(auth,email.value,password.value);
-}
+    <!-- SIMPLE PROFILE VIEW -->
+    <section class="card" id="profileCard">
+      <h2>Profili</h2>
+      <div class="sub">Profili merret nga Firestore: users/{uid}</div>
+      <div class="item" style="margin-top:10px">
+        <div class="t">Emri: <span id="pName">-</span></div>
+        <div class="meta">Email: <span id="pEmail">-</span></div>
+        <div class="meta">Roli: <span id="pRole">-</span></div>
+      </div>
+      <div class="status" id="profileStatus">Status: Gati.</div>
+    </section>
 
-window.logout = async function(){
-  await signOut(auth);
-}
+    <div class="tabs">
+      <button class="tab active" data-tab="postsCard">Njoftime</button>
+      <button class="tab" data-tab="adminCard">Admin</button>
+      <button class="tab" data-tab="profileCard">Profil</button>
+    </div>
 
-onAuthStateChanged(auth, async (user)=>{
-  if(user){
-    loginCard.classList.add("hidden");
-    app.classList.remove("hidden");
-    loadPosts();
-    loadSchedule();
-    profileData.innerHTML = "Email: "+user.email;
-  }else{
-    loginCard.classList.remove("hidden");
-    app.classList.add("hidden");
-  }
-});
+    <footer>© 2026 MatteoTeam • Powered by GitHub Pages</footer>
+  </div>
 
-window.addPost = async function(){
-  await addDoc(collection(db,"posts"),{
-    title:postTitle.value,
-    body:postBody.value
-  });
-  loadPosts();
-}
+  <!-- Firebase (CDN) -->
+  <script type="module">
+    // Firebase v10+ modular
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+    import {
+      getFirestore,
+      doc, getDoc, setDoc,
+      addDoc, collection,
+      serverTimestamp,
+      query, orderBy, onSnapshot, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-async function loadPosts(){
-  postList.innerHTML="";
-  const snap = await getDocs(collection(db
+    // ✅ Konfigurimi yt (nga MatteoTeam-Test)
+    const firebaseConfig = {
+      "apiKey": "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
+      "authDomain": "matteoteam-test.firebaseapp.com",
+      "projectId": "matteoteam-test",
+      "storageBucket": "matteoteam-test.firebasestorage.app",
+      "messagingSenderId": "1084486170913",
+      "appId": "1:1084486170913:web:d68cf328becefe226a6660",
+      "measurementId": "G-9V887087P0"
+    };
+
+    // Init
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // UI refs
+    const fbDot = document.getElementById("fbDot");
+    const fbText = document.getElementById("fbText");
+
+    const loggedOut = document.getElementById("loggedOut");
+    const loggedIn = document.getElementById("loggedIn");
+
+    const emailEl = document.getElementById("email");
+    const passEl  = document.getElementById("password");
+
+    const btnLogin = document.getElementById("btnLogin");
+    const btnRegister = document.getElementById("btnRegister");
+    const btnLogout = document.getElementById("btnLogout");
+    const btnReloadProfile = document.getElementById("btnReloadProfile");
+
+    const authStatus = document.getElementById("authStatus");
+    const meStatus = document.getElementById("meStatus");
+
+    const meEmail = document.getElementById("meEmail");
+    const meUid   = document.getElementById("meUid");
+    const meRole  = document.getElementById("meRole");
+    const meName  = document.getElementById("meName");
+
+    const pName = document.getElementById("pName");
+    const pEmail = document.getElementById("pEmail");
+    const pRole = document.getElementById("pRole");
+    const profileStatus = document.getElementById("profileStatus");
+
+    const postTitle = document.getElementById("postTitle");
+    const postBody = document.getElementById("postBody");
+    const btnAddPost = document.getElementById("btnAddPost");
+    const btnStartListen = document.getElementById("btnStartListen");
+    const postStatus = document.getElementById("postStatus");
+    const postsList = document.getElementById("postsList");
+
+    const uUid = document.getElementById("uUid");
+    const uName = document.getElementById("uName");
+    const uRole = document.getElementById("uRole");
+    const btnSaveUser = document.getElementById("btnSaveUser");
+    const btnLoadUser = document.getElementById("btnLoadUser");
+    const adminStatus = document.getElementById("adminStatus");
+
+    // Tabs
+    const tabs = document.querySelectorAll(".tab");
+    const cards = ["postsCard","adminCard","profileCard"].map(id => document.getElementById(id));
+    tabs.forEach(t => t.addEventListener("click", () => {
+      tabs.forEach(x=>x.classList.remove("active"));
+      t.classList.add("active");
+      cards.forEach(c=>c.classList.add("hidden"));
+      document.getElementById(t.dataset.tab).classList.remove("hidden");
+    }));
+
+    // Helpers
+    const setBadge = (ok, text) => {
+      fbDot.className = "dot " + (ok ? "ok":"bad");
+      fbText.textContent = text;
+    };
+
+    const setStatus = (el, msg) => el.textContent = "Status: " + msg;
+
+    // Firebase connected badge (simple)
+    try {
+      setBadge(true, "Firebase: connected ✅");
+    } catch (e) {
+      setBadge(false, "Firebase: error");
+    }
+
+    // Admin logic (simple): admin = milootshala@gmail.com
+    const isAdmin = (user) => user?.email === "milootshala@gmail.com";
+
+    // Load profile from Firestore
+    async function loadMyProfile(user){
+      if(!user) return;
+      profileStatus.textContent = "Status: Duke ngarkuar...";
+      try{
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const d = snap.exists() ? snap.data() : {};
+        const name = d?.name || "";
+        const role = d?.role || "user";
+
+        meEmail.textContent = user.email || "-";
+        meUid.textContent = user.uid;
+        meName.textContent = name || "-";
+        meRole.textContent = role || (isAdmin(user) ? "admin" : "user");
+
+        pName.textContent = name || "-";
+        pEmail.textContent = user.email || "-";
+        pRole.textContent = role || (isAdmin(user) ? "admin" : "user");
+
+        profileStatus.textContent = "Status: Profili u ngarkua ✅";
+      }catch(err){
+        profileStatus.textContent = "Status: Gabim: " + err.message;
+      }
+    }
+
+    // Auth state
+    onAuthStateChanged(auth, async (user) => {
+      if(user){
+        loggedOut.classList.add("hidden");
+        loggedIn.classList.remove("hidden");
+        setStatus(meStatus, "Gati. Provo Login ose Register.");
+        await loadMyProfile(user);
+      }else{
+        loggedIn.classList.add("hidden");
+        loggedOut.classList.remove("hidden");
+        meEmail.textContent = "-";
+        meUid.textContent = "-";
+        meRole.textContent = "-";
+        meName.textContent = "-";
+        pName.textContent = "-"; pEmail.textContent = "-"; pRole.textContent = "-";
+      }
+    });
+
+    // Login/Register/Logout
+    btnRegister.addEventListener("click", async () => {
+      const email = emailEl.value.trim();
+      const pass  = passEl.value.trim();
+      if(!email || !pass) return setStatus(authStatus, "Shkruaj email+password.");
+      btnRegister.disabled = true;
+      try{
+        await createUserWithEmailAndPassword(auth, email, pass);
+        setStatus(authStatus, "U regjistrua ✅");
+      }catch(err){
+        setStatus(authStatus, "Gabim: " + err.message);
+      }finally{
+        btnRegister.disabled = false;
+      }
+    });
+
+    btnLogin.addEventListener("click", async () => {
+      const email = emailEl.value.trim();
+      const pass  = passEl.value.trim();
+      if(!email || !pass) return setStatus(authStatus, "Shkruaj email+password.");
+      btnLogin.disabled = true;
+      try{
+        await signInWithEmailAndPassword(auth, email, pass);
+        setStatus(authStatus, "U kyç ✅");
+      }catch(err){
+        setStatus(authStatus, "Gabim: " + err.message);
+      }finally{
+        btnLogin.disabled = false;
+      }
+    });
+
+    btnLogout.addEventListener("click", async () => {
+      try{ await signOut(auth); }
+      catch(e){}
+    });
+
+    btnReloadProfile.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if(!user) return;
+      await loadMyProfile(user);
+    });
+
+    // POSTS
+    let unsubscribePosts = null;
+
+    function renderPost(id, data, canDelete){
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <div class="t">${escapeHtml(data.title || "")}</div>
+        <div class="m">${escapeHtml(data.body || "")}</div>
+        <div class="meta">
+          ${data.created_by_email ? "nga: " + escapeHtml(data.created_by_email) + " • " : ""}
+          ${data.created_at?.toDate ? data.created_at.toDate().toLocaleString() : ""}
+        </div>
+      `;
+      if(canDelete){
+        const b = document.createElement("button");
+        b.className = "btn gray";
+        b.style.marginTop = "10px";
+        b.textContent = "Fshi";
+        b.addEventListener("click", async ()=>{
+          try{
+            await deleteDoc(doc(db, "posts", id));
+            setStatus(postStatus, "Post u fshi ✅");
+          }catch(err){
+            setStatus(postStatus, "Gabim: " + err.message);
+          }
+        });
+        el.appendChild(b);
+      }
+      return el;
+    }
+
+    btnAddPost.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if(!user) return setStatus(postStatus, "Duhet login.");
+      if(!isAdmin(user)) return setStatus(postStatus, "Vetëm admin mund të shtojë post.");
+
+      const title = postTitle.value.trim();
+      const body  = postBody.value.trim();
+      if(!title || !body) return setStatus(postStatus, "Plotëso titull + mesazh.");
+
+      btnAddPost.disabled = true;
+      try{
+        await addDoc(collection(db, "posts"), {
+          title, body,
+          created_at: serverTimestamp(),
+          created_by: user.uid,
+          created_by_email: user.email || ""
+        });
+        postTitle.value = "";
+        postBody.value = "";
+        setStatus(postStatus, "Post u shtua ✅");
+      }catch(err){
+        setStatus(postStatus, "Gabim: " + err.message);
+      }finally{
+        btnAddPost.disabled = false;
+      }
+    });
+
+    btnStartListen.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if(!user) return setStatus(postStatus, "Duhet login.");
+      if(unsubscribePosts) unsubscribePosts();
+
+      postsList.innerHTML = "";
+      setStatus(postStatus, "Duke dëgjuar live...");
+
+      const q = query(collection(db,"posts"), orderBy("created_at","desc"));
+      unsubscribePosts = onSnapshot(q, (snap)=>{
+        postsList.innerHTML = "";
+        snap.forEach(docu=>{
+          postsList.appendChild(renderPost(docu.id, docu.data(), isAdmin(user)));
+        });
+        if(snap.empty){
+          postsList.innerHTML = `<div class="item"><div class="meta">S’ka post-e ende.</div></div>`;
+        }
+      }, (err)=>{
+        setStatus(postStatus, "Gabim: " + err.message);
+      });
+    });
+
+    // ADMIN: save/load user profile (Firestore users/{uid})
+    btnSaveUser.addEventListener("click", async () => {
+      const currentUser = auth.currentUser;
+      if(!currentUser) return setStatus(adminStatus, "Duhet login.");
+      if(!isAdmin(currentUser)) return setStatus(adminStatus, "Vetëm admin.");
+
+      const uid = uUid.value.trim();
+      const name = uName.value.trim();
+      const role = uRole.value;
+
+      if(!uid) return setStatus(adminStatus, "Shkruaj UID.");
+
+      btnSaveUser.disabled = true;
+      try{
+        await setDoc(doc(db, "users", uid), {
+          name: name || "",
+          role: role || "user",
+          updated_at: serverTimestamp(),
+          updated_by: currentUser.uid,
+          updated_by_email: currentUser.email || ""
+        }, { merge:true });
+        setStatus(adminStatus, "U ruajt ✅");
+      }catch(err){
+        setStatus(adminStatus, "Gabim: " + err.message);
+      }finally{
+        btnSaveUser.disabled = false;
+      }
+    });
+
+    btnLoadUser.addEventListener("click", async () => {
+      const currentUser = auth.currentUser;
+      if(!currentUser) return setStatus(adminStatus, "Duhet login.");
+      if(!isAdmin(currentUser)) return setStatus(adminStatus, "Vetëm admin.");
+
+      const uid = uUid.value.trim();
+      if(!uid) return setStatus(adminStatus, "Shkruaj UID.");
+      btnLoadUser.disabled = true;
+
+      try{
+        const snap = await getDoc(doc(db, "users", uid));
+        if(!snap.exists()){
+          setStatus(adminStatus, "S’ka profil. Ruaje të ri.");
+        }else{
+          const d = snap.data();
+          uName.value = d.name || "";
+          uRole.value = d.role || "user";
+          setStatus(adminStatus, "Profili u ngarkua ✅");
+        }
+      }catch(err){
+        setStatus(adminStatus, "Gabim: " + err.message);
+      }finally{
+        btnLoadUser.disabled = false;
+      }
+    });
+
+    // Utils
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // Service Worker (PWA)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", async () => {
+        try { await navigator.serviceWorker.register("./sw.js"); }
+        catch (e) {}
+      });
+    }
+  </script>
+</body>
+</html>
