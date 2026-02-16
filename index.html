@@ -327,15 +327,29 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // ✅ Vendose config-in tënd (ti e ke në Firebase Console)
-    const firebaseConfig = {
-      apiKey: "AIzaSyBTq_1aKrXLXq20",
-      authDomain: "matteoteam-test.firebaseapp.com",
-      projectId: "matteoteam-test",
-      storageBucket: "matteoteam-test.appspot.com",
-      messagingSenderId: "1084486170913",
-      appId: "1:1084486170913:web:d68cf328becefe226a6660",
-      measurementId: "G-9V887087P0"
-    };
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
+    authDomain: "matteoteam-test.firebaseapp.com",
+    projectId: "matteoteam-test",
+    storageBucket: "matteoteam-test.firebasestorage.app",
+    messagingSenderId: "1084486170913",
+    appId: "1:1084486170913:web:d68cf328becefe226a6660",
+    measurementId: "G-9V887087P0"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 
     // Admin email (i yti)
     const ADMIN_EMAIL = "milootshala@gmail.com";
