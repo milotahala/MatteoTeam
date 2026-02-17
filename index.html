@@ -1,273 +1,596 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title data-i18n="app.title">MatteoTeam</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title data-i18n="app.title">MatteoTeam</title>
 
-<style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  color:white;
-}
-.container{padding:20px;}
-.card{
-  background:rgba(255,255,255,0.08);
-  padding:20px;
-  border-radius:15px;
-  margin-bottom:20px;
-}
-input{
-  width:100%;
-  padding:10px;
-  margin:8px 0;
-  border-radius:8px;
-  border:none;
-}
-button{
-  padding:10px 15px;
-  border:none;
-  border-radius:8px;
-  margin:5px 0;
-  cursor:pointer;
-}
-.btn-primary{background:#3b82f6;color:white;}
-.btn-danger{background:#ef4444;color:white;}
-.hidden{display:none;}
-.nav button{margin-right:5px;}
-.list-item{
-  background:rgba(255,255,255,0.05);
-  padding:10px;
-  margin-top:5px;
-  border-radius:8px;
-}
-.status{margin-top:10px;font-size:14px;}
-</style>
+  <style>
+    :root{
+      --bg1:#0f2027;
+      --bg2:#203a43;
+      --bg3:#2c5364;
+      --glass: rgba(255,255,255,0.08);
+      --glass2: rgba(255,255,255,0.12);
+      --border: rgba(255,255,255,0.18);
+      --text: #ffffff;
+      --muted: rgba(255,255,255,0.75);
+      --danger: #ff5c5c;
+      --ok: #39d98a;
+      --warn: #ffd166;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+      color:var(--text);
+      min-height:100vh;
+    }
+    .container{ padding:20px; max-width:980px; margin:0 auto; }
+    .topbar{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:16px;
+    }
+    .brand{
+      display:flex; gap:10px; align-items:center;
+    }
+    .pill{
+      padding:8px 12px;
+      border:1px solid var(--border);
+      background: var(--glass);
+      border-radius:999px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .lang{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    button, input{
+      font:inherit;
+    }
+    .btn{
+      border:1px solid var(--border);
+      background: var(--glass);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition: 0.15s ease;
+    }
+    .btn:hover{ background: var(--glass2); }
+    .btn.primary{ background: rgba(57,217,138,0.18); }
+    .btn.danger{ background: rgba(255,92,92,0.18); }
+    .btn.small{ padding:8px 10px; border-radius:10px; font-size:13px; }
+    .card{
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius:18px;
+      padding:16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      margin-bottom:16px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+    }
+    @media (min-width: 900px){
+      .grid{ grid-template-columns: 1fr 1fr; }
+    }
+    h1,h2,h3{ margin: 0 0 10px 0; }
+    h1{ font-size:20px; }
+    h2{ font-size:18px; }
+    .muted{ color: var(--muted); }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .field{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,0.18);
+      color: var(--text);
+      outline:none;
+    }
+    .field::placeholder{ color: rgba(255,255,255,0.55); }
+    .list{
+      margin-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .item{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,0.12);
+    }
+    .badge{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,0.15);
+      color: var(--muted);
+    }
+    .status{
+      margin-top:10px;
+      font-size:13px;
+      color: var(--muted);
+    }
+    .status.ok{ color: var(--ok); }
+    .status.err{ color: var(--danger); }
+    .status.warn{ color: var(--warn); }
+    .hidden{ display:none !important; }
+    .divider{ height:1px; background: rgba(255,255,255,0.15); margin: 12px 0; border-radius:2px; }
+    .footer-note{ font-size:12px; color: rgba(255,255,255,0.6); margin-top:8px; }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  </style>
 </head>
+
 <body>
+  <div class="container">
 
-<div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <div class="pill"><span data-i18n="app.title">MatteoTeam</span></div>
+        <div id="roleBadge" class="badge hidden">Role: -</div>
+      </div>
 
-  <h1 data-i18n="app.title">MatteoTeam</h1>
-<div id="status" class="status">Status: Gati</div>
+      <div class="lang">
+        <button class="btn small" onclick="setLanguage('de')">🇩🇪 DE</button>
+        <button class="btn small" onclick="setLanguage('al')">🇦🇱 AL</button>
+        <button class="btn small" onclick="setLanguage('en')">🇬🇧 EN</button>
+      </div>
+    </div>
 
-<div id="authCard" class="card">
-<h2>Hyrja / Regjistrimi</h2>
-<input type="email" id="email" placeholder="Email"/>
-<input type="password" id="password" placeholder="Fjalëkalimi"/>
-<button class="btn-primary" id="loginBtn">Login</button>
-<button class="btn-primary" id="registerBtn">Register</button>
-</div>
+    <!-- LOGIN CARD -->
+    <div id="loginCard" class="card">
+      <h1 data-i18n="login.title">Anmeldung</h1>
+      <p class="muted" data-i18n="login.subtitle">Bitte mit E-Mail und Passwort einloggen.</p>
 
-<div id="appPanel" class="hidden">
+      <div class="divider"></div>
 
-<div class="nav">
-<button id="navPosts">Njoftime</button>
-<button id="navSchedule">Orar</button>
-<button id="navInventory">Inventar</button>
-<button id="logoutBtn" class="btn-danger">Logout</button>
-</div>
+      <input id="email" class="field" type="email" placeholder="Email" autocomplete="email" />
+      <div style="height:10px"></div>
+      <input id="password" class="field" type="password" placeholder="Passwort" autocomplete="current-password" />
+      <div style="height:12px"></div>
 
-<!-- NJOFTIME -->
-<div id="postsSection" class="card hidden">
-<h2>Njoftime</h2>
-<input type="text" id="postTitle" placeholder="Titulli"/>
-<input type="text" id="postBody" placeholder="Mesazhi"/>
-<button id="addPostBtn" class="btn-primary">Shto</button>
-<div id="postsList"></div>
-</div>
+      <div class="row">
+        <button id="btnLogin" class="btn primary" onclick="login()"><span data-i18n="login.btn">Einloggen</span></button>
+      </div>
 
-<!-- ORAR -->
-<div id="scheduleSection" class="card hidden">
-<h2>Orar</h2>
-<input type="text" id="scheduleText" placeholder="Shkruaj orarin"/>
-<button id="addScheduleBtn" class="btn-primary">Ruaj</button>
-<div id="scheduleList"></div>
-</div>
+      <div id="loginStatus" class="status"></div>
 
-<!-- INVENTAR -->
-<div id="inventorySection" class="card hidden">
-<h2>Inventar</h2>
-<input type="text" id="invName" placeholder="Produkti"/>
-<input type="number" id="invQty" placeholder="Sasia"/>
-<button id="addInvBtn" class="btn-primary">Ruaj</button>
-<div id="inventoryList"></div>
-</div>
+      <div class="footer-note" data-i18n="login.note">
+        Hinweis: Accounts werden nur vom Admin erstellt.
+      </div>
+    </div>
 
-</div>
-</div>
+    <!-- APP AREA -->
+    <div id="appArea" class="hidden">
 
-<script type="module">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <div>
+            <h1><span data-i18n="app.welcome">Willkommen</span>, <span id="userEmail" class="mono">-</span></h1>
+            <div class="muted"><span data-i18n="app.signedin">Angemeldet</span></div>
+          </div>
+          <div class="row">
+            <button class="btn" onclick="reloadData()"><span data-i18n="app.refresh">Aktualisieren</span></button>
+            <button class="btn danger" onclick="logout()"><span data-i18n="app.logout">Logout</span></button>
+          </div>
+        </div>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
-  authDomain: "matteoteam-test.firebaseapp.com",
-  projectId: "matteoteam-test",
-  storageBucket: "matteoteam-test.firebasestorage.app",
-  messagingSenderId: "1084486170913",
-  appId: "1:1084486170913:web:d68cf328becefe226a6660",
-  measurementId: "G-9V887087P0"
-};
+        <div id="appStatus" class="status"></div>
+      </div>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+      <div class="grid">
 
-const statusDiv = document.getElementById("status");
+        <!-- INVENTORY -->
+        <div class="card">
+          <h2 data-i18n="inventory.title">Lagerbestand</h2>
+          <p class="muted" data-i18n="inventory.subtitle">Nur Admin kann Artikel hinzufügen oder löschen.</p>
 
-const authCard = document.getElementById("authCard");
-const appPanel = document.getElementById("appPanel");
+          <div class="divider"></div>
 
-const postsSection = document.getElementById("postsSection");
-const scheduleSection = document.getElementById("scheduleSection");
-const inventorySection = document.getElementById("inventorySection");
+          <div id="inventoryAdminBox" class="hidden">
+            <div class="row">
+              <input id="invName" class="field" placeholder="Name (z.B. Mehl 25kg)" />
+            </div>
+            <div style="height:10px"></div>
+            <div class="row">
+              <input id="invQty" class="field" type="number" placeholder="Menge (z.B. 10)" />
+              <input id="invUnit" class="field" placeholder="Einheit (z.B. Sack)" />
+            </div>
+            <div style="height:12px"></div>
+            <button class="btn primary" onclick="addInventoryItem()"><span data-i18n="inventory.add">Hinzufügen</span></button>
 
-document.getElementById("navPosts").onclick=()=>show(postsSection);
-document.getElementById("navSchedule").onclick=()=>show(scheduleSection);
-document.getElementById("navInventory").onclick=()=>show(inventorySection);
+            <div id="inventoryStatus" class="status"></div>
+            <div class="divider"></div>
+          </div>
 
-function show(section){
-postsSection.classList.add("hidden");
-scheduleSection.classList.add("hidden");
-inventorySection.classList.add("hidden");
-section.classList.remove("hidden");
-}
+          <div id="inventoryList" class="list"></div>
+        </div>
 
-document.getElementById("registerBtn").onclick=()=>{
-createUserWithEmailAndPassword(auth,email.value,password.value)
-.catch(e=>statusDiv.textContent="Gabim: "+e.message);
-};
+        <!-- WEEKLY PLAN (placeholder) -->
+        <div class="card">
+          <h2 data-i18n="weekly.title">Wochenplan</h2>
+          <p class="muted" data-i18n="weekly.subtitle">
+            Ky modul e vazhdojmë në hapin tjetër (orari javor + staff view).
+          </p>
 
-document.getElementById("loginBtn").onclick=()=>{
-signInWithEmailAndPassword(auth,email.value,password.value)
-.catch(e=>statusDiv.textContent="Gabim: "+e.message);
-};
+          <div class="divider"></div>
 
-document.getElementById("logoutBtn").onclick=()=>signOut(auth);
+          <div class="item">
+            <div>
+              <div><strong data-i18n="weekly.placeholder1">Moduli në ndërtim…</strong></div>
+              <div class="muted" data-i18n="weekly.placeholder2">Do shtojmë: javët, turnet, pauzat, llogaritjen e orëve.</div>
+            </div>
+            <div class="badge">v0.1</div>
+          </div>
+        </div>
 
-onAuthStateChanged(auth,user=>{
-if(user){
-authCard.classList.add("hidden");
-appPanel.classList.remove("hidden");
-statusDiv.textContent="I loguar: "+user.email;
-loadAll();
-}else{
-authCard.classList.remove("hidden");
-appPanel.classList.add("hidden");
-statusDiv.textContent="Status: Gati";
-}
-});
+      </div>
+    </div>
+  </div>
 
-async function loadAll(){
-loadPosts();
-loadSchedule();
-loadInventory();
-}
+  <!-- Firebase + App Script -->
+  <script type="module">
+    // ===============================
+    // 1) Multi-Language (i18n)
+    // ===============================
+    window.translations = {
+      de: {
+        "app.title": "MatteoTeam",
+        "login.title": "Anmeldung",
+        "login.subtitle": "Bitte mit E-Mail und Passwort einloggen.",
+        "login.btn": "Einloggen",
+        "login.note": "Hinweis: Accounts werden nur vom Admin erstellt.",
 
-async function loadPosts(){
-postsList.innerHTML="";
-const snap=await getDocs(collection(db,"posts"));
-snap.forEach(doc=>{
-postsList.innerHTML+=`<div class="list-item">${doc.data().title}</div>`;
-});
-}
+        "app.welcome": "Willkommen",
+        "app.signedin": "Angemeldet",
+        "app.refresh": "Aktualisieren",
+        "app.logout": "Logout",
 
-async function loadSchedule(){
-scheduleList.innerHTML="";
-const snap=await getDocs(collection(db,"schedule"));
-snap.forEach(doc=>{
-scheduleList.innerHTML+=`<div class="list-item">${doc.data().text}</div>`;
-});
-}
+        "inventory.title": "Lagerbestand",
+        "inventory.subtitle": "Nur Admin kann Artikel hinzufügen oder löschen.",
+        "inventory.add": "Hinzufügen",
 
-async function loadInventory(){
-inventoryList.innerHTML="";
-const snap=await getDocs(collection(db,"inventory"));
-snap.forEach(doc=>{
-inventoryList.innerHTML+=`<div class="list-item">${doc.data().name} (${doc.data().qty})</div>`;
-});
-}
+        "weekly.title": "Wochenplan",
+        "weekly.subtitle": "Dieses Modul bauen wir als Nächstes (Wochenplan + Staff-Ansicht).",
+        "weekly.placeholder1": "Modul im Aufbau…",
+        "weekly.placeholder2": "Wir fügen hinzu: Wochen, Schichten, Pausen, Stundenberechnung."
+      },
+      al: {
+        "app.title": "MatteoTeam",
+        "login.title": "Hyrje",
+        "login.subtitle": "Hyni me Email dhe fjalëkalim.",
+        "login.btn": "Hyni",
+        "login.note": "Shënim: Account-et krijohen vetëm nga Admini.",
 
-addPostBtn.onclick=async()=>{
-await addDoc(collection(db,"posts"),{
-title:postTitle.value,
-body:postBody.value,
-created_at:serverTimestamp()
-});
-postTitle.value="";
-postBody.value="";
-loadPosts();
-};
+        "app.welcome": "Mirë se vini",
+        "app.signedin": "Jeni të kyçur",
+        "app.refresh": "Rifresko",
+        "app.logout": "Dil",
 
-addScheduleBtn.onclick=async()=>{
-await addDoc(collection(db,"schedule"),{
-text:scheduleText.value,
-created_at:serverTimestamp()
-});
-scheduleText.value="";
-loadSchedule();
-};
+        "inventory.title": "Inventari",
+        "inventory.subtitle": "Vetëm Admini mund të shtojë ose fshijë artikuj.",
+        "inventory.add": "Shto",
 
-addInvBtn.onclick=async()=>{
-await addDoc(collection(db,"inventory"),{
-name:invName.value,
-qty:invQty.value,
-created_at:serverTimestamp()
-});
-invName.value="";
-invQty.value="";
-loadInventory();
-};
-/* ===========================
-   MULTI LANGUAGE START
-=========================== */
+        "weekly.title": "Plani javor",
+        "weekly.subtitle": "Këtë modul e ndërtojmë në hapin tjetër (orari javor + pamja për staff).",
+        "weekly.placeholder1": "Moduli është në ndërtim…",
+        "weekly.placeholder2": "Do shtojmë: javët, turnet, pauzat, llogaritjen e orëve."
+      },
+      en: {
+        "app.title": "MatteoTeam",
+        "login.title": "Login",
+        "login.subtitle": "Sign in with email and password.",
+        "login.btn": "Login",
+        "login.note": "Note: Accounts are created by Admin only.",
 
-const I18N = {
-  de: { "app.title": "MatteoTeam" },
-  sq: { "app.title": "MatteoTeam" },
-  en: { "app.title": "MatteoTeam" }
-};
+        "app.welcome": "Welcome",
+        "app.signedin": "Signed in",
+        "app.refresh": "Refresh",
+        "app.logout": "Logout",
 
-function getLang() {
-  return localStorage.getItem("matteo_lang") || "de";
-}
+        "inventory.title": "Inventory",
+        "inventory.subtitle": "Only Admin can add or delete items.",
+        "inventory.add": "Add",
 
-function setLang(lang) {
-  localStorage.setItem("matteo_lang", lang);
-  document.documentElement.lang = lang;
-  applyLanguage(lang);
-}
+        "weekly.title": "Weekly Plan",
+        "weekly.subtitle": "We’ll build this next (weekly roster + staff view).",
+        "weekly.placeholder1": "Module under construction…",
+        "weekly.placeholder2": "We will add: weeks, shifts, breaks, hours calculation."
+      }
+    };
 
-function t(key, lang) {
-  return I18N[lang][key] || key;
-}
+    window.setLanguage = function(lang){
+      document.documentElement.lang = lang;
+      localStorage.setItem("lang", lang);
 
-function applyLanguage(lang) {
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    el.textContent = t(el.dataset.i18n, lang);
-  });
-}
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        const val = window.translations?.[lang]?.[key];
+        if (val) el.textContent = val;
+      });
+    };
 
-document.addEventListener("click", function(e){
-  if(e.target.classList.contains("lang-btn")){
-    setLang(e.target.dataset.lang);
-  }
-});
+    const savedLang = localStorage.getItem("lang") || "de";
+    window.setLanguage(savedLang);
 
-document.addEventListener("DOMContentLoaded", function(){
-  const lang = getLang();
-  document.documentElement.lang = lang;
-  applyLanguage(lang);
-});
+    // ===============================
+    // 2) Firebase Imports
+    // ===============================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-/* ===========================
-   MULTI LANGUAGE END
-=========================== */
-</script>
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      addDoc,
+      deleteDoc,
+      getDocs,
+      query,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    // ===============================
+    // 3) YOUR Firebase Config (REPLACE THIS)
+    // ===============================
+    const firebaseConfig = {
+      apiKey: "PASTE_YOUR_API_KEY",
+      authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+      projectId: "PASTE_YOUR_PROJECT_ID",
+      storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+      messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
+      appId: "PASTE_YOUR_APP_ID"
+    };
+
+    // ===============================
+    // 4) Init
+    // ===============================
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ===============================
+    // 5) UI Helpers
+    // ===============================
+    const el = (id) => document.getElementById(id);
+
+    function setStatus(targetId, msg, type=""){
+      const target = el(targetId);
+      target.textContent = msg || "";
+      target.className = "status " + (type || "");
+    }
+
+    function show(id){ el(id).classList.remove("hidden"); }
+    function hide(id){ el(id).classList.add("hidden"); }
+
+    // ===============================
+    // 6) Auth Actions
+    // ===============================
+    window.login = async function(){
+      const email = el("email").value.trim();
+      const password = el("password").value;
+
+      if(!email || !password){
+        setStatus("loginStatus", "Email dhe fjalëkalimi janë të detyrueshme.", "warn");
+        return;
+      }
+
+      setStatus("loginStatus", "Loading...", "");
+      try{
+        await signInWithEmailAndPassword(auth, email, password);
+        setStatus("loginStatus", "", "ok");
+      }catch(err){
+        setStatus("loginStatus", err.message, "err");
+      }
+    };
+
+    window.logout = async function(){
+      await signOut(auth);
+    };
+
+    // ===============================
+    // 7) Roles (Firestore)
+    //    users/{uid} -> { role: "admin" | "user" }
+    // ===============================
+    async function getUserRole(uid){
+      try{
+        const ref = doc(db, "users", uid);
+        const snap = await getDoc(ref);
+        if(snap.exists()){
+          return snap.data().role || "user";
+        }
+      }catch(e){
+        console.log("Role read error:", e);
+      }
+      return "user";
+    }
+
+    let currentRole = "user";
+    let currentUid = null;
+
+    // ===============================
+    // 8) Inventory (Firestore)
+    //    inventory/{autoId} -> { name, qty, unit, createdAt }
+    // ===============================
+    async function loadInventory(){
+      el("inventoryList").innerHTML = "";
+      setStatus("inventoryStatus", "", "");
+
+      try{
+        const q = query(collection(db, "inventory"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+
+        if(snap.empty){
+          el("inventoryList").innerHTML = `
+            <div class="item">
+              <div>
+                <div><strong>—</strong></div>
+                <div class="muted">No items</div>
+              </div>
+              <div class="badge">0</div>
+            </div>
+          `;
+          return;
+        }
+
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          const name = d.name || "-";
+          const qty = (d.qty ?? "");
+          const unit = d.unit || "";
+          const id = docSnap.id;
+
+          const canDelete = (currentRole === "admin");
+
+          const row = document.createElement("div");
+          row.className = "item";
+          row.innerHTML = `
+            <div>
+              <div><strong>${escapeHtml(name)}</strong></div>
+              <div class="muted">${escapeHtml(String(qty))} ${escapeHtml(unit)}</div>
+            </div>
+            <div class="row" style="gap:8px;">
+              <div class="badge">${escapeHtml(unit || "item")}</div>
+              ${canDelete ? `<button class="btn small danger" data-del="${id}">✖</button>` : ``}
+            </div>
+          `;
+
+          el("inventoryList").appendChild(row);
+        });
+
+        // delete handlers
+        document.querySelectorAll("[data-del]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-del");
+            await deleteInventoryItem(id);
+          });
+        });
+
+      }catch(err){
+        setStatus("inventoryStatus", err.message, "err");
+      }
+    }
+
+    window.addInventoryItem = async function(){
+      if(currentRole !== "admin"){
+        setStatus("inventoryStatus", "Vetëm Admin mund të shtojë.", "warn");
+        return;
+      }
+
+      const name = el("invName").value.trim();
+      const qty = Number(el("invQty").value);
+      const unit = el("invUnit").value.trim();
+
+      if(!name || !unit || Number.isNaN(qty)){
+        setStatus("inventoryStatus", "Plotëso: emri, sasia, njësia.", "warn");
+        return;
+      }
+
+      setStatus("inventoryStatus", "Loading...", "");
+      try{
+        await addDoc(collection(db, "inventory"), {
+          name,
+          qty,
+          unit,
+          createdAt: serverTimestamp(),
+          createdBy: currentUid || null
+        });
+
+        el("invName").value = "";
+        el("invQty").value = "";
+        el("invUnit").value = "";
+
+        setStatus("inventoryStatus", "U shtua me sukses ✅", "ok");
+        await loadInventory();
+      }catch(err){
+        setStatus("inventoryStatus", err.message, "err");
+      }
+    };
+
+    async function deleteInventoryItem(id){
+      if(currentRole !== "admin"){
+        setStatus("inventoryStatus", "Vetëm Admin mund të fshijë.", "warn");
+        return;
+      }
+      try{
+        await deleteDoc(doc(db, "inventory", id));
+        setStatus("inventoryStatus", "U fshi ✅", "ok");
+        await loadInventory();
+      }catch(err){
+        setStatus("inventoryStatus", err.message, "err");
+      }
+    }
+
+    window.reloadData = async function(){
+      setStatus("appStatus", "Loading...", "");
+      await loadInventory();
+      setStatus("appStatus", "OK ✅", "ok");
+    };
+
+    // ===============================
+    // 9) Auth State Listener
+    // ===============================
+    onAuthStateChanged(auth, async (user) => {
+      if(!user){
+        // logged out
+        hide("appArea");
+        show("loginCard");
+        hide("inventoryAdminBox");
+        hide("roleBadge");
+        currentRole = "user";
+        currentUid = null;
+        el("userEmail").textContent = "-";
+        setStatus("appStatus", "", "");
+        return;
+      }
+
+      // logged in
+      currentUid = user.uid;
+      el("userEmail").textContent = user.email || "-";
+
+      show("appArea");
+      hide("loginCard");
+
+      currentRole = await getUserRole(user.uid);
+
+      // role badge
+      const rb = el("roleBadge");
+      rb.textContent = "Role: " + currentRole;
+      rb.classList.remove("hidden");
+
+      // show admin box only if admin
+      if(currentRole === "admin") show("inventoryAdminBox");
+      else hide("inventoryAdminBox");
+
+      await window.reloadData();
+    });
+
+    // ===============================
+    // 10) Utils
+    // ===============================
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"'`=\/]/g, s => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;","/":"&#x2F;","`":"&#x60;","=":"&#x3D;"
+      }[s]));
+    }
+  </script>
 </body>
 </html>
