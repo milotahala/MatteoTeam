@@ -659,7 +659,7 @@ opt.textContent = `${d.name ?? "Artikel"} (${stock} ${unit})`;
         row.innerHTML = `
           <div>
             <strong>${escapeHtml(d.name)}</strong>
-            <div class="meta">${escapeHtml(String(d.qty))} ${escapeHtml(d.unit)}</div>
+         <div class="meta">${escapeHtml(String(d.stock ?? d.qty ?? 0))} ${escapeHtml(d.unit || "")}</div>
           </div>
           <div class="row" style="justify-content:flex-end;">
             <span class="badge">${escapeHtml(String(d.qty))}</span>
