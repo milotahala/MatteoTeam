@@ -552,7 +552,9 @@ const firebaseConfig = {
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-
+window.onerror = function(msg, src, line, col, err){
+  alert("JS ERROR: " + msg + "\nLine: " + line);
+};
     // =========================
     // 4) Global State
     // =========================
