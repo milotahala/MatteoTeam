@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>MatteoTeam</title>
+<title data-i18n="app.title">MatteoTeam</title>
 
 <style>
 body{
@@ -223,7 +223,51 @@ invName.value="";
 invQty.value="";
 loadInventory();
 };
+/* ===========================
+   MULTI LANGUAGE START
+=========================== */
 
+const I18N = {
+  de: { "app.title": "MatteoTeam" },
+  sq: { "app.title": "MatteoTeam" },
+  en: { "app.title": "MatteoTeam" }
+};
+
+function getLang() {
+  return localStorage.getItem("matteo_lang") || "de";
+}
+
+function setLang(lang) {
+  localStorage.setItem("matteo_lang", lang);
+  document.documentElement.lang = lang;
+  applyLanguage(lang);
+}
+
+function t(key, lang) {
+  return I18N[lang][key] || key;
+}
+
+function applyLanguage(lang) {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    el.textContent = t(el.dataset.i18n, lang);
+  });
+}
+
+document.addEventListener("click", function(e){
+  if(e.target.classList.contains("lang-btn")){
+    setLang(e.target.dataset.lang);
+  }
+});
+
+document.addEventListener("DOMContentLoaded", function(){
+  const lang = getLang();
+  document.documentElement.lang = lang;
+  applyLanguage(lang);
+});
+
+/* ===========================
+   MULTI LANGUAGE END
+=========================== */
 </script>
 </body>
 </html>
