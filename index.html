@@ -648,7 +648,9 @@ const firebaseConfig = {
         // dropdown
         const opt = document.createElement("option");
         opt.value = id;
-        opt.textContent = `${d.name} (${d.qty} ${d.unit})`;
+        const stock = Number(d.stock ?? d.qty ?? 0);
+const unit  = d.unit ?? "";
+opt.textContent = `${d.name ?? "Artikel"} (${stock} ${unit})`;
         sel.appendChild(opt);
 
         // list item
