@@ -640,7 +640,6 @@ const firebaseConfig = {
       if(currentRole !== "admin"){ return; }
       setStatus("invStatus","");
       const name = el("invName").value.trim();
-      const name = el("invName").value.trim();
 const baseType = el("invBaseType").value;      // g / ml / pcs
 const packSize = parseFloat(el("invPackSize").value.replace(",", ".") || 0);
 const packUnit = el("invPackUnit").value;      // kg / g / L / ml / pcs
