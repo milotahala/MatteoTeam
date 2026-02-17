@@ -218,26 +218,19 @@
         </div>
 
         <!-- WEEKLY PLAN (placeholder) -->
-        <div class="card">
-          <h2 data-i18n="weekly.title">Wochenplan</h2>
-          <p class="muted" data-i18n="weekly.subtitle">
-            Ky modul e vazhdojmë në hapin tjetër (orari javor + staff view).
-          </p>
+<div class="card">
+  <h2>Wochenplan</h2>
 
-          <div class="divider"></div>
+  <input id="wp_name" placeholder="Mitarbeiter Name" />
+  <input id="wp_date" type="date" />
+  <input id="wp_start" type="time" />
+  <input id="wp_end" type="time" />
+  <input id="wp_pause" type="number" placeholder="Pause (Minuten)" />
 
-          <div class="item">
-            <div>
-              <div><strong data-i18n="weekly.placeholder1">Moduli në ndërtim…</strong></div>
-              <div class="muted" data-i18n="weekly.placeholder2">Do shtojmë: javët, turnet, pauzat, llogaritjen e orëve.</div>
-            </div>
-            <div class="badge">v0.1</div>
-          </div>
-        </div>
+  <button onclick="addShift()">Speichern</button>
 
-      </div>
-    </div>
-  </div>
+  <div id="wp_list"></div>
+</div>
 
   <!-- Firebase + App Script -->
   <script type="module">
