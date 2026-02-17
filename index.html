@@ -597,8 +597,27 @@ const firebaseConfig = {
       if(currentRole !== "admin"){ return; }
       setStatus("invStatus","");
       const name = el("invName").value.trim();
-      const unit = el("invUnit").value.trim();
-      const qty  = Number(el("invQty").value || 0);
+      const name = el("invName").value.trim();
+const baseType = el("invBaseType").value;      // g / ml / pcs
+const packSize = parseFloat(el("invPackSize").value.replace(",", ".") || 0);
+const packUnit = el("invPackUnit").value;      // kg / g / L / ml / pcs
+const startPacks = parseFloat(el("invQty").value.replace(",", ".") || 0);
+
+if(!name || !baseType || !packSize || !packUnit){
+  setStatus("invStatus","Bitte alles korrekt ausfüllen");
+  return;
+}
+
+// konvertim në base
+let packSizeBase = 0;
+
+if(packUnit === "kg") packSizeBase = packSize * 1000;
+if(packUnit === "g")  packSizeBase = packSize;
+if(packUnit === "L")  packSizeBase = packSize * 1000;
+if(packUnit === "ml") packSizeBase = packSize;
+if(packUnit === "pcs") packSizeBase = packSize;
+
+const stockBase = startPacks * packSizeBase;
 
       if(!name || !unit || !Number.isFinite(qty)){
         setStatus("invStatus","Bitte Name + Einheit + Start-Bestand eingeben.","err");
@@ -606,7 +625,15 @@ const firebaseConfig = {
       }
       try{
         await addDoc(collection(db,"inventory"), {
-          name, unit, qty,
+   name,
+   baseType,
+   packSize,
+   packUnit,
+   packSizeBase,
+   stockBase,
+   createdAt: serverTimestamp(),
+   createdBy: currentUid
+});
           createdAt: serverTimestamp(),
           createdBy: currentUid
         });
