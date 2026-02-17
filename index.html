@@ -218,20 +218,53 @@
         </div>
 
         <!-- WEEKLY PLAN (placeholder) -->
+<!-- WEEKLY PLAN PRO -->
 <div class="card">
-  <h2>Wochenplan</h2>
+  <h2 data-i18n="weekly.title">Wochenplan</h2>
+  <p class="muted" data-i18n="weekly.subtitle">Admin erstellt Schichten. Mitarbeiter sehen nur ihre Schichten.</p>
 
-  <input id="wp_name" placeholder="Mitarbeiter Name" />
-  <input id="wp_date" type="date" />
-  <input id="wp_start" type="time" />
-  <input id="wp_end" type="time" />
-  <input id="wp_pause" type="number" placeholder="Pause (Minuten)" />
+  <div class="divider"></div>
 
-  <button onclick="addShift()">Speichern</button>
+  <div class="row" style="justify-content:space-between; align-items:center; gap:10px;">
+    <div class="row" style="gap:8px;">
+      <button class="btn small" onclick="prevWeek()">◀</button>
+      <button class="btn small" onclick="nextWeek()">▶</button>
+    </div>
 
-  <div id="wp_list"></div>
+    <input id="weekStart" class="field" style="max-width:180px;" type="date" />
+  </div>
+
+  <div id="weeklyAdminBox" style="margin-top:12px;">
+    <div class="row">
+      <input id="wp_name" class="field" placeholder="Mitarbeiter Name" />
+      <select id="wp_day" class="field" style="max-width:140px;">
+        <option value="Mon">Mon</option><option value="Tue">Tue</option><option value="Wed">Wed</option>
+        <option value="Thu">Thu</option><option value="Fri">Fri</option><option value="Sat">Sat</option><option value="Sun">Sun</option>
+      </select>
+    </div>
+
+    <div style="height:10px"></div>
+
+    <div class="row">
+      <input id="wp_start" class="field" type="time" />
+      <input id="wp_end" class="field" type="time" />
+      <input id="wp_pause" class="field" type="number" placeholder="Pause (Minuten)" />
+    </div>
+
+    <div style="height:12px"></div>
+    <button class="btn primary" onclick="addShift()">Speichern</button>
+    <div id="wp_status" class="status"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="row" style="justify-content:space-between;">
+    <div class="badge" id="weeklyRange">—</div>
+    <div class="badge" id="weeklyTotal">0h</div>
+  </div>
+
+  <div id="wp_list" class="list"></div>
 </div>
-
   <!-- Firebase + App Script -->
   <script type="module">
     // ===============================
