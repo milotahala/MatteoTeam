@@ -2,133 +2,198 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title data-i18n="app.title">MatteoTeam</title>
 
   <style>
     :root{
-      --bg1:#0f2027;
-      --bg2:#203a43;
-      --bg3:#2c5364;
-      --glass: rgba(255,255,255,0.08);
-      --glass2: rgba(255,255,255,0.12);
-      --border: rgba(255,255,255,0.18);
-      --text: #ffffff;
-      --muted: rgba(255,255,255,0.75);
-      --danger: #ff5c5c;
-      --ok: #39d98a;
-      --warn: #ffd166;
+      --bg1:#0e1a20; --bg2:#15313a;
+      --glass:rgba(255,255,255,.08);
+      --glass2:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.12);
+      --text:#e9f2f5;
+      --muted:rgba(233,242,245,.7);
+      --good:#39d98a;
+      --warn:#ffcc66;
+      --bad:#ff6b6b;
+      --btn:#2f4b55;
+      --btn2:#2b5a52;
+      --chip:rgba(255,255,255,.10);
+      --shadow:0 10px 30px rgba(0,0,0,.25);
+      --radius:22px;
     }
-    *{ box-sizing:border-box; }
+
+    *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+      font-family: Arial, Helvetica, sans-serif;
       color:var(--text);
+      background: radial-gradient(1200px 800px at 20% 10%, #1d3f48 0%, transparent 55%),
+                  radial-gradient(900px 700px at 90% 30%, #223b3a 0%, transparent 55%),
+                  linear-gradient(135deg, var(--bg1), var(--bg2));
       min-height:100vh;
+      padding:18px;
     }
-    .container{ padding:20px; max-width:980px; margin:0 auto; }
+
+    .container{max-width:980px; margin:0 auto; padding-bottom:40px;}
     .topbar{
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-      margin-bottom:16px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; margin-bottom:14px;
     }
     .brand{
-      display:flex; gap:10px; align-items:center;
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
     }
     .pill{
-      padding:8px 12px;
-      border:1px solid var(--border);
-      background: var(--glass);
+      background:var(--chip);
+      border:1px solid var(--line);
       border-radius:999px;
-      font-size:13px;
-      color:var(--muted);
+      padding:10px 14px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
     }
     .lang{
-      display:flex; gap:8px; flex-wrap:wrap;
+      display:flex; gap:8px; align-items:center;
     }
-    button, input{
-      font:inherit;
-    }
-    .btn{
-      border:1px solid var(--border);
-      background: var(--glass);
+    .lang button{
+      border:1px solid var(--line);
+      background:var(--chip);
       color:var(--text);
-      padding:10px 12px;
-      border-radius:12px;
+      border-radius:14px;
+      padding:8px 10px;
       cursor:pointer;
-      transition: 0.15s ease;
+      min-width:60px;
     }
-    .btn:hover{ background: var(--glass2); }
-    .btn.primary{ background: rgba(57,217,138,0.18); }
-    .btn.danger{ background: rgba(255,92,92,0.18); }
-    .btn.small{ padding:8px 10px; border-radius:10px; font-size:13px; }
+    .lang button.active{outline:2px solid rgba(57,217,138,.35);}
+
+    .grid{display:grid; gap:14px;}
     .card{
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius:18px;
-      padding:16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      margin-bottom:16px;
+      background:var(--glass);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(10px);
     }
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:16px;
-    }
-    @media (min-width: 900px){
-      .grid{ grid-template-columns: 1fr 1fr; }
-    }
-    h1,h2,h3{ margin: 0 0 10px 0; }
-    h1{ font-size:20px; }
-    h2{ font-size:18px; }
-    .muted{ color: var(--muted); }
-    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    h1,h2,h3{margin:0 0 10px}
+    h1{font-size:26px}
+    h2{font-size:22px}
+    h3{font-size:16px; opacity:.95}
+
+    .muted{color:var(--muted)}
+    .divider{height:1px; background:var(--line); margin:14px 0;}
+
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
     .field{
       width:100%;
-      padding:12px 12px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background: rgba(0,0,0,0.18);
-      color: var(--text);
+      background:var(--glass2);
+      border:1px solid var(--line);
+      color:var(--text);
+      border-radius:16px;
+      padding:12px 14px;
       outline:none;
     }
-    .field::placeholder{ color: rgba(255,255,255,0.55); }
-    .list{
-      margin-top:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .item{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-      padding:12px;
+    .field:focus{border-color:rgba(57,217,138,.45);}
+
+    .btn{
+      border:1px solid var(--line);
+      background:var(--btn);
+      color:var(--text);
       border-radius:14px;
-      border:1px solid var(--border);
-      background: rgba(0,0,0,0.12);
+      padding:11px 14px;
+      cursor:pointer;
+      box-shadow:var(--shadow);
     }
+    .btn.primary{background:var(--btn2);}
+    .btn.small{padding:8px 10px; border-radius:12px;}
+    .btn.danger{background:rgba(255,107,107,.18);}
+
+    .status{margin-top:10px; font-size:14px;}
+    .ok{color:var(--good)}
+    .err{color:var(--bad)}
     .badge{
-      font-size:12px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
       padding:6px 10px;
       border-radius:999px;
-      border:1px solid var(--border);
-      background: rgba(0,0,0,0.15);
-      color: var(--muted);
-    }
-    .status{
-      margin-top:10px;
       font-size:13px;
-      color: var(--muted);
+      color:var(--text);
+      white-space:nowrap;
     }
-    .status.ok{ color: var(--ok); }
-    .status.err{ color: var(--danger); }
-    .status.warn{ color: var(--warn); }
-    .hidden{ display:none !important; }
-    .divider{ height:1px; background: rgba(255,255,255,0.15); margin: 12px 0; border-radius:2px; }
-    .footer-note{ font-size:12px; color: rgba(255,255,255,0.6); margin-top:8px; }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    .hidden{display:none !important;}
+
+    /* List items */
+    .list{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
+    .item{
+      display:flex; justify-content:space-between; align-items:center;
+      gap:12px;
+      padding:12px 12px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.15);
+      border-radius:16px;
+    }
+    .item strong{display:block}
+    .item .meta{font-size:13px; color:var(--muted)}
+
+    /* Table schedule */
+    .tableWrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(0,0,0,.12);
+    }
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      min-width:860px;
+    }
+    th, td{
+      border-bottom:1px solid rgba(255,255,255,.08);
+      border-right:1px solid rgba(255,255,255,.06);
+      padding:10px 10px;
+      vertical-align:middle;
+    }
+    th{
+      position:sticky;
+      top:0;
+      background:rgba(10,20,24,.88);
+      backdrop-filter: blur(10px);
+      z-index:2;
+      font-weight:700;
+      text-align:left;
+    }
+    th:first-child{position:sticky; left:0; z-index:3;}
+    td:first-child{
+      position:sticky; left:0; z-index:1;
+      background:rgba(10,20,24,.50);
+      backdrop-filter: blur(10px);
+      font-weight:600;
+      min-width:180px;
+    }
+
+    .deptRow td{
+      background:rgba(255,255,255,.08);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      color:rgba(233,242,245,.9);
+    }
+    .cellInput{
+      width:100%;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);
+      border-radius:12px;
+      padding:8px 10px;
+      outline:none;
+      min-width:90px;
+    }
+    .cellInput[readonly]{
+      opacity:.75;
+    }
+
+    .footerHint{font-size:13px; color:var(--muted); margin-top:8px;}
   </style>
 </head>
 
@@ -137,292 +202,337 @@
 
     <div class="topbar">
       <div class="brand">
-        <div class="pill"><span data-i18n="app.title">MatteoTeam</span></div>
-        <div id="roleBadge" class="badge hidden">Role: -</div>
+        <div class="pill" style="font-weight:800;" data-i18n="app.title">MatteoTeam</div>
+        <div class="pill" id="rolePill">Role: —</div>
       </div>
 
       <div class="lang">
-        <button class="btn small" onclick="setLanguage('de')">🇩🇪 DE</button>
-        <button class="btn small" onclick="setLanguage('al')">🇦🇱 AL</button>
-        <button class="btn small" onclick="setLanguage('en')">🇬🇧 EN</button>
+        <button id="langDE" class="active" onclick="setLang('de')">🇩🇪 DE</button>
+        <button id="langAL" onclick="setLang('al')">🇦🇱 AL</button>
+        <button id="langEN" onclick="setLang('en')">🇬🇧 EN</button>
       </div>
     </div>
 
-    <!-- LOGIN CARD -->
-    <div id="loginCard" class="card">
-      <h1 data-i18n="login.title">Anmeldung</h1>
-      <p class="muted" data-i18n="login.subtitle">Bitte mit E-Mail und Passwort einloggen.</p>
+    <!-- AUTH CARD -->
+    <div class="card" id="authCard">
+      <h1 data-i18n="auth.title">Anmeldung</h1>
+      <p class="muted" data-i18n="auth.subtitle">Bitte mit E-Mail und Passwort einloggen.</p>
 
       <div class="divider"></div>
 
-      <input id="email" class="field" type="email" placeholder="Email" autocomplete="email" />
+      <input id="email" class="field" type="email" placeholder="E-Mail" />
       <div style="height:10px"></div>
-      <input id="password" class="field" type="password" placeholder="Passwort" autocomplete="current-password" />
+      <input id="password" class="field" type="password" placeholder="Passwort" />
       <div style="height:12px"></div>
 
-      <div class="row">
-        <button id="btnLogin" class="btn primary" onclick="login()"><span data-i18n="login.btn">Einloggen</span></button>
-      </div>
+      <button class="btn primary" onclick="login()" data-i18n="auth.login">Einloggen</button>
 
-      <div id="loginStatus" class="status"></div>
-
-      <div class="footer-note" data-i18n="login.note">
-        Hinweis: Accounts werden nur vom Admin erstellt.
-      </div>
+      <div id="authStatus" class="status"></div>
+      <div class="footerHint" data-i18n="auth.hint">Hinweis: Accounts werden nur vom Admin erstellt.</div>
     </div>
 
-    <!-- APP AREA -->
-    <div id="appArea" class="hidden">
+    <!-- APP -->
+    <div class="grid hidden" id="appWrap">
 
+      <!-- WELCOME -->
       <div class="card">
-        <div class="row" style="justify-content:space-between;">
-          <div>
-            <h1><span data-i18n="app.welcome">Willkommen</span>, <span id="userEmail" class="mono">-</span></h1>
-            <div class="muted"><span data-i18n="app.signedin">Angemeldet</span></div>
-          </div>
-          <div class="row">
-            <button class="btn" onclick="reloadData()"><span data-i18n="app.refresh">Aktualisieren</span></button>
-            <button class="btn danger" onclick="logout()"><span data-i18n="app.logout">Logout</span></button>
-          </div>
+        <h2 id="welcomeTitle">Willkommen</h2>
+        <p class="muted" id="welcomeSub">—</p>
+        <div class="row">
+          <button class="btn" onclick="refreshAll()" data-i18n="app.refresh">Aktualisieren</button>
+          <button class="btn danger" onclick="logout()" data-i18n="app.logout">Logout</button>
+          <span class="badge" id="okBadge">OK ✅</span>
         </div>
-
-        <div id="appStatus" class="status"></div>
       </div>
 
-      <div class="grid">
+      <!-- INVENTORY PRO -->
+      <div class="card">
+        <h2 data-i18n="inv.title">Inventar</h2>
+        <p class="muted" data-i18n="inv.subtitle">Nur Admin kann Artikel hinzufügen / ändern / abbuchen.</p>
 
-        <!-- INVENTORY -->
-        <div class="card">
-          <h2 data-i18n="inventory.title">Lagerbestand</h2>
-          <p class="muted" data-i18n="inventory.subtitle">Nur Admin kann Artikel hinzufügen oder löschen.</p>
+        <div class="divider"></div>
+
+        <div id="invAdminBox" class="hidden">
+          <h3 data-i18n="inv.addTitle">Artikel hinzufügen</h3>
+
+          <div class="row">
+            <input id="invName" class="field" placeholder="Name (z.B. Mehl 25kg)" />
+            <input id="invUnit" class="field" placeholder="Einheit (z.B. Sack)" style="max-width:220px;" />
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <input id="invQty" class="field" type="number" placeholder="Start-Bestand (z.B. 30)" style="max-width:220px;" />
+            <button class="btn primary" onclick="addInventoryItem()" data-i18n="inv.addBtn">Hinzufügen</button>
+          </div>
+
+          <div id="invStatus" class="status"></div>
 
           <div class="divider"></div>
 
-          <div id="inventoryAdminBox" class="hidden">
-            <div class="row">
-              <input id="invName" class="field" placeholder="Name (z.B. Mehl 25kg)" />
-            </div>
-            <div style="height:10px"></div>
-            <div class="row">
-              <input id="invQty" class="field" type="number" placeholder="Menge (z.B. 10)" />
-              <input id="invUnit" class="field" placeholder="Einheit (z.B. Sack)" />
-            </div>
-            <div style="height:12px"></div>
-            <button class="btn primary" onclick="addInventoryItem()"><span data-i18n="inventory.add">Hinzufügen</span></button>
+          <h3 data-i18n="inv.dailyTitle">Tagesverbrauch</h3>
+          <p class="muted" data-i18n="inv.dailySub">Wähle Artikel + Datum + geplant + verkauft. Bestand wird automatisch reduziert.</p>
 
-            <div id="inventoryStatus" class="status"></div>
-            <div class="divider"></div>
+          <div class="row">
+            <select id="invDailyItem" class="field"></select>
+            <input id="invDailyDate" class="field" type="date" style="max-width:220px;" />
           </div>
 
-          <div id="inventoryList" class="list"></div>
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <input id="invPlanned" class="field" type="number" placeholder="Geplant zu verkaufen (z.B. 10)" />
+            <input id="invSold" class="field" type="number" placeholder="Verkauft (z.B. 8)" />
+            <button class="btn primary" onclick="saveDailyUsage()" data-i18n="inv.saveDaily">Speichern</button>
+          </div>
+
+          <div id="invDailyStatus" class="status"></div>
+
+          <div class="divider"></div>
         </div>
-        
-<!-- WEEKLY PLAN PRO -->
-<div class="card">
-  <h2 data-i18n="weekly.title">Wochenplan</h2>
-  <p class="muted" data-i18n="weekly.subtitle">Admin erstellt Schichten. Mitarbeiter sehen nur ihre Schichten.</p>
 
-  <div class="divider"></div>
+        <div class="row" style="justify-content:space-between;">
+          <span class="badge" data-i18n="inv.listBadge">Artikel</span>
+          <span class="badge" id="invCount">0</span>
+        </div>
 
-  <div class="row" style="justify-content:space-between; align-items:center; gap:10px;">
-    <div class="row" style="gap:8px;">
-      <button class="btn small" onclick="prevWeek()">◀</button>
-      <button class="btn small" onclick="nextWeek()">▶</button>
+        <div id="inventoryList" class="list"></div>
+
+        <div class="divider"></div>
+        <h3 data-i18n="inv.logsTitle">Letzte Tages-Einträge</h3>
+        <div id="invLogs" class="list"></div>
+      </div>
+
+      <!-- WEEKLY SCHEDULE TABLE PRO -->
+      <div class="card">
+        <h2 data-i18n="weekly.title">Plan javor</h2>
+        <p class="muted" data-i18n="weekly.subtitle">
+          Tabelë javore (si Excel). Vetëm Admin mund ta ndryshojë. Ruhet në Firestore.
+        </p>
+
+        <div class="divider"></div>
+
+        <div class="row" style="justify-content:space-between; align-items:center;">
+          <div class="row">
+            <button class="btn small" onclick="prevWeek()">◀</button>
+            <button class="btn small" onclick="nextWeek()">▶</button>
+            <span class="badge" id="weekRange">—</span>
+          </div>
+
+          <div class="row">
+            <input id="weekStart" class="field" type="date" style="max-width:200px;" />
+            <button class="btn" onclick="loadWeek()" data-i18n="weekly.load">Laden</button>
+            <button class="btn primary" onclick="saveWeek()" id="saveWeekBtn" data-i18n="weekly.save">Speichern</button>
+          </div>
+        </div>
+
+        <div id="weeklyStatus" class="status"></div>
+
+        <div class="divider"></div>
+
+        <div class="row" id="weeklyAdminTools" class="hidden">
+          <input id="newDept" class="field" placeholder="Neues Department (z.B. Küche)" style="max-width:260px;" />
+          <button class="btn" onclick="addDepartment()" data-i18n="weekly.addDept">Department +</button>
+
+          <input id="newEmpName" class="field" placeholder="Mitarbeiter Name (z.B. Ajris)" />
+          <select id="newEmpDept" class="field" style="max-width:220px;"></select>
+          <button class="btn" onclick="addEmployee()" data-i18n="weekly.addEmp">Mitarbeiter +</button>
+
+          <button class="btn danger" onclick="resetWeek()" data-i18n="weekly.reset">Reset Woche</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="tableWrap">
+          <table id="weekTable"></table>
+        </div>
+
+        <div class="footerHint" data-i18n="weekly.hint">
+          Shëno: “Frei”, “U”, “9”, “18”, “12-17”, etj. Admin i ndryshon në tabelë.
+        </div>
+      </div>
+
     </div>
-
-    <input id="weekStart" class="field" style="max-width:180px;" type="date" />
   </div>
 
-  <div id="weeklyAdminBox" style="margin-top:12px;">
-    <div class="row">
-      <input id="wp_name" class="field" placeholder="Mitarbeiter Name" />
-      <select id="wp_day" class="field" style="max-width:140px;">
-        <option value="Mon">Mon</option><option value="Tue">Tue</option><option value="Wed">Wed</option>
-        <option value="Thu">Thu</option><option value="Fri">Fri</option><option value="Sat">Sat</option><option value="Sun">Sun</option>
-      </select>
-    </div>
-
-    <div style="height:10px"></div>
-
-    <div class="row">
-      <input id="wp_start" class="field" type="time" />
-      <input id="wp_end" class="field" type="
-        <input id="wp_pause" class="field" type="number" placeholder="Pause (z.B. 30 Minuten)" />
-
-    <div style="height:12px"></div>
-    <button class="btn primary" onclick="addShift()">Speichern</button>
-    <div id="wp_status" class="status"></div>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="row" style="justify-content:space-between;">
-    <div class="badge" id="weeklyRange">—</div>
-    <div class="badge" id="weeklyTotal">0h</div>
-  </div>
-
-  <div id="wp_list" class="list"></div>
-</div>
   <!-- Firebase + App Script -->
   <script type="module">
-    // ===============================
-    // 1) Multi-Language (i18n)
-    // ===============================
-    window.translations = {
+    // =========================
+    // 1) i18n
+    // =========================
+    const translations = {
       de: {
-        "app.title": "MatteoTeam",
-        "login.title": "Anmeldung",
-        "login.subtitle": "Bitte mit E-Mail und Passwort einloggen.",
-        "login.btn": "Einloggen",
-        "login.note": "Hinweis: Accounts werden nur vom Admin erstellt.",
+        "app.title":"MatteoTeam",
+        "app.refresh":"Aktualisieren",
+        "app.logout":"Logout",
 
-        "app.welcome": "Willkommen",
-        "app.signedin": "Angemeldet",
-        "app.refresh": "Aktualisieren",
-        "app.logout": "Logout",
+        "auth.title":"Anmeldung",
+        "auth.subtitle":"Bitte mit E-Mail und Passwort einloggen.",
+        "auth.login":"Einloggen",
+        "auth.hint":"Hinweis: Accounts werden nur vom Admin erstellt.",
 
-        "inventory.title": "Lagerbestand",
-        "inventory.subtitle": "Nur Admin kann Artikel hinzufügen oder löschen.",
-        "inventory.add": "Hinzufügen",
+        "inv.title":"Lagerbestand",
+        "inv.subtitle":"Nur Admin kann Artikel hinzufügen / ändern / abbuchen.",
+        "inv.addTitle":"Artikel hinzufügen",
+        "inv.addBtn":"Hinzufügen",
+        "inv.dailyTitle":"Tagesverbrauch",
+        "inv.dailySub":"Wähle Artikel + Datum + geplant + verkauft. Bestand wird automatisch reduziert.",
+        "inv.saveDaily":"Speichern",
+        "inv.listBadge":"Artikel",
+        "inv.logsTitle":"Letzte Tages-Einträge",
 
-        "weekly.title": "Wochenplan",
-        "weekly.subtitle": "Dieses Modul bauen wir als Nächstes (Wochenplan + Staff-Ansicht).",
-        "weekly.placeholder1": "Modul im Aufbau…",
-        "weekly.placeholder2": "Wir fügen hinzu: Wochen, Schichten, Pausen, Stundenberechnung."
+        "weekly.title":"Wochenplan",
+        "weekly.subtitle":"Wochen-Tabelle wie Excel. Nur Admin kann ändern. Wird in Firestore gespeichert.",
+        "weekly.load":"Laden",
+        "weekly.save":"Speichern",
+        "weekly.addDept":"Department +",
+        "weekly.addEmp":"Mitarbeiter +",
+        "weekly.reset":"Reset Woche",
+        "weekly.hint":"Einträge: Frei, U, 9, 18, 12-17, usw."
       },
       al: {
-        "app.title": "MatteoTeam",
-        "login.title": "Hyrje",
-        "login.subtitle": "Hyni me Email dhe fjalëkalim.",
-        "login.btn": "Hyni",
-        "login.note": "Shënim: Account-et krijohen vetëm nga Admini.",
+        "app.title":"MatteoTeam",
+        "app.refresh":"Rifresko",
+        "app.logout":"Dil",
 
-        "app.welcome": "Mirë se vini",
-        "app.signedin": "Jeni të kyçur",
-        "app.refresh": "Rifresko",
-        "app.logout": "Dil",
+        "auth.title":"Anmeldung",
+        "auth.subtitle":"Ju lutem kyçuni me E-mail dhe fjalëkalim.",
+        "auth.login":"Hyr",
+        "auth.hint":"Vërejtje: Llogaritë krijohen vetëm nga Admini.",
 
-        "inventory.title": "Inventari",
-        "inventory.subtitle": "Vetëm Admini mund të shtojë ose fshijë artikuj.",
-        "inventory.add": "Shto",
+        "inv.title":"Inventari",
+        "inv.subtitle":"Vetëm Admini mund të shtojë / ndryshojë / heqë nga stoku.",
+        "inv.addTitle":"Shto artikull",
+        "inv.addBtn":"Shto",
+        "inv.dailyTitle":"Shitja ditore",
+        "inv.dailySub":"Zgjedh artikull + datë + sa do shesim + sa u shit. Stoku zvogëlohet automatikisht.",
+        "inv.saveDaily":"Ruaj",
+        "inv.listBadge":"Artikuj",
+        "inv.logsTitle":"Regjistrimet e fundit",
 
-        "weekly.title": "Plani javor",
-        "weekly.subtitle": "Këtë modul e ndërtojmë në hapin tjetër (orari javor + pamja për staff).",
-        "weekly.placeholder1": "Moduli është në ndërtim…",
-        "weekly.placeholder2": "Do shtojmë: javët, turnet, pauzat, llogaritjen e orëve."
+        "weekly.title":"Plani javor",
+        "weekly.subtitle":"Tabelë javore si Excel. Vetëm Admini mund ta ndryshojë. Ruhet në Firestore.",
+        "weekly.load":"Ngarko",
+        "weekly.save":"Ruaj",
+        "weekly.addDept":"Shto departament",
+        "weekly.addEmp":"Shto punëtor",
+        "weekly.reset":"Fshij javën",
+        "weekly.hint":"Shkruaj: Frei, U, 9, 18, 12-17, etj."
       },
       en: {
-        "app.title": "MatteoTeam",
-        "login.title": "Login",
-        "login.subtitle": "Sign in with email and password.",
-        "login.btn": "Login",
-        "login.note": "Note: Accounts are created by Admin only.",
+        "app.title":"MatteoTeam",
+        "app.refresh":"Refresh",
+        "app.logout":"Logout",
 
-        "app.welcome": "Welcome",
-        "app.signedin": "Signed in",
-        "app.refresh": "Refresh",
-        "app.logout": "Logout",
+        "auth.title":"Login",
+        "auth.subtitle":"Please sign in with email and password.",
+        "auth.login":"Login",
+        "auth.hint":"Note: Accounts are created only by Admin.",
 
-        "inventory.title": "Inventory",
-        "inventory.subtitle": "Only Admin can add or delete items.",
-        "inventory.add": "Add",
+        "inv.title":"Inventory",
+        "inv.subtitle":"Only Admin can add / edit / deduct stock.",
+        "inv.addTitle":"Add item",
+        "inv.addBtn":"Add",
+        "inv.dailyTitle":"Daily sales",
+        "inv.dailySub":"Pick item + date + planned + sold. Stock is reduced automatically.",
+        "inv.saveDaily":"Save",
+        "inv.listBadge":"Items",
+        "inv.logsTitle":"Latest daily entries",
 
-        "weekly.title": "Weekly Plan",
-        "weekly.subtitle": "We’ll build this next (weekly roster + staff view).",
-        "weekly.placeholder1": "Module under construction…",
-        "weekly.placeholder2": "We will add: weeks, shifts, breaks, hours calculation."
+        "weekly.title":"Weekly schedule",
+        "weekly.subtitle":"Excel-like weekly table. Only Admin can edit. Saved to Firestore.",
+        "weekly.load":"Load",
+        "weekly.save":"Save",
+        "weekly.addDept":"Add department",
+        "weekly.addEmp":"Add employee",
+        "weekly.reset":"Reset week",
+        "weekly.hint":"Write: Off, U, 9, 18, 12-17, etc."
       }
     };
 
-    window.setLanguage = function(lang){
-      document.documentElement.lang = lang;
-      localStorage.setItem("lang", lang);
-
-      document.querySelectorAll("[data-i18n]").forEach(el => {
-        const key = el.getAttribute("data-i18n");
-        const val = window.translations?.[lang]?.[key];
-        if (val) el.textContent = val;
-      });
+    let currentLang = "de";
+    window.setLang = function(lang){
+      currentLang = lang;
+      document.documentElement.lang = lang === "al" ? "sq" : lang;
+      document.getElementById("langDE").classList.toggle("active", lang==="de");
+      document.getElementById("langAL").classList.toggle("active", lang==="al");
+      document.getElementById("langEN").classList.toggle("active", lang==="en");
+      applyI18n();
     };
 
-    const savedLang = localStorage.getItem("lang") || "de";
-    window.setLanguage(savedLang);
+    function applyI18n(){
+      const dict = translations[currentLang] || translations.de;
+      document.querySelectorAll("[data-i18n]").forEach(el=>{
+        const k = el.getAttribute("data-i18n");
+        if(dict[k]) el.textContent = dict[k];
+      });
+    }
 
-    // ===============================
+    function el(id){return document.getElementById(id);}
+    function escapeHtml(s){
+      return String(s||"").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
+    }
+    function setStatus(id, msg, type=""){
+      const target = el(id);
+      if(!target) return;
+      target.className = "status " + (type==="ok" ? "ok" : type==="err" ? "err" : "");
+      target.textContent = msg || "";
+    }
+
+    // =========================
     // 2) Firebase Imports
-    // ===============================
+    // =========================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
-      getAuth,
-      signInWithEmailAndPassword,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      collection,
-      addDoc,
-      deleteDoc,
-      getDocs,
-      query,
-      orderBy,
-      serverTimestamp
+      getFirestore, doc, getDoc, setDoc, updateDoc,
+      collection, addDoc, deleteDoc, getDocs,
+      query, orderBy, limit, serverTimestamp, writeBatch
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-    // ===============================
-    // 3) YOUR Firebase Config (REPLACE THIS)
-    // ===============================
+    // =========================
+    // 3) Firebase Config (PASTE YOURS HERE)
+    // =========================
     const firebaseConfig = {
- apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
-  authDomain: "matteoteam-test.firebaseapp.com",
-  projectId: "matteoteam-test",
-  storageBucket: "matteoteam-test.firebasestorage.app",
-  messagingSenderId: "1084486170913",
-  appId: "1:1084486170913:web:d68cf328becefe226a6660"
+      // ⬇️ PASTE YOUR firebaseConfig EXACTLY here (from Firebase -> Project settings -> Web app)
+      apiKey: "PASTE_API_KEY",
+      authDomain: "PASTE_AUTH_DOMAIN",
+      projectId: "PASTE_PROJECT_ID",
+      storageBucket: "PASTE_STORAGE_BUCKET",
+      messagingSenderId: "PASTE_SENDER_ID",
+      appId: "PASTE_APP_ID"
+      // measurementId optional
     };
 
-    // ===============================
-    // 4) Init
-    // ===============================
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ===============================
-    // 5) UI Helpers
-    // ===============================
-    const el = (id) => document.getElementById(id);
+    // =========================
+    // 4) Global State
+    // =========================
+    let currentUser = null;
+    let currentUid = null;
+    let currentRole = "user"; // admin/user
 
-    function setStatus(targetId, msg, type=""){
-      const target = el(targetId);
-      target.textContent = msg || "";
-      target.className = "status " + (type || "");
-    }
-
-    function show(id){ el(id).classList.remove("hidden"); }
-    function hide(id){ el(id).classList.add("hidden"); }
-
-    // ===============================
-    // 6) Auth Actions
-    // ===============================
+    // =========================
+    // 5) AUTH
+    // =========================
     window.login = async function(){
+      setStatus("authStatus","");
       const email = el("email").value.trim();
-      const password = el("password").value;
-
-      if(!email || !password){
-        setStatus("loginStatus", "Email dhe fjalëkalimi janë të detyrueshme.", "warn");
+      const pass  = el("password").value;
+      if(!email || !pass){
+        setStatus("authStatus", "Bitte E-Mail + Passwort eingeben.", "err");
         return;
       }
-
-      setStatus("loginStatus", "Loading...", "");
       try{
-        await signInWithEmailAndPassword(auth, email, password);
-        setStatus("loginStatus", "", "ok");
-      }catch(err){
-        setStatus("loginStatus", err.message, "err");
+        await signInWithEmailAndPassword(auth, email, pass);
+      }catch(e){
+        setStatus("authStatus", "Firebase: " + (e?.message || e), "err");
       }
     };
 
@@ -430,191 +540,515 @@
       await signOut(auth);
     };
 
-    // ===============================
-    // 7) Roles (Firestore)
-    //    users/{uid} -> { role: "admin" | "user" }
-    // ===============================
-    async function getUserRole(uid){
-      try{
-        const ref = doc(db, "users", uid);
-        const snap = await getDoc(ref);
-        if(snap.exists()){
-          return snap.data().role || "user";
-        }
-      }catch(e){
-        console.log("Role read error:", e);
+    async function loadRole(uid){
+      // users/{uid} with { role: "admin" } or "user"
+      const ref = doc(db, "users", uid);
+      const snap = await getDoc(ref);
+      if(snap.exists()){
+        const d = snap.data();
+        return d.role || "user";
       }
       return "user";
     }
 
-    let currentRole = "user";
-    let currentUid = null;
-
-    // ===============================
-    // 8) Inventory (Firestore)
-    //    inventory/{autoId} -> { name, qty, unit, createdAt }
-    // ===============================
-    async function loadInventory(){
-      el("inventoryList").innerHTML = "";
-      setStatus("inventoryStatus", "", "");
-
-      try{
-        const q = query(collection(db, "inventory"), orderBy("createdAt", "desc"));
-        const snap = await getDocs(q);
-
-        if(snap.empty){
-          el("inventoryList").innerHTML = `
-            <div class="item">
-              <div>
-                <div><strong>—</strong></div>
-                <div class="muted">No items</div>
-              </div>
-              <div class="badge">0</div>
-            </div>
-          `;
-          return;
-        }
-
-        snap.forEach(docSnap => {
-          const d = docSnap.data();
-          const name = d.name || "-";
-          const qty = (d.qty ?? "");
-          const unit = d.unit || "";
-          const id = docSnap.id;
-
-          const canDelete = (currentRole === "admin");
-
-          const row = document.createElement("div");
-          row.className = "item";
-          row.innerHTML = `
-            <div>
-              <div><strong>${escapeHtml(name)}</strong></div>
-              <div class="muted">${escapeHtml(String(qty))} ${escapeHtml(unit)}</div>
-            </div>
-            <div class="row" style="gap:8px;">
-              <div class="badge">${escapeHtml(unit || "item")}</div>
-              ${canDelete ? `<button class="btn small danger" data-del="${id}">✖</button>` : ``}
-            </div>
-          `;
-
-          el("inventoryList").appendChild(row);
-        });
-
-        // delete handlers
-        document.querySelectorAll("[data-del]").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const id = btn.getAttribute("data-del");
-            await deleteInventoryItem(id);
-          });
-        });
-
-      }catch(err){
-        setStatus("inventoryStatus", err.message, "err");
-      }
-    }
-
-    window.addInventoryItem = async function(){
-      if(currentRole !== "admin"){
-        setStatus("inventoryStatus", "Vetëm Admin mund të shtojë.", "warn");
-        return;
-      }
-
-      const name = el("invName").value.trim();
-      const qty = Number(el("invQty").value);
-      const unit = el("invUnit").value.trim();
-
-      if(!name || !unit || Number.isNaN(qty)){
-        setStatus("inventoryStatus", "Plotëso: emri, sasia, njësia.", "warn");
-        return;
-      }
-
-      setStatus("inventoryStatus", "Loading...", "");
-      try{
-        await addDoc(collection(db, "inventory"), {
-          name,
-          qty,
-          unit,
-          createdAt: serverTimestamp(),
-          createdBy: currentUid || null
-        });
-
-        el("invName").value = "";
-        el("invQty").value = "";
-        el("invUnit").value = "";
-
-        setStatus("inventoryStatus", "U shtua me sukses ✅", "ok");
-        await loadInventory();
-      }catch(err){
-        setStatus("inventoryStatus", err.message, "err");
-      }
-    };
-
-    async function deleteInventoryItem(id){
-      if(currentRole !== "admin"){
-        setStatus("inventoryStatus", "Vetëm Admin mund të fshijë.", "warn");
-        return;
-      }
-      try{
-        await deleteDoc(doc(db, "inventory", id));
-        setStatus("inventoryStatus", "U fshi ✅", "ok");
-        await loadInventory();
-      }catch(err){
-        setStatus("inventoryStatus", err.message, "err");
-      }
-    }
-
-    window.reloadData = async function(){
-      setStatus("appStatus", "Loading...", "");
-      await loadInventory();
-      setStatus("appStatus", "OK ✅", "ok");
-    };
-
-    // ===============================
-    // 9) Auth State Listener
-    // ===============================
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, async (user)=>{
+      currentUser = user;
       if(!user){
-        // logged out
-        hide("appArea");
-        show("loginCard");
-        hide("inventoryAdminBox");
-        hide("roleBadge");
-        currentRole = "user";
         currentUid = null;
-        el("userEmail").textContent = "-";
-        setStatus("appStatus", "", "");
+        currentRole = "user";
+        el("authCard").classList.remove("hidden");
+        el("appWrap").classList.add("hidden");
+        el("rolePill").textContent = "Role: —";
         return;
       }
 
-      // logged in
       currentUid = user.uid;
-      el("userEmail").textContent = user.email || "-";
+      currentRole = await loadRole(user.uid);
 
-      show("appArea");
-      hide("loginCard");
+      el("rolePill").textContent = "Role: " + currentRole;
+      el("welcomeTitle").textContent = (currentLang==="al" ? "Mirë se vini," : currentLang==="en" ? "Welcome," : "Willkommen,");
+      el("welcomeSub").textContent = user.email;
 
-      currentRole = await getUserRole(user.uid);
+      // show/hide admin boxes
+      el("invAdminBox").classList.toggle("hidden", currentRole !== "admin");
+      el("weeklyAdminTools").classList.toggle("hidden", currentRole !== "admin");
+      el("saveWeekBtn").classList.toggle("hidden", currentRole !== "admin");
 
-      // role badge
-      const rb = el("roleBadge");
-      rb.textContent = "Role: " + currentRole;
-      rb.classList.remove("hidden");
+      el("authCard").classList.add("hidden");
+      el("appWrap").classList.remove("hidden");
 
-      // show admin box only if admin
-      if(currentRole === "admin") show("inventoryAdminBox");
-      else hide("inventoryAdminBox");
-
-      await window.reloadData();
+      // init weekStart to Monday
+      initWeek();
+      await refreshAll();
     });
 
-    // ===============================
-    // 10) Utils
-    // ===============================
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"'`=\/]/g, s => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;","/":"&#x2F;","`":"&#x60;","=":"&#x3D;"
-      }[s]));
+    window.refreshAll = async function(){
+      await loadInventory();
+      await loadInvLogs();
+      await loadWeek();
+    };
+
+    // =========================
+    // 6) INVENTORY
+    // collections:
+    // inventory/{docId} => { name, unit, qty, createdAt }
+    // inventory_logs/{docId} => { itemId, name, date, planned, sold, beforeQty, afterQty, createdAt, createdBy }
+    // =========================
+    window.addInventoryItem = async function(){
+      if(currentRole !== "admin"){ return; }
+      setStatus("invStatus","");
+      const name = el("invName").value.trim();
+      const unit = el("invUnit").value.trim();
+      const qty  = Number(el("invQty").value || 0);
+
+      if(!name || !unit || !Number.isFinite(qty)){
+        setStatus("invStatus","Bitte Name + Einheit + Start-Bestand eingeben.","err");
+        return;
+      }
+      try{
+        await addDoc(collection(db,"inventory"), {
+          name, unit, qty,
+          createdAt: serverTimestamp(),
+          createdBy: currentUid
+        });
+        el("invName").value="";
+        el("invUnit").value="";
+        el("invQty").value="";
+        setStatus("invStatus","OK ✅","ok");
+        await loadInventory();
+      }catch(e){
+        setStatus("invStatus", "Error: " + (e?.message||e), "err");
+      }
+    };
+
+    async function loadInventory(){
+      const list = el("inventoryList");
+      list.innerHTML = "";
+      const sel = el("invDailyItem");
+      sel.innerHTML = "";
+
+      const snap = await getDocs(query(collection(db,"inventory"), orderBy("name","asc")));
+      el("invCount").textContent = String(snap.size || 0);
+
+      if(snap.empty){
+        list.innerHTML = `
+          <div class="item">
+            <div>
+              <strong>—</strong>
+              <div class="meta">No items</div>
+            </div>
+            <span class="badge">0</span>
+          </div>`;
+        return;
+      }
+
+      snap.forEach(docSnap=>{
+        const d = docSnap.data();
+        const id = docSnap.id;
+
+        // dropdown
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = `${d.name} (${d.qty} ${d.unit})`;
+        sel.appendChild(opt);
+
+        // list item
+        const row = document.createElement("div");
+        row.className = "item";
+        row.innerHTML = `
+          <div>
+            <strong>${escapeHtml(d.name)}</strong>
+            <div class="meta">${escapeHtml(String(d.qty))} ${escapeHtml(d.unit)}</div>
+          </div>
+          <div class="row" style="justify-content:flex-end;">
+            <span class="badge">${escapeHtml(String(d.qty))}</span>
+            ${currentRole==="admin" ? `<button class="btn small danger" onclick="deleteInventory('${id}')">✖</button>` : ``}
+          </div>
+        `;
+        list.appendChild(row);
+      });
+
+      // default date today
+      if(!el("invDailyDate").value){
+        const today = new Date();
+        el("invDailyDate").value = toISO(today);
+      }
     }
+
+    window.deleteInventory = async function(id){
+      if(currentRole !== "admin"){ return; }
+      try{
+        await deleteDoc(doc(db,"inventory", id));
+        await loadInventory();
+      }catch(e){
+        alert("Delete failed: " + (e?.message||e));
+      }
+    };
+
+    window.saveDailyUsage = async function(){
+      if(currentRole !== "admin"){ return; }
+      setStatus("invDailyStatus","");
+
+      const itemId = el("invDailyItem").value;
+      const date   = el("invDailyDate").value;
+      const planned = Number(el("invPlanned").value || 0);
+      const sold    = Number(el("invSold").value || 0);
+
+      if(!itemId || !date){
+        setStatus("invDailyStatus","Bitte Artikel + Datum wählen.","err");
+        return;
+      }
+      if(!Number.isFinite(planned) || !Number.isFinite(sold)){
+        setStatus("invDailyStatus","Zahlen sind ungültig.","err");
+        return;
+      }
+
+      try{
+        const itemRef = doc(db,"inventory", itemId);
+        const itemSnap = await getDoc(itemRef);
+        if(!itemSnap.exists()){
+          setStatus("invDailyStatus","Artikel nicht gefunden.","err");
+          return;
+        }
+        const item = itemSnap.data();
+        const beforeQty = Number(item.qty || 0);
+        const afterQty  = Math.max(0, beforeQty - sold);
+
+        // write log + update qty
+        const batch = writeBatch(db);
+        batch.update(itemRef, { qty: afterQty });
+        batch.set(doc(collection(db,"inventory_logs")), {
+          itemId,
+          name: item.name,
+          unit: item.unit,
+          date,
+          planned,
+          sold,
+          beforeQty,
+          afterQty,
+          createdAt: serverTimestamp(),
+          createdBy: currentUid
+        });
+        await batch.commit();
+
+        el("invPlanned").value="";
+        el("invSold").value="";
+        setStatus("invDailyStatus", `OK ✅  (${beforeQty} → ${afterQty})`, "ok");
+        await loadInventory();
+        await loadInvLogs();
+      }catch(e){
+        setStatus("invDailyStatus","Error: "+(e?.message||e),"err");
+      }
+    };
+
+    async function loadInvLogs(){
+      const box = el("invLogs");
+      box.innerHTML = "";
+      const snap = await getDocs(query(collection(db,"inventory_logs"), orderBy("createdAt","desc"), limit(8)));
+
+      if(snap.empty){
+        box.innerHTML = `
+          <div class="item">
+            <div>
+              <strong>—</strong>
+              <div class="meta">No logs</div>
+            </div>
+            <span class="badge">0</span>
+          </div>`;
+        return;
+      }
+
+      snap.forEach(s=>{
+        const d = s.data();
+        const row = document.createElement("div");
+        row.className = "item";
+        row.innerHTML = `
+          <div>
+            <strong>${escapeHtml(d.name)} • ${escapeHtml(d.date)}</strong>
+            <div class="meta">Geplant: ${escapeHtml(d.planned)} | Verkauft: ${escapeHtml(d.sold)} | Rest: ${escapeHtml(d.afterQty)}</div>
+          </div>
+          <span class="badge">${escapeHtml(d.afterQty)}</span>
+        `;
+        box.appendChild(row);
+      });
+    }
+
+    // =========================
+    // 7) WEEKLY SCHEDULE TABLE (PRO)
+    // doc: schedule_weeks/{weekStartISO}
+    // structure:
+    // { weekStart, departments:[...], employees:[{name, dept}], cells:{ "dept|name|Mon": "9", ... }, updatedAt, updatedBy }
+    // =========================
+    const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+    function toISO(d){
+      const y=d.getFullYear();
+      const m=String(d.getMonth()+1).padStart(2,"0");
+      const da=String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${da}`;
+    }
+    function getMonday(dateObj){
+      const d = new Date(dateObj);
+      const day = d.getDay(); // 0 Sun ... 6 Sat
+      const diff = (day === 0 ? -6 : 1) - day;
+      d.setDate(d.getDate()+diff);
+      d.setHours(0,0,0,0);
+      return d;
+    }
+    function addDaysISO(iso, days){
+      const d = new Date(iso+"T00:00:00");
+      d.setDate(d.getDate()+days);
+      return toISO(d);
+    }
+
+    function initWeek(){
+      const monday = getMonday(new Date());
+      el("weekStart").value = toISO(monday);
+      setWeekRange();
+    }
+
+    function setWeekRange(){
+      const ws = el("weekStart").value;
+      if(!ws){ el("weekRange").textContent="—"; return; }
+      el("weekRange").textContent = `${ws} → ${addDaysISO(ws,6)}`;
+    }
+
+    window.prevWeek = function(){
+      const ws = el("weekStart").value;
+      const d = new Date(ws+"T00:00:00");
+      d.setDate(d.getDate()-7);
+      el("weekStart").value = toISO(d);
+      setWeekRange();
+      loadWeek();
+    };
+
+    window.nextWeek = function(){
+      const ws = el("weekStart").value;
+      const d = new Date(ws+"T00:00:00");
+      d.setDate(d.getDate()+7);
+      el("weekStart").value = toISO(d);
+      setWeekRange();
+      loadWeek();
+    };
+
+    el("weekStart").addEventListener("change", ()=> setWeekRange());
+
+    let weekData = null;
+
+    function defaultWeekData(weekStart){
+      return {
+        weekStart,
+        departments: ["Pizzabäcker PRM","Kasse","Service","Küche"],
+        employees: [
+          { name:"Ajris", dept:"Pizzabäcker PRM" },
+          { name:"Hadis", dept:"Pizzabäcker PRM" },
+          { name:"Qendrim", dept:"Pizzabäcker PRM" },
+          { name:"Milot", dept:"Pizzabäcker PRM" },
+
+          { name:"Eddi", dept:"Kasse" },
+          { name:"Eset", dept:"Kasse" },
+
+          { name:"Afrim", dept:"Service" },
+          { name:"Fadil", dept:"Service" },
+
+          { name:"Bekim", dept:"Küche" },
+          { name:"Kushtrim", dept:"Küche" },
+          { name:"Xhemajl", dept:"Küche" }
+        ],
+        cells: {}
+      };
+    }
+
+    function cellKey(dept, name, day){
+      return `${dept}|${name}|${day}`;
+    }
+
+    function buildDeptSelect(){
+      const sel = el("newEmpDept");
+      sel.innerHTML = "";
+      (weekData?.departments || []).forEach(d=>{
+        const opt=document.createElement("option");
+        opt.value=d;
+        opt.textContent=d;
+        sel.appendChild(opt);
+      });
+    }
+
+    function renderWeekTable(){
+      const tbl = el("weekTable");
+      tbl.innerHTML = "";
+
+      if(!weekData){
+        tbl.innerHTML = "<tr><td>—</td></tr>";
+        return;
+      }
+
+      // header
+      const thead = document.createElement("thead");
+      const hr = document.createElement("tr");
+      const th0 = document.createElement("th");
+      th0.textContent = "Name";
+      hr.appendChild(th0);
+
+      DAYS.forEach((day, idx)=>{
+        const th = document.createElement("th");
+        // show date in header like screenshot
+        const ws = weekData.weekStart;
+        const date = addDaysISO(ws, idx);
+        th.textContent = `${day} ${date}`;
+        hr.appendChild(th);
+      });
+      thead.appendChild(hr);
+      tbl.appendChild(thead);
+
+      // body
+      const tbody = document.createElement("tbody");
+
+      const depts = weekData.departments || [];
+      const emps  = weekData.employees || [];
+
+      for(const dept of depts){
+        // dept row
+        const dr = document.createElement("tr");
+        dr.className = "deptRow";
+        const dtd = document.createElement("td");
+        dtd.colSpan = 8;
+        dtd.textContent = dept;
+        dr.appendChild(dtd);
+        tbody.appendChild(dr);
+
+        // employees in that dept
+        const group = emps.filter(e=>e.dept===dept);
+        for(const emp of group){
+          const tr = document.createElement("tr");
+          const tdName = document.createElement("td");
+          tdName.textContent = emp.name;
+          tr.appendChild(tdName);
+
+          DAYS.forEach(day=>{
+            const td = document.createElement("td");
+            const inp = document.createElement("input");
+            inp.className = "cellInput";
+            inp.value = weekData.cells[cellKey(dept, emp.name, day)] || "";
+            const canEdit = (currentRole === "admin");
+            if(!canEdit) inp.setAttribute("readonly","readonly");
+
+            inp.addEventListener("input", ()=>{
+              weekData.cells[cellKey(dept, emp.name, day)] = inp.value;
+              markDirty();
+            });
+
+            td.appendChild(inp);
+            tr.appendChild(td);
+          });
+
+          tbody.appendChild(tr);
+        }
+      }
+
+      tbl.appendChild(tbody);
+
+      // update admin tools
+      buildDeptSelect();
+      updateWeeklyButtons();
+    }
+
+    function markDirty(){
+      // show hint
+      setStatus("weeklyStatus", (currentLang==="al" ? "Ndryshime të pa-ruajtura…" : currentLang==="en" ? "Unsaved changes…" : "Ungespeicherte Änderungen…"), "");
+    }
+
+    function updateWeeklyButtons(){
+      el("weeklyAdminTools").classList.toggle("hidden", currentRole !== "admin");
+      el("saveWeekBtn").classList.toggle("hidden", currentRole !== "admin");
+    }
+
+    window.loadWeek = async function(){
+      setStatus("weeklyStatus","");
+      const ws = el("weekStart").value;
+      if(!ws){ setStatus("weeklyStatus","Please select weekStart.","err"); return; }
+
+      try{
+        const ref = doc(db,"schedule_weeks", ws);
+        const snap = await getDoc(ref);
+        if(snap.exists()){
+          weekData = snap.data();
+        } else {
+          weekData = defaultWeekData(ws);
+          // auto create base doc for first time
+          await setDoc(ref, {
+            ...weekData,
+            updatedAt: serverTimestamp(),
+            updatedBy: currentUid
+          }, { merge:true });
+        }
+        setWeekRange();
+        renderWeekTable();
+        setStatus("weeklyStatus","OK ✅","ok");
+      }catch(e){
+        setStatus("weeklyStatus","Error: "+(e?.message||e),"err");
+      }
+    };
+
+    window.saveWeek = async function(){
+      if(currentRole !== "admin") return;
+      setStatus("weeklyStatus","");
+      const ws = el("weekStart").value;
+      if(!ws || !weekData){ return; }
+
+      try{
+        await setDoc(doc(db,"schedule_weeks", ws), {
+          ...weekData,
+          updatedAt: serverTimestamp(),
+          updatedBy: currentUid
+        }, { merge:true });
+
+        setStatus("weeklyStatus", "Saved ✅", "ok");
+      }catch(e){
+        setStatus("weeklyStatus","Error: "+(e?.message||e),"err");
+      }
+    };
+
+    window.resetWeek = async function(){
+      if(currentRole !== "admin") return;
+      const ws = el("weekStart").value;
+      weekData = defaultWeekData(ws);
+      renderWeekTable();
+      markDirty();
+    };
+
+    window.addDepartment = function(){
+      if(currentRole !== "admin") return;
+      const dept = el("newDept").value.trim();
+      if(!dept) return;
+      if(!weekData.departments.includes(dept)){
+        weekData.departments.push(dept);
+        el("newDept").value="";
+        renderWeekTable();
+        markDirty();
+      }
+    };
+
+    window.addEmployee = function(){
+      if(currentRole !== "admin") return;
+      const name = el("newEmpName").value.trim();
+      const dept = el("newEmpDept").value;
+      if(!name || !dept) return;
+      if(weekData.employees.some(e=>e.name.toLowerCase()===name.toLowerCase() && e.dept===dept)){
+        return;
+      }
+      weekData.employees.push({ name, dept });
+      el("newEmpName").value="";
+      renderWeekTable();
+      markDirty();
+    };
+
+    // =========================
+    // 8) Startup
+    // =========================
+    applyI18n();
+    // keep default language button highlight
+    setLang("de");
   </script>
 </body>
 </html>
