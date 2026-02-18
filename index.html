@@ -621,7 +621,7 @@ onAuthStateChanged(auth, async (user)=>{
     el("appWrap").classList.remove("hidden");
 
     initWeek();
-    await refreshAll();
+    // await refreshAll();
   } catch (e) {
     console.error("AUTH_STATE_ERROR:", e);
     setStatus("authStatus", "AUTH_STATE_ERROR: " + (e?.message || e));
