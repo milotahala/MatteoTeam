@@ -599,123 +599,57 @@ onAuthStateChanged(auth, async (user)=>{
     // inventory_logs/{docId} => { itemId, name, date, planned, sold, beforeQty, afterQty, createdAt, createdBy }
     // =========================
     window.addInventoryItem = async function(){
-      if(currentRole !== "admin"){ return; }
-      setStatus("invStatus","");
-      const name = el("invName").value.trim();
-const baseType = el("invBaseType").value;      // g / ml / pcs
-const packSize = parseFloat(el("invPackSize").value.replace(",", ".") || 0);
-const packUnit = el("invPackUnit").value;      // kg / g / L / ml / pcs
-const startPacks = parseFloat(el("invQty").value.replace(",", ".") || 0);
+  if(currentRole !== "admin"){ return; }
 
-if(!name || !baseType || !packSize || !packUnit){
-  setStatus("invStatus","Bitte alles korrekt ausfüllen");
-  return;
-}
+  setStatus("invStatus","");
 
-// konvertim në base
-let packSizeBase = 0;
+  const name = el("invName").value.trim();
+  const baseType = el("invBaseType").value;      // g / ml / pcs
+  const packSize = parseFloat((el("invPackSize").value || "").replace(",", "."));
+  const packUnit = el("invPackUnit").value;      // kg / g / L / ml / pcs
+  const startPacks = parseFloat((el("invQty").value || "").replace(",", "."));
 
-if(packUnit === "kg") packSizeBase = packSize * 1000;
-if(packUnit === "g")  packSizeBase = packSize;
-if(packUnit === "L")  packSizeBase = packSize * 1000;
-if(packUnit === "ml") packSizeBase = packSize;
-if(packUnit === "pcs") packSizeBase = packSize;
+  if(!name || !baseType || !Number.isFinite(packSize) || packSize <= 0 || !packUnit){
+    setStatus("invStatus","Bitte alles korrekt ausfüllen","err");
+    return;
+  }
+  if(!Number.isFinite(startPacks) || startPacks < 0){
+    setStatus("invStatus","Start-Bestand ist ungültig","err");
+    return;
+  }
 
-const stockBase = startPacks * packSizeBase;
+  // convert pack size to base units
+  let packSizeBase = 0;
+  if(packUnit === "kg") packSizeBase = packSize * 1000;
+  else if(packUnit === "g") packSizeBase = packSize;
+  else if(packUnit === "L") packSizeBase = packSize * 1000;
+  else if(packUnit === "ml") packSizeBase = packSize;
+  else if(packUnit === "pcs") packSizeBase = packSize;
 
-      if(!name || !unit || !Number.isFinite(qty)){
-        setStatus("invStatus","Bitte Name + Einheit + Start-Bestand eingeben.","err");
-        return;
-      }
-      try{
-        await addDoc(collection(db,"inventory"), {
-   name,
-   baseType,
-   packSize,
-   packUnit,
-   packSizeBase,
-   stockBase,
-   createdAt: serverTimestamp(),
-   createdBy: currentUid
-});
-          createdAt: serverTimestamp(),
-          createdBy: currentUid
-        });
-        el("invName").value="";
-        el("invUnit").value="";
-        el("invQty").value="";
-        setStatus("invStatus","OK ✅","ok");
-        await loadInventory();
-      }catch(e){
-        setStatus("invStatus", "Error: " + (e?.message||e), "err");
-      }
-    };
+  const stockBase = startPacks * packSizeBase;
 
-    async function loadInventory(){
-      const list = el("inventoryList");
-      list.innerHTML = "";
-      const sel = el("invDailyItem");
-      sel.innerHTML = "";
+  try{
+    await addDoc(collection(db,"inventory"), {
+      name,
+      baseType,
+      packSize,
+      packUnit,
+      packSizeBase,
+      stockBase,
+      createdAt: serverTimestamp(),
+      createdBy: currentUid
+    });
 
-      const snap = await getDocs(query(collection(db,"inventory"), orderBy("name","asc")));
-      el("invCount").textContent = String(snap.size || 0);
+    el("invName").value="";
+    el("invPackSize").value="";
+    el("invQty").value="";
 
-      if(snap.empty){
-        list.innerHTML = `
-          <div class="item">
-            <div>
-              <strong>—</strong>
-              <div class="meta">No items</div>
-            </div>
-            <span class="badge">0</span>
-          </div>`;
-        return;
-      }
-
-      snap.forEach(docSnap=>{
-        const d = docSnap.data();
-        const id = docSnap.id;
-
-        // dropdown
-        const opt = document.createElement("option");
-        opt.value = id;
-        const stock = Number(d.stock ?? d.qty ?? 0);
-const unit  = d.unit ?? "";
-opt.textContent = `${d.name ?? "Artikel"} (${stock} ${unit})`;
-        sel.appendChild(opt);
-
-        // list item
-        const row = document.createElement("div");
-        row.className = "item";
-        row.innerHTML = `
-          <div>
-            <strong>${escapeHtml(d.name)}</strong>
-         <div class="meta">${escapeHtml(String(d.stock ?? d.qty ?? 0))} ${escapeHtml(d.unit || "")}</div>
-          </div>
-          <div class="row" style="justify-content:flex-end;">
-            <span class="badge">${escapeHtml(String(d.qty))}</span>
-            ${currentRole==="admin" ? `<button class="btn small danger" onclick="deleteInventory('${id}')">✖</button>` : ``}
-          </div>
-        `;
-        list.appendChild(row);
-      });
-
-      // default date today
-      if(!el("invDailyDate").value){
-        const today = new Date();
-        el("invDailyDate").value = toISO(today);
-      }
-    }
-
-    window.deleteInventory = async function(id){
-      if(currentRole !== "admin"){ return; }
-      try{
-        await deleteDoc(doc(db,"inventory", id));
-        await loadInventory();
-      }catch(e){
-        alert("Delete failed: " + (e?.message||e));
-      }
-    };
+    setStatus("invStatus","OK ✅","ok");
+    await loadInventory();
+  }catch(e){
+    setStatus("invStatus", "Error: " + (e?.message||e), "err");
+  }
+};
 
     window.saveDailyUsage = async function(){
       if(currentRole !== "admin"){ return; }
