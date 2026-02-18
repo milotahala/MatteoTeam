@@ -254,62 +254,18 @@
 
         <div id="invAdminBox" class="hidden">
           <h3 data-i18n="inv.addTitle">Artikel hinzufügen</h3>
-<!-- INVENTORY INPUTS START -->
-
+<!-- INVENTORY INPUTS START (FIXED) -->
 <div class="row">
-  <input id="invName"
-         class="field"
-         placeholder="Name (z.B. Mehl)" />
-
-  <input id="invUnit"
-         class="field"
-         placeholder="Einheit (z.B. Sack, Dose, Flasche)" />
+  <input id="invName" class="field" placeholder="Name (z.B. Mehl)" />
+  <input id="invUnit" class="field" placeholder="Einheit (z.B. Sack, Dose, Flasche)" />
 </div>
 
 <div class="row">
-  <select id="invBaseType" class="field">
-    <option value="g">Gram (g)</option>
-    <option value="ml">Milliliter (ml)</option>
-    <option value="pcs">Stück (pcs)</option>
-  </select>
-
-  <input id="invPackSize"
-         class="field"
-         type="number"
-         step="0.01"
-         placeholder="Pack size (z.B. 25)" />
-
-  <select id="invPackUnit" class="field">
-    <option value="kg">kg</option>
-    <option value="g">g</option>
-    <option value="L">L</option>
-    <option value="ml">ml</option>
-    <option value="pcs">pcs</option>
-  </select>
+  <input id="invQty" class="field" type="number" step="0.01" placeholder="Start-Bestand (z.B. 30)" />
+  <button class="btn primary" onclick="addInventoryItem()">Hinzufügen</button>
 </div>
-
-<div class="row">
-  <input id="invQty"
-         class="field"
-         type="number"
-         step="0.01"
-         placeholder="Start-Bestand (Anzahl Packungen)" />
-
-  <button class="btn primary"
-          onclick="addInventoryItem()">
-    Hinzufügen
-  </button>
-</div>
-
-<!-- INVENTORY INPUTS END -->
-
+<!-- INVENTORY INPUTS END (FIXED) -->
           <div style="height:10px"></div>
-
-          <div class="row">
-            <input id="invQty" class="field" type="number" placeholder="Start-Bestand (z.B. 30)" style="max-width:220px;" />
-            <button class="btn primary" onclick="addInventoryItem()" data-i18n="inv.addBtn">Hinzufügen</button>
-          </div>
-
           <div id="invStatus" class="status"></div>
 
           <div class="divider"></div>
