@@ -611,48 +611,6 @@
       // If baseType mismatches unit (e.g. baseType g but packUnit ml) user should choose correctly.
       return base;
     }
-
-    window.addInventoryItem = async function(){
-      if(currentRole !== "admin") return;
-      setStatus("invStatus","");
-
-      const name = el("invName").value.trim();
-      const baseType = el("invBaseType").value;      // g / ml / pcs
-      const packSize = toNum(el("invPackSize").value);
-      const packUnit = el("invPackUnit").value;      // kg / g / L / ml / pcs
-      const qtyPacks = toNum(el("invQtyPacks").value);
-
-      if(!name || !baseType || !packSize || !packUnit){
-        setStatus("invStatus","Bitte alles korrekt ausfüllen.","err");
-        return;
-      }
-
-      const packSizeBase = packToBase(packSize, packUnit, baseType);
-      const stockBase = qtyPacks * packSizeBase;
-
-      try{
-        await addDoc(collection(db,"inventory"), {
-          name,
-          baseType,
-          packSize,
-          packUnit,
-          packSizeBase,
-          qtyPacks,
-          stockBase,
-          createdAt: serverTimestamp(),
-          createdBy: currentUid
-        });
-
-        el("invName").value="";
-        el("invPackSize").value="";
-        el("invQtyPacks").value="";
-        setStatus("invStatus","OK ✅","ok");
-        await loadInventory();
-      }catch(e){
-        setStatus("invStatus","Error: " + (e?.message||e), "err");
-      }
-    };
-
     async function loadInventory(){
       const list = el("inventoryList");
       list.innerHTML = "";
