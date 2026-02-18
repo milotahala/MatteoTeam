@@ -594,37 +594,41 @@ window.onerror = function(msg, src, line, col, err){
       }
       return "user";
     }
+onAuthStateChanged(auth, async (user)=>{
+  try{
+    currentUser = user;
 
-    onAuthStateChanged(auth, async (user)=>{
-      currentUser = user;
-      if(!user){
-        currentUid = null;
-        currentRole = "user";
-        el("authCard").classList.remove("hidden");
-        el("appWrap").classList.add("hidden");
-        el("rolePill").textContent = "Role: —";
-        return;
-      }
+    if(!user){
+      currentUid = null;
+      currentRole = "user";
+      el("authCard").classList.remove("hidden");
+      el("appWrap").classList.add("hidden");
+      el("rolePill").textContent = "Role: —";
+      return;
+    }
 
-      currentUid = user.uid;
-      currentRole = await loadRole(user.uid);
+    currentUid = user.uid;
+    currentRole = await loadRole(user.uid);
 
-      el("rolePill").textContent = "Role: " + currentRole;
-      el("welcomeTitle").textContent = (currentLang==="al" ? "Mirë se vini," : currentLang==="en" ? "Welcome," : "Willkommen,");
-      el("welcomeSub").textContent = user.email;
+    el("rolePill").textContent = "Role: " + currentRole;
+    el("welcomeSub").textContent = user.email;
 
-      // show/hide admin boxes
-      el("invAdminBox").classList.toggle("hidden", currentRole !== "admin");
-      el("weeklyAdminTools").classList.toggle("hidden", currentRole !== "admin");
-      el("saveWeekBtn").classList.toggle("hidden", currentRole !== "admin");
+    el("invAdminBox").classList.toggle("hidden", currentRole!=="admin");
+    el("weeklyAdminTools").classList.toggle("hidden", currentRole!=="admin");
+    el("saveWeekBtn").classList.toggle("hidden", currentRole!=="admin");
 
-      el("authCard").classList.add("hidden");
-      el("appWrap").classList.remove("hidden");
+    el("authCard").classList.add("hidden");
+    el("appWrap").classList.remove("hidden");
 
-      // init weekStart to Monday
-      initWeek();
-      await refreshAll();
-    });
+    initWeek();
+    await refreshAll();
+  } catch (e) {
+    console.error("AUTH_STATE_ERROR:", e);
+    setStatus("authStatus", "AUTH_STATE_ERROR: " + (e?.message || e));
+    el("authCard").classList.remove("hidden");
+    el("appWrap").classList.add("hidden");
+  }
+});
 
     window.refreshAll = async function(){
       await loadInventory();
