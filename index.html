@@ -40,9 +40,7 @@
       display:flex; align-items:center; justify-content:space-between;
       gap:12px; margin-bottom:14px;
     }
-    .brand{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-    }
+    .brand{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
     .pill{
       background:var(--chip);
       border:1px solid var(--line);
@@ -51,9 +49,7 @@
       box-shadow:var(--shadow);
       backdrop-filter: blur(8px);
     }
-    .lang{
-      display:flex; gap:8px; align-items:center;
-    }
+    .lang{display:flex; gap:8px; align-items:center;}
     .lang button{
       border:1px solid var(--line);
       background:var(--chip);
@@ -78,7 +74,6 @@
     h1{font-size:26px}
     h2{font-size:22px}
     h3{font-size:16px; opacity:.95}
-
     .muted{color:var(--muted)}
     .divider{height:1px; background:var(--line); margin:14px 0;}
 
@@ -119,10 +114,8 @@
       color:var(--text);
       white-space:nowrap;
     }
-
     .hidden{display:none !important;}
 
-    /* List items */
     .list{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
     .item{
       display:flex; justify-content:space-between; align-items:center;
@@ -135,7 +128,6 @@
     .item strong{display:block}
     .item .meta{font-size:13px; color:var(--muted)}
 
-    /* Table schedule */
     .tableWrap{
       overflow:auto;
       border:1px solid var(--line);
@@ -189,10 +181,7 @@
       outline:none;
       min-width:90px;
     }
-    .cellInput[readonly]{
-      opacity:.75;
-    }
-
+    .cellInput[readonly]{opacity:.75;}
     .footerHint{font-size:13px; color:var(--muted); margin-top:8px;}
   </style>
 </head>
@@ -213,7 +202,7 @@
       </div>
     </div>
 
-    <!-- AUTH CARD -->
+    <!-- AUTH -->
     <div class="card" id="authCard">
       <h1 data-i18n="auth.title">Anmeldung</h1>
       <p class="muted" data-i18n="auth.subtitle">Bitte mit E-Mail und Passwort einloggen.</p>
@@ -245,7 +234,7 @@
         </div>
       </div>
 
-      <!-- INVENTORY PRO -->
+      <!-- INVENTORY -->
       <div class="card">
         <h2 data-i18n="inv.title">Inventar</h2>
         <p class="muted" data-i18n="inv.subtitle">Nur Admin kann Artikel hinzufügen / ändern / abbuchen.</p>
@@ -254,24 +243,35 @@
 
         <div id="invAdminBox" class="hidden">
           <h3 data-i18n="inv.addTitle">Artikel hinzufügen</h3>
-<!-- INVENTORY INPUTS START (FIXED) -->
-<div class="row">
-  <input id="invName" class="field" placeholder="Name (z.B. Mehl)" />
-  <input id="invUnit" class="field" placeholder="Einheit (z.B. Sack, Dose, Flasche)" />
-</div>
 
-<div class="row">
-  <input id="invQty" class="field" type="number" step="0.01" placeholder="Start-Bestand (z.B. 30)" />
-  <button class="btn primary" onclick="addInventoryItem()">Hinzufügen</button>
-</div>
-<!-- INVENTORY INPUTS END (FIXED) -->
-          <div style="height:10px"></div>
+          <div class="row">
+            <input id="invName" class="field" placeholder="Name (z.B. Mehl)" />
+            <select id="invBaseType" class="field" style="max-width:220px;">
+              <option value="g">Gram (g)</option>
+              <option value="ml">Milliliter (ml)</option>
+              <option value="pcs">Stück (pcs)</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <input id="invPackSize" class="field" type="number" step="0.01" placeholder="Packgröße (z.B. 25)" style="max-width:260px;" />
+            <select id="invPackUnit" class="field" style="max-width:180px;">
+              <option value="kg">kg</option>
+              <option value="g">g</option>
+              <option value="L">L</option>
+              <option value="ml">ml</option>
+              <option value="pcs">pcs</option>
+            </select>
+            <input id="invQtyPacks" class="field" type="number" step="0.01" placeholder="Start-Bestand (Packungen, z.B. 30)" style="max-width:260px;" />
+            <button class="btn primary" onclick="addInventoryItem()" data-i18n="inv.addBtn">Hinzufügen</button>
+          </div>
+
           <div id="invStatus" class="status"></div>
 
           <div class="divider"></div>
 
           <h3 data-i18n="inv.dailyTitle">Tagesverbrauch</h3>
-          <p class="muted" data-i18n="inv.dailySub">Wähle Artikel + Datum + geplant + verkauft. Bestand wird automatisch reduziert.</p>
+          <p class="muted" data-i18n="inv.dailySub">Wähle Artikel + Datum + geplant + verkauft (in Packungen). Bestand wird reduziert.</p>
 
           <div class="row">
             <select id="invDailyItem" class="field"></select>
@@ -281,8 +281,8 @@
           <div style="height:10px"></div>
 
           <div class="row">
-            <input id="invPlanned" class="field" type="number" placeholder="Geplant zu verkaufen (z.B. 10)" />
-            <input id="invSold" class="field" type="number" placeholder="Verkauft (z.B. 8)" />
+            <input id="invPlannedPacks" class="field" type="number" step="0.01" placeholder="Geplant (Packungen, z.B. 10)" />
+            <input id="invSoldPacks" class="field" type="number" step="0.01" placeholder="Verkauft (Packungen, z.B. 8)" />
             <button class="btn primary" onclick="saveDailyUsage()" data-i18n="inv.saveDaily">Speichern</button>
           </div>
 
@@ -303,7 +303,7 @@
         <div id="invLogs" class="list"></div>
       </div>
 
-      <!-- WEEKLY SCHEDULE TABLE PRO -->
+      <!-- WEEKLY SCHEDULE -->
       <div class="card">
         <h2 data-i18n="weekly.title">Plan javor</h2>
         <p class="muted" data-i18n="weekly.subtitle">
@@ -330,7 +330,7 @@
 
         <div class="divider"></div>
 
-        <div class="row" id="weeklyAdminTools" class="hidden">
+        <div class="row hidden" id="weeklyAdminTools">
           <input id="newDept" class="field" placeholder="Neues Department (z.B. Küche)" style="max-width:260px;" />
           <button class="btn" onclick="addDepartment()" data-i18n="weekly.addDept">Department +</button>
 
@@ -355,7 +355,6 @@
     </div>
   </div>
 
-  <!-- Firebase + App Script -->
   <script type="module">
     // =========================
     // 1) i18n
@@ -371,12 +370,12 @@
         "auth.login":"Einloggen",
         "auth.hint":"Hinweis: Accounts werden nur vom Admin erstellt.",
 
-        "inv.title":"Lagerbestand",
+        "inv.title":"Inventar",
         "inv.subtitle":"Nur Admin kann Artikel hinzufügen / ändern / abbuchen.",
         "inv.addTitle":"Artikel hinzufügen",
         "inv.addBtn":"Hinzufügen",
         "inv.dailyTitle":"Tagesverbrauch",
-        "inv.dailySub":"Wähle Artikel + Datum + geplant + verkauft. Bestand wird automatisch reduziert.",
+        "inv.dailySub":"Wähle Artikel + Datum + geplant + verkauft (in Packungen). Bestand wird reduziert.",
         "inv.saveDaily":"Speichern",
         "inv.listBadge":"Artikel",
         "inv.logsTitle":"Letzte Tages-Einträge",
@@ -405,7 +404,7 @@
         "inv.addTitle":"Shto artikull",
         "inv.addBtn":"Shto",
         "inv.dailyTitle":"Shitja ditore",
-        "inv.dailySub":"Zgjedh artikull + datë + sa do shesim + sa u shit. Stoku zvogëlohet automatikisht.",
+        "inv.dailySub":"Zgjedh artikull + datë + plan + shitje (në paketa). Stoku zvogëlohet.",
         "inv.saveDaily":"Ruaj",
         "inv.listBadge":"Artikuj",
         "inv.logsTitle":"Regjistrimet e fundit",
@@ -434,7 +433,7 @@
         "inv.addTitle":"Add item",
         "inv.addBtn":"Add",
         "inv.dailyTitle":"Daily sales",
-        "inv.dailySub":"Pick item + date + planned + sold. Stock is reduced automatically.",
+        "inv.dailySub":"Pick item + date + planned + sold (in packs). Stock is reduced.",
         "inv.saveDaily":"Save",
         "inv.listBadge":"Items",
         "inv.logsTitle":"Latest daily entries",
@@ -487,30 +486,28 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
-      getFirestore, doc, getDoc, setDoc, updateDoc,
+      getFirestore, doc, getDoc, setDoc,
       collection, addDoc, deleteDoc, getDocs,
       query, orderBy, limit, serverTimestamp, writeBatch
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
     // =========================
-    // 3) Firebase Config (PASTE YOURS HERE)
+    // 3) Firebase Config
     // =========================
-const firebaseConfig = {
-  apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
-  authDomain: "matteoteam-test.firebaseapp.com",
-  projectId: "matteoteam-test",
-  storageBucket: "matteoteam-test.firebasestorage.app",
-  messagingSenderId: "1084486170913",
-  appId: "1:1084486170913:web:d68cf328becefe226a6660",
-  measurementId: "G-9V887087P0"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
+      authDomain: "matteoteam-test.firebaseapp.com",
+      projectId: "matteoteam-test",
+      storageBucket: "matteoteam-test.firebasestorage.app",
+      messagingSenderId: "1084486170913",
+      appId: "1:1084486170913:web:d68cf328becefe226a6660",
+      measurementId: "G-9V887087P0"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-window.onerror = function(msg, src, line, col, err){
-  alert("JS ERROR: " + msg + "\nLine: " + line);
-};
+
     // =========================
     // 4) Global State
     // =========================
@@ -541,7 +538,6 @@ window.onerror = function(msg, src, line, col, err){
     };
 
     async function loadRole(uid){
-      // users/{uid} with { role: "admin" } or "user"
       const ref = doc(db, "users", uid);
       const snap = await getDoc(ref);
       if(snap.exists()){
@@ -550,41 +546,42 @@ window.onerror = function(msg, src, line, col, err){
       }
       return "user";
     }
-onAuthStateChanged(auth, async (user)=>{
-  try{
-    currentUser = user;
 
-    if(!user){
-      currentUid = null;
-      currentRole = "user";
-      el("authCard").classList.remove("hidden");
-      el("appWrap").classList.add("hidden");
-      el("rolePill").textContent = "Role: —";
-      return;
-    }
+    onAuthStateChanged(auth, async (user)=>{
+      try{
+        currentUser = user;
 
-    currentUid = user.uid;
-    currentRole = await loadRole(user.uid);
+        if(!user){
+          currentUid = null;
+          currentRole = "user";
+          el("authCard").classList.remove("hidden");
+          el("appWrap").classList.add("hidden");
+          el("rolePill").textContent = "Role: —";
+          return;
+        }
 
-    el("rolePill").textContent = "Role: " + currentRole;
-    el("welcomeSub").textContent = user.email;
+        currentUid = user.uid;
+        currentRole = await loadRole(user.uid);
 
-    el("invAdminBox").classList.toggle("hidden", currentRole!=="admin");
-    el("weeklyAdminTools").classList.toggle("hidden", currentRole!=="admin");
-    el("saveWeekBtn").classList.toggle("hidden", currentRole!=="admin");
+        el("rolePill").textContent = "Role: " + currentRole;
+        el("welcomeSub").textContent = user.email;
 
-    el("authCard").classList.add("hidden");
-    el("appWrap").classList.remove("hidden");
+        el("invAdminBox").classList.toggle("hidden", currentRole!=="admin");
+        el("weeklyAdminTools").classList.toggle("hidden", currentRole!=="admin");
+        el("saveWeekBtn").classList.toggle("hidden", currentRole!=="admin");
 
-    initWeek();
-    // await refreshAll();
-  } catch (e) {
-    console.error("AUTH_STATE_ERROR:", e);
-    setStatus("authStatus", "AUTH_STATE_ERROR: " + (e?.message || e));
-    el("authCard").classList.remove("hidden");
-    el("appWrap").classList.add("hidden");
-  }
-});
+        el("authCard").classList.add("hidden");
+        el("appWrap").classList.remove("hidden");
+
+        initWeek();
+        await refreshAll(); // ✅ auto load everything after login
+      }catch(e){
+        console.error("AUTH_STATE_ERROR:", e);
+        setStatus("authStatus","AUTH_STATE_ERROR: " + (e?.message||e), "err");
+        el("authCard").classList.remove("hidden");
+        el("appWrap").classList.add("hidden");
+      }
+    });
 
     window.refreshAll = async function(){
       await loadInventory();
@@ -593,78 +590,156 @@ onAuthStateChanged(auth, async (user)=>{
     };
 
     // =========================
-    // 6) INVENTORY
-    // collections:
-    // inventory/{docId} => { name, unit, qty, createdAt }
-    // inventory_logs/{docId} => { itemId, name, date, planned, sold, beforeQty, afterQty, createdAt, createdBy }
+    // 6) INVENTORY (packs + base)
+    // inventory/{docId} =>
+    // { name, baseType, packSize, packUnit, packSizeBase, qtyPacks, stockBase, createdAt, createdBy }
+    // inventory_logs/{docId} =>
+    // { itemId, name, date, plannedPacks, soldPacks, beforePacks, afterPacks, createdAt, createdBy }
     // =========================
+    function toNum(v){
+      return parseFloat(String(v||"0").replace(",", ".")) || 0;
+    }
+
+    function packToBase(packSize, packUnit, baseType){
+      // baseType g/ml/pcs
+      let base = 0;
+      if(packUnit === "kg") base = packSize * 1000;   // -> g
+      if(packUnit === "g")  base = packSize;
+      if(packUnit === "L")  base = packSize * 1000;   // -> ml
+      if(packUnit === "ml") base = packSize;
+      if(packUnit === "pcs") base = packSize;
+      // If baseType mismatches unit (e.g. baseType g but packUnit ml) user should choose correctly.
+      return base;
+    }
+
     window.addInventoryItem = async function(){
-  if(currentRole !== "admin"){ return; }
+      if(currentRole !== "admin") return;
+      setStatus("invStatus","");
 
-  setStatus("invStatus","");
+      const name = el("invName").value.trim();
+      const baseType = el("invBaseType").value;      // g / ml / pcs
+      const packSize = toNum(el("invPackSize").value);
+      const packUnit = el("invPackUnit").value;      // kg / g / L / ml / pcs
+      const qtyPacks = toNum(el("invQtyPacks").value);
 
-  const name = el("invName").value.trim();
-  const baseType = el("invBaseType").value;      // g / ml / pcs
-  const packSize = parseFloat((el("invPackSize").value || "").replace(",", "."));
-  const packUnit = el("invPackUnit").value;      // kg / g / L / ml / pcs
-  const startPacks = parseFloat((el("invQty").value || "").replace(",", "."));
+      if(!name || !baseType || !packSize || !packUnit){
+        setStatus("invStatus","Bitte alles korrekt ausfüllen.","err");
+        return;
+      }
 
-  if(!name || !baseType || !Number.isFinite(packSize) || packSize <= 0 || !packUnit){
-    setStatus("invStatus","Bitte alles korrekt ausfüllen","err");
-    return;
-  }
-  if(!Number.isFinite(startPacks) || startPacks < 0){
-    setStatus("invStatus","Start-Bestand ist ungültig","err");
-    return;
-  }
+      const packSizeBase = packToBase(packSize, packUnit, baseType);
+      const stockBase = qtyPacks * packSizeBase;
 
-  // convert pack size to base units
-  let packSizeBase = 0;
-  if(packUnit === "kg") packSizeBase = packSize * 1000;
-  else if(packUnit === "g") packSizeBase = packSize;
-  else if(packUnit === "L") packSizeBase = packSize * 1000;
-  else if(packUnit === "ml") packSizeBase = packSize;
-  else if(packUnit === "pcs") packSizeBase = packSize;
+      try{
+        await addDoc(collection(db,"inventory"), {
+          name,
+          baseType,
+          packSize,
+          packUnit,
+          packSizeBase,
+          qtyPacks,
+          stockBase,
+          createdAt: serverTimestamp(),
+          createdBy: currentUid
+        });
 
-  const stockBase = startPacks * packSizeBase;
+        el("invName").value="";
+        el("invPackSize").value="";
+        el("invQtyPacks").value="";
+        setStatus("invStatus","OK ✅","ok");
+        await loadInventory();
+      }catch(e){
+        setStatus("invStatus","Error: " + (e?.message||e), "err");
+      }
+    };
 
-  try{
-    await addDoc(collection(db,"inventory"), {
-      name,
-      baseType,
-      packSize,
-      packUnit,
-      packSizeBase,
-      stockBase,
-      createdAt: serverTimestamp(),
-      createdBy: currentUid
-    });
+    async function loadInventory(){
+      const list = el("inventoryList");
+      list.innerHTML = "";
+      const sel = el("invDailyItem");
+      sel.innerHTML = "";
 
-    el("invName").value="";
-    el("invPackSize").value="";
-    el("invQty").value="";
+      const snap = await getDocs(query(collection(db,"inventory"), orderBy("name","asc")));
+      el("invCount").textContent = String(snap.size || 0);
 
-    setStatus("invStatus","OK ✅","ok");
-    await loadInventory();
-  }catch(e){
-    setStatus("invStatus", "Error: " + (e?.message||e), "err");
-  }
-};
+      if(snap.empty){
+        list.innerHTML = `
+          <div class="item">
+            <div>
+              <strong>—</strong>
+              <div class="meta">No items</div>
+            </div>
+            <span class="badge">0</span>
+          </div>`;
+        return;
+      }
+
+      snap.forEach(docSnap=>{
+        const d = docSnap.data();
+        const id = docSnap.id;
+
+        const qtyPacks = Number(d.qtyPacks ?? 0);
+        const packSize = Number(d.packSize ?? 0);
+        const packUnit = d.packUnit ?? "";
+        const stockBase = Number(d.stockBase ?? 0);
+        const baseType = d.baseType ?? "";
+
+        // dropdown
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = `${d.name ?? "Artikel"} (${qtyPacks} Packs)`;
+        sel.appendChild(opt);
+
+        // list item
+        const row = document.createElement("div");
+        row.className = "item";
+        row.innerHTML = `
+          <div>
+            <strong>${escapeHtml(d.name)}</strong>
+            <div class="meta">
+              Packs: ${escapeHtml(qtyPacks)} • Pack: ${escapeHtml(packSize)} ${escapeHtml(packUnit)}
+              • Stock: ${escapeHtml(stockBase)} ${escapeHtml(baseType)}
+            </div>
+          </div>
+          <div class="row" style="justify-content:flex-end;">
+            <span class="badge">${escapeHtml(qtyPacks)} Packs</span>
+            ${currentRole==="admin" ? `<button class="btn small danger" onclick="deleteInventory('${id}')">✖</button>` : ``}
+          </div>
+        `;
+        list.appendChild(row);
+      });
+
+      // default date today
+      if(!el("invDailyDate").value){
+        const today = new Date();
+        el("invDailyDate").value = toISO(today);
+      }
+    }
+
+    window.deleteInventory = async function(id){
+      if(currentRole !== "admin") return;
+      try{
+        await deleteDoc(doc(db,"inventory", id));
+        await loadInventory();
+      }catch(e){
+        alert("Delete failed: " + (e?.message||e));
+      }
+    };
 
     window.saveDailyUsage = async function(){
-      if(currentRole !== "admin"){ return; }
+      if(currentRole !== "admin") return;
       setStatus("invDailyStatus","");
 
       const itemId = el("invDailyItem").value;
       const date   = el("invDailyDate").value;
-      const planned = Number(el("invPlanned").value || 0);
-      const sold    = Number(el("invSold").value || 0);
+      const plannedPacks = toNum(el("invPlannedPacks").value);
+      const soldPacks    = toNum(el("invSoldPacks").value);
 
       if(!itemId || !date){
         setStatus("invDailyStatus","Bitte Artikel + Datum wählen.","err");
         return;
       }
-      if(!Number.isFinite(planned) || !Number.isFinite(sold)){
+      if(!Number.isFinite(plannedPacks) || !Number.isFinite(soldPacks)){
         setStatus("invDailyStatus","Zahlen sind ungültig.","err");
         return;
       }
@@ -676,30 +751,34 @@ onAuthStateChanged(auth, async (user)=>{
           setStatus("invDailyStatus","Artikel nicht gefunden.","err");
           return;
         }
-        const item = itemSnap.data();
-        const beforeQty = Number(item.qty || 0);
-        const afterQty  = Math.max(0, beforeQty - sold);
 
-        // write log + update qty
+        const item = itemSnap.data();
+        const beforePacks = Number(item.qtyPacks ?? 0);
+        const packSizeBase = Number(item.packSizeBase ?? 0);
+
+        const afterPacks = Math.max(0, beforePacks - soldPacks);
+        const afterStockBase = afterPacks * packSizeBase;
+
         const batch = writeBatch(db);
-        batch.update(itemRef, { qty: afterQty });
+        batch.update(itemRef, { qtyPacks: afterPacks, stockBase: afterStockBase });
+
         batch.set(doc(collection(db,"inventory_logs")), {
           itemId,
           name: item.name,
-          unit: item.unit,
           date,
-          planned,
-          sold,
-          beforeQty,
-          afterQty,
+          plannedPacks,
+          soldPacks,
+          beforePacks,
+          afterPacks,
           createdAt: serverTimestamp(),
           createdBy: currentUid
         });
+
         await batch.commit();
 
-        el("invPlanned").value="";
-        el("invSold").value="";
-        setStatus("invDailyStatus", `OK ✅  (${beforeQty} → ${afterQty})`, "ok");
+        el("invPlannedPacks").value="";
+        el("invSoldPacks").value="";
+        setStatus("invDailyStatus", `OK ✅  (${beforePacks} → ${afterPacks} Packs)`, "ok");
         await loadInventory();
         await loadInvLogs();
       }catch(e){
@@ -731,19 +810,21 @@ onAuthStateChanged(auth, async (user)=>{
         row.innerHTML = `
           <div>
             <strong>${escapeHtml(d.name)} • ${escapeHtml(d.date)}</strong>
-            <div class="meta">Geplant: ${escapeHtml(d.planned)} | Verkauft: ${escapeHtml(d.sold)} | Rest: ${escapeHtml(d.afterQty)}</div>
+            <div class="meta">
+              Geplant: ${escapeHtml(d.plannedPacks)} Packs | Verkauft: ${escapeHtml(d.soldPacks)} Packs |
+              Rest: ${escapeHtml(d.afterPacks)} Packs
+            </div>
           </div>
-          <span class="badge">${escapeHtml(d.afterQty)}</span>
+          <span class="badge">${escapeHtml(d.afterPacks)} Packs</span>
         `;
         box.appendChild(row);
       });
     }
 
     // =========================
-    // 7) WEEKLY SCHEDULE TABLE (PRO)
-    // doc: schedule_weeks/{weekStartISO}
-    // structure:
-    // { weekStart, departments:[...], employees:[{name, dept}], cells:{ "dept|name|Mon": "9", ... }, updatedAt, updatedBy }
+    // 7) WEEKLY SCHEDULE
+    // schedule_weeks/{weekStartISO}
+    // { weekStart, departments, employees, cells, updatedAt, updatedBy }
     // =========================
     const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
@@ -755,7 +836,7 @@ onAuthStateChanged(auth, async (user)=>{
     }
     function getMonday(dateObj){
       const d = new Date(dateObj);
-      const day = d.getDay(); // 0 Sun ... 6 Sat
+      const day = d.getDay();
       const diff = (day === 0 ? -6 : 1) - day;
       d.setDate(d.getDate()+diff);
       d.setHours(0,0,0,0);
@@ -810,13 +891,10 @@ onAuthStateChanged(auth, async (user)=>{
           { name:"Hadis", dept:"Pizzabäcker PRM" },
           { name:"Qendrim", dept:"Pizzabäcker PRM" },
           { name:"Milot", dept:"Pizzabäcker PRM" },
-
           { name:"Eddi", dept:"Kasse" },
           { name:"Eset", dept:"Kasse" },
-
           { name:"Afrim", dept:"Service" },
           { name:"Fadil", dept:"Service" },
-
           { name:"Bekim", dept:"Küche" },
           { name:"Kushtrim", dept:"Küche" },
           { name:"Xhemajl", dept:"Küche" }
@@ -849,7 +927,6 @@ onAuthStateChanged(auth, async (user)=>{
         return;
       }
 
-      // header
       const thead = document.createElement("thead");
       const hr = document.createElement("tr");
       const th0 = document.createElement("th");
@@ -858,7 +935,6 @@ onAuthStateChanged(auth, async (user)=>{
 
       DAYS.forEach((day, idx)=>{
         const th = document.createElement("th");
-        // show date in header like screenshot
         const ws = weekData.weekStart;
         const date = addDaysISO(ws, idx);
         th.textContent = `${day} ${date}`;
@@ -867,14 +943,12 @@ onAuthStateChanged(auth, async (user)=>{
       thead.appendChild(hr);
       tbl.appendChild(thead);
 
-      // body
       const tbody = document.createElement("tbody");
 
       const depts = weekData.departments || [];
       const emps  = weekData.employees || [];
 
       for(const dept of depts){
-        // dept row
         const dr = document.createElement("tr");
         dr.className = "deptRow";
         const dtd = document.createElement("td");
@@ -883,7 +957,6 @@ onAuthStateChanged(auth, async (user)=>{
         dr.appendChild(dtd);
         tbody.appendChild(dr);
 
-        // employees in that dept
         const group = emps.filter(e=>e.dept===dept);
         for(const emp of group){
           const tr = document.createElement("tr");
@@ -896,6 +969,7 @@ onAuthStateChanged(auth, async (user)=>{
             const inp = document.createElement("input");
             inp.className = "cellInput";
             inp.value = weekData.cells[cellKey(dept, emp.name, day)] || "";
+
             const canEdit = (currentRole === "admin");
             if(!canEdit) inp.setAttribute("readonly","readonly");
 
@@ -913,15 +987,15 @@ onAuthStateChanged(auth, async (user)=>{
       }
 
       tbl.appendChild(tbody);
-
-      // update admin tools
       buildDeptSelect();
       updateWeeklyButtons();
     }
 
     function markDirty(){
-      // show hint
-      setStatus("weeklyStatus", (currentLang==="al" ? "Ndryshime të pa-ruajtura…" : currentLang==="en" ? "Unsaved changes…" : "Ungespeicherte Änderungen…"), "");
+      setStatus("weeklyStatus",
+        (currentLang==="al" ? "Ndryshime të pa-ruajtura…" :
+         currentLang==="en" ? "Unsaved changes…" :
+         "Ungespeicherte Änderungen…"), "");
     }
 
     function updateWeeklyButtons(){
@@ -939,15 +1013,11 @@ onAuthStateChanged(auth, async (user)=>{
         const snap = await getDoc(ref);
         if(snap.exists()){
           weekData = snap.data();
-        } else {
+        }else{
           weekData = defaultWeekData(ws);
-          // auto create base doc for first time
-          await setDoc(ref, {
-            ...weekData,
-            updatedAt: serverTimestamp(),
-            updatedBy: currentUid
-          }, { merge:true });
+          await setDoc(ref, { ...weekData, updatedAt: serverTimestamp(), updatedBy: currentUid }, { merge:true });
         }
+
         setWeekRange();
         renderWeekTable();
         setStatus("weeklyStatus","OK ✅","ok");
@@ -960,7 +1030,7 @@ onAuthStateChanged(auth, async (user)=>{
       if(currentRole !== "admin") return;
       setStatus("weeklyStatus","");
       const ws = el("weekStart").value;
-      if(!ws || !weekData){ return; }
+      if(!ws || !weekData) return;
 
       try{
         await setDoc(doc(db,"schedule_weeks", ws), {
@@ -975,7 +1045,7 @@ onAuthStateChanged(auth, async (user)=>{
       }
     };
 
-    window.resetWeek = async function(){
+    window.resetWeek = function(){
       if(currentRole !== "admin") return;
       const ws = el("weekStart").value;
       weekData = defaultWeekData(ws);
@@ -1000,9 +1070,8 @@ onAuthStateChanged(auth, async (user)=>{
       const name = el("newEmpName").value.trim();
       const dept = el("newEmpDept").value;
       if(!name || !dept) return;
-      if(weekData.employees.some(e=>e.name.toLowerCase()===name.toLowerCase() && e.dept===dept)){
-        return;
-      }
+      if(weekData.employees.some(e=>e.name.toLowerCase()===name.toLowerCase() && e.dept===dept)) return;
+
       weekData.employees.push({ name, dept });
       el("newEmpName").value="";
       renderWeekTable();
@@ -1013,9 +1082,7 @@ onAuthStateChanged(auth, async (user)=>{
     // 8) Startup
     // =========================
     applyI18n();
-    // keep default language button highlight
     setLang("de");
   </script>
 </body>
 </html>
-<!-- update pro version -->
