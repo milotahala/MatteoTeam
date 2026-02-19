@@ -1180,6 +1180,23 @@ applapplyLang();
         const role = await loadRole(user.uid);
         applyRoleUI(role);
         await ensureUserDoc(user, role);
+        // ✅ blloko hyrjen nëse nuk është approved ose është disabled
+try{
+  const us = await getDoc(doc(db,"users", user.uid));
+  const data = us.exists() ? us.data() : {};
+  if(data.disabled === true){
+    $("loginMsg").textContent = "Llogaria është bllokuar nga admini.";
+    await signOut(auth);
+    return;
+  }
+  if(data.approved !== true && user.uid !== SUPERADMIN_UID){
+    $("loginMsg").textContent = "Llogaria është në pritje të aprovimit.";
+    await signOut(auth);
+    return;
+  }
+}catch(e){
+  console.error(e);
+}
 
         // auto-load
         await loadInventory();
