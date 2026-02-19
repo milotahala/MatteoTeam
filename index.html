@@ -223,7 +223,13 @@
           <p class="muted">Restaurant Management</p>
         </div>
       </div>
-
+<div class="card" style="padding:10px; margin-top:12px">
+  <div class="row" style="gap:8px; justify-content:flex-start; flex-wrap:wrap">
+    <button class="btn" onclick="setLang('sq')" style="padding:8px 10px">🇦🇱</button>
+    <button class="btn" onclick="setLang('en')" style="padding:8px 10px">🇬🇧</button>
+    <button class="btn" onclick="setLang('de')" style="padding:8px 10px">🇩🇪</button>
+  </div>
+</div>
       <div class="nav">
         <button class="active" data-target="dash"><span class="ico">🏠</span> Dashboard</button>
         <button data-target="inventory"><span class="ico">📦</span> Inventar</button>
@@ -617,7 +623,42 @@
     }
 
     window.go = (id)=>activateSection(id);
+window.setLang = (lang)=>{
+  localStorage.setItem("mt_lang", lang);
+  applyLang();
+};
 
+function applyLang(){
+  const lang = localStorage.getItem("mt_lang") || "sq";
+
+  const T = {
+    sq:{
+      nav:{dash:"Dashboard",inventory:"Inventar",plan:"Plan",notifications:"Njoftime",profile:"Profil",admin:"Admin"},
+      sub:{dash:"Mirë se vini në MatteoTeam",inventory:"Menaxho artikujt",plan:"Plani javor",notifications:"Komunikim",profile:"Të dhënat",admin:"Menaxhim"}
+    },
+    en:{
+      nav:{dash:"Dashboard",inventory:"Inventory",plan:"Schedule",notifications:"Notifications",profile:"Profile",admin:"Admin"},
+      sub:{dash:"Welcome to MatteoTeam",inventory:"Manage items",plan:"Weekly schedule",notifications:"Team communication",profile:"Account details",admin:"Management"}
+    },
+    de:{
+      nav:{dash:"Dashboard",inventory:"Inventar",plan:"Plan",notifications:"Benachrichtigungen",profile:"Profil",admin:"Admin"},
+      sub:{dash:"Willkommen bei MatteoTeam",inventory:"Artikel verwalten",plan:"Wochenplan",notifications:"Team-Kommunikation",profile:"Kontodaten",admin:"Verwaltung"}
+    }
+  }[lang];
+
+  // nav labels (ikonat mbesin)
+  const icons = {dash:"🏠",inventory:"📦",plan:"📅",notifications:"🔔",profile:"👤",admin:"⚙️"};
+  document.querySelectorAll(".nav button").forEach(b=>{
+    const k = b.dataset.target;
+    b.innerHTML = `<span class="ico">${icons[k]||"•"}</span> ${T.nav[k]||k}`;
+  });
+
+  // update current page title/subtitle
+  const active = document.querySelector(".nav button.active")?.dataset?.target || "dash";
+  $("pageTitle").textContent = T.nav[active] || "MatteoTeam";
+  $("pageSubtitle").textContent = T.sub[active] || "";
+}
+applyLang();
     function activateSection(id){
       sections.forEach(s=>s.classList.remove("active"));
       const el = document.getElementById(id);
@@ -636,7 +677,8 @@
         admin: ["Admin","Menaxhim dhe role"]
       };
       const t = titles[id] || ["MatteoTeam",""];
-      setTitle(t[0], t[1]);
+setTitle(t[0], t[1]);
+applyLang();
     }
 
     navButtons.forEach(btn=>{
