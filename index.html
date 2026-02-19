@@ -375,12 +375,12 @@
         <div class="card">
           <div class="row">
             <div>
-              <h3 class="title">Plani Javor</h3>
-              <p class="muted">Vendos turnet / shënimet për çdo ditë.</p>
+              <h3 class="title" id="planH3">Plani Javor</h3>
+             <p class="muted" id="planDesc">Vendos turnet / shënimet për çdo ditë.</p>
             </div>
             <div class="row" style="gap:8px">
-              <button class="btn" id="refreshPlanBtn">Refresh</button>
-              <button class="btn accent" id="savePlanBtn">Ruaj</button>
+     <button class="btn" id="refreshPlanBtn"><span id="planRefreshTxt">Refresh</span></button>
+<button class="btn accent" id="savePlanBtn"><span id="planSaveTxt">Ruaj</span></button>
             </div>
           </div>
 
@@ -388,10 +388,10 @@
             <table>
               <thead>
                 <tr>
-                  <th>Dita</th>
-                  <th>Turni 1</th>
-                  <th>Turni 2</th>
-                  <th>Shënim</th>
+                  <th id="planThDay">Dita</th>
+<th id="planThS1">Turni 1</th>
+<th id="planThS2">Turni 2</th>
+<th id="planThNote">Shënim</th>
                 </tr>
               </thead>
               <tbody id="planTable"></tbody>
@@ -667,18 +667,7 @@ applyLang();
       navButtons.forEach(b=>b.classList.remove("active"));
       const btn = [...navButtons].find(b=>b.dataset.target===id);
       if(btn) btn.classList.add("active");
-
-      const titles = {
-        dash: ["Dashboard","Mirë se vini në MatteoTeam"],
-        inventory: ["Inventar","Menaxho artikujt dhe sasinë"],
-        plan: ["Plan","Plani javor i stafit"],
-        notifications: ["Njoftime","Komunikim me stafin"],
-        profile: ["Profil","Të dhënat e përdoruesit"],
-        admin: ["Admin","Menaxhim dhe role"]
-      };
-      const t = titles[id] || ["MatteoTeam",""];
-setTitle(t[0], t[1]);
-applyLang();
+applapplyLang();
     }
 
     navButtons.forEach(btn=>{
