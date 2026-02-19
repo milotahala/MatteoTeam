@@ -563,16 +563,21 @@
         <span class="pill"><span id="authDot" class="dot"></span> <span id="authText">Nuk je kyçur</span></span>
       </div>
 
-      <div class="two mt14">
-        <div>
-          <label>Email</label>
-          <input id="loginEmail" type="email" placeholder="email@..." />
-        </div>
-        <div>
-          <label>Password</label>
-          <input id="loginPass" type="password" placeholder="••••••••" />
-        </div>
-      </div>
+<div class="two mt14">
+  <div>
+    <label>Emri i plotë</label>
+    <input id="loginName" placeholder="p.sh. Rina Lulaj" />
+  </div>
+  <div>
+    <label>Email</label>
+    <input id="loginEmail" type="email" placeholder="email@..." />
+  </div>
+</div>
+
+<div class="mt10">
+  <label>Password</label>
+  <input id="loginPass" type="password" placeholder="••••••••" />
+</div>
       
 <div class="row mt14" style="gap:10px">
   <button class="btn accent" id="loginBtn" style="flex:1">Login</button>
@@ -714,30 +719,40 @@ applapplyLang();
     const loginOverlay = $("loginOverlay");
     let lastUid = null;
 
-    $("loginBtn").addEventListener("click", async ()=>{
-      $("loginMsg").textContent = "";
-      try{
-        const email = $("loginEmail").value.trim();
-        const pass  = $("loginPass").value;
-        await signInWithEmailAndPassword(auth, email, pass);
-      }catch(e){
-        console.error(e);
-        $("loginMsg").textContent = "Login dështoi: " + (e?.message || e);
-      }
-    });
+    $("registerBtn").addEventListener("click", async ()=>{
+  $("loginMsg").textContent = "";
+  try{
+    const name  = ($("loginName")?.value || "").trim();
+    const email = $("loginEmail").value.trim();
+    const pass  = $("loginPass").value;
 
-    $("resetBtn").addEventListener("click", async ()=>{
-      $("loginMsg").textContent = "";
-      try{
-        const email = $("loginEmail").value.trim();
-        if(!email){ $("loginMsg").textContent="Shkruaj email-in."; return; }
-        await sendPasswordResetEmail(auth, email);
-        $("loginMsg").textContent = "U dërgua reset email (nëse email ekziston).";
-      }catch(e){
-        console.error(e);
-        $("loginMsg").textContent = "Reset dështoi: " + (e?.message || e);
-      }
-    });
+    if(!name){ $("loginMsg").textContent="Shkruaj emrin e plotë."; return; }
+    if(!email || !pass){ $("loginMsg").textContent="Shkruaj email + password."; return; }
+
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+
+    // krijo user doc si "pending" (nuk hyn derisa superadmin e aprovon)
+    await setDoc(doc(db,"users", cred.user.uid), {
+      name,
+      email,
+      role: "staff",
+      approved: false,
+      disabled: false,
+      active: true,
+      lastSeen: serverTimestamp(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    }, { merge:true });
+
+    $("loginMsg").textContent = "U regjistrua ✅ Tani prit aprovim nga SuperAdmin.";
+    // e nxjerrim jashtë menjëherë derisa të aprovohet
+    await signOut(auth);
+
+  }catch(e){
+    console.error(e);
+    $("loginMsg").textContent = "Regjistrimi dështoi: " + (e?.message || e);
+  }
+});
 
     $("logoutBtn").addEventListener("click", async ()=>{
       try{
