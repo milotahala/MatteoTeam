@@ -96,6 +96,7 @@
       display:grid; place-items:center;
       font-size:14px;
     }
+
     .sidebar .footer{
       margin-top:18px;
       padding:12px;
@@ -242,7 +243,6 @@
     </aside>
 
     <main class="main">
-
       <div class="topbar">
         <div class="card" style="flex:1">
           <div class="row">
@@ -404,7 +404,7 @@
           <div class="form-row mt14">
             <div>
               <label>Titulli</label>
-              <input id="notTitle" placeholder="p.sh. Ndryshim turni" />
+              <input id="notTitle" placeholder="p.sh. Meeting 18:00" />
             </div>
             <div>
               <label>Për kë</label>
@@ -481,9 +481,64 @@
       <section id="admin" class="section">
         <div class="card">
           <h3 class="title">Admin</h3>
-          <p class="muted">Menaxhim role & user-a (vetëm admin).</p>
+          <p class="muted">Menaxhim role & user-a (vetëm admin). SuperAdmin menaxhon adminat.</p>
+
           <div class="card mt14" style="padding:12px">
-            <p class="muted" id="adminInfo">Ky seksion kërkon admin.</p>
+            <p class="muted" id="adminInfo">—</p>
+          </div>
+
+          <!-- Vetëm SuperAdmin -->
+          <div class="card mt14" style="padding:12px; display:none" id="superPanel">
+            <h3 class="title" style="margin-bottom:6px">SuperAdmin Panel</h3>
+
+            <div class="form-row">
+              <div>
+                <label>Gjej user (email)</label>
+                <input id="searchUserEmail" placeholder="p.sh. puntori@gmail.com" />
+              </div>
+              <div style="display:flex; gap:10px; align-items:end">
+                <button class="btn" id="searchUserBtn" style="flex:1">Kërko</button>
+                <button class="btn accent" id="makeAdminBtn" style="flex:1" disabled>Bëje Admin</button>
+              </div>
+            </div>
+
+            <div class="muted mt10" id="superMsg"></div>
+            <div class="small mt10">
+              * Nëse user nuk gjendet: ai duhet të bëjë login 1 herë që të krijohet te <b>users/</b>.
+            </div>
+
+            <div class="mt14">
+              <h4 class="title" style="font-size:14px; margin-bottom:8px">Adminat (max 3)</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th class="right">Veprime</th>
+                  </tr>
+                </thead>
+                <tbody id="adminsTable">
+                  <tr><td colspan="3" class="muted">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt14">
+              <h4 class="title" style="font-size:14px; margin-bottom:8px">User-at (aktiv / offline)</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Aktiv</th>
+                    <th>Last seen</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTable">
+                  <tr><td colspan="4" class="muted">—</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -527,6 +582,9 @@
 
   <!-- APP SCRIPT -->
   <script type="module">
+    // -------------------------
+    // UI helpers
+    // -------------------------
     const $ = (id)=>document.getElementById(id);
     const navButtons = document.querySelectorAll(".nav button");
     const sections = document.querySelectorAll(".section");
@@ -547,14 +605,17 @@
       dot.classList.toggle("ok", !!ok);
       txt.textContent = ok ? "Online" : (msg || "Offline");
     }
+
     function setAuthStatus(ok){
       $("authDot").classList.toggle("ok", !!ok);
       $("authText").textContent = ok ? "Kyçur" : "Nuk je kyçur";
     }
+
     function setTitle(title, subtitle=""){
       $("pageTitle").textContent = title;
       $("pageSubtitle").textContent = subtitle;
     }
+
     window.go = (id)=>activateSection(id);
 
     function activateSection(id){
@@ -582,17 +643,20 @@
       btn.addEventListener("click", ()=> activateSection(btn.dataset.target));
     });
 
-    // =========================
-    // FIREBASE IMPORTS + CONFIG (YOURS)
-    // =========================
+    // -------------------------
+    // Firebase (10.12.5)
+    // -------------------------
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
       getFirestore, doc, getDoc, setDoc,
       collection, addDoc, deleteDoc, getDocs,
-      query, orderBy, limit, serverTimestamp, writeBatch
+      query, orderBy, limit, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+    // -------------------------
+    // Firebase config (YOURS)
+    // -------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
       authDomain: "matteoteam-test.firebaseapp.com",
@@ -603,20 +667,117 @@
       measurementId: "G-9V887087P0"
     };
 
-    let app, auth, db;
-    try{
-      app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
-      db = getFirestore(app);
-      setConn(true);
-    }catch(e){
-      console.error(e);
-      setConn(false, "Firebase error");
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ✅ SuperAdmin UID (Milot)
+    const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
+
+    setConn(true);
+
+    // -------------------------
+    // Auth UI
+    // -------------------------
+    const loginOverlay = $("loginOverlay");
+    let lastUid = null;
+
+    $("loginBtn").addEventListener("click", async ()=>{
+      $("loginMsg").textContent = "";
+      try{
+        const email = $("loginEmail").value.trim();
+        const pass  = $("loginPass").value;
+        await signInWithEmailAndPassword(auth, email, pass);
+      }catch(e){
+        console.error(e);
+        $("loginMsg").textContent = "Login dështoi: " + (e?.message || e);
+      }
+    });
+
+    $("resetBtn").addEventListener("click", async ()=>{
+      $("loginMsg").textContent = "";
+      try{
+        const email = $("loginEmail").value.trim();
+        if(!email){ $("loginMsg").textContent="Shkruaj email-in."; return; }
+        await sendPasswordResetEmail(auth, email);
+        $("loginMsg").textContent = "U dërgua reset email (nëse email ekziston).";
+      }catch(e){
+        console.error(e);
+        $("loginMsg").textContent = "Reset dështoi: " + (e?.message || e);
+      }
+    });
+
+    $("logoutBtn").addEventListener("click", async ()=>{
+      try{
+        // shëno offline para logout (nëse kemi uid)
+        if(lastUid){
+          await setDoc(doc(db,"users", lastUid), {
+            active:false,
+            lastSeen: serverTimestamp()
+          }, { merge:true });
+        }
+        await signOut(auth);
+      }catch(e){ console.error(e); }
+    });
+
+    // -------------------------
+    // Role logic
+    // -------------------------
+    async function loadRole(uid){
+      if(uid === SUPERADMIN_UID) return "superadmin";
+      try{
+        const ref = doc(db, "users", uid);
+        const snap = await getDoc(ref);
+        if(snap.exists()) return snap.data().role || "staff";
+        return "staff";
+      }catch(e){
+        console.error(e);
+        return "staff";
+      }
     }
 
-    // =========================
-    // PLAN TABLE
-    // =========================
+    function applyRoleUI(role){
+      $("roleLabel").textContent = role;
+      $("pRole").value = role;
+
+      const isSuper = role === "superadmin";
+      const isAdmin = role === "admin" || isSuper;
+
+      // Admin tab: vetëm admin/superadmin
+      const adminBtn = [...document.querySelectorAll(".nav button")].find(b=>b.dataset.target==="admin");
+      if(adminBtn) adminBtn.style.display = isAdmin ? "" : "none";
+
+      // Vetëm admin/superadmin mund të ndryshojnë:
+      if($("savePlanBtn")) $("savePlanBtn").style.display = isAdmin ? "" : "none";
+      if($("saveInvBtn")) $("saveInvBtn").style.display = isAdmin ? "" : "none";
+      if($("addInvBtn"))  $("addInvBtn").style.display  = isAdmin ? "" : "none";
+      if($("sendNotBtn")) $("sendNotBtn").style.display = isAdmin ? "" : "none";
+
+      if($("adminInfo")){
+        $("adminInfo").textContent = isSuper
+          ? "✅ SuperAdmin: mund të shtosh/hiq admina (max 3) + shikon user-at aktiv."
+          : isAdmin
+            ? "✅ Admin: mund të ndryshosh plan/inventar/njoftime."
+            : "Nuk je admin. Ky seksion është i bllokuar.";
+      }
+
+      // Super panel vetëm për superadmin
+      if($("superPanel")) $("superPanel").style.display = isSuper ? "" : "none";
+    }
+
+    async function ensureUserDoc(user, role){
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email || "",
+        role: role,
+        active: true,
+        lastSeen: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      }, { merge:true });
+    }
+
+    // -------------------------
+    // PLAN table (UI)
+    // -------------------------
     const days = ["E Hënë","E Martë","E Mërkurë","E Enjte","E Premte","E Shtunë","E Diel"];
     function renderPlanTable(data = {}){
       const tb = $("planTable");
@@ -649,64 +810,44 @@
       return out;
     }
 
-    // =========================
-    // AUTH UI
-    // =========================
-    const loginOverlay = $("loginOverlay");
-    $("logoutBtn").addEventListener("click", async ()=>{
-      try{ await signOut(auth); }catch(e){ console.error(e); }
-    });
-
-    $("loginBtn").addEventListener("click", async ()=>{
-      $("loginMsg").textContent = "";
+    async function savePlan(){
+      $("planMsg").textContent = "";
       try{
-        const email = $("loginEmail").value.trim();
-        const pass  = $("loginPass").value;
-        await signInWithEmailAndPassword(auth, email, pass);
+        const data = collectPlan();
+        await setDoc(doc(db,"plans","currentWeek"), {
+          data,
+          updatedAt: serverTimestamp()
+        }, { merge:true });
+        $("planMsg").textContent = "Plani u ruajt ✅";
       }catch(e){
         console.error(e);
-        $("loginMsg").textContent = "Login dështoi: " + (e?.message || e);
+        $("planMsg").textContent = "Gabim: " + (e?.message || e);
       }
-    });
+    }
 
-    $("resetBtn").addEventListener("click", async ()=>{
-      $("loginMsg").textContent = "";
+    async function loadPlan(){
+      $("planMsg").textContent = "";
       try{
-        const email = $("loginEmail").value.trim();
-        if(!email){ $("loginMsg").textContent="Shkruaj email-in."; return; }
-        await sendPasswordResetEmail(auth, email);
-        $("loginMsg").textContent = "U dërgua reset email (nëse email ekziston).";
+        const snap = await getDoc(doc(db,"plans","currentWeek"));
+        if(snap.exists()){
+          renderPlanTable(snap.data().data || {});
+          $("planMsg").textContent = "Plani u ngarkua ✅";
+        }else{
+          renderPlanTable({});
+          $("planMsg").textContent = "Nuk ka plan ende (bëj Ruaj).";
+        }
       }catch(e){
         console.error(e);
-        $("loginMsg").textContent = "Reset dështoi: " + (e?.message || e);
-      }
-    });
-
-    // ROLE (simple)
-    async function loadRole(uid){
-      try{
-        const ref = doc(db, "users", uid);
-        const snap = await getDoc(ref);
-        if(snap.exists()) return snap.data().role || "user";
-        return "user";
-      }catch(e){
-        return "user";
+        $("planMsg").textContent = "Gabim në ngarkim.";
       }
     }
-    function applyRoleUI(role){
-      $("roleLabel").textContent = role;
-      $("pRole").value = role;
-      const isAdmin = role === "admin";
-      $("adminInfo").textContent = isAdmin
-        ? "Je admin. Këtu mund të shtojmë menaxhimin e user-ave."
-        : "Nuk je admin. Ky seksion është i bllokuar.";
-      const adminBtn = [...navButtons].find(b=>b.dataset.target==="admin");
-      if(adminBtn) adminBtn.style.opacity = isAdmin ? "1" : ".45";
-    }
 
-    // =========================
+    $("savePlanBtn").addEventListener("click", savePlan);
+    $("refreshPlanBtn").addEventListener("click", loadPlan);
+
+    // -------------------------
     // INVENTORY
-    // =========================
+    // -------------------------
     async function saveInventory(){
       $("invMsg").textContent = "";
       try{
@@ -715,6 +856,7 @@
         const unit = $("invUnit").value;
         const date = $("invDate").value || "";
         const note = $("invNote").value.trim();
+
         if(!name){ $("invMsg").textContent="Shkruaj emrin."; return; }
 
         await addDoc(collection(db, "inventory"), {
@@ -751,7 +893,7 @@
       try{
         const tb = $("invTable");
         tb.innerHTML = `<tr><td colspan="6" class="muted">Duke ngarkuar...</td></tr>`;
-        const qy = query(collection(db,"inventory"), orderBy("createdAt","desc"));
+        const qy = query(collection(db,"inventory"), orderBy("createdAt","desc"), limit(200));
         const snap = await getDocs(qy);
         const rows = [];
         snap.forEach(docu=> rows.push({id: docu.id, data: docu.data()}));
@@ -761,6 +903,7 @@
           tb.innerHTML = `<tr><td colspan="6" class="muted">Nuk ka të dhëna ende.</td></tr>`;
           return;
         }
+
         tb.innerHTML = rows.map(invRowHTML).join("");
         tb.querySelectorAll("[data-del]").forEach(btn=>{
           btn.addEventListener("click", async ()=>{
@@ -780,47 +923,9 @@
     $("refreshInvBtn").addEventListener("click", loadInventory);
     $("addInvBtn").addEventListener("click", ()=> $("invName").focus());
 
-    // =========================
-    // PLAN Firestore (plans/currentWeek)
-    // =========================
-    async function savePlan(){
-      $("planMsg").textContent = "";
-      try{
-        const data = collectPlan();
-        await setDoc(doc(db,"plans","currentWeek"), {
-          data,
-          updatedAt: serverTimestamp()
-        }, { merge:true });
-        $("planMsg").textContent = "Plani u ruajt ✅";
-      }catch(e){
-        console.error(e);
-        $("planMsg").textContent = "Gabim: " + (e?.message || e);
-      }
-    }
-
-    async function loadPlan(){
-      $("planMsg").textContent = "";
-      try{
-        const snap = await getDoc(doc(db,"plans","currentWeek"));
-        if(snap.exists()){
-          renderPlanTable(snap.data().data || {});
-          $("planMsg").textContent = "Plani u ngarkua ✅";
-        }else{
-          renderPlanTable({});
-          $("planMsg").textContent = "Nuk ka plan ende (bëj Ruaj).";
-        }
-      }catch(e){
-        console.error(e);
-        $("planMsg").textContent = "Gabim në ngarkim.";
-      }
-    }
-
-    $("savePlanBtn").addEventListener("click", savePlan);
-    $("refreshPlanBtn").addEventListener("click", loadPlan);
-
-    // =========================
+    // -------------------------
     // NOTIFICATIONS
-    // =========================
+    // -------------------------
     async function sendNotification(){
       $("notMsg").textContent = "";
       try{
@@ -843,11 +948,19 @@
       }
     }
 
+    function fmtTime(ts){
+      try{
+        if(!ts) return "";
+        if(ts.toDate) return ts.toDate().toLocaleString();
+        return "";
+      }catch{ return ""; }
+    }
+
     async function loadNotifications(){
       try{
         const tb = $("notTable");
         tb.innerHTML = `<tr><td colspan="4" class="muted">Duke ngarkuar...</td></tr>`;
-        const qy = query(collection(db,"notifications"), orderBy("createdAt","desc"), limit(20));
+        const qy = query(collection(db,"notifications"), orderBy("createdAt","desc"), limit(50));
         const snap = await getDocs(qy);
         const rows = [];
         snap.forEach(d=> rows.push(d.data()));
@@ -859,7 +972,7 @@
         }
 
         tb.innerHTML = rows.map(r=>{
-          const t = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleString() : "";
+          const t = fmtTime(r.createdAt);
           return `
             <tr>
               <td>${escapeHtml(t)}</td>
@@ -877,13 +990,141 @@
 
     $("sendNotBtn").addEventListener("click", sendNotification);
 
-    // =========================
+    // -------------------------
+    // SUPERADMIN: manage admins (max 3) + users list
+    // -------------------------
+    let foundUser = null;
+
+    async function loadUsersTables(){
+      const usersTb = $("usersTable");
+      const adminsTb = $("adminsTable");
+      if(!usersTb || !adminsTb) return { adminCount: 0 };
+
+      usersTb.innerHTML = `<tr><td colspan="4" class="muted">Duke ngarkuar...</td></tr>`;
+      adminsTb.innerHTML = `<tr><td colspan="3" class="muted">Duke ngarkuar...</td></tr>`;
+
+      const qUsers = query(collection(db,"users"), orderBy("email","asc"), limit(200));
+      const snapUsers = await getDocs(qUsers);
+
+      const users = [];
+      snapUsers.forEach(d=> users.push({ id:d.id, ...d.data() }));
+
+      const admins = users.filter(u=>u.role==="admin");
+      const adminCount = admins.length;
+
+      // Admins
+      if(adminCount === 0){
+        adminsTb.innerHTML = `<tr><td colspan="3" class="muted">Nuk ka admina.</td></tr>`;
+      }else{
+        adminsTb.innerHTML = admins.map(a=>`
+          <tr>
+            <td><strong>${escapeHtml(a.email||a.id)}</strong></td>
+            <td>${a.active ? "🟢 aktiv" : "⚪ offline"}</td>
+            <td class="right">
+              <button class="btn danger" data-remove-admin="${a.id}" style="padding:8px 10px">Hiq Admin</button>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      // Users
+      if(users.length === 0){
+        usersTb.innerHTML = `<tr><td colspan="4" class="muted">Nuk ka user-a.</td></tr>`;
+      }else{
+        usersTb.innerHTML = users.map(u=>`
+          <tr>
+            <td><strong>${escapeHtml(u.email||u.id)}</strong></td>
+            <td>${escapeHtml(u.role||"")}</td>
+            <td>${u.active ? "🟢" : "⚪"}</td>
+            <td class="muted">${escapeHtml(fmtTime(u.lastSeen))}</td>
+          </tr>
+        `).join("");
+      }
+
+      // Remove admin handlers
+      adminsTb.querySelectorAll("[data-remove-admin]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          try{
+            const uid = btn.dataset.removeAdmin;
+            // mos lejo prekjen e superadmin
+            if(uid === SUPERADMIN_UID) return;
+            await setDoc(doc(db,"users",uid), { role:"staff", updatedAt: serverTimestamp() }, { merge:true });
+            await loadUsersTables();
+          }catch(e){ console.error(e); }
+        });
+      });
+
+      return { adminCount };
+    }
+
+    $("searchUserBtn")?.addEventListener("click", async ()=>{
+      $("superMsg").textContent = "";
+      foundUser = null;
+      $("makeAdminBtn").disabled = true;
+
+      const email = $("searchUserEmail").value.trim().toLowerCase();
+      if(!email){ $("superMsg").textContent = "Shkruaj email."; return; }
+
+      try{
+        const qUsers = query(collection(db,"users"), orderBy("email","asc"), limit(200));
+        const snap = await getDocs(qUsers);
+
+        let hit = null;
+        snap.forEach(d=>{
+          const data = d.data();
+          if((data.email||"").toLowerCase() === email) hit = { uid:d.id, ...data };
+        });
+
+        if(!hit){
+          $("superMsg").textContent = "Nuk u gjet. User duhet të bëjë login 1 herë.";
+          return;
+        }
+
+        foundUser = hit;
+        $("superMsg").textContent = `U gjet: ${hit.email} | role: ${hit.role}`;
+        $("makeAdminBtn").disabled = false;
+
+      }catch(e){
+        console.error(e);
+        $("superMsg").textContent = "Gabim në kërkim.";
+      }
+    });
+
+    $("makeAdminBtn")?.addEventListener("click", async ()=>{
+      $("superMsg").textContent = "";
+      if(!foundUser) return;
+
+      try{
+        const { adminCount } = await loadUsersTables();
+        if(adminCount >= 3){
+          $("superMsg").textContent = "Max 3 admina. Hiq një admin para se të shtosh tjetër.";
+          return;
+        }
+
+        if(foundUser.uid === SUPERADMIN_UID){
+          $("superMsg").textContent = "Ky është SuperAdmin. Nuk ndryshon.";
+          return;
+        }
+
+        await setDoc(doc(db,"users",foundUser.uid), { role:"admin", updatedAt: serverTimestamp() }, { merge:true });
+        $("superMsg").textContent = "U bë admin ✅";
+        $("makeAdminBtn").disabled = true;
+        await loadUsersTables();
+      }catch(e){
+        console.error(e);
+        $("superMsg").textContent = "Gabim: " + (e?.message || e);
+      }
+    });
+
+    // -------------------------
     // AUTH STATE
-    // =========================
+    // -------------------------
     onAuthStateChanged(auth, async (user)=>{
       if(user){
+        lastUid = user.uid;
         setAuthStatus(true);
         loginOverlay.style.display = "none";
+
         $("userLine").textContent = user.email || "Kyçur";
         $("pEmail").value = user.email || "";
         $("pUid").value = user.uid;
@@ -891,21 +1132,27 @@
 
         const role = await loadRole(user.uid);
         applyRoleUI(role);
+        await ensureUserDoc(user, role);
 
         // auto-load
         await loadInventory();
         await loadPlan();
         await loadNotifications();
+
+        // superadmin tables
+        if(role === "superadmin"){
+          await loadUsersTables();
+        }
       }else{
         setAuthStatus(false);
         loginOverlay.style.display = "flex";
+
         $("userLine").textContent = "Nuk je kyçur";
         $("pEmail").value = "";
         $("pUid").value = "";
         $("pRole").value = "";
         $("pStatus").value = "offline";
         $("roleLabel").textContent = "guest";
-        setConn(true);
       }
     });
   </script>
