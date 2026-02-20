@@ -1384,18 +1384,20 @@ const firebaseConfig = {
         });
 
       }catch(e){
-        setNotice($("adminMsg"), "bad", t("error") + (e?.message || e));
-      }
-    }
+        setNotice($("adminMsg"), "bad", t("error") + (e?.message || 
+           // ========== INIT ==========
+window.modalMode = window.modalMode || "add";
+var modalMode = window.modalMode;
 
-    // ========== INIT ==========
-   var modalMode = window.modalMode || "add";
-   window.modalMode = modalMode;
-    applyI18n();
-    weeklyData = buildEmptyWeekly();
-    if(typeof renderWeeklyTable==="function") renderWeeklyTable();
-    if(typeof renderInventory==="function") renderInventory();
-   $("btnLogout").style.display = "none";
+try { if(typeof applyI18n==="function") applyI18n(); } catch(e){ showErr("applyI18n: " + e.message); }
+
+try {
+  if(typeof buildEmptyWeekly==="function") weeklyData = buildEmptyWeekly();
+  if(typeof renderWeeklyTable==="function") renderWeeklyTable();
+  if(typeof renderInventory==="function") renderInventory();
+} catch(e){ showErr("INIT: " + e.message); }
+
+try { if($("btnLogout")) $("btnLogout").style.display = "none"; } catch(e){ showErr("btnLogout: " + e.message); }                                           
  // ---------- Tabs click handler ----------
 document.querySelectorAll(".tab").forEach(btn=>{
   if($("btnLogout")) $("btnLogout").style.display = "none";
