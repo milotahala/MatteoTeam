@@ -543,50 +543,84 @@
     </div>
   </div>
 
-  <script type="module"> 
-    // ===== DEBUG ERROR BOX (shows JS errors on screen) =====
-function showErr(msg){
-  let box = document.getElementById("errBox");
-  if(!box){
-    box = document.createElement("div");
-    box.id = "errBox";
-    box.style.cssText = "position:fixed;left:10px;right:10px;bottom:10px;z-index:99999;padding:12px;border-radius:12px;background:#2b0f0f;color:#ffd9d9;border:1px solid #ff6b6b;font:12px/1.4 system-ui;white-space:pre-wrap";
-    document.body.appendChild(box);
+<script type="module">
+  // ==========================
+  // 1) IMPORTS MUST BE FIRST
+  // ==========================
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    sendPasswordResetEmail,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    where,
+    onSnapshot,
+    Timestamp,
+    writeBatch,
+    serverTimestamp,
+    deleteDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ==========================
+  // 2) DEBUG ERROR BOX
+  // ==========================
+  function showErr(msg){
+    let box = document.getElementById("errBox");
+    if(!box){
+      box = document.createElement("div");
+      box.id = "errBox";
+      box.style.cssText =
+        "position:fixed;left:10px;right:10px;bottom:10px;z-index:99999;" +
+        "padding:12px;border-radius:12px;background:#2b0f0f;color:#ffd9d9;" +
+        "border:1px solid #ff6b6b;font:12px/1.4 system-ui;white-space:pre-wrap";
+      document.body.appendChild(box);
+    }
+    box.textContent = String(msg);
   }
-  box.textContent = String(msg);
-}
-window.addEventListener("error", (e)=> showErr("ERROR:\n" + (e.message || e.error) + "\n" + (e.filename||"") + ":" + (e.lineno||"") ));
-window.addEventListener("unhandledrejection", (e)=> showErr("PROMISE:\n" + (e.reason?.message || e.reason || e)));
-    // ==================================================
-    // PASTE YOUR FIREBASE CONFIG BELOW (replace placeholders)
-    // =================================================h
-const firebaseConfig = {
-  apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
-  authDomain: "matteoteam-test.firebaseapp.com",
-  projectId: "matteoteam-test",
-  storageBucket: "matteoteam-test.firebasestorage.app",
-  messagingSenderId: "1084486170913",
-  appId: "1:1084486170913:web:d68cf328becefe226a6660",
-  measurementId: "G-9V887087P0"
-};
-    // ✅ SuperAdmin UID (Milot)
-    const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
+  window.addEventListener("error", (e)=> showErr("ERROR:\n" + (e.message || e.error)));
+  window.addEventListener("unhandledrejection", (e)=> showErr("PROMISE:\n" + (e.reason?.message || e.reason)));
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import {
-      getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-      createUserWithEmailAndPassword, sendPasswordResetEmail, signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import {
-      getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
-      collection, addDoc, getDocs, query, where, orderBy, serverTimestamp,
-      onSnapshot, Timestamp, writeBatch
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  // ==========================
+  // 3) FIREBASE CONFIG (PASTE YOURS HERE)
+  // ==========================
+  const firebaseConfig = {
+    // ✅ PASTE_YOURS_HERE
+    // apiKey: "...",
+    // authDomain: "...",
+    // projectId: "...",
+    // storageBucket: "...",
+    // messagingSenderId: "...",
+    // appId: "...",
+    // measurementId: "..."
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  // ✅ SuperAdmin UID (Milot)
+  const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
 
+  // ==========================
+  // 4) INIT
+  // ==========================
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ✅ këtu poshtë vazhdon kodi yt ekzistues (MOS E FSHIJ)
+</script>
     const $ = (id)=>document.getElementById(id);
 
     function setNotice(el, type, msg){
