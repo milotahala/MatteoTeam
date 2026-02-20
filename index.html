@@ -543,7 +543,20 @@
     </div>
   </div>
 
-  <script type="module">
+  <script type="module"> 
+    // ===== DEBUG ERROR BOX (shows JS errors on screen) =====
+function showErr(msg){
+  let box = document.getElementById("errBox");
+  if(!box){
+    box = document.createElement("div");
+    box.id = "errBox";
+    box.style.cssText = "position:fixed;left:10px;right:10px;bottom:10px;z-index:99999;padding:12px;border-radius:12px;background:#2b0f0f;color:#ffd9d9;border:1px solid #ff6b6b;font:12px/1.4 system-ui;white-space:pre-wrap";
+    document.body.appendChild(box);
+  }
+  box.textContent = String(msg);
+}
+window.addEventListener("error", (e)=> showErr("ERROR:\n" + (e.message || e.error) + "\n" + (e.filename||"") + ":" + (e.lineno||"") ));
+window.addEventListener("unhandledrejection", (e)=> showErr("PROMISE:\n" + (e.reason?.message || e.reason || e)));
     // ==================================================
     // PASTE YOUR FIREBASE CONFIG BELOW (replace placeholders)
     // =================================================h
