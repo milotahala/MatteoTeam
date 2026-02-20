@@ -1376,7 +1376,33 @@ const firebaseConfig = {
     weeklyData = buildEmptyWeekly();
     renderWeeklyTable();
     renderInventory();
-    $("btnLogout").style.display = "none";
+   $("btnLogout").style.display = "none";
+ // ---------- Tabs click handler ----------
+document.querySelectorAll(".tab").forEach(btn=>{
+  btn.addEventListener("click", ()=> switchView(btn.dataset.view));
+});
+
+// ---------- Switch view ----------
+function switchView(view){
+  document.querySelectorAll(".tab").forEach(b=> b.classList.toggle("active", b.dataset.view===view));
+
+  const views = ["dashboard","weekly","monthall","mymonth","inventory","pending","admin"];
+  views.forEach(v=>{
+    const el = document.getElementById("view-"+v);
+    if(el) el.classList.toggle("hide", v!==view);
+  });
+
+  // lazy loaders (if functions exist)
+  if(view==="weekly" && typeof loadWeekly==="function") loadWeekly();
+  if(view==="monthall" && typeof loadMonthAll==="function") loadMonthAll();
+  if(view==="mymonth" && typeof loadMyMonth==="function") loadMyMonth();
+  if(view==="inventory" && typeof startInventoryLive==="function") startInventoryLive();
+  if(view==="pending" && typeof startPendingLive==="function") startPendingLive();
+  if(view==="admin" && typeof loadUsersForAdmin==="function") loadUsersForAdmin();
+}
+
+// start on dashboard
+switchView("dashboard");
   </script>
 </body>
 </html>
