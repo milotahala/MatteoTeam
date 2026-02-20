@@ -1389,15 +1389,16 @@ const firebaseConfig = {
     }
 
     // ========== INIT ==========
-  var modalMode = "add";
+   var modalMode = window.modalMode || "add";
+   window.modalMode = modalMode;
     applyI18n();
     weeklyData = buildEmptyWeekly();
-    renderWeeklyTable();
-    renderInventory();
+    if(typeof renderWeeklyTable==="function") renderWeeklyTable();
+    if(typeof renderInventory==="function") renderInventory();
    $("btnLogout").style.display = "none";
  // ---------- Tabs click handler ----------
 document.querySelectorAll(".tab").forEach(btn=>{
-  btn.addEventListener("click", ()=> switchView(btn.dataset.view));
+  if($("btnLogout")) $("btnLogout").style.display = "none";
 });
 
 // ---------- Switch view ----------
