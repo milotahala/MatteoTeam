@@ -1402,15 +1402,19 @@ document.querySelectorAll(".tab").forEach(btn=>{
 
 // ---------- Switch view ----------
 function switchView(view){
-  document.querySelectorAll(".tab").forEach(b=> b.classList.toggle("active", b.dataset.view===view));
+  // active tab highlight
+  document.querySelectorAll(".tab").forEach(b=>{
+    b.classList.toggle("active", b.dataset.view===view);
+  });
 
+  // show/hide views
   const views = ["dashboard","weekly","monthall","mymonth","inventory","pending","admin"];
   views.forEach(v=>{
     const el = document.getElementById("view-"+v);
     if(el) el.classList.toggle("hide", v!==view);
   });
 
-  // lazy loaders (if functions exist)
+  // lazy loaders
   if(view==="weekly" && typeof loadWeekly==="function") loadWeekly();
   if(view==="monthall" && typeof loadMonthAll==="function") loadMonthAll();
   if(view==="mymonth" && typeof loadMyMonth==="function") loadMyMonth();
@@ -1418,8 +1422,6 @@ function switchView(view){
   if(view==="pending" && typeof startPendingLive==="function") startPendingLive();
   if(view==="admin" && typeof loadUsersForAdmin==="function") loadUsersForAdmin();
 }
-
-// start on dashboard
 switchView("dashboard");
   </script>
 </body>
