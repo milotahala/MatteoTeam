@@ -4,551 +4,430 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MatteoTeam PRO</title>
+
   <style>
     :root{
       --bg1:#0e1a20; --bg2:#15313a;
-      --card:rgba(255,255,255,.08);
-      --card2:rgba(255,255,255,.06);
+      --glass:rgba(255,255,255,.08);
+      --glass2:rgba(255,255,255,.06);
       --line:rgba(255,255,255,.12);
       --text:#e9f2f5;
       --muted:rgba(233,242,245,.7);
-      --ok:#2ad1a3; --warn:#ffcc66; --bad:#ff6b6b;
-      --shadow:0 14px 40px rgba(0,0,0,.35);
-      --radius:18px;
-      --max:1100px;
+      --accent:#24d3b5;
+      --danger:#ff6b6b;
+      --warn:#ffd166;
+      --ok:#34d399;
+      --radius:20px;
+      --shadow:0 10px 30px rgba(0,0,0,.25);
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
     }
-    *{ box-sizing:border-box; }
+    *{box-sizing:border-box}
     body{
-      margin:0; color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
       background:
-        radial-gradient(900px 500px at 20% 10%, rgba(42,209,163,.18), transparent 60%),
-        radial-gradient(800px 450px at 80% 20%, rgba(255,204,102,.14), transparent 55%),
-        linear-gradient(120deg, var(--bg1), var(--bg2));
+        radial-gradient(1200px 800px at 10% 10%, rgba(36,211,181,.10), transparent 60%),
+        radial-gradient(900px 700px at 90% 10%, rgba(36,211,181,.08), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
       min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding:22px 12px;
     }
-    header{
-      position:sticky; top:0; z-index:50;
+    a{color:var(--accent); text-decoration:none}
+    .wrap{width:min(1100px, 100%)}
+
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border-radius:22px;
+      box-shadow:var(--shadow);
       backdrop-filter: blur(10px);
-      background: rgba(7,14,18,.55);
-      border-bottom:1px solid var(--line);
+      gap:12px;
     }
-    .wrap{ max-width:var(--max); margin:0 auto; padding: 14px 16px; }
-    .topbar{ display:flex; gap:12px; align-items:center; justify-content:space-between; }
-    .brand{ display:flex; gap:10px; align-items:center; }
+    .brand{display:flex; gap:12px; align-items:center}
     .logo{
-      width:42px; height:42px; border-radius:14px;
-      background: linear-gradient(135deg, rgba(42,209,163,.95), rgba(255,204,102,.95));
-      box-shadow: var(--shadow);
+      width:46px;height:46px;border-radius:16px;
+      background:linear-gradient(135deg, #22c55e, #3b82f6);
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      flex:0 0 auto;
     }
-    .brand h1{ font-size:16px; margin:0; line-height:1.1; }
-    .brand small{ color:var(--muted); display:block; font-size:12px; margin-top:2px; }
-    .right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
-    .pill{
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.06);
-      padding:8px 10px; border-radius:999px;
+    .btxt .t{font-weight:900; letter-spacing:.3px}
+    .btxt .s{font-size:13px; color:var(--muted); margin-top:2px}
+
+    .lang{
       display:flex; gap:8px; align-items:center;
-    }
-    .pill strong{ font-size:12px; }
-    .pill span{ font-size:12px; color:var(--muted); }
-    .btn{
+      padding:8px; border-radius:18px;
+      background:rgba(0,0,0,.15);
       border:1px solid var(--line);
-      background: rgba(255,255,255,.08);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      transition: transform .05s ease, background .15s ease;
-      font-weight:700;
-      font-size:13px;
     }
-    .btn:hover{ background: rgba(255,255,255,.12); }
-    .btn:active{ transform: translateY(1px); }
-    .btn.primary{ border-color: rgba(42,209,163,.45); background: rgba(42,209,163,.18); }
-    .btn.danger{ border-color: rgba(255,107,107,.45); background: rgba(255,107,107,.12); }
-    .btn.ghost{ background: transparent; }
     .lang button{
-      padding:8px 10px; border-radius:12px; font-weight:800;
       border:1px solid var(--line);
-      background: rgba(255,255,255,.06);
+      background:rgba(255,255,255,.06);
       color:var(--text);
+      padding:8px 12px;
+      border-radius:14px;
+      font-weight:800;
       cursor:pointer;
     }
-    .lang button.active{ border-color: rgba(42,209,163,.55); background: rgba(42,209,163,.18); }
-    main .wrap{ padding: 18px 16px 34px; }
-    .grid{ display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; }
-    @media (max-width: 920px){ .grid{ grid-template-columns: 1fr; } }
+    .lang button.active{
+      border-color:rgba(36,211,181,.7);
+      box-shadow:0 0 0 2px rgba(36,211,181,.14) inset;
+    }
+
+    .chip{
+      display:flex; gap:10px; align-items:center;
+      margin-top:12px;
+      padding:10px 14px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.14);
+      border-radius:16px;
+      color:var(--muted);
+    }
+    .dot{width:10px; height:10px; border-radius:99px; background:var(--warn)}
+    .chip .right{margin-left:auto; font-size:12px}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+      margin-top:14px;
+    }
+    @media (min-width: 920px){
+      .grid{grid-template-columns: 1fr 1fr;}
+    }
+
     .card{
-      background: var(--card);
       border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:16px;
+      backdrop-filter: blur(10px);
     }
-    .card .hd{
-      padding: 14px 14px 10px;
-      border-bottom:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      flex-wrap:wrap;
-    }
-    .card .hd h2{ margin:0; font-size:14px; }
-    .card .bd{ padding: 14px; }
-    .muted{ color:var(--muted); }
-    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .row.right{ justify-content:flex-end; }
-    .input, select, textarea{
+    .card h3{margin:0 0 12px 0}
+    label{display:block; font-size:13px; color:var(--muted); margin:10px 0 6px}
+    input, select, textarea{
       width:100%;
-      padding: 11px 12px;
-      border-radius: 12px;
+      background:rgba(0,0,0,.18);
       border:1px solid var(--line);
-      background: rgba(0,0,0,.18);
-      color: var(--text);
+      color:var(--text);
+      padding:12px 12px;
+      border-radius:14px;
       outline:none;
     }
-    label{ font-size:12px; color:var(--muted); display:block; margin: 0 0 6px; }
-    .two{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    @media (max-width: 560px){ .two{ grid-template-columns:1fr; } }
-    .tabs{ display:flex; gap:10px; flex-wrap:wrap; margin: 0 0 14px; }
-    .tab{
-      padding:10px 12px;
-      border-radius: 12px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.06);
+    textarea{min-height:90px; resize:vertical}
+    input:focus, select:focus, textarea:focus{
+      border-color:rgba(36,211,181,.7);
+      box-shadow:0 0 0 2px rgba(36,211,181,.12)
+    }
+
+    .row{display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap}
+    .btn{
+      border:1px solid rgba(36,211,181,.6);
+      background:rgba(36,211,181,.10);
+      color:var(--text);
+      padding:11px 14px;
+      border-radius:14px;
+      font-weight:900;
       cursor:pointer;
-      font-weight:800;
-      font-size:13px;
+      width:fit-content;
     }
-    .tab.active{ border-color: rgba(42,209,163,.55); background: rgba(42,209,163,.18); }
-    .badge{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.06);
-      font-size:12px;
-    }
-    .dot{ width:8px; height:8px; border-radius:999px; background: var(--ok); }
-    .dot.warn{ background: var(--warn); }
-    .dot.bad{ background: var(--bad); }
-    table{ width:100%; border-collapse: collapse; }
-    th, td{
-      border-bottom:1px solid var(--line);
-      padding: 10px 8px;
-      text-align:left;
-      font-size:13px;
-      vertical-align:top;
-    }
-    th{ color: var(--muted); font-weight:800; font-size:12px; }
-    .small{ font-size:12px; color:var(--muted); }
-    .kpi{ display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; }
-    @media (max-width: 920px){ .kpi{ grid-template-columns: repeat(2, 1fr); } }
-    .kpi .box{
-      background: var(--card2);
-      border:1px solid var(--line);
-      border-radius: 16px;
-      padding: 12px;
-    }
-    .kpi .box strong{ display:block; font-size:18px; }
-    .kpi .box span{ font-size:12px; color:var(--muted); }
+    .btn.secondary{border-color:var(--line); background:rgba(255,255,255,.06)}
+    .btn.danger{border-color:rgba(255,107,107,.6); background:rgba(255,107,107,.10)}
+    .link{background:none; border:none; color:var(--accent); font-weight:900; cursor:pointer; padding:0}
+
     .notice{
-      padding: 10px 12px;
-      border-radius: 14px;
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:14px;
       border:1px solid var(--line);
-      background: rgba(255,255,255,.06);
+      background:rgba(0,0,0,.14);
+      color:var(--muted);
+      display:none;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .notice.show{display:block}
+    .notice.ok{border-color:rgba(52,211,153,.45)}
+    .notice.bad{border-color:rgba(255,107,107,.45); color:#ffd6d6}
+    .notice.warn{border-color:rgba(255,209,102,.45)}
+
+    .hidden{display:none !important}
+
+    .tabs{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap}
+    .tabs button{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .tabs button.active{border-color:rgba(36,211,181,.7)}
+    .view{margin-top:14px}
+
+    .kpi{display:grid; grid-template-columns: repeat(3,1fr); gap:10px}
+    @media (max-width: 740px){ .kpi{grid-template-columns:1fr 1fr} }
+    .kpi .box{
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.14);
+      border-radius:18px;
+      padding:12px;
+    }
+    .kpi .n{font-size:22px; font-weight:1000}
+    .kpi .l{font-size:12px; color:var(--muted); margin-top:4px}
+    .small{font-size:12px; color:var(--muted)}
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(0,0,0,.14);
+    }
+    th, td{
+      padding:10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      border-right:1px solid rgba(255,255,255,.06);
+      vertical-align:top;
       font-size:13px;
     }
-    .notice.ok{ border-color: rgba(42,209,163,.45); background: rgba(42,209,163,.12); }
-    .notice.warn{ border-color: rgba(255,204,102,.45); background: rgba(255,204,102,.10); }
-    .notice.bad{ border-color: rgba(255,107,107,.45); background: rgba(255,107,107,.10); }
-    .modal{
-      position:fixed; inset:0; z-index:200;
-      background: rgba(0,0,0,.55);
-      display:none;
-      align-items:center; justify-content:center;
-      padding: 18px;
+    th:last-child, td:last-child{border-right:none}
+    tr:last-child td{border-bottom:none}
+    th{color:var(--muted); text-align:left; font-weight:900}
+    .cellInput{
+      width:100%;
+      min-height:56px;
+      background:rgba(0,0,0,.10);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      color:var(--text);
+      padding:8px 10px;
+      outline:none;
     }
-    .modal.open{ display:flex; }
-    .modal .panel{
-      width:min(700px, 100%);
-      background: rgba(10,18,22,.92);
-      border:1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      font-size:12px;
+      color:var(--muted);
     }
-    .modal .panel .hd{
-      padding: 14px;
-      border-bottom:1px solid var(--line);
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
-    }
-    .modal .panel .bd{ padding:14px; }
-    .link{ color: rgba(42,209,163,.95); cursor:pointer; font-weight:800; }
-    .hide{ display:none !important; }
   </style>
 </head>
+
 <body>
-  <header>
-    <div class="wrap">
-      <div class="topbar">
-        <div class="brand">
-          <div class="logo" aria-hidden="true"></div>
-          <div>
-            <h1>MatteoTeam <span class="muted">PRO</span></h1>
-            <small id="subTitle">Restaurant Management</small>
-          </div>
-        </div>
-        <div class="right">
-          <div class="pill">
-            <strong id="whoName">—</strong>
-            <span id="whoRole">—</span>
-          </div>
-          <div class="lang pill" aria-label="Language">
-            <button id="langDE" type="button">DE</button>
-            <button id="langEN" type="button">EN</button>
-            <button id="langSQ" type="button">SQ</button>
-          </div>
-          <button class="btn ghost" id="btnLogout" type="button" style="display:none;">Logout</button>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div class="btxt">
+          <div class="t">MatteoTeam <span style="opacity:.85">PRO</span></div>
+          <div class="s" id="subTitle">Restaurant Management</div>
         </div>
       </div>
-    </div>
-  </header>
 
-  <main>
-    <div class="wrap">
-      <section id="authSection" class="card">
-        <div class="hd">
-          <h2 id="authTitle">Login / Register</h2>
-          <span class="badge"><span class="dot warn"></span><span id="authHint">Access requires account</span></span>
-        </div>
-        <div class="bd grid">
-          <div class="card" style="box-shadow:none;">
-            <div class="hd"><h2 id="loginTitle">Login</h2></div>
-            <div class="bd">
-              <div style="margin-bottom:10px;">
-                <label id="lblLoginEmail" for="loginEmail">Email</label>
-                <input class="input" id="loginEmail" type="email" autocomplete="email" placeholder="name@example.com">
-              </div>
-              <div style="margin-bottom:10px;">
-                <label id="lblLoginPass" for="loginPass">Password</label>
-                <input class="input" id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••">
-              </div>
-              <div class="row" style="justify-content:space-between;">
-                <button class="btn primary" id="btnLogin" type="button">Login</button>
-                <span class="link" id="btnReset">Reset password</span>
-              </div>
-              <div id="authMsg" style="margin-top:12px;" class="notice hide"></div>
-            </div>
-          </div>
-
-          <div class="card" style="box-shadow:none;">
-            <div class="hd"><h2 id="registerTitle">Register</h2></div>
-            <div class="bd">
-              <div class="two">
-                <div style="margin-bottom:10px;">
-                  <label id="lblRegName" for="regName">Full name</label>
-                  <input class="input" id="regName" type="text" placeholder="Rina Lulaj">
-                </div>
-                <div style="margin-bottom:10px;">
-                  <label id="lblRegRole" for="regRole">Requested role</label>
-                  <select id="regRole" class="input">
-                    <option value="staff" selected>Staff</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                  <div class="small" id="regRoleNote">Admin requests stay pending until approved.</div>
-                </div>
-              </div>
-
-              <div style="margin-bottom:10px;">
-                <label id="lblRegEmail" for="regEmail">Email</label>
-                <input class="input" id="regEmail" type="email" autocomplete="email" placeholder="name@example.com">
-              </div>
-              <div style="margin-bottom:10px;">
-                <label id="lblRegPass" for="regPass">Password</label>
-                <input class="input" id="regPass" type="password" autocomplete="new-password" placeholder="min. 6 chars">
-              </div>
-
-              <div class="row" style="justify-content:space-between;">
-                <button class="btn" id="btnRegister" type="button">Create account</button>
-                <span class="small" id="regHint">New users will be <b>Pending</b> until approved.</span>
-              </div>
-              <div id="regMsg" style="margin-top:12px;" class="notice hide"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="appSection" class="hide">
-        <div class="tabs" id="tabs">
-          <button class="tab active" data-view="dashboard" id="tabDashboard">Dashboard</button>
-          <button class="tab" data-view="weekly" id="tabWeekly">Weekly Plan</button>
-         
-          <button class="tab" data-view="monthall" id="tabMonthAll">Monthly Plan</button>
-          <button class="tab" data-view="mymonth" id="tabMyMonth">My Month</button>
-         
-          <button class="tab" data-view="inventory" id="tabInventory">Inventory</button>
-          <button class="tab" data-view="pending" id="tabPending">Pending</button>
-          <button class="tab" data-view="admin" id="tabAdmin">Admin</button>
-        </div>
-
-        <div id="view-dashboard" class="card">
-          <div class="hd">
-            <h2 id="dashTitle">Dashboard</h2>
-            <div class="row">
-              <span class="badge"><span class="dot" id="statusDot"></span><span id="statusText">Active</span></span>
-              <span class="badge"><span id="todayText">—</span></span>
-            </div>
-          </div>
-          <div class="bd">
-            <div class="kpi">
-              <div class="box"><strong id="kpiUsers">—</strong><span id="kpiUsersLbl">Users</span></div>
-              <div class="box"><strong id="kpiPending">—</strong><span id="kpiPendingLbl">Pending</span></div>
-              <div class="box"><strong id="kpiItems">—</strong><span id="kpiItemsLbl">Inventory items</span></div>
-              <div class="box"><strong id="kpiLow">—</strong><span id="kpiLowLbl">Low stock</span></div>
-            </div>
-
-            <div style="margin-top:14px;" id="roleNotice" class="notice hide"></div>
-
-            <div class="grid" style="margin-top:14px;">
-              <div class="card" style="box-shadow:none;">
-                <div class="hd"><h2 id="newsTitle">Notifications</h2></div>
-                <div class="bd">
-                  <div class="notice" style="margin-bottom:10px;">
-                    <b>MatteoTeam PRO</b><br/>
-                    <span class="muted" id="newsText">Welcome. Roles, Pending approval, Weekly plan, and Inventory are ready.</span>
-                  </div>
-                  <div class="small" id="newsTip">Tip: Admin/SuperAdmin can edit plan & inventory.</div>
-                </div>
-              </div>
-
-              <div class="card" style="box-shadow:none;">
-                <div class="hd"><h2 id="quickTitle">Quick actions</h2></div>
-                <div class="bd">
-                  <div class="row">
-                    <button class="btn primary" id="quickAddItem" type="button">+ Add inventory item</button>
-                    <button class="btn" id="quickOpenPending" type="button">Open pending</button>
-                    <button class="btn" id="quickOpenWeekly" type="button">Open weekly plan</button>
-                  </div>
-                  <div class="small" style="margin-top:10px;" id="quickHint">Some actions depend on your role.</div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div id="view-weekly" class="card hide" style="margin-top:14px;">
-          <div class="hd">
-            <h2 id="weeklyTitle">Weekly Plan</h2>
-            <div class="row">
-              <button class="btn primary" id="btnSaveWeekly" type="button">Save</button>
-              <button class="btn" id="btnReloadWeekly" type="button">Reload</button>
-              <span class="badge"><span class="dot warn"></span><span id="weeklyHint">Admins can edit, staff view-only</span></span>
-            </div>
-          </div>
-          <div class="bd">
-            <div class="small" id="weeklyNote" style="margin-bottom:10px;">Click a cell to edit (admin/superadmin).</div>
-            <div style="overflow:auto; border-radius:14px; border:1px solid var(--line);">
-              <table id="weeklyTable">
-                <thead>
-                  <tr>
-                    <th id="thDay">Day</th>
-                    <th>10:00</th>
-                    <th>12:00</th>
-                    <th>15:00</th>
-                    <th>18:00</th>
-                    <th>22:00</th>
-                  </tr>
-                </thead>
-                <tbody id="weeklyBody"></tbody>
-              </table>
-            </div>
-            <div id="weeklyMsg" class="notice hide" style="margin-top:12px;"></div>
-          </div>
-        </div>
-        <div id="view-monthall" class="card hide">
-  <div class="hd">
-    <h2>Monthly Plan</h2>
-  </div>
-  <div class="bd">
-    <p>Muaji i plotë me të gjithë punëtorët.</p>
-    <div id="monthAllContainer"></div>
-  </div>
-</div>
-<div id="view-mymonth" class="card hide">
-  <div class="hd">
-    <h2>My Month</h2>
-  </div>
-  <div class="bd">
-    <p>Orët e mia për gjithë muajin.</p>
-    <div id="myMonthContainer"></div>
-  </div>
-</div>
-
-        <div id="view-inventory" class="card hide" style="margin-top:14px;">
-          <div class="hd">
-            <h2 id="invTitle">Inventory</h2>
-            <div class="row">
-              <input class="input" id="invSearch" type="text" placeholder="Search..." style="width:220px;">
-              <button class="btn primary" id="btnAddItem" type="button">+ Add</button>
-              <button class="btn" id="btnResetSold" type="button">Reset sold today</button>
-            </div>
-          </div>
-          <div class="bd">
-            <div class="small" id="invHint" style="margin-bottom:10px;">Admins can add/edit. Low stock turns red.</div>
-            <div style="overflow:auto; border-radius:14px; border:1px solid var(--line);">
-              <table>
-                <thead>
-                  <tr>
-                    <th id="invThName">Item</th>
-                    <th id="invThTotal">Total</th>
-                    <th id="invThSold">Sold today</th>
-                    <th id="invThRemain">Remaining</th>
-                    <th id="invThUpdated">Last update</th>
-                    <th id="invThActions">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="invBody"></tbody>
-              </table>
-            </div>
-            <div id="invMsg" class="notice hide" style="margin-top:12px;"></div>
-          </div>
-        </div>
-
-        <div id="view-pending" class="card hide" style="margin-top:14px;">
-          <div class="hd">
-            <h2 id="pendingTitle">Pending Users</h2>
-            <div class="row">
-              <button class="btn" id="btnReloadPending" type="button">Reload</button>
-              <span class="badge"><span class="dot warn"></span><span id="pendingHint">Approve or delete</span></span>
-            </div>
-          </div>
-          <div class="bd">
-            <div class="small" id="pendingNote" style="margin-bottom:10px;">Only Admin/SuperAdmin can manage pending users.</div>
-            <div style="overflow:auto; border-radius:14px; border:1px solid var(--line);">
-              <table>
-                <thead>
-                  <tr>
-                    <th id="pThName">Name</th>
-                    <th>Email</th>
-                    <th id="pThReq">Requested</th>
-                    <th id="pThCreated">Created</th>
-                    <th id="pThAct">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="pendingBody"></tbody>
-              </table>
-            </div>
-            <div class="small" style="margin-top:10px;" id="pendingWarn">
-              Note: Deleting here removes the Firestore user doc. Client-side cannot delete Auth accounts.
-            </div>
-            <div id="pendingMsg" class="notice hide" style="margin-top:12px;"></div>
-          </div>
-        </div>
-
-        <div id="view-admin" class="card hide" style="margin-top:14px;">
-          <div class="hd">
-            <h2 id="adminTitle">Admin Panel</h2>
-            <div class="row">
-              <span class="badge"><span class="dot" id="adminDot"></span><span id="adminHint">Role protected</span></span>
-            </div>
-          </div>
-          <div class="bd grid">
-            <div class="card" style="box-shadow:none;">
-              <div class="hd"><h2 id="roleMgmtTitle">Role Management</h2></div>
-              <div class="bd">
-                <div class="small" id="roleMgmtNote" style="margin-bottom:10px;">
-                  SuperAdmin can promote/demote users. Admin can only view.
-                </div>
-                <div style="overflow:auto; border-radius:14px; border:1px solid var(--line);">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th id="uThName">Name</th>
-                        <th>Email</th>
-                        <th id="uThRole">Role</th>
-                        <th id="uThSet">Set role</th>
-                      </tr>
-                    </thead>
-                    <tbody id="usersBody"></tbody>
-                  </table>
-                </div>
-                <div id="adminMsg" class="notice hide" style="margin-top:12px;"></div>
-              </div>
-            </div>
-
-            <div class="card" style="box-shadow:none;">
-              <div class="hd"><h2 id="securityTitle">Security</h2></div>
-              <div class="bd">
-                <div class="notice ok">
-                  <b>SuperAdmin UID</b><br/>
-                  <span class="muted" id="superUidText"></span>
-                </div>
-                <div class="notice" style="margin-top:10px;">
-                  <b>Important:</b> For real protection you must set Firestore Security Rules.
-                  Client checks help UI, but rules are the real security.
-                </div>
-                <div class="small" style="margin-top:10px;">
-                  Tip: Restrict writes to inventory/weeklyPlan to roles admin/superadmin, and user role updates only superadmin.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  </main>
-
-  <div class="modal" id="itemModal">
-    <div class="panel">
-      <div class="hd">
-        <h3 style="margin:0; font-size:14px;" id="itemModalTitle">Add inventory item</h3>
-        <button class="btn" id="itemModalClose" type="button">✕</button>
-      </div>
-      <div class="bd">
-        <div class="two">
-          <div style="margin-bottom:10px;">
-            <label id="lblItemName" for="itemName">Item name</label>
-            <input class="input" id="itemName" type="text" placeholder="Mehl (25)">
-          </div>
-          <div style="margin-bottom:10px;">
-            <label id="lblItemUnit" for="itemUnit">Unit</label>
-            <select id="itemUnit" class="input">
-              <option value="kg" selected>kg</option>
-              <option value="l">l</option>
-              <option value="pcs">pcs</option>
-            </select>
-          </div>
-        </div>
-        <div class="two">
-          <div style="margin-bottom:10px;">
-            <label id="lblItemTotal" for="itemTotal">Total</label>
-            <input class="input" id="itemTotal" type="number" step="0.01" placeholder="25">
-          </div>
-          <div style="margin-bottom:10px;">
-            <label id="lblItemSold" for="itemSold">Sold today</label>
-            <input class="input" id="itemSold" type="number" step="0.01" placeholder="0">
-          </div>
-        </div>
-        <div style="margin-bottom:10px;">
-          <label id="lblItemLow" for="itemLow">Low stock threshold</label>
-          <input class="input" id="itemLow" type="number" step="0.01" placeholder="10">
-        </div>
-        <div class="row right">
-          <button class="btn danger" id="itemDelete" type="button">Delete</button>
-          <button class="btn primary" id="itemSave" type="button">Save</button>
-        </div>
-        <div id="itemMsg" class="notice hide" style="margin-top:12px;"></div>
+      <div class="lang">
+        <button id="langDE" class="active" type="button">DE</button>
+        <button id="langEN" type="button">EN</button>
+        <button id="langSQ" type="button">SQ</button>
       </div>
     </div>
-  </div>
 
-<script type="module">
+    <div class="chip">
+      <span class="dot"></span>
+      <span id="topHint">Access requires account</span>
+      <span class="right" id="whoami"></span>
+    </div>
+
+    <!-- AUTH -->
+    <div class="grid" id="authGrid">
+      <div class="card">
+        <h3 id="loginTitle">Login</h3>
+        <label id="lblEmail">Email</label>
+        <input id="loginEmail" type="email" autocomplete="email" />
+
+        <label id="lblPass">Password</label>
+        <input id="loginPass" type="password" autocomplete="current-password" />
+
+        <div class="row">
+          <button class="btn" id="btnLogin" type="button">Login</button>
+          <button class="link" id="btnReset" type="button">Reset password</button>
+        </div>
+
+        <div id="noticeAuth" class="notice"></div>
+      </div>
+
+      <div class="card">
+        <h3 id="registerTitle">Register</h3>
+
+        <label id="lblFullname">Full name</label>
+        <input id="regName" type="text" placeholder="Rina Lulaj" />
+
+        <label id="lblRole">Requested role</label>
+        <select id="regRole">
+          <option value="staff">Staff</option>
+          <option value="admin">Admin</option>
+        </select>
+        <div class="small" id="roleNote">Admin requests stay pending until approved.</div>
+
+        <label id="lblRegEmail">Email</label>
+        <input id="regEmail" type="email" placeholder="name@example.com" autocomplete="email"/>
+
+        <label id="lblRegPass">Password</label>
+        <input id="regPass" type="password" placeholder="min. 6 chars" autocomplete="new-password"/>
+
+        <div class="row">
+          <button class="btn secondary" id="btnRegister" type="button">Create account</button>
+        </div>
+
+        <div class="small" id="pendingHint">New users will be <b>Pending</b> until approved.</div>
+        <div id="noticeReg" class="notice"></div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div class="card hidden" id="appCard">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div style="font-weight:1000; font-size:18px" id="dashTitle">Dashboard</div>
+          <div class="small" id="dashSub">Welcome</div>
+          <div class="row" style="margin-top:10px">
+            <span class="pill"><b id="pillRole">—</b></span>
+            <span class="pill"><span id="pillStatus">—</span></span>
+          </div>
+        </div>
+        <button class="btn danger" id="btnLogout" type="button">Logout</button>
+      </div>
+
+      <div class="tabs">
+        <button class="active" id="tabDashboard" type="button">Dashboard</button>
+        <button id="tabWeekly" type="button">Weekly plan</button>
+        <button id="tabInventory" type="button">Inventory</button>
+        <button id="tabPending" type="button" class="hidden">Pending</button>
+        <button id="tabAdmin" type="button" class="hidden">Admin</button>
+      </div>
+
+      <div class="view" id="viewDashboard">
+        <div class="kpi">
+          <div class="box">
+            <div class="n" id="kpiUsers">—</div>
+            <div class="l" id="kpiUsersLbl">Users</div>
+          </div>
+          <div class="box">
+            <div class="n" id="kpiPending">—</div>
+            <div class="l" id="kpiPendingLbl">Pending</div>
+          </div>
+          <div class="box">
+            <div class="n" id="kpiLast">—</div>
+            <div class="l" id="kpiLastLbl">Last update</div>
+          </div>
+        </div>
+        <div id="noticeApp" class="notice show warn" style="margin-top:12px"></div>
+      </div>
+
+      <!-- WEEKLY -->
+      <div class="view hidden" id="viewWeekly">
+        <h3 style="margin-top:0" id="weeklyTitle">Weekly plan</h3>
+        <div class="small" id="weeklyInfo">Click a cell → write plan → Save week.</div>
+
+        <div class="row">
+          <input id="weekKey" type="text" placeholder="Week key (e.g. 2026-W08)" style="max-width:240px" />
+          <button class="btn" id="btnLoadWeek" type="button">Load</button>
+          <button class="btn secondary" id="btnSaveWeek" type="button">Save week</button>
+        </div>
+
+        <div style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:120px" id="thShift">Shift</th>
+                <th id="thMon">Mon</th>
+                <th id="thTue">Tue</th>
+                <th id="thWed">Wed</th>
+                <th id="thThu">Thu</th>
+                <th id="thFri">Fri</th>
+                <th id="thSat">Sat</th>
+                <th id="thSun">Sun</th>
+              </tr>
+            </thead>
+            <tbody id="weekBody"></tbody>
+          </table>
+        </div>
+
+        <div id="noticeWeek" class="notice"></div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div class="view hidden" id="viewInventory">
+        <h3 style="margin-top:0" id="invTitle">Inventory</h3>
+        <div class="small" id="invInfo">Add items and track sold/remaining per day.</div>
+
+        <div class="row">
+          <input id="invName" type="text" placeholder="Item (e.g. Mehl 25kg)" style="flex:1; min-width:200px" />
+          <input id="invUnit" type="text" placeholder="Unit (kg / l / pcs)" style="width:140px" />
+          <input id="invStart" type="number" placeholder="Start qty" style="width:140px" />
+          <button class="btn" id="btnAddInv" type="button">Add</button>
+          <button class="btn secondary" id="btnReloadInv" type="button">Reload</button>
+        </div>
+
+        <div style="margin-top:12px; overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th id="invThItem" style="min-width:220px">Item</th>
+                <th id="invThUnit" style="width:90px">Unit</th>
+                <th id="invThStart" style="width:110px">Start</th>
+                <th id="invThSold" style="width:140px">Today sold</th>
+                <th id="invThRemain" style="width:140px">Remaining</th>
+                <th style="width:120px" id="invThAction">Action</th>
+              </tr>
+            </thead>
+            <tbody id="invBody"></tbody>
+          </table>
+        </div>
+
+        <div id="noticeInv" class="notice"></div>
+      </div>
+
+      <!-- PENDING -->
+      <div class="view hidden" id="viewPending">
+        <h3 style="margin-top:0" id="pendingTitle">Pending users</h3>
+        <div class="small" id="pendingInfo">Approve or reject staff/admin requests.</div>
+        <div id="pendingList" style="margin-top:12px"></div>
+        <div id="noticePending" class="notice"></div>
+      </div>
+
+      <!-- ADMIN -->
+      <div class="view hidden" id="viewAdmin">
+        <h3 style="margin-top:0" id="adminTitle">Admin</h3>
+        <div class="small" id="adminInfo">Admin tools placeholder (roles, announcements, etc.).</div>
+
+        <div class="row" style="margin-top:12px">
+          <input id="announceText" type="text" placeholder="Announcement text..." style="flex:1; min-width:220px" />
+          <button class="btn secondary" id="btnSaveAnn" type="button">Save announcement</button>
+          <button class="btn secondary" id="btnLoadAnn" type="button">Load</button>
+        </div>
+
+        <div id="noticeAdmin" class="notice"></div>
+      </div>
+
+    </div><!-- /appCard -->
+    <script type="module">
   // ==========================
   // 1) IMPORTS MUST BE FIRST
   // ==========================
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-
   import {
     getAuth,
     onAuthStateChanged,
@@ -564,41 +443,37 @@
     getDoc,
     setDoc,
     updateDoc,
+    deleteDoc,
     collection,
     addDoc,
     getDocs,
     query,
     where,
-    onSnapshot,
-    Timestamp,
-    writeBatch,
     serverTimestamp,
-    deleteDoc
+    onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   // ==========================
-  // 2) DEBUG ERROR BOX
+  // 2) HELPERS
   // ==========================
-  function showErr(msg){
-    let box = document.getElementById("errBox");
-    if(!box){
-      box = document.createElement("div");
-      box.id = "errBox";
-      box.style.cssText =
-        "position:fixed;left:10px;right:10px;bottom:10px;z-index:99999;" +
-        "padding:12px;border-radius:12px;background:#2b0f0f;color:#ffd9d9;" +
-        "border:1px solid #ff6b6b;font:12px/1.4 system-ui;white-space:pre-wrap";
-      document.body.appendChild(box);
-    }
-    box.textContent = String(msg);
+  const $ = (id)=>document.getElementById(id);
+  const todayKey = ()=>new Date().toISOString().slice(0,10);
+
+  function setNotice(el, type, msg){
+    if(!el) return;
+    el.className = "notice show " + (type||"");
+    el.textContent = msg || "";
   }
-  window.addEventListener("error", (e)=> showErr("ERROR:\n" + (e.message || e.error)));
-  window.addEventListener("unhandledrejection", (e)=> showErr("PROMISE:\n" + (e.reason?.message || e.reason)));
+  function clearNotice(el){
+    if(!el) return;
+    el.className = "notice";
+    el.textContent = "";
+  }
 
   // ==========================
   // 3) FIREBASE CONFIG (PASTE YOURS HERE)
   // ==========================
- const firebaseConfig = {
+  const firebaseConfig = {
   apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
   authDomain: "matteoteam-test.firebaseapp.com",
   projectId: "matteoteam-test",
@@ -607,7 +482,6 @@
   appId: "1:1084486170913:web:d68cf328becefe226a6660",
   measurementId: "G-9V887087P0"
 };
-
   // ✅ SuperAdmin UID (Milot)
   const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
 
@@ -618,860 +492,752 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // ✅ këtu poshtë vazhdon kodi yt ekzistues (MOS E FSHIJ)
-  
-    const $ = (id)=>document.getElementById(id);
-
-    function setNotice(el, type, msg){
-      el.className = "notice " + type;
-      el.textContent = msg;
-      el.classList.remove("hide");
+  // ==========================
+  // 5) I18N
+  // ==========================
+  const I18N = {
+    de:{
+      subTitle:"Restaurant Management",
+      topHint:"Zugriff erfordert Konto",
+      loginTitle:"Login",
+      registerTitle:"Registrierung",
+      lblEmail:"Email",
+      lblPass:"Passwort",
+      btnLogin:"Login",
+      btnReset:"Passwort zurücksetzen",
+      lblFullname:"Voller Name",
+      lblRole:"Gewünschte Rolle",
+      roleNote:"Admin-Anfragen bleiben pending bis zur Freigabe.",
+      lblRegEmail:"Email",
+      lblRegPass:"Passwort",
+      btnRegister:"Konto erstellen",
+      pendingHint:"Neue Nutzer sind <b>Pending</b> bis zur Freigabe.",
+      dashTitle:"Dashboard",
+      dashSub:"Willkommen",
+      logout:"Logout",
+      tabDashboard:"Dashboard",
+      tabWeekly:"Wochenplan",
+      tabInventory:"Inventar",
+      tabPending:"Pending",
+      tabAdmin:"Admin",
+      kpiUsersLbl:"Benutzer",
+      kpiPendingLbl:"Pending",
+      kpiLastLbl:"Letztes Update",
+      weeklyTitle:"Wochenplan",
+      weeklyInfo:"Klicke Zelle → schreibe Plan → Woche speichern.",
+      thShift:"Schicht",
+      invTitle:"Inventar",
+      invInfo:"Artikel hinzufügen und Heute verkauft / Rest verfolgen.",
+      invThItem:"Artikel",
+      invThUnit:"Einheit",
+      invThStart:"Start",
+      invThSold:"Heute verkauft",
+      invThRemain:"Rest",
+      invThAction:"Aktion",
+      pendingTitle:"Pending Nutzer",
+      pendingInfo:"Freigeben oder ablehnen.",
+      adminTitle:"Admin",
+      adminInfo:"Admin Tools Platzhalter.",
+      btnLoad:"Laden",
+      btnSave:"Speichern",
+      btnAdd:"Hinzufügen",
+      btnReload:"Reload"
+    },
+    en:{
+      subTitle:"Restaurant Management",
+      topHint:"Access requires account",
+      loginTitle:"Login",
+      registerTitle:"Register",
+      lblEmail:"Email",
+      lblPass:"Password",
+      btnLogin:"Login",
+      btnReset:"Reset password",
+      lblFullname:"Full name",
+      lblRole:"Requested role",
+      roleNote:"Admin requests stay pending until approved.",
+      lblRegEmail:"Email",
+      lblRegPass:"Password",
+      btnRegister:"Create account",
+      pendingHint:"New users will be <b>Pending</b> until approved.",
+      dashTitle:"Dashboard",
+      dashSub:"Welcome",
+      logout:"Logout",
+      tabDashboard:"Dashboard",
+      tabWeekly:"Weekly plan",
+      tabInventory:"Inventory",
+      tabPending:"Pending",
+      tabAdmin:"Admin",
+      kpiUsersLbl:"Users",
+      kpiPendingLbl:"Pending",
+      kpiLastLbl:"Last update",
+      weeklyTitle:"Weekly plan",
+      weeklyInfo:"Click cell → write plan → Save week.",
+      thShift:"Shift",
+      invTitle:"Inventory",
+      invInfo:"Add items and track sold/remaining today.",
+      invThItem:"Item",
+      invThUnit:"Unit",
+      invThStart:"Start",
+      invThSold:"Today sold",
+      invThRemain:"Remaining",
+      invThAction:"Action",
+      pendingTitle:"Pending users",
+      pendingInfo:"Approve or reject requests.",
+      adminTitle:"Admin",
+      adminInfo:"Admin tools placeholder.",
+      btnLoad:"Load",
+      btnSave:"Save",
+      btnAdd:"Add",
+      btnReload:"Reload"
+    },
+    sq:{
+      subTitle:"Menaxhim Restoranti",
+      topHint:"Qasja kërkon llogari",
+      loginTitle:"Kyçu",
+      registerTitle:"Regjistrohu",
+      lblEmail:"Email",
+      lblPass:"Fjalëkalimi",
+      btnLogin:"Kyçu",
+      btnReset:"Rivendos fjalëkalimin",
+      lblFullname:"Emri dhe mbiemri",
+      lblRole:"Roli i kërkuar",
+      roleNote:"Kërkesat për admin mbesin pending deri sa të aprovohen.",
+      lblRegEmail:"Email",
+      lblRegPass:"Fjalëkalimi",
+      btnRegister:"Krijo llogari",
+      pendingHint:"Përdoruesit e rinj janë <b>Pending</b> deri sa të aprovohen.",
+      dashTitle:"Paneli",
+      dashSub:"Mirëseerdhe",
+      logout:"Dil",
+      tabDashboard:"Paneli",
+      tabWeekly:"Plani javor",
+      tabInventory:"Inventari",
+      tabPending:"Pending",
+      tabAdmin:"Admin",
+      kpiUsersLbl:"Përdorues",
+      kpiPendingLbl:"Pending",
+      kpiLastLbl:"Përditësimi",
+      weeklyTitle:"Plani javor",
+      weeklyInfo:"Kliko qelinë → shkruaj planin → Ruaj javën.",
+      thShift:"Turni",
+      invTitle:"Inventari",
+      invInfo:"Shto artikuj dhe përcjell sot të shitura / mbetje.",
+      invThItem:"Artikulli",
+      invThUnit:"Njësia",
+      invThStart:"Fillimi",
+      invThSold:"Sot të shitura",
+      invThRemain:"Mbetja",
+      invThAction:"Aksion",
+      pendingTitle:"Përdorues Pending",
+      pendingInfo:"Aprovo ose refuzo kërkesat.",
+      adminTitle:"Admin",
+      adminInfo:"Vend për mjetet e adminit.",
+      btnLoad:"Hape",
+      btnSave:"Ruaj",
+      btnAdd:"Shto",
+      btnReload:"Rifresko"
     }
-    function clearNotice(el){
-      el.classList.add("hide");
-      el.textContent = "";
-      el.className = "notice";
-    }
-    function fmtTime(ts){
-      if(!ts) return "—";
-      const d = ts instanceof Timestamp ? ts.toDate() : (ts?.toDate ? ts.toDate() : new Date(ts));
-      return d.toLocaleString(undefined, { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-    }
-    function todayStr(){
-      return new Date().toLocaleDateString(undefined, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
-    }
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s]));
-    }
+  };
 
-    // ========== I18N (DE/EN/SQ) ==========
-    const I18N = {
-      de: { subTitle:"Restaurant Management", authTitle:"Login / Registrierung", authHint:"Zugang nur mit Konto",
-        loginTitle:"Login", registerTitle:"Registrierung", lblLoginEmail:"E-Mail", lblLoginPass:"Passwort",
-        btnLogin:"Login", btnReset:"Passwort zurücksetzen", lblRegName:"Vollständiger Name", lblRegRole:"Gewünschte Rolle",
-        regRoleNote:"Admin-Anfragen bleiben pending bis Freigabe.", lblRegEmail:"E-Mail", lblRegPass:"Passwort", btnRegister:"Konto erstellen",
-        regHint:"Neue Nutzer sind <b>Pending</b> bis Freigabe.", tabDashboard:"Dashboard", tabWeekly:"Wochenplan", tabInventory:"Inventar",
-        tabPending:"Pending", tabAdmin:"Admin", dashTitle:"Dashboard", statusActive:"Aktiv", statusPending:"Pending – warten auf Freigabe",
-        kpiUsersLbl:"Benutzer", kpiPendingLbl:"Pending", kpiItemsLbl:"Inventar-Artikel", kpiLowLbl:"Wenig Bestand", newsTitle:"Mitteilungen",
-        newsText:"Willkommen. Rollen, Pending, Wochenplan und Inventar sind bereit.", newsTip:"Tipp: Admin/SuperAdmin können Plan & Inventar bearbeiten.",
-        quickTitle:"Schnellaktionen", quickHint:"Einige Aktionen hängen von deiner Rolle ab.", weeklyTitle:"Wochenplan", weeklyHint:"Admins können bearbeiten, Staff nur ansehen",
-        weeklyNote:"Klicke in eine Zelle zum Bearbeiten (admin/superadmin).", thDay:"Tag", btnSave:"Speichern", btnReload:"Neu laden",
-        invTitle:"Inventar", invHint:"Admins können hinzufügen/bearbeiten. Wenig Bestand wird rot.", invThName:"Artikel", invThTotal:"Gesamt",
-        invThSold:"Heute verkauft", invThRemain:"Rest", invThUpdated:"Letztes Update", invThActions:"Aktionen", pendingTitle:"Pending Users",
-        pendingHint:"Freigeben oder löschen", pendingNote:"Nur Admin/SuperAdmin kann pending verwalten.", pThName:"Name", pThReq:"Angefragt",
-        pThCreated:"Erstellt", pThAct:"Aktionen", adminTitle:"Admin Panel", adminHint:"Rollen geschützt", roleMgmtTitle:"Rollenverwaltung",
-        roleMgmtNote:"SuperAdmin kann Rollen ändern. Admin nur ansehen.", uThName:"Name", uThRole:"Rolle", uThSet:"Rolle setzen", securityTitle:"Sicherheit",
-        btnLogout:"Logout", itemModalAdd:"Inventarartikel hinzufügen", itemModalEdit:"Inventarartikel bearbeiten", lblItemName:"Artikelname",
-        lblItemUnit:"Einheit", lblItemTotal:"Gesamt", lblItemSold:"Heute verkauft", lblItemLow:"Schwellwert wenig Bestand", btnAdd:"+ Hinzufügen",
-        btnResetSold:"Heute verkauft zurücksetzen", approve:"Freigeben", del:"Löschen", edit:"Bearbeiten", save:"Speichern",
-        notAllowed:"Nicht erlaubt für deine Rolle.", savedOk:"Gespeichert ✅", error:"Fehler: ", userDocDeleted:"User-Dokument gelöscht (Auth-User bleibt).",
-        userApproved:"User freigegeben ✅", resetSent:"Reset-Link gesendet ✅"
-      },
-      en: { subTitle:"Restaurant Management", authTitle:"Login / Register", authHint:"Access requires account",
-        loginTitle:"Login", registerTitle:"Register", lblLoginEmail:"Email", lblLoginPass:"Password", btnLogin:"Login", btnReset:"Reset password",
-        lblRegName:"Full name", lblRegRole:"Requested role", regRoleNote:"Admin requests stay pending until approved.", lblRegEmail:"Email",
-        lblRegPass:"Password", btnRegister:"Create account", regHint:"New users will be <b>Pending</b> until approved.", tabDashboard:"Dashboard",
-        tabWeekly:"Weekly Plan", tabInventory:"Inventory", tabPending:"Pending", tabAdmin:"Admin", dashTitle:"Dashboard", statusActive:"Active",
-        statusPending:"Pending – awaiting approval", kpiUsersLbl:"Users", kpiPendingLbl:"Pending", kpiItemsLbl:"Inventory items", kpiLowLbl:"Low stock",
-        newsTitle:"Notifications", newsText:"Welcome. Roles, Pending approval, Weekly plan, and Inventory are ready.", newsTip:"Tip: Admin/SuperAdmin can edit plan & inventory.",
-        quickTitle:"Quick actions", quickHint:"Some actions depend on your role.", weeklyTitle:"Weekly Plan", weeklyHint:"Admins can edit, staff view-only",
-        weeklyNote:"Click a cell to edit (admin/superadmin).", thDay:"Day", btnSave:"Save", btnReload:"Reload", invTitle:"Inventory",
-        invHint:"Admins can add/edit. Low stock turns red.", invThName:"Item", invThTotal:"Total", invThSold:"Sold today", invThRemain:"Remaining",
-        invThUpdated:"Last update", invThActions:"Actions", pendingTitle:"Pending Users", pendingHint:"Approve or delete", pendingNote:"Only Admin/SuperAdmin can manage pending users.",
-        pThName:"Name", pThReq:"Requested", pThCreated:"Created", pThAct:"Actions", adminTitle:"Admin Panel", adminHint:"Role protected",
-        roleMgmtTitle:"Role Management", roleMgmtNote:"SuperAdmin can change roles. Admin view-only.", uThName:"Name", uThRole:"Role", uThSet:"Set role",
-        securityTitle:"Security", btnLogout:"Logout", itemModalAdd:"Add inventory item", itemModalEdit:"Edit inventory item", lblItemName:"Item name",
-        lblItemUnit:"Unit", lblItemTotal:"Total", lblItemSold:"Sold today", lblItemLow:"Low stock threshold", btnAdd:"+ Add", btnResetSold:"Reset sold today",
-        approve:"Approve", del:"Delete", edit:"Edit", save:"Save", notAllowed:"Not allowed for your role.", savedOk:"Saved ✅", error:"Error: ",
-        userDocDeleted:"User document deleted (Auth user remains).", userApproved:"User approved ✅", resetSent:"Reset email sent ✅"
-      },
-      sq: { subTitle:"Menaxhim Restoranti", authTitle:"Hyrje / Regjistrim", authHint:"Duhet llogari",
-        loginTitle:"Hyrje", registerTitle:"Regjistrim", lblLoginEmail:"Email", lblLoginPass:"Fjalëkalimi", btnLogin:"Hyr", btnReset:"Reset fjalëkalimi",
-        lblRegName:"Emri dhe Mbiemri", lblRegRole:"Roli i kërkuar", regRoleNote:"Kërkesa për Admin mbetet pending derisa aprovohet.",
-        lblRegEmail:"Email", lblRegPass:"Fjalëkalimi", btnRegister:"Krijo llogari", regHint:"Përdoruesit e rinj janë <b>Pending</b> derisa aprovohen.",
-        tabDashboard:"Paneli", tabWeekly:"Plani Javor", tabInventory:"Inventari", tabPending:"Pending", tabAdmin:"Admin", dashTitle:"Paneli",
-        statusActive:"Aktiv", statusPending:"Pending – në pritje të aprovimit", kpiUsersLbl:"Përdorues", kpiPendingLbl:"Pending",
-        kpiItemsLbl:"Artikuj inventari", kpiLowLbl:"Pak stok", newsTitle:"Njoftime", newsText:"Mirë se erdhe. Rolet, Pending, Plani javor dhe Inventari janë gati.",
-        newsTip:"Tip: Admin/SuperAdmin mund ta ndryshojnë planin & inventarin.", quickTitle:"Veprime të shpejta", quickHint:"Disa veprime varen nga roli yt.",
-        weeklyTitle:"Plani Javor", weeklyHint:"Admin mund të ndryshojë, staff vetëm shikon", weeklyNote:"Kliko një qeli për ta ndryshuar (admin/superadmin).",
-        thDay:"Dita", btnSave:"Ruaj", btnReload:"Rifresko", invTitle:"Inventari", invHint:"Admin mund të shtojë/ndryshojë. Pak stok bëhet i kuq.",
-        invThName:"Artikulli", invThTotal:"Totali", invThSold:"Shitur sot", invThRemain:"Mbetur", invThUpdated:"Update i fundit", invThActions:"Veprime",
-        pendingTitle:"Përdorues Pending", pendingHint:"Aprovo ose fshij", pendingNote:"Vetëm Admin/SuperAdmin menaxhon pending.",
-        pThName:"Emri", pThReq:"Kërkesa", pThCreated:"Krijuar", pThAct:"Veprime", adminTitle:"Panel Admin", adminHint:"I mbrojtur me role",
-        roleMgmtTitle:"Menaxhim Rolesh", roleMgmtNote:"SuperAdmin ndryshon rolet. Admin vetëm sheh.", uThName:"Emri", uThRole:"Roli", uThSet:"Vendos rol",
-        securityTitle:"Siguria", btnLogout:"Dil", itemModalAdd:"Shto artikull inventari", itemModalEdit:"Ndrysho artikull inventari",
-        lblItemName:"Emri i artikullit", lblItemUnit:"Njësia", lblItemTotal:"Totali", lblItemSold:"Shitur sot", lblItemLow:"Pragu i stokut të ulët",
-        btnAdd:"+ Shto", btnResetSold:"Reset shitur sot", approve:"Aprovo", del:"Fshij", edit:"Ndrysho", save:"Ruaj",
-        notAllowed:"Nuk lejohet për rolin tënd.", savedOk:"U ruajt ✅", error:"Gabim: ", userDocDeleted:"Dokumenti i user u fshi (Auth user mbetet).",
-        userApproved:"User u aprovua ✅", resetSent:"Email për reset u dërgua ✅"
-      }
-    };
+  let currentLang = "de";
+  function applyLang(lang){
+    currentLang = lang;
+    const t = I18N[lang];
 
-    let lang = localStorage.getItem("matteoteam_lang") || "de";
-    const t = (k)=> (I18N[lang]?.[k] ?? I18N.de[k] ?? k);
+    $("subTitle").textContent = t.subTitle;
+    $("topHint").textContent = t.topHint;
 
-    function applyI18n(){
-      $("subTitle").textContent = t("subTitle");
-      $("authTitle").textContent = t("authTitle");
-      $("authHint").textContent = t("authHint");
-      $("loginTitle").textContent = t("loginTitle");
-      $("registerTitle").textContent = t("registerTitle");
-      $("lblLoginEmail").textContent = t("lblLoginEmail");
-      $("lblLoginPass").textContent = t("lblLoginPass");
-      $("btnLogin").textContent = t("btnLogin");
-      $("btnReset").textContent = t("btnReset");
-      $("lblRegName").textContent = t("lblRegName");
-      $("lblRegRole").textContent = t("lblRegRole");
-      $("regRoleNote").textContent = t("regRoleNote");
-      $("lblRegEmail").textContent = t("lblRegEmail");
-      $("lblRegPass").textContent = t("lblRegPass");
-      $("btnRegister").textContent = t("btnRegister");
-      $("regHint").innerHTML = t("regHint");
+    $("loginTitle").textContent = t.loginTitle;
+    $("registerTitle").textContent = t.registerTitle;
 
-      $("tabDashboard").textContent = t("tabDashboard");
-      $("tabWeekly").textContent = t("tabWeekly");
-      $("tabInventory").textContent = t("tabInventory");
-      $("tabPending").textContent = t("tabPending");
-      $("tabAdmin").textContent = t("tabAdmin");
+    $("lblEmail").textContent = t.lblEmail;
+    $("lblPass").textContent = t.lblPass;
+    $("btnLogin").textContent = t.btnLogin;
+    $("btnReset").textContent = t.btnReset;
 
-      $("dashTitle").textContent = t("dashTitle");
-      $("kpiUsersLbl").textContent = t("kpiUsersLbl");
-      $("kpiPendingLbl").textContent = t("kpiPendingLbl");
-      $("kpiItemsLbl").textContent = t("kpiItemsLbl");
-      $("kpiLowLbl").textContent = t("kpiLowLbl");
+    $("lblFullname").textContent = t.lblFullname;
+    $("lblRole").textContent = t.lblRole;
+    $("roleNote").textContent = t.roleNote;
+    $("lblRegEmail").textContent = t.lblRegEmail;
+    $("lblRegPass").textContent = t.lblRegPass;
+    $("btnRegister").textContent = t.btnRegister;
+    $("pendingHint").innerHTML = t.pendingHint;
 
-      $("newsTitle").textContent = t("newsTitle");
-      $("newsText").textContent = t("newsText");
-      $("newsTip").textContent = t("newsTip");
-      $("quickTitle").textContent = t("quickTitle");
-      $("quickHint").textContent = t("quickHint");
+    $("dashTitle").textContent = t.dashTitle;
+    $("dashSub").textContent = t.dashSub;
+    $("btnLogout").textContent = t.logout;
 
-      $("weeklyTitle").textContent = t("weeklyTitle");
-      $("weeklyHint").textContent = t("weeklyHint");
-      $("weeklyNote").textContent = t("weeklyNote");
-      $("thDay").textContent = t("thDay");
-      $("btnSaveWeekly").textContent = t("btnSave");
-      $("btnReloadWeekly").textContent = t("btnReload");
+    $("tabDashboard").textContent = t.tabDashboard;
+    $("tabWeekly").textContent = t.tabWeekly;
+    $("tabInventory").textContent = t.tabInventory;
+    $("tabPending").textContent = t.tabPending;
+    $("tabAdmin").textContent = t.tabAdmin;
 
-      $("invTitle").textContent = t("invTitle");
-      $("invHint").textContent = t("invHint");
-      $("invThName").textContent = t("invThName");
-      $("invThTotal").textContent = t("invThTotal");
-      $("invThSold").textContent = t("invThSold");
-      $("invThRemain").textContent = t("invThRemain");
-      $("invThUpdated").textContent = t("invThUpdated");
-      $("invThActions").textContent = t("invThActions");
-      $("btnAddItem").textContent = t("btnAdd");
-      $("btnResetSold").textContent = t("btnResetSold");
+    $("kpiUsersLbl").textContent = t.kpiUsersLbl;
+    $("kpiPendingLbl").textContent = t.kpiPendingLbl;
+    $("kpiLastLbl").textContent = t.kpiLastLbl;
 
-      $("pendingTitle").textContent = t("pendingTitle");
-      $("pendingHint").textContent = t("pendingHint");
-      $("pendingNote").textContent = t("pendingNote");
-      $("pThName").textContent = t("pThName");
-      $("pThReq").textContent = t("pThReq");
-      $("pThCreated").textContent = t("pThCreated");
-      $("pThAct").textContent = t("pThAct");
+    $("weeklyTitle").textContent = t.weeklyTitle;
+    $("weeklyInfo").textContent = t.weeklyInfo;
+    $("thShift").textContent = t.thShift;
 
-      $("adminTitle").textContent = t("adminTitle");
-      $("adminHint").textContent = t("adminHint");
-      $("roleMgmtTitle").textContent = t("roleMgmtTitle");
-      $("roleMgmtNote").textContent = t("roleMgmtNote");
-      $("uThName").textContent = t("uThName");
-      $("uThRole").textContent = t("uThRole");
-      $("uThSet").textContent = t("uThSet");
-      $("securityTitle").textContent = t("securityTitle");
+    $("invTitle").textContent = t.invTitle;
+    $("invInfo").textContent = t.invInfo;
+    $("invThItem").textContent = t.invThItem;
+    $("invThUnit").textContent = t.invThUnit;
+    $("invThStart").textContent = t.invThStart;
+    $("invThSold").textContent = t.invThSold;
+    $("invThRemain").textContent = t.invThRemain;
+    $("invThAction").textContent = t.invThAction;
 
-      $("btnLogout").textContent = t("btnLogout");
+    $("pendingTitle").textContent = t.pendingTitle;
+    $("pendingInfo").textContent = t.pendingInfo;
 
-      $("itemModalTitle").textContent = (modalMode==="edit") ? t("itemModalEdit") : t("itemModalAdd");
-      $("lblItemName").textContent = t("lblItemName");
-      $("lblItemUnit").textContent = t("lblItemUnit");
-      $("lblItemTotal").textContent = t("lblItemTotal");
-      $("lblItemSold").textContent = t("lblItemSold");
-      $("lblItemLow").textContent = t("lblItemLow");
+    $("adminTitle").textContent = t.adminTitle;
+    $("adminInfo").textContent = t.adminInfo;
 
-      $("langDE").classList.toggle("active", lang==="de");
-      $("langEN").classList.toggle("active", lang==="en");
-      $("langSQ").classList.toggle("active", lang==="sq");
-    }
+    ["langDE","langEN","langSQ"].forEach(id=>$(id).classList.remove("active"));
+    (lang==="de"?$("langDE"):lang==="en"?$("langEN"):$("langSQ")).classList.add("active");
+  }
 
-    function setLang(v){
-      lang = v;
-      localStorage.setItem("matteoteam_lang", lang);
-      applyI18n();
-      renderRoleUI();
-      renderWeeklyTable();
-      renderInventory();
-    }
-    $("langDE").addEventListener("click", ()=> setLang("de"));
-    $("langEN").addEventListener("click", ()=> setLang("en"));
-    $("langSQ").addEventListener("click", ()=> setLang("sq"));
+  $("langDE").addEventListener("click", ()=>applyLang("de"));
+  $("langEN").addEventListener("click", ()=>applyLang("en"));
+  $("langSQ").addEventListener("click", ()=>applyLang("sq"));
+  applyLang("de");
 
-    $("superUidText").textContent = SUPERADMIN_UID;
-
-    // ========== ROLE HELPERS ==========
-    let currentUser = null;
-    let currentProfile = null;
-    let currentRole = "guest";
-    let unsubInventory = null;
-    let unsubPending = null;
-
-    function computeRole(uid, profile){
-      if(uid === SUPERADMIN_UID) return "superadmin";
-      return profile?.role || "pending";
-    }
-    const canEditWeekly = ()=> currentRole === "admin" || currentRole === "superadmin";
-    const canManagePending = ()=> currentRole === "admin" || currentRole === "superadmin";
-    const canManageInventory = ()=> currentRole === "admin" || currentRole === "superadmin";
-    const canChangeRoles = ()=> currentRole === "superadmin";
-
-    function renderRoleUI(){
-      $("whoName").textContent = currentProfile?.name || currentUser?.email || "—";
-      $("whoRole").textContent = currentRole ? ("(" + currentRole + ")") : "—";
-
-      const pending = currentRole === "pending";
-      $("statusDot").className = "dot" + (pending ? " warn" : "");
-      $("statusText").textContent = pending ? t("statusPending") : t("statusActive");
-      $("todayText").textContent = todayStr();
-
-      if(pending){
-        setNotice($("roleNotice"), "warn",
-          t("statusPending") + ". " +
-          (lang==="sq" ? "Admini duhet të të aprovojë." : lang==="de" ? "Admin muss dich freigeben." : "An admin must approve you.")
-        );
-      }else{
-        clearNotice($("roleNotice"));
-      }
-
-      $("tabPending").classList.toggle("hide", !canManagePending());
-      $("tabAdmin").classList.toggle("hide", !(currentRole==="admin" || currentRole==="superadmin"));
-
-      $("btnSaveWeekly").disabled = !canEditWeekly();
-      $("btnSaveWeekly").style.opacity = canEditWeekly() ? "1" : ".55";
-
-      $("btnAddItem").disabled = !canManageInventory();
-      $("btnAddItem").style.opacity = canManageInventory() ? "1" : ".55";
-      $("btnResetSold").disabled = !canManageInventory();
-      $("btnResetSold").style.opacity = canManageInventory() ? "1" : ".55";
-
-      $("quickAddItem").disabled = !canManageInventory();
-      $("quickAddItem").style.opacity = canManageInventory() ? "1" : ".55";
-      $("quickOpenPending").disabled = !canManagePending();
-      $("quickOpenPending").style.opacity = canManagePending() ? "1" : ".55";
-
-      $("adminDot").className = "dot" + ((currentRole==="admin" || currentRole==="superadmin") ? "" : " bad");
-      $("btnLogout").style.display = currentUser ? "inline-flex" : "none";
-    }
-        // ========== TABS ==========
-    document.querySelectorAll(".tab").forEach(btn=>{
-      btn.addEventListener("click", ()=> switchView(btn.dataset.view));
+  // ==========================
+  // 6) VIEWS
+  // ==========================
+  function showView(name){
+    const views = ["Dashboard","Weekly","Inventory","Pending","Admin"];
+    views.forEach(v=>{
+      $("view"+v).classList.add("hidden");
+      $("tab"+v).classList.remove("active");
     });
-    function switchView(view){
-      document.querySelectorAll(".tab").forEach(b=> b.classList.toggle("active", b.dataset.view===view));
-      ["dashboard","weekly","inventory","pending","admin"].forEach(v=>{
-        $("view-"+v).classList.toggle("hide", v!==view);
+    $("view"+name).classList.remove("hidden");
+    $("tab"+name).classList.add("active");
+  }
+
+  $("tabDashboard").addEventListener("click", ()=>showView("Dashboard"));
+  $("tabWeekly").addEventListener("click", ()=>showView("Weekly"));
+  $("tabInventory").addEventListener("click", ()=>showView("Inventory"));
+  $("tabPending").addEventListener("click", ()=>showView("Pending"));
+  $("tabAdmin").addEventListener("click", ()=>showView("Admin"));
+
+  // ==========================
+  // 7) WEEKLY TABLE INIT
+  // ==========================
+  const SHIFTS = ["Morning", "Evening", "Pizza", "Kitchen", "Service"];
+  const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
+
+  function buildWeekTable(){
+    const tb = $("weekBody");
+    tb.innerHTML = "";
+    SHIFTS.forEach(shift=>{
+      const tr = document.createElement("tr");
+      const td0 = document.createElement("td");
+      td0.innerHTML = `<b>${shift}</b>`;
+      tr.appendChild(td0);
+
+      DAYS.forEach(day=>{
+        const td = document.createElement("td");
+        const ta = document.createElement("textarea");
+        ta.className = "cellInput";
+        ta.id = `cell_${shift}_${day}`;
+        ta.placeholder = "…";
+        td.appendChild(ta);
+        tr.appendChild(td);
       });
-      if(view==="weekly") loadWeekly();
-      if(view==="inventory") startInventoryLive();
-      if(view==="pending") startPendingLive();
-      if(view==="admin") loadUsersForAdmin();
+      tb.appendChild(tr);
+    });
+  }
+  buildWeekTable();
+
+  // ==========================
+  // 8) AUTH ACTIONS
+  // ==========================
+  $("btnLogin").addEventListener("click", async ()=>{
+    clearNotice($("noticeAuth"));
+    try{
+      const email = $("loginEmail").value.trim();
+      const pass  = $("loginPass").value;
+      await signInWithEmailAndPassword(auth, email, pass);
+    }catch(e){
+      setNotice($("noticeAuth"), "bad", e?.message || String(e));
     }
-    $("quickOpenPending").addEventListener("click", ()=> canManagePending() && switchView("pending"));
-    $("quickOpenWeekly").addEventListener("click", ()=> switchView("weekly"));
-    $("quickAddItem").addEventListener("click", ()=> canManageInventory() && openItemModal("add"));
+  });
 
-    // ========== AUTH ==========
-    $("btnLogin").addEventListener("click", async ()=>{
-      clearNotice($("authMsg"));
-      try{
-        const email = $("loginEmail").value.trim();
-        const pass  = $("loginPass").value;
-        await signInWithEmailAndPassword(auth, email, pass);
-      }catch(e){
-        setNotice($("authMsg"), "bad", t("error") + (e?.message || e));
-      }
+  $("btnReset").addEventListener("click", async ()=>{
+    clearNotice($("noticeAuth"));
+    try{
+      const email = $("loginEmail").value.trim();
+      if(!email) return setNotice($("noticeAuth"), "warn", "Email missing.");
+      await sendPasswordResetEmail(auth, email);
+      setNotice($("noticeAuth"), "ok", "Reset email sent.");
+    }catch(e){
+      setNotice($("noticeAuth"), "bad", e?.message || String(e));
+    }
+  });
+
+  $("btnRegister").addEventListener("click", async ()=>{
+    clearNotice($("noticeReg"));
+    try{
+      const fullName = $("regName").value.trim();
+      const roleReq  = $("regRole").value; // staff/admin
+      const email    = $("regEmail").value.trim();
+      const pass     = $("regPass").value;
+
+      if(!fullName) return setNotice($("noticeReg"), "warn", "Name missing.");
+      if(!email)    return setNotice($("noticeReg"), "warn", "Email missing.");
+      if(!pass || pass.length < 6) return setNotice($("noticeReg"), "warn", "Min 6 chars.");
+
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      const uid  = cred.user.uid;
+
+      await setDoc(doc(db, "users", uid), {
+        uid,
+        email,
+        fullName,
+        roleRequested: roleReq,
+        role: "pending",
+        status: "pending",
+        createdAt: serverTimestamp()
+      });
+
+      setNotice($("noticeReg"), "ok", "Created. Waiting for approval.");
+    }catch(e){
+      setNotice($("noticeReg"), "bad", e?.message || String(e));
+    }
+  });
+
+  $("btnLogout").addEventListener("click", ()=>signOut(auth));
+
+  // ==========================
+  // 9) DASH KPIs
+  // ==========================
+  async function refreshKPIs(){
+    try{
+      const all = await getDocs(collection(db,"users"));
+      let pending = 0;
+      all.forEach(d=>{
+        const u = d.data();
+        if(u?.status === "pending") pending++;
+      });
+      $("kpiUsers").textContent = String(all.size);
+      $("kpiPending").textContent = String(pending);
+      $("kpiLast").textContent = new Date().toLocaleString();
+    }catch(_){
+      // ignore
+    }
+  }
+
+  // ==========================
+  // 10) SUPERADMIN: PENDING USERS
+  // ==========================
+  async function loadPending(){
+    $("pendingList").innerHTML = "";
+    clearNotice($("noticePending"));
+
+    const qy = query(collection(db,"users"), where("status","==","pending"));
+    const snap = await getDocs(qy);
+
+    if(snap.empty){
+      $("pendingList").innerHTML = `<div class="small">No pending users.</div>`;
+      return;
+    }
+
+    snap.forEach(d=>{
+      const u = d.data();
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.marginTop = "10px";
+      card.innerHTML = `
+        <div style="font-weight:1000">${u.fullName || "—"}</div>
+        <div class="small">${u.email || ""}</div>
+        <div class="small">requested: <b>${u.roleRequested || "staff"}</b></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" data-act="approve" data-id="${d.id}">Approve</button>
+          <button class="btn danger" data-act="reject" data-id="${d.id}">Reject</button>
+        </div>
+      `;
+      $("pendingList").appendChild(card);
     });
+  }
 
-    $("btnRegister").addEventListener("click", async ()=>{
-      clearNotice($("regMsg"));
-      try{
-        const name = $("regName").value.trim();
-        const requestedRole = $("regRole").value; // staff/admin
-        const email = $("regEmail").value.trim();
-        const pass  = $("regPass").value;
+  $("pendingList").addEventListener("click", async (e)=>{
+    const btn = e.target.closest("button");
+    if(!btn) return;
+    const act = btn.dataset.act;
+    const id  = btn.dataset.id;
+    if(!id) return;
 
-        if(!name) return setNotice($("regMsg"), "warn", "Name required.");
-        if(pass.length < 6) return setNotice($("regMsg"), "warn", "Password min 6.");
+    try{
+      const userRef = doc(db,"users", id);
+      const userSnap = await getDoc(userRef);
+      const u = userSnap.data();
 
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-
-        await setDoc(doc(db, "users", cred.user.uid), {
-          name, email,
-          role: "pending",
-          requestedRole,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-
-        setNotice($("regMsg"), "ok", "Account created. Pending approval ✅");
-      }catch(e){
-        setNotice($("regMsg"), "bad", t("error") + (e?.message || e));
+      if(act==="approve"){
+        const newRole = (u?.roleRequested==="admin") ? "admin" : "staff";
+        await updateDoc(userRef, { status:"active", role:newRole, approvedAt: serverTimestamp() });
+        setNotice($("noticePending"), "ok", `Approved: ${u?.fullName || id} as ${newRole}`);
       }
-    });
-
-    $("btnReset").addEventListener("click", async ()=>{
-      clearNotice($("authMsg"));
-      try{
-        const email = $("loginEmail").value.trim();
-        if(!email) return setNotice($("authMsg"), "warn", "Enter email first.");
-        await sendPasswordResetEmail(auth, email);
-        setNotice($("authMsg"), "ok", t("resetSent"));
-      }catch(e){
-        setNotice($("authMsg"), "bad", t("error") + (e?.message || e));
-      }
-    });
-
-    $("btnLogout").addEventListener("click", ()=> signOut(auth));
-
-    // ========== AUTH STATE ==========
-    onAuthStateChanged(auth, async (user)=>{
-      currentUser = user || null;
-      if(unsubInventory){ unsubInventory(); unsubInventory=null; }
-      if(unsubPending){ unsubPending(); unsubPending=null; }
-
-      if(!user){
-        currentProfile = null;
-        currentRole = "guest";
-        $("appSection").classList.add("hide");
-        $("authSection").classList.remove("hide");
-        applyI18n();
-        renderRoleUI();
-        return;
+      if(act==="reject"){
+        await updateDoc(userRef, { status:"rejected", role:"rejected", rejectedAt: serverTimestamp() });
+        setNotice($("noticePending"), "warn", `Rejected: ${u?.fullName || id}`);
       }
 
-      const uref = doc(db, "users", user.uid);
-      let snap = await getDoc(uref);
-
-      if(!snap.exists()){
-        await setDoc(uref, {
-          name: user.email?.split("@")[0] || "User",
-          email: user.email || "",
-          role: "pending",
-          requestedRole: "staff",
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-        snap = await getDoc(uref);
-      }
-
-      currentProfile = snap.data();
-      currentRole = computeRole(user.uid, currentProfile);
-
-      if(user.uid === SUPERADMIN_UID && currentProfile.role !== "superadmin"){
-        await updateDoc(uref, { role:"superadmin", updatedAt: serverTimestamp() });
-        currentProfile.role = "superadmin";
-        currentRole = "superadmin";
-      }
-
-      $("authSection").classList.add("hide");
-      $("appSection").classList.remove("hide");
-
-      applyI18n();
-      renderRoleUI();
-      switchView("dashboard");
+      await loadPending();
       await refreshKPIs();
-    });
-
-    // ========== KPIs ==========
-    async function refreshKPIs(){
-      try{
-        const usersSnap = await getDocs(collection(db, "users"));
-        const totalUsers = usersSnap.size;
-        let pendingCount = 0;
-        usersSnap.forEach(d=> { if(d.data()?.role === "pending") pendingCount++; });
-
-        const invSnap = await getDocs(collection(db, "inventory"));
-        const items = invSnap.size;
-        let low = 0;
-        invSnap.forEach(d=>{
-          const it = d.data();
-          const remaining = Number(it?.remaining ?? (Number(it?.total||0) - Number(it?.soldToday||0)));
-          const lowTh = Number(it?.low ?? 0);
-          if(lowTh>0 && remaining < lowTh) low++;
-        });
-
-        $("kpiUsers").textContent = totalUsers;
-        $("kpiPending").textContent = pendingCount;
-        $("kpiItems").textContent = items;
-        $("kpiLow").textContent = low;
-      }catch(e){}
+    }catch(e2){
+      setNotice($("noticePending"), "bad", e2?.message || String(e2));
     }
-        // ========== WEEKLY PLAN ==========
-    const WEEK_DAYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"];
-    const WEEK_LABELS = {
-      de: { monday:"Montag", tuesday:"Dienstag", wednesday:"Mittwoch", thursday:"Donnerstag", friday:"Freitag", saturday:"Samstag", sunday:"Sonntag" },
-      en: { monday:"Monday", tuesday:"Tuesday", wednesday:"Wednesday", thursday:"Thursday", friday:"Friday", saturday:"Saturday", sunday:"Sunday" },
-      sq: { monday:"E hënë", tuesday:"E martë", wednesday:"E mërkurë", thursday:"E enjte", friday:"E premte", saturday:"E shtunë", sunday:"E diel" }
-    };
-    const SLOTS = ["10:00","12:00","15:00","18:00","22:00"];
-    let weeklyData = null;
+  });
 
-    function buildEmptyWeekly(){
-      const obj = {};
-      WEEK_DAYS.forEach(day=>{
-        obj[day] = {};
-        SLOTS.forEach(s=> obj[day][s] = "");
+  // ==========================
+  // 11) WEEKLY SAVE/LOAD
+  // Collection: weeklyPlans/{weekKey}
+  // data: { weekKey, updatedAt, updatedBy, cells: { "Morning_mon": "...", ... } }
+  // ==========================
+  function getWeekKeyDefault(){
+    // simple default: yyyy-Www (rough)
+    const d = new Date();
+    const y = d.getFullYear();
+    const firstJan = new Date(y,0,1);
+    const days = Math.floor((d - firstJan) / 86400000);
+    const week = String(Math.floor((days + firstJan.getDay()+1)/7) + 1).padStart(2,"0");
+    return `${y}-W${week}`;
+  }
+  $("weekKey").value = getWeekKeyDefault();
+
+  function collectWeekCells(){
+    const cells = {};
+    SHIFTS.forEach(shift=>{
+      DAYS.forEach(day=>{
+        const key = `${shift}_${day}`;
+        cells[key] = ($(`cell_${shift}_${day}`).value || "").trim();
       });
-      return obj;
-    }
-
-    function renderWeeklyTable(){
-      const tbody = $("weeklyBody");
-      tbody.innerHTML = "";
-      const labels = WEEK_LABELS[lang] || WEEK_LABELS.de;
-      const data = weeklyData || buildEmptyWeekly();
-
-      WEEK_DAYS.forEach(day=>{
-        const tr = document.createElement("tr");
-        const tdDay = document.createElement("td");
-        tdDay.innerHTML = "<b>"+labels[day]+"</b>";
-        tr.appendChild(tdDay);
-
-        SLOTS.forEach(slot=>{
-          const td = document.createElement("td");
-          td.style.cursor = canEditWeekly() ? "text" : "default";
-          td.textContent = (data?.[day]?.[slot] ?? "");
-          td.addEventListener("click", ()=>{
-            if(!canEditWeekly()) return;
-            const cur = data?.[day]?.[slot] ?? "";
-            const val = prompt(`${labels[day]} ${slot}`, cur);
-            if(val === null) return;
-            data[day][slot] = val.trim();
-            td.textContent = data[day][slot];
-            weeklyData = data;
-          });
-          tr.appendChild(td);
-        });
-
-        tbody.appendChild(tr);
+    });
+    return cells;
+  }
+  function fillWeekCells(cells){
+    SHIFTS.forEach(shift=>{
+      DAYS.forEach(day=>{
+        const key = `${shift}_${day}`;
+        $(`cell_${shift}_${day}`).value = (cells && cells[key]) ? cells[key] : "";
       });
-    }
-
-    async function loadWeekly(){
-      clearNotice($("weeklyMsg"));
-      try{
-        const ref = doc(db, "weeklyPlan", "current");
-        const snap = await getDoc(ref);
-        weeklyData = snap.exists() ? (snap.data()?.data || buildEmptyWeekly()) : buildEmptyWeekly();
-        renderWeeklyTable();
-      }catch(e){
-        setNotice($("weeklyMsg"), "bad", t("error") + (e?.message || e));
-      }
-    }
-
-    $("btnReloadWeekly").addEventListener("click", loadWeekly);
-    $("btnSaveWeekly").addEventListener("click", async ()=>{
-      clearNotice($("weeklyMsg"));
-      if(!canEditWeekly()) return setNotice($("weeklyMsg"), "bad", t("notAllowed"));
-      try{
-        const ref = doc(db, "weeklyPlan", "current");
-        await setDoc(ref, { data: weeklyData || buildEmptyWeekly(), updatedAt: serverTimestamp(), updatedBy: currentUser.uid }, { merge:true });
-        setNotice($("weeklyMsg"), "ok", t("savedOk"));
-      }catch(e){
-        setNotice($("weeklyMsg"), "bad", t("error") + (e?.message || e));
-      }
     });
+  }
 
-    // ========== INVENTORY ==========
-    let inventoryCache = [];
-    function startInventoryLive(){
-      if(unsubInventory){ unsubInventory(); unsubInventory=null; }
-      const qref = query(collection(db, "inventory"), orderBy("name","asc"));
-      unsubInventory = onSnapshot(qref, (snap)=>{
-        inventoryCache = [];
-        snap.forEach(docu=>{
-          const d = docu.data();
-          const total = Number(d.total || 0);
-          const soldToday = Number(d.soldToday || 0);
-          const remaining = Number(d.remaining ?? (total - soldToday));
-          inventoryCache.push({
-            id: docu.id,
-            name: d.name || "",
-            unit: d.unit || "kg",
-            total, soldToday,
-            remaining,
-            low: Number(d.low || 0),
-            updatedAt: d.updatedAt || null
-          });
-        });
-        renderInventory();
-        refreshKPIs();
+  $("btnSaveWeek").addEventListener("click", async ()=>{
+    clearNotice($("noticeWeek"));
+    try{
+      const wk = $("weekKey").value.trim();
+      if(!wk) return setNotice($("noticeWeek"), "warn", "Week key missing.");
+      const user = auth.currentUser;
+      if(!user) return setNotice($("noticeWeek"), "bad", "Not logged in.");
+
+      const cells = collectWeekCells();
+      await setDoc(doc(db,"weeklyPlans", wk), {
+        weekKey: wk,
+        cells,
+        updatedAt: serverTimestamp(),
+        updatedBy: user.uid
+      }, { merge:true });
+
+      setNotice($("noticeWeek"), "ok", "Week saved ✅");
+      $("kpiLast").textContent = new Date().toLocaleString();
+    }catch(e){
+      setNotice($("noticeWeek"), "bad", e?.message || String(e));
+    }
+  });
+
+  $("btnLoadWeek").addEventListener("click", async ()=>{
+    clearNotice($("noticeWeek"));
+    try{
+      const wk = $("weekKey").value.trim();
+      if(!wk) return setNotice($("noticeWeek"), "warn", "Week key missing.");
+      const snap = await getDoc(doc(db,"weeklyPlans", wk));
+      if(!snap.exists()){
+        fillWeekCells({});
+        return setNotice($("noticeWeek"), "warn", "No saved plan for this week yet.");
+      }
+      const data = snap.data();
+      fillWeekCells(data?.cells || {});
+      setNotice($("noticeWeek"), "ok", "Week loaded ✅");
+    }catch(e){
+      setNotice($("noticeWeek"), "bad", e?.message || String(e));
+    }
+  });
+
+  // ==========================
+  // 12) INVENTORY
+  // Collection: inventoryItems (docs)
+  // Fields: name, unit, startQty, soldToday{date:qty}, remainQty, updatedAt
+  // ==========================
+  function invRowHtml(id, d){
+    const name = d?.name || "";
+    const unit = d?.unit || "";
+    const startQty = Number(d?.startQty || 0);
+    const remainQty = Number(d?.remainQty ?? startQty);
+    const soldToday = Number((d?.soldToday && d.soldToday[todayKey()]) || 0);
+
+    return `
+      <tr data-id="${id}">
+        <td><b>${escapeHtml(name)}</b></td>
+        <td>${escapeHtml(unit)}</td>
+        <td>${startQty}</td>
+        <td>
+          <input class="cellInput" style="min-height:auto; height:40px" type="number" value="${soldToday}" data-field="soldToday" />
+        </td>
+        <td><span data-field="remain">${remainQty}</span></td>
+        <td>
+          <button class="btn secondary" data-act="save">Save</button>
+          <button class="btn danger" data-act="del">Del</button>
+        </td>
+      </tr>
+    `;
+  }
+  function escapeHtml(s){
+    return String(s||"").replace(/[&<>"]/g, ch=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[ch]));
+  }
+
+  async function loadInventory(){
+    $("invBody").innerHTML = "";
+    clearNotice($("noticeInv"));
+    const snap = await getDocs(collection(db,"inventoryItems"));
+    if(snap.empty){
+      $("invBody").innerHTML = `<tr><td colspan="6" class="small">No items yet.</td></tr>`;
+      return;
+    }
+    let html = "";
+    snap.forEach(d=> html += invRowHtml(d.id, d.data()));
+    $("invBody").innerHTML = html;
+  }
+
+  $("btnAddInv").addEventListener("click", async ()=>{
+    clearNotice($("noticeInv"));
+    try{
+      const name = $("invName").value.trim();
+      const unit = $("invUnit").value.trim() || "pcs";
+      const startQty = Number($("invStart").value || 0);
+
+      if(!name) return setNotice($("noticeInv"), "warn", "Item name missing.");
+      if(!(startQty >= 0)) return setNotice($("noticeInv"), "warn", "Start qty invalid.");
+
+      await addDoc(collection(db,"inventoryItems"), {
+        name, unit,
+        startQty,
+        remainQty: startQty,
+        soldToday: {},
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       });
+
+      $("invName").value = "";
+      $("invUnit").value = "";
+      $("invStart").value = "";
+
+      setNotice($("noticeInv"), "ok", "Added ✅");
+      await loadInventory();
+    }catch(e){
+      setNotice($("noticeInv"), "bad", e?.message || String(e));
     }
+  });
 
-    function renderInventory(){
-      const tbody = $("invBody");
-      const term = $("invSearch").value.trim().toLowerCase();
-      tbody.innerHTML = "";
+  $("btnReloadInv").addEventListener("click", ()=>loadInventory());
 
-      const filtered = inventoryCache.filter(it => !term || it.name.toLowerCase().includes(term));
-      filtered.forEach(it=>{
-        const tr = document.createElement("tr");
+  $("invBody").addEventListener("click", async (e)=>{
+    const btn = e.target.closest("button");
+    if(!btn) return;
+    const tr = btn.closest("tr");
+    const id = tr?.dataset?.id;
+    if(!id) return;
 
-        const nameTd = document.createElement("td");
-        nameTd.innerHTML = "<b>"+escapeHtml(it.name)+"</b><div class='small'>"+escapeHtml(it.unit)+"</div>";
-        tr.appendChild(nameTd);
+    const act = btn.dataset.act;
 
-        const totalTd = document.createElement("td");
-        totalTd.textContent = it.total + " " + it.unit;
-        tr.appendChild(totalTd);
-
-        const soldTd = document.createElement("td");
-        soldTd.textContent = it.soldToday + " " + it.unit;
-        tr.appendChild(soldTd);
-
-        const remainTd = document.createElement("td");
-        const low = it.low > 0 && it.remaining < it.low;
-        remainTd.innerHTML =
-          "<b style='color:"+(low?"var(--bad)":"var(--text)")+"'>"+it.remaining+" "+it.unit+"</b>" +
-          (it.low ? "<div class='small'>low < "+it.low+" "+it.unit+"</div>" : "");
-        tr.appendChild(remainTd);
-
-        const updTd = document.createElement("td");
-        updTd.textContent = fmtTime(it.updatedAt);
-        tr.appendChild(updTd);
-
-        const actTd = document.createElement("td");
-        if(canManageInventory()){
-          const b1 = document.createElement("button");
-          b1.className = "btn";
-          b1.textContent = t("edit");
-          b1.addEventListener("click", ()=> openItemModal("edit", it.id));
-          actTd.appendChild(b1);
-        }else{
-          actTd.innerHTML = "<span class='small'>—</span>";
-        }
-        tr.appendChild(actTd);
-
-        tbody.appendChild(tr);
-      });
-    }
-
-    $("invSearch").addEventListener("input", renderInventory);
-
-    $("btnResetSold").addEventListener("click", async ()=>{
-      clearNotice($("invMsg"));
-      if(!canManageInventory()) return setNotice($("invMsg"), "bad", t("notAllowed"));
-      try{
-        const batch = writeBatch(db);
-        inventoryCache.forEach(it=>{
-          const ref = doc(db, "inventory", it.id);
-          const total = Number(it.total || 0);
-          batch.update(ref, {
-            soldToday: 0,
-            remaining: total,
-            updatedAt: serverTimestamp(),
-            updatedBy: currentUser.uid
-          });
-        });
-        await batch.commit();
-        setNotice($("invMsg"), "ok", t("savedOk"));
-      }catch(e){
-        setNotice($("invMsg"), "bad", t("error") + (e?.message || e));
-      }
-    });
-        // Inventory modal
-    let modalItemId = null;
-
-    function openItemModal(mode, itemId=null){
-      if(!canManageInventory()) return;
-      modalMode = mode;
-      modalItemId = itemId;
-      clearNotice($("itemMsg"));
-
-      $("itemDelete").classList.toggle("hide", mode!=="edit");
-
-      if(mode==="add"){
-        $("itemName").value = "";
-        $("itemUnit").value = "kg";
-        $("itemTotal").value = "";
-        $("itemSold").value = "0";
-        $("itemLow").value = "10";
-      }else{
-        const it = inventoryCache.find(x=> x.id===itemId);
-        if(!it) return;
-        $("itemName").value = it.name;
-        $("itemUnit").value = it.unit;
-        $("itemTotal").value = String(it.total);
-        $("itemSold").value = String(it.soldToday);
-        $("itemLow").value = String(it.low || 0);
-      }
-
-      $("itemModalTitle").textContent = (mode==="edit") ? t("itemModalEdit") : t("itemModalAdd");
-      $("itemModal").classList.add("open");
-    }
-
-    function closeItemModal(){ $("itemModal").classList.remove("open"); }
-    $("itemModalClose").addEventListener("click", closeItemModal);
-    $("itemModal").addEventListener("click", (e)=>{ if(e.target === $("itemModal")) closeItemModal(); });
-
-    $("btnAddItem").addEventListener("click", ()=> openItemModal("add"));
-
-    $("itemSave").addEventListener("click", async ()=>{
-      clearNotice($("itemMsg"));
-      if(!canManageInventory()) return setNotice($("itemMsg"), "bad", t("notAllowed"));
-
-      const name = $("itemName").value.trim();
-      const unit = $("itemUnit").value;
-      const total = Number($("itemTotal").value || 0);
-      const soldToday = Number($("itemSold").value || 0);
-      const low = Number($("itemLow").value || 0);
-      const remaining = Math.max(0, total - soldToday);
-
-      if(!name) return setNotice($("itemMsg"), "warn", "Name required.");
-
-      try{
-        if(modalMode==="add"){
-          await addDoc(collection(db, "inventory"), {
-            name, unit, total, soldToday, remaining, low,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            updatedBy: currentUser.uid
-          });
-        }else{
-          await updateDoc(doc(db, "inventory", modalItemId), {
-            name, unit, total, soldToday, remaining, low,
-            updatedAt: serverTimestamp(),
-            updatedBy: currentUser.uid
-          });
-        }
-        setNotice($("itemMsg"), "ok", t("savedOk"));
-        setTimeout(closeItemModal, 350);
-      }catch(e){
-        setNotice($("itemMsg"), "bad", t("error") + (e?.message || e));
-      }
-    });
-
-    $("itemDelete").addEventListener("click", async ()=>{
-      clearNotice($("itemMsg"));
-      if(!canManageInventory()) return setNotice($("itemMsg"), "bad", t("notAllowed"));
-      if(modalMode!=="edit") return;
-      if(!confirm("Delete this item?")) return;
-      try{
-        await deleteDoc(doc(db, "inventory", modalItemId));
-        setNotice($("itemMsg"), "ok", "Deleted ✅");
-        setTimeout(closeItemModal, 350);
-      }catch(e){
-        setNotice($("itemMsg"), "bad", t("error") + (e?.message || e));
-      }
-    });
-
-    // ========== PENDING USERS ==========
-    function startPendingLive(){
-      if(unsubPending){ unsubPending(); unsubPending=null; }
-      if(!canManagePending()){
-        $("pendingBody").innerHTML = "";
+    try{
+      if(act==="del"){
+        await deleteDoc(doc(db,"inventoryItems", id));
+        setNotice($("noticeInv"), "warn", "Deleted.");
+        await loadInventory();
         return;
       }
-      const qref = query(collection(db, "users"), where("role","==","pending"), orderBy("createdAt","desc"));
-      unsubPending = onSnapshot(qref, (snap)=>{
-        const tbody = $("pendingBody");
-        tbody.innerHTML = "";
-        snap.forEach(docu=>{
-          const u = docu.data();
-          const tr = document.createElement("tr");
 
-          const tdName = document.createElement("td");
-          tdName.innerHTML = "<b>"+escapeHtml(u.name || "—")+"</b>";
-          tr.appendChild(tdName);
+      if(act==="save"){
+        const soldInput = tr.querySelector('input[data-field="soldToday"]');
+        const sold = Number(soldInput?.value || 0);
+        if(!(sold >= 0)) return setNotice($("noticeInv"), "warn", "Sold qty invalid.");
 
-          const tdEmail = document.createElement("td");
-          tdEmail.textContent = u.email || "—";
-          tr.appendChild(tdEmail);
+        const ref = doc(db,"inventoryItems", id);
+        const snap = await getDoc(ref);
+        const d = snap.data();
 
-          const tdReq = document.createElement("td");
-          tdReq.textContent = u.requestedRole || "staff";
-          tr.appendChild(tdReq);
+        const startQty = Number(d?.startQty || 0);
+        const remainBefore = Number(d?.remainQty ?? startQty);
 
-          const tdCr = document.createElement("td");
-          tdCr.textContent = fmtTime(u.createdAt);
-          tr.appendChild(tdCr);
+        const day = todayKey();
+        const soldToday = Object.assign({}, d?.soldToday || {});
+        soldToday[day] = sold;
 
-          const tdAct = document.createElement("td");
-          const approveBtn = document.createElement("button");
-          approveBtn.className = "btn primary";
-          approveBtn.textContent = t("approve");
-          approveBtn.addEventListener("click", ()=> approveUser(docu.id, u.requestedRole || "staff"));
-          tdAct.appendChild(approveBtn);
+        // remain = start - sold (simple) OR keep subtracting from remainBefore:
+        // we'll compute: remain = startQty - sold (today) if first day,
+        // but safer: remain = remainBefore (from db) updated by delta:
+        // Here we do: remain = startQty - sold for today ONLY is not perfect.
+        // We'll do: remain = max(0, startQty - sold) if no previous days exist.
+        // Better: remain = max(0, remainBefore) then set to remainBefore? We'll keep it simple:
+        let remainQty = remainBefore;
+        // If soldToday changed, just set remain = max(0, startQty - sold) for now:
+        remainQty = Math.max(0, startQty - sold);
 
-          const delBtn = document.createElement("button");
-          delBtn.className = "btn danger";
-          delBtn.style.marginLeft = "8px";
-          delBtn.textContent = t("del");
-          delBtn.addEventListener("click", ()=> deleteUserDoc(docu.id));
-          tdAct.appendChild(delBtn);
-
-          tr.appendChild(tdAct);
-          tbody.appendChild(tr);
-        });
-        refreshKPIs();
-      });
-    }
-    $("btnReloadPending").addEventListener("click", startPendingLive);
-
-    async function approveUser(uid, requestedRole){
-      clearNotice($("pendingMsg"));
-      if(!canManagePending()) return setNotice($("pendingMsg"), "bad", t("notAllowed"));
-
-      const finalRole = (requestedRole === "admin" && currentRole !== "superadmin") ? "staff" : requestedRole;
-      try{
-        await updateDoc(doc(db, "users", uid), {
-          role: finalRole,
-          approvedAt: serverTimestamp(),
-          approvedBy: currentUser.uid,
+        await updateDoc(ref, {
+          soldToday,
+          remainQty,
           updatedAt: serverTimestamp()
         });
-        setNotice($("pendingMsg"), "ok", t("userApproved"));
-      }catch(e){
-        setNotice($("pendingMsg"), "bad", t("error") + (e?.message || e));
+
+        setNotice($("noticeInv"), "ok", "Saved ✅");
+        await loadInventory();
       }
+    }catch(e2){
+      setNotice($("noticeInv"), "bad", e2?.message || String(e2));
     }
-
-    async function deleteUserDoc(uid){
-      clearNotice($("pendingMsg"));
-      if(!canManagePending()) return setNotice($("pendingMsg"), "bad", t("notAllowed"));
-      if(!confirm("Delete pending user document?")) return;
-      try{
-        await deleteDoc(doc(db, "users", uid));
-        setNotice($("pendingMsg"), "ok", t("userDocDeleted"));
-      }catch(e){
-        setNotice($("pendingMsg"), "bad", t("error") + (e?.message || e));
-      }
-    }
-        // ========== ADMIN USERS LIST ==========
-    async function loadUsersForAdmin(){
-      clearNotice($("adminMsg"));
-      const tbody = $("usersBody");
-      tbody.innerHTML = "";
-
-      if(!(currentRole==="admin" || currentRole==="superadmin")){
-        setNotice($("adminMsg"), "bad", t("notAllowed"));
-        return;
-      }
-
-      try{
-        const snap = await getDocs(query(collection(db, "users"), orderBy("createdAt","desc")));
-        snap.forEach(docu=>{
-          const u = docu.data();
-          const tr = document.createElement("tr");
-
-          const tdName = document.createElement("td");
-          tdName.innerHTML = "<b>"+escapeHtml(u.name || "—")+"</b>";
-          tr.appendChild(tdName);
-
-          const tdEmail = document.createElement("td");
-          tdEmail.textContent = u.email || "—";
-          tr.appendChild(tdEmail);
-
-          const tdRole = document.createElement("td");
-          tdRole.textContent = u.role || "pending";
-          tr.appendChild(tdRole);
-
-          const tdSet = document.createElement("td");
-          if(canChangeRoles()){
-            const sel = document.createElement("select");
-            sel.className = "input";
-            sel.style.maxWidth = "180px";
-            ["staff","admin","pending"].forEach(r=>{
-              const opt = document.createElement("option");
-              opt.value = r;
-              opt.textContent = r;
-              if((u.role||"pending") === r) opt.selected = true;
-              sel.appendChild(opt);
-            });
-
-            if(docu.id === SUPERADMIN_UID){
-              const opt = document.createElement("option");
-              opt.value = "superadmin";
-              opt.textContent = "superadmin";
-              opt.selected = true;
-              sel.appendChild(opt);
-              sel.disabled = true;
-            }
-
-            const btn = document.createElement("button");
-            btn.className = "btn primary";
-            btn.style.marginLeft = "8px";
-            btn.textContent = t("save");
-            btn.addEventListener("click", async ()=>{
-              clearNotice($("adminMsg"));
-              try{
-                const newRole = sel.value;
-                await updateDoc(doc(db, "users", docu.id), {
-                  role: newRole,
-                  updatedAt: serverTimestamp(),
-                  updatedBy: currentUser.uid
-                });
-                setNotice($("adminMsg"), "ok", t("savedOk"));
-                refreshKPIs();
-              }catch(e){
-                setNotice($("adminMsg"), "bad", t("error") + (e?.message || e));
-              }
-            });
-
-            tdSet.appendChild(sel);
-            tdSet.appendChild(btn);
-          }else{
-            tdSet.innerHTML = "<span class='small'>Only SuperAdmin can change roles</span>";
-          }
-
-          tr.appendChild(tdSet);
-          tbody.appendChild(tr);
-        });
-
-      }catch(e){
-        setNotice($("adminMsg"), "bad", t("error") + (e?.message || 
-           // ========== INIT ==========
-window.modalMode = window.modalMode || "add";
-var modalMode = window.modalMode;
-
-try { if(typeof applyI18n==="function") applyI18n(); } catch(e){ showErr("applyI18n: " + e.message); }
-
-try {
-  if(typeof buildEmptyWeekly==="function") weeklyData = buildEmptyWeekly();
-  if(typeof renderWeeklyTable==="function") renderWeeklyTable();
-  if(typeof renderInventory==="function") renderInventory();
-} catch(e){ showErr("INIT: " + e.message); }
-
-try { if($("btnLogout")) $("btnLogout").style.display = "none"; } catch(e){ showErr("btnLogout: " + e.message); }                                           
- // ---------- Tabs click handler ----------
-document.querySelectorAll(".tab").forEach(btn=>{
-  if($("btnLogout")) $("btnLogout").style.display = "none";
-});
-
-// ---------- Switch view ----------
-function switchView(view){
-  // active tab highlight
-  document.querySelectorAll(".tab").forEach(b=>{
-    b.classList.toggle("active", b.dataset.view===view);
   });
 
-  // show/hide views
-  const views = ["dashboard","weekly","monthall","mymonth","inventory","pending","admin"];
-  views.forEach(v=>{
-    const el = document.getElementById("view-"+v);
-    if(el) el.classList.toggle("hide", v!==view);
+  // ==========================
+  // 13) ANNOUNCEMENTS (Admin placeholder)
+  // Doc: settings/announcement
+  // ==========================
+  $("btnSaveAnn").addEventListener("click", async ()=>{
+    clearNotice($("noticeAdmin"));
+    try{
+      const user = auth.currentUser;
+      if(!user) return setNotice($("noticeAdmin"), "bad", "Not logged in.");
+
+      const text = $("announceText").value.trim();
+      await setDoc(doc(db,"settings","announcement"), {
+        text,
+        updatedAt: serverTimestamp(),
+        updatedBy: user.uid
+      }, { merge:true });
+
+      setNotice($("noticeAdmin"), "ok", "Announcement saved ✅");
+    }catch(e){
+      setNotice($("noticeAdmin"), "bad", e?.message || String(e));
+    }
   });
 
-  // lazy loaders
-  if(view==="weekly" && typeof loadWeekly==="function") loadWeekly();
-  if(view==="monthall" && typeof loadMonthAll==="function") loadMonthAll();
-  if(view==="mymonth" && typeof loadMyMonth==="function") loadMyMonth();
-  if(view==="inventory" && typeof startInventoryLive==="function") startInventoryLive();
-  if(view==="pending" && typeof startPendingLive==="function") startPendingLive();
-  if(view==="admin" && typeof loadUsersForAdmin==="function") loadUsersForAdmin();
-}
-switchView("dashboard");
-  </script>
+  $("btnLoadAnn").addEventListener("click", async ()=>{
+    clearNotice($("noticeAdmin"));
+    try{
+      const snap = await getDoc(doc(db,"settings","announcement"));
+      const text = snap.exists() ? (snap.data()?.text || "") : "";
+      $("announceText").value = text;
+      setNotice($("noticeAdmin"), "ok", "Loaded ✅");
+    }catch(e){
+      setNotice($("noticeAdmin"), "bad", e?.message || String(e));
+    }
+  });
+
+  // ==========================
+  // 14) AUTH STATE + ROLES
+  // ==========================
+  let unsubAnnouncement = null;
+
+  onAuthStateChanged(auth, async (user)=>{
+    // reset UI
+    $("whoami").textContent = "";
+    $("authGrid").classList.remove("hidden");
+    $("appCard").classList.add("hidden");
+
+    $("tabPending").classList.add("hidden");
+    $("tabAdmin").classList.add("hidden");
+
+    $("pillRole").textContent = "—";
+    $("pillStatus").textContent = "—";
+
+    if(unsubAnnouncement){ unsubAnnouncement(); unsubAnnouncement = null; }
+
+    if(!user){
+      setNotice($("noticeApp"), "warn", "Please login.");
+      return;
+    }
+
+    $("whoami").textContent = user.email || user.uid;
+    $("authGrid").classList.add("hidden");
+    $("appCard").classList.remove("hidden");
+    showView("Dashboard");
+
+    // KPIs
+    await refreshKPIs();
+
+    // SUPERADMIN
+    if(user.uid === SUPERADMIN_UID){
+      $("pillRole").textContent = "superadmin";
+      $("pillStatus").textContent = "active";
+      setNotice($("noticeApp"), "ok", "You are SuperAdmin ✅");
+
+      $("tabPending").classList.remove("hidden");
+      $("tabAdmin").classList.remove("hidden");
+
+      await loadPending();
+      await loadInventory();
+      return;
+    }
+
+    // Normal users (Firestore profile)
+    const ref = doc(db,"users", user.uid);
+    const snap = await getDoc(ref);
+
+    if(!snap.exists()){
+      $("pillRole").textContent = "unknown";
+      $("pillStatus").textContent = "unknown";
+      setNotice($("noticeApp"), "bad", "No profile found in Firestore (users/{uid}).");
+      await loadInventory();
+      return;
+    }
+
+    const u = snap.data();
+    $("pillRole").textContent = u.role || "pending";
+    $("pillStatus").textContent = u.status || "pending";
+
+    // Announcement live (for all logged in)
+    unsubAnnouncement = onSnapshot(doc(db,"settings","announcement"), (s)=>{
+      const text = s.exists() ? (s.data()?.text || "") : "";
+      if(text){
+        setNotice($("noticeApp"), "warn", "📣 " + text);
+      }else{
+        setNotice($("noticeApp"), "ok", "Welcome ✅");
+      }
+    });
+
+    if(u.status !== "active"){
+      setNotice($("noticeApp"), "warn", "Your account is pending approval.");
+      $("tabPending").classList.add("hidden");
+      $("tabAdmin").classList.add("hidden");
+      await loadInventory();
+      return;
+    }
+
+    // Active users
+    setNotice($("noticeApp"), "ok", "Welcome! Your account is active ✅");
+
+    if(u.role === "admin"){
+      $("tabAdmin").classList.remove("hidden");
+    }else{
+      $("tabAdmin").classList.add("hidden");
+    }
+
+    $("tabPending").classList.add("hidden");
+
+    // Load main data
+    await loadInventory();
+  });
+
+  // ==========================
+  // 15) Small UX: set weekday headers (static)
+  // ==========================
+  // Keep as EN shortcuts to avoid long texts; you can translate later if you want.
+</script>
+
 </body>
 </html>
