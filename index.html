@@ -353,7 +353,69 @@
         </div>
       <div id="weeklyBlocks" style="margin-top:12px;"></div>
 <div id="noticeWeek" class="notice"></div>
-        
+        // ==============================
+// WEEKLY BLOCK STYLE (Departments)
+// ==============================
+
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+const DEPARTMENTS = [
+  { key:"pizza", title:"Pizzabäcker PRM", people:["Ajris","Hadis","Qendrim","Milot","Amin","Reis"] },
+  { key:"kasse", title:"Kasse", people:["Eddi","Eset","Milot"] },
+  { key:"service", title:"Service", people:["Afrim","Fadil","Mirela"] },
+  { key:"kueche", title:"Küche", people:["Bekim","Kushtrim","Mirela","Xhemajl","Johnson","Paskualina"] },
+];
+
+function renderWeeklyBlocks(){
+  const container = document.getElementById("weeklyBlocks");
+  if(!container) return;
+
+  container.innerHTML = "";
+
+  DEPARTMENTS.forEach(dept=>{
+    let html = `
+      <div style="margin-bottom:25px">
+        <h4 style="margin:10px 0">${dept.title}</h4>
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr>
+              <th style="text-align:left">Name</th>
+              ${DAYS.map(d=>`<th>${d}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    dept.people.forEach((person,pIndex)=>{
+      html += `
+        <tr>
+          <td style="font-weight:600">${person}</td>
+          ${DAYS.map(day=>{
+            const cellId = `cell_${dept.key}_${pIndex}_${day}`;
+            return `
+              <td>
+                <input 
+                  id="${cellId}" 
+                  class="weekCell"
+                  type="text"
+                  placeholder="..."
+                >
+              </td>
+            `;
+          }).join("")}
+        </tr>
+      `;
+    });
+
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    container.innerHTML += html;
+  });
+}
       <!-- INVENTORY -->
       <div class="view hidden" id="viewInventory">
         <h3 style="margin-top:0" id="invTitle">Inventory</h3>
@@ -894,25 +956,75 @@
     return `${y}-W${week}`;
   }
   $("weekKey").value = getWeekKeyDefault();
+// ==============================
+// WEEKLY (Departments) UI
+// ==============================
+const WEEK_DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
+const DEPARTMENTS = [
+  { key:"pizza", title:"Pizzabäcker PRM", people:["Ajris","Hadis","Qendrim","Milot","Amin","Reis"] },
+  { key:"kasse", title:"Kasse", people:["Eddi","Eset","Milot"] },
+  { key:"service", title:"Service", people:["Afrim","Fadil","Mirela"] },
+  { key:"kueche", title:"Küche", people:["Bekim","Kushtrim","Mirela","Xhemajl","Johnson","Paskualina"] },
+];
+
+function renderWeeklyBlocks(){
+  const container = document.getElementById("weeklyBlocks");
+  if(!container) return;
+
+  container.innerHTML = "";
+
+  DEPARTMENTS.forEach(dept=>{
+    let html = `
+      <div style="margin-bottom:22px">
+        <h4 style="margin:10px 0">${dept.title}</h4>
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr>
+              <th style="text-align:left;width:140px">Name</th>
+              ${WEEK_DAYS.map(d=>`<th>${d}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    dept.people.forEach((person,pIndex)=>{
+      html += `
+        <tr>
+          <td style="font-weight:600">${person}</td>
+          ${WEEK_DAYS.map(day=>{
+            const id = `cell_${dept.key}_${pIndex}_${day}`;
+            return `<td><input id="${id}" class="weekCell" placeholder="..."></td>`;
+          }).join("")}
+        </tr>
+      `;
+    });
+
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    container.innerHTML += html;
+  });
+}
+
+// e krijon tabelën menjëherë
+renderWeeklyBlocks();
   function collectWeekCells(){
-    const cells = {};
-    SHIFTS.forEach(shift=>{
-      DAYS.forEach(day=>{
-        const key = `${shift}_${day}`;
-        cells[key] = ($(`cell_${shift}_${day}`).value || "").trim();
-      });
-    });
-    return cells;
-  }
-  function fillWeekCells(cells){
-    SHIFTS.forEach(shift=>{
-      DAYS.forEach(day=>{
-        const key = `${shift}_${day}`;
-        $(`cell_${shift}_${day}`).value = (cells && cells[key]) ? cells[key] : "";
-      });
-    });
-  }
+  const cells = {};
+  document.querySelectorAll('#weeklyBlocks input[id^="cell_"]').forEach(inp=>{
+    cells[inp.id] = inp.value || "";
+  });
+  return cells;
+}
+
+function fillWeekCells(cells){
+  document.querySelectorAll('#weeklyBlocks input[id^="cell_"]').forEach(inp=>{
+    inp.value = (cells && cells[inp.id]) ? cells[inp.id] : "";
+  });
+}
 
   $("btnSaveWeek").addEventListener("click", async ()=>{
     clearNotice($("noticeWeek"));
