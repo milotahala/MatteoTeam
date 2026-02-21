@@ -1307,7 +1307,11 @@ function fillWeekCells(cells){
         setNotice($("noticeApp"), "ok", "Welcome ✅");
       }
     });
-
+// ✅ SUPERADMIN: always allow
+if (user.uid === SUPERADMIN_UID) {
+  u.role = "superadmin";
+  u.status = "active";
+}
     if(u.status !== "active"){
       setNotice($("noticeApp"), "warn", "Your account is pending approval.");
       $("tabPending").classList.add("hidden");
