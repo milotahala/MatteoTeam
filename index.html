@@ -344,7 +344,9 @@
         <div class="row">
           <input id="weekKey" type="text" placeholder="Week key (e.g. 2026-W08)" style="max-width:240px" />
           <button class="btn" id="btnLoadWeek" type="button">Load</button>
-          <button class="btn secondary" id="btnSaveWeek" type="button">Save week</button>
+        <button class="btn secondary" id="btnSaveWeek" type="button">Save week</button>
+        <span id="noticeWeek" style="margin-left:10px;"></span>
+        <span style="opacity:.8;margin-left:10px;">Last: <b id="kpiLast">-</b></span>
         </div>
 
         <div style="margin-top:12px">
@@ -361,7 +363,28 @@
                 <th id="thSun">Sun</th>
               </tr>
             </thead>
-            <tbody id="weekBody"></tbody>
+         <tbody id="weekBody">
+  <tr>
+    <td>morning</td>
+    <td><input id="cell_morning_Mon"></td>
+    <td><input id="cell_morning_Tue"></td>
+    <td><input id="cell_morning_Wed"></td>
+    <td><input id="cell_morning_Thu"></td>
+    <td><input id="cell_morning_Fri"></td>
+    <td><input id="cell_morning_Sat"></td>
+    <td><input id="cell_morning_Sun"></td>
+  </tr>
+  <tr>
+    <td>evening</td>
+    <td><input id="cell_evening_Mon"></td>
+    <td><input id="cell_evening_Tue"></td>
+    <td><input id="cell_evening_Wed"></td>
+    <td><input id="cell_evening_Thu"></td>
+    <td><input id="cell_evening_Fri"></td>
+    <td><input id="cell_evening_Sat"></td>
+    <td><input id="cell_evening_Sun"></td>
+  </tr>
+</tbody>
           </table>
         </div>
 
