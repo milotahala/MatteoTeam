@@ -1294,7 +1294,7 @@ function fillWeekCells(cells){
       return;
     }
 
-    const u = snap.data();
+    let u = snap.data() || {};
     $("pillRole").textContent = u.role || "pending";
     $("pillStatus").textContent = u.status || "pending";
 
@@ -1308,7 +1308,7 @@ function fillWeekCells(cells){
       }
     });
 // ✅ SUPERADMIN: always allow
-if (user.uid === SUPERADMIN_UID) {
+if (user && user.uid === SUPERADMIN_UID) {
   u.role = "superadmin";
   u.status = "active";
 }
