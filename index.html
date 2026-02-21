@@ -350,52 +350,10 @@
           <input id="weekKey" type="text" placeholder="Week key (e.g. 2026-W08)" style="max-width:240px" />
           <button class="btn" id="btnLoadWeek" type="button">Load</button>
         <button class="btn secondary" id="btnSaveWeek" type="button">Save week</button>
-        <span id="noticeWeek" style="margin-left:10px;"></span>
-        <span style="opacity:.8;margin-left:10px;">Last: <b id="kpiLast">-</b></span>
         </div>
-
-        <div style="margin-top:12px">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:120px" id="thShift">Shift</th>
-                <th id="thMon">Mon</th>
-                <th id="thTue">Tue</th>
-                <th id="thWed">Wed</th>
-                <th id="thThu">Thu</th>
-                <th id="thFri">Fri</th>
-                <th id="thSat">Sat</th>
-                <th id="thSun">Sun</th>
-              </tr>
-            </thead>
-         <tbody id="weekBody">
-  <tr>
-    <td>Morning</td>
-    <td><input id="cell_morning_Mon" class="weekCell"></td>
-    <td><input id="cell_morning_Tue" class="weekCell"></td>
-    <td><input id="cell_morning_Wed" class="weekCell"></td>
-    <td><input id="cell_morning_Thu" class="weekCell"></td>
-    <td><input id="cell_morning_Fri" class="weekCell"></td>
-    <td><input id="cell_morning_Sat" class="weekCell"></td>
-    <td><input id="cell_morning_Sun" class="weekCell"></td>
-  </tr>
-  <tr>
-    <td>Evening</td>
-    <td><input id="cell_evening_Mon" class="weekCell"></td>
-    <td><input id="cell_evening_Tue" class="weekCell"></td>
-    <td><input id="cell_evening_Wed" class="weekCell"></td>
-    <td><input id="cell_evening_Thu" class="weekCell"></td>
-    <td><input id="cell_evening_Fri" class="weekCell"></td>
-    <td><input id="cell_evening_Sat" class="weekCell"></td>
-    <td><input id="cell_evening_Sun" class="weekCell"></td>
-  </tr>
-</tbody>
-          </table>
-        </div>
-
-        <div id="noticeWeek" class="notice"></div>
-      </div>
-
+      <div id="weeklyBlocks" style="margin-top:12px;"></div>
+<div id="noticeWeek" class="notice"></div>
+        
       <!-- INVENTORY -->
       <div class="view hidden" id="viewInventory">
         <h3 style="margin-top:0" id="invTitle">Inventory</h3>
