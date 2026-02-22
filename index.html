@@ -1293,6 +1293,11 @@ function fillWeekCells(cells){
     }
 
     let u = snap.data() || {};
+    // ✅ DEBUG (vetëm për test – do dalin 4 popup)
+alert("UID: " + user.uid);
+alert("DOC EXISTS: " + snap.exists());
+alert("ROLE: " + (u.role || "NO_ROLE"));
+alert("STATUS: " + (u.status || "NO_STATUS"));
     $("pillRole").textContent = u.role || "pending";
     $("pillStatus").textContent = u.status || "pending";
 
