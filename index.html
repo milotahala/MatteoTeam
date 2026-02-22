@@ -922,8 +922,6 @@ function renderWeeklyBlocks(){
     try{
       const userRef = doc(db,"users", id);
       const userSnap = await getDoc(userRef);
-      const u = userSnap.data();
-
       if(act==="approve"){
         const newRole = (u?.roleRequested==="admin") ? "admin" : "staff";
         await updateDoc(userRef, { status:"active", role:newRole, approvedAt: serverTimestamp() });
@@ -1307,10 +1305,22 @@ function fillWeekCells(cells){
         setNotice($("noticeApp"), "ok", "Welcome ✅");
       }
     });
-// ✅ SUPERADMIN: always allow
+// ✅ SUPERADMIN: always allow + auto-create doc
 if (user && user.uid === SUPERADMIN_UID) {
   u.role = "superadmin";
   u.status = "active";
+
+ await setDoc(
+  doc(db, "users", user.uid),
+  {
+    name: "Milot",
+    email: user.email || "milootshala@gmail.com",
+    role: "superadmin",
+    status: "active",
+    updatedAt: serverTimestamp()
+  },
+  { merge: true }
+);
 }
     if(u.status !== "active"){
       setNotice($("noticeApp"), "warn", "Your account is pending approval.");
