@@ -446,7 +446,31 @@ function showNotice(id,msg,type){
   el.className="notice "+type;
   el.classList.remove("hidden");
 }
+/* ================== TAB SYSTEM ================== */
 
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+
+    // remove active class
+    document.querySelectorAll(".tab").forEach(t=>{
+      t.classList.remove("active");
+    });
+    tab.classList.add("active");
+
+    // hide all tab sections
+    document.querySelectorAll(".tabContent").forEach(sec=>{
+      sec.classList.add("hidden");
+    });
+
+    // show selected
+    const name = tab.dataset.tab;
+    const target = document.getElementById("tab_"+name);
+    if(target){
+      target.classList.remove("hidden");
+    }
+
+  });
+});
 </script>
 
 </body>
