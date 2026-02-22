@@ -1,1363 +1,452 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MatteoTeam PRO</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MatteoTeam PRO</title>
 
-  <style>
-    :root{
-      --bg1:#0e1a20; --bg2:#15313a;
-      --glass:rgba(255,255,255,.08);
-      --glass2:rgba(255,255,255,.06);
-      --line:rgba(255,255,255,.12);
-      --text:#e9f2f5;
-      --muted:rgba(233,242,245,.7);
-      --accent:#24d3b5;
-      --danger:#ff6b6b;
-      --warn:#ffd166;
-      --ok:#34d399;
-      --radius:20px;
-      --shadow:0 10px 30px rgba(0,0,0,.25);
-      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:var(--font);
-      color:var(--text);
-      background:
-        radial-gradient(1200px 800px at 10% 10%, rgba(36,211,181,.10), transparent 60%),
-        radial-gradient(900px 700px at 90% 10%, rgba(36,211,181,.08), transparent 60%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      padding:22px 12px;
-    }
-    a{color:var(--accent); text-decoration:none}
-    .wrap{width:min(1100px, 100%)}
-
-    .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 16px;
-      border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      backdrop-filter: blur(10px);
-      gap:12px;
-    }
-    .brand{display:flex; gap:12px; align-items:center}
-    .logo{
-      width:46px;height:46px;border-radius:16px;
-      background:linear-gradient(135deg, #22c55e, #3b82f6);
-      box-shadow: 0 10px 25px rgba(0,0,0,.25);
-      flex:0 0 auto;
-    }
-    .btxt .t{font-weight:900; letter-spacing:.3px}
-    .btxt .s{font-size:13px; color:var(--muted); margin-top:2px}
-
-    .lang{
-      display:flex; gap:8px; align-items:center;
-      padding:8px; border-radius:18px;
-      background:rgba(0,0,0,.15);
-      border:1px solid var(--line);
-    }
-    .lang button{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      padding:8px 12px;
-      border-radius:14px;
-      font-weight:800;
-      cursor:pointer;
-    }
-    .lang button.active{
-      border-color:rgba(36,211,181,.7);
-      box-shadow:0 0 0 2px rgba(36,211,181,.14) inset;
-    }
-
-    .chip{
-      display:flex; gap:10px; align-items:center;
-      margin-top:12px;
-      padding:10px 14px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.14);
-      border-radius:16px;
-      color:var(--muted);
-    }
-    .dot{width:10px; height:10px; border-radius:99px; background:var(--warn)}
-    .chip .right{margin-left:auto; font-size:12px}
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:14px;
-      margin-top:14px;
-    }
-    @media (min-width: 920px){
-      .grid{grid-template-columns: 1fr 1fr;}
-    }
-
-    .card{
-      border:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      padding:16px;
-      backdrop-filter: blur(10px);
-    }
-    .card h3{margin:0 0 12px 0}
-    label{display:block; font-size:13px; color:var(--muted); margin:10px 0 6px}
-    input, select, textarea{
-      width:100%;
-      background:rgba(0,0,0,.18);
-      border:1px solid var(--line);
-      color:var(--text);
-      padding:12px 12px;
-      border-radius:14px;
-      outline:none;
-    }
-    textarea{min-height:90px; resize:vertical}
-    input:focus, select:focus, textarea:focus{
-      border-color:rgba(36,211,181,.7);
-      box-shadow:0 0 0 2px rgba(36,211,181,.12)
-    }
-
-    .row{display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap}
-    .btn{
-      border:1px solid rgba(36,211,181,.6);
-      background:rgba(36,211,181,.10);
-      color:var(--text);
-      padding:11px 14px;
-      border-radius:14px;
-      font-weight:900;
-      cursor:pointer;
-      width:fit-content;
-    }
-    .btn.secondary{border-color:var(--line); background:rgba(255,255,255,.06)}
-    .btn.danger{border-color:rgba(255,107,107,.6); background:rgba(255,107,107,.10)}
-    .link{background:none; border:none; color:var(--accent); font-weight:900; cursor:pointer; padding:0}
-
-    .notice{
-      margin-top:12px;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.14);
-      color:var(--muted);
-      display:none;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    .notice.show{display:block}
-    .notice.ok{border-color:rgba(52,211,153,.45)}
-    .notice.bad{border-color:rgba(255,107,107,.45); color:#ffd6d6}
-    .notice.warn{border-color:rgba(255,209,102,.45)}
-.weekCell{
-  width:95px;
-  text-align:center;
-  padding:6px;
-  border-radius:10px;
+<style>
+:root{
+  --bg1:#0e1a20;
+  --bg2:#15313a;
+  --accent:#2dd4bf;
+  --accent2:#38bdf8;
+  --danger:#fb7185;
+  --ok:#34d399;
+  --warn:#fbbf24;
+  --text:#e9f2f5;
+  --muted:rgba(233,242,245,.7);
+  --line:rgba(255,255,255,.12);
 }
-    .hidden{display:none !important}
 
-    .tabs{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap}
-    .tabs button{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:14px;
-      font-weight:900;
-      cursor:pointer;
-    }
-    .tabs button.active{border-color:rgba(36,211,181,.7)}
-    .view{margin-top:14px}
+body{
+  margin:0;
+  font-family:system-ui;
+  color:var(--text);
+  background:
+    linear-gradient(180deg,var(--bg1),var(--bg2));
+}
 
-    .kpi{display:grid; grid-template-columns: repeat(3,1fr); gap:10px}
-    @media (max-width: 740px){ .kpi{grid-template-columns:1fr 1fr} }
-    .kpi .box{
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.14);
-      border-radius:18px;
-      padding:12px;
-    }
-    .kpi .n{font-size:22px; font-weight:1000}
-    .kpi .l{font-size:12px; color:var(--muted); margin-top:4px}
-    .small{font-size:12px; color:var(--muted)}
+.wrap{
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
 
-    table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      overflow:hidden;
-      border:1px solid var(--line);
-      border-radius:16px;
-      background:rgba(0,0,0,.14);
-    }
-    th, td{
-      padding:10px;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      border-right:1px solid rgba(255,255,255,.06);
-      vertical-align:top;
-      font-size:13px;
-    }
-    th:last-child, td:last-child{border-right:none}
-    tr:last-child td{border-bottom:none}
-    th{color:var(--muted); text-align:left; font-weight:900}
-    .cellInput{
-      width:100%;
-      min-height:56px;
-      background:rgba(0,0,0,.10);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:12px;
-      color:var(--text);
-      padding:8px 10px;
-      outline:none;
-    }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);
-      font-size:12px;
-      color:var(--muted);
-    }
-  </style>
+.card{
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:20px;
+  margin-top:20px;
+}
+
+input,select,textarea{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  margin-bottom:12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.3);
+  color:white;
+}
+
+button{
+  padding:12px 18px;
+  border-radius:12px;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.btn{ background:var(--accent); color:black; }
+.btnDanger{ background:var(--danger); color:white; }
+.btnSecondary{ background:rgba(255,255,255,.2); color:white; }
+
+.hidden{ display:none; }
+
+.notice{
+  margin-top:10px;
+  padding:10px;
+  border-radius:10px;
+  font-size:14px;
+}
+
+.notice.ok{ background:rgba(52,211,153,.2); }
+.notice.bad{ background:rgba(251,113,133,.2); }
+.notice.warn{ background:rgba(251,191,36,.2); }
+
+.tabs{
+  margin-top:20px;
+  display:flex;
+  gap:10px;
+}
+
+.tab{
+  padding:10px 16px;
+  border-radius:999px;
+  background:rgba(255,255,255,.1);
+  cursor:pointer;
+}
+
+.tab.active{
+  background:var(--accent);
+  color:black;
+}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo"></div>
-        <div class="btxt">
-          <div class="t">MatteoTeam <span style="opacity:.85">PRO</span></div>
-          <div class="s" id="subTitle">Restaurant Management</div>
-        </div>
-      </div>
+<div class="wrap">
 
-      <div class="lang">
-        <button id="langDE" class="active" type="button">DE</button>
-        <button id="langEN" type="button">EN</button>
-        <button id="langSQ" type="button">SQ</button>
-      </div>
-    </div>
+<h1>MatteoTeam PRO</h1>
 
-    <div class="chip">
-      <span class="dot"></span>
-      <span id="topHint">Access requires account</span>
-      <span class="right" id="whoami"></span>
-    </div>
+<div id="authSection" class="card">
 
-    <!-- AUTH -->
-    <div class="grid" id="authGrid">
-      <div class="card">
-        <h3 id="loginTitle">Login</h3>
-        <label id="lblEmail">Email</label>
-        <input id="loginEmail" type="email" autocomplete="email" />
+<h2>Login</h2>
+<input id="loginEmail" type="email" placeholder="Email">
+<input id="loginPass" type="password" placeholder="Password">
+<button class="btn" id="btnLogin">Login</button>
+<button class="btnSecondary" id="btnReset">Reset</button>
+<div id="noticeAuth" class="notice hidden"></div>
 
-        <label id="lblPass">Password</label>
-        <input id="loginPass" type="password" autocomplete="current-password" />
+<hr>
 
-        <div class="row">
-          <button class="btn" id="btnLogin" type="button">Login</button>
-          <button class="link" id="btnReset" type="button">Reset password</button>
-        </div>
+<h2>Register</h2>
+<input id="regName" type="text" placeholder="Full Name">
+<select id="regRole">
+<option value="staff">Staff</option>
+<option value="admin">Admin</option>
+</select>
+<input id="regEmail" type="email" placeholder="Email">
+<input id="regPass" type="password" placeholder="Password (min 6)">
+<button class="btn" id="btnRegister">Create</button>
+<div id="noticeReg" class="notice hidden"></div>
 
-        <div id="noticeAuth" class="notice"></div>
-      </div>
+</div>
+<!-- ================= APP SECTION ================= -->
 
-      <div class="card">
-        <h3 id="registerTitle">Register</h3>
+<div id="appSection" class="card hidden">
 
-        <label id="lblFullname">Full name</label>
-        <input id="regName" type="text" placeholder="Rina Lulaj" />
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<div>
+<b id="userName">—</b> |
+<span id="userRole">—</span> |
+<span id="userStatus">—</span>
+</div>
+<div>
+<button class="btnSecondary" id="btnLogout">Logout</button>
+</div>
+</div>
 
-        <label id="lblRole">Requested role</label>
-        <select id="regRole">
-          <option value="staff">Staff</option>
-          <option value="admin">Admin</option>
-        </select>
-        <div class="small" id="roleNote">Admin requests stay pending until approved.</div>
+<div class="tabs">
+<div class="tab active" data-tab="home">Dashboard</div>
+<div class="tab" data-tab="week">Weekly</div>
+<div class="tab" data-tab="inventory">Inventory</div>
+<div class="tab hidden" id="tabAdmin" data-tab="admin">Admin</div>
+<div class="tab hidden" id="tabPending" data-tab="pending">Pending</div>
+</div>
 
-        <label id="lblRegEmail">Email</label>
-        <input id="regEmail" type="email" placeholder="name@example.com" autocomplete="email"/>
+<div id="noticeApp" class="notice hidden"></div>
 
-        <label id="lblRegPass">Password</label>
-        <input id="regPass" type="password" placeholder="min. 6 chars" autocomplete="new-password"/>
+<!-- DASHBOARD -->
+<div id="tab_home" class="tabContent">
 
-        <div class="row">
-          <button class="btn secondary" id="btnRegister" type="button">Create account</button>
-        </div>
+<h3>Announcement</h3>
+<div id="announcementBox" class="notice"></div>
 
-        <div class="small" id="pendingHint">New users will be <b>Pending</b> until approved.</div>
-        <div id="noticeReg" class="notice"></div>
-      </div>
-    </div>
+</div>
 
-    <!-- APP -->
-    <div class="card hidden" id="appCard">
-      <div class="row" style="justify-content:space-between">
-        <div>
-          <div style="font-weight:1000; font-size:18px" id="dashTitle">Dashboard</div>
-          <div class="small" id="dashSub">Welcome</div>
-          <div class="row" style="margin-top:10px">
-            <span class="pill"><b id="pillRole">—</b></span>
-            <span class="pill"><span id="pillStatus">—</span></span>
-          </div>
-        </div>
-        <button class="btn danger" id="btnLogout" type="button">Logout</button>
-      </div>
+<!-- WEEKLY PLAN -->
+<div id="tab_week" class="tabContent hidden">
 
-      <div class="tabs">
-        <button class="active" id="tabDashboard" type="button">Dashboard</button>
-        <button id="tabWeekly" type="button">Weekly plan</button>
-        <button id="tabInventory" type="button">Inventory</button>
-        <button id="tabPending" type="button" class="hidden">Pending</button>
-        <button id="tabAdmin" type="button" class="hidden">Admin</button>
-      </div>
+<h3>Weekly Plan</h3>
 
-      <div class="view" id="viewDashboard">
-        <div class="kpi">
-          <div class="box">
-            <div class="n" id="kpiUsers">—</div>
-            <div class="l" id="kpiUsersLbl">Users</div>
-          </div>
-          <div class="box">
-            <div class="n" id="kpiPending">—</div>
-            <div class="l" id="kpiPendingLbl">Pending</div>
-          </div>
-          <div class="box">
-            <div class="n" id="kpiLast">—</div>
-            <div class="l" id="kpiLastLbl">Last update</div>
-          </div>
-        </div>
-        <div id="noticeApp" class="notice show warn" style="margin-top:12px"></div>
-      </div>
+<input id="weekKey" placeholder="2026-W01">
+<button class="btnSecondary" id="btnLoadWeek">Load</button>
+<button class="btn" id="btnSaveWeek">Save</button>
 
-      <!-- WEEKLY -->
-      <div class="view hidden" id="viewWeekly">
-        <h3 style="margin-top:0" id="weeklyTitle">Weekly plan</h3>
-        <div class="small" id="weeklyInfo">Click a cell → write plan → Save week.</div>
+<div id="weekNotice" class="notice hidden"></div>
 
-        <div class="row">
-          <input id="weekKey" type="text" placeholder="Week key (e.g. 2026-W08)" style="max-width:240px" />
-          <button class="btn" id="btnLoadWeek" type="button">Load</button>
-        <button class="btn secondary" id="btnSaveWeek" type="button">Save week</button>
-        </div>
-      <div id="weeklyBlocks" style="margin-top:12px;"></div>
-<div id="noticeWeek" class="notice"></div>
-        // ==============================
-// WEEKLY BLOCK STYLE (Departments)
-// ==============================
+<table border="1" width="100%" style="margin-top:15px;">
+<thead>
+<tr>
+<th>Shift</th>
+<th>Mon</th>
+<th>Tue</th>
+<th>Wed</th>
+<th>Thu</th>
+<th>Fri</th>
+<th>Sat</th>
+<th>Sun</th>
+</tr>
+</thead>
+<tbody id="weekBody"></tbody>
+</table>
 
-const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+</div>
 
-const DEPARTMENTS = [
-  { key:"pizza", title:"Pizzabäcker PRM", people:["Ajris","Hadis","Qendrim","Milot","Amin","Reis"] },
-  { key:"kasse", title:"Kasse", people:["Eddi","Eset","Milot"] },
-  { key:"service", title:"Service", people:["Afrim","Fadil","Mirela"] },
-  { key:"kueche", title:"Küche", people:["Bekim","Kushtrim","Mirela","Xhemajl","Johnson","Paskualina"] },
-];
+<!-- INVENTORY -->
+<div id="tab_inventory" class="tabContent hidden">
 
-function renderWeeklyBlocks(){
-  const container = document.getElementById("weeklyBlocks");
-  if(!container) return;
+<h3>Inventory</h3>
 
-  container.innerHTML = "";
+<input id="invName" placeholder="Name">
+<input id="invUnit" placeholder="Unit">
+<input id="invQty" type="number" placeholder="Start qty">
+<button class="btn" id="btnAddItem">Add Item</button>
 
-  DEPARTMENTS.forEach(dept=>{
-    let html = `
-      <div style="margin-bottom:25px">
-        <h4 style="margin:10px 0">${dept.title}</h4>
-        <table style="width:100%;border-collapse:collapse">
-          <thead>
-            <tr>
-              <th style="text-align:left">Name</th>
-              ${DAYS.map(d=>`<th>${d}</th>`).join("")}
-            </tr>
-          </thead>
-          <tbody>
-    `;
+<div id="inventoryList"></div>
 
-    dept.people.forEach((person,pIndex)=>{
-      html += `
-        <tr>
-          <td style="font-weight:600">${person}</td>
-          ${DAYS.map(day=>{
-            const cellId = `cell_${dept.key}_${pIndex}_${day}`;
-            return `
-              <td>
-                <input 
-                  id="${cellId}" 
-                  class="weekCell"
-                  type="text"
-                  placeholder="..."
-                >
-              </td>
-            `;
-          }).join("")}
-        </tr>
-      `;
-    });
+</div>
 
-    html += `
-          </tbody>
-        </table>
-      </div>
-    `;
+<!-- ADMIN -->
+<div id="tab_admin" class="tabContent hidden">
 
-    container.innerHTML += html;
-  });
-}
-      <!-- INVENTORY -->
-      <div class="view hidden" id="viewInventory">
-        <h3 style="margin-top:0" id="invTitle">Inventory</h3>
-        <div class="small" id="invInfo">Add items and track sold/remaining per day.</div>
+<h3>Announcement Text</h3>
+<input id="announcementInput" placeholder="Message">
+<button class="btn" id="btnSaveAnnouncement">Save</button>
 
-        <div class="row">
-          <input id="invName" type="text" placeholder="Item (e.g. Mehl 25kg)" style="flex:1; min-width:200px" />
-          <input id="invUnit" type="text" placeholder="Unit (kg / l / pcs)" style="width:140px" />
-          <input id="invStart" type="number" placeholder="Start qty" style="width:140px" />
-          <button class="btn" id="btnAddInv" type="button">Add</button>
-          <button class="btn secondary" id="btnReloadInv" type="button">Reload</button>
-        </div>
+</div>
 
-        <div style="margin-top:12px; overflow:auto">
-          <table>
-            <thead>
-              <tr>
-                <th id="invThItem" style="min-width:220px">Item</th>
-                <th id="invThUnit" style="width:90px">Unit</th>
-                <th id="invThStart" style="width:110px">Start</th>
-                <th id="invThSold" style="width:140px">Today sold</th>
-                <th id="invThRemain" style="width:140px">Remaining</th>
-                <th style="width:120px" id="invThAction">Action</th>
-              </tr>
-            </thead>
-            <tbody id="invBody"></tbody>
-          </table>
-        </div>
+<!-- PENDING USERS -->
+<div id="tab_pending" class="tabContent hidden">
 
-        <div id="noticeInv" class="notice"></div>
-      </div>
+<h3>Pending Users</h3>
+<div id="pendingList"></div>
 
-      <!-- PENDING -->
-      <div class="view hidden" id="viewPending">
-        <h3 style="margin-top:0" id="pendingTitle">Pending users</h3>
-        <div class="small" id="pendingInfo">Approve or reject staff/admin requests.</div>
-        <div id="pendingList" style="margin-top:12px"></div>
-        <div id="noticePending" class="notice"></div>
-      </div>
+</div>
 
-      <!-- ADMIN -->
-      <div class="view hidden" id="viewAdmin">
-        <h3 style="margin-top:0" id="adminTitle">Admin</h3>
-        <div class="small" id="adminInfo">Admin tools placeholder (roles, announcements, etc.).</div>
+</div>
+<!-- ================= FIREBASE LOGIC ================= -->
 
-        <div class="row" style="margin-top:12px">
-          <input id="announceText" type="text" placeholder="Announcement text..." style="flex:1; min-width:220px" />
-          <button class="btn secondary" id="btnSaveAnn" type="button">Save announcement</button>
-          <button class="btn secondary" id="btnLoadAnn" type="button">Load</button>
-        </div>
+<script type="module">
 
-        <div id="noticeAdmin" class="notice"></div>
-      </div>
+/* ================== FIREBASE IMPORTS ================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    </div><!-- /appCard -->
-    <script type="module">
-  // ==========================
-  // 1) IMPORTS MUST BE FIRST
-  // ==========================
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getAuth,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    sendPasswordResetEmail,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  import {
-    getFirestore,
-    doc,
-    getDoc,
-    setDoc,
-    updateDoc,
-    deleteDoc,
-    collection,
-    addDoc,
-    getDocs,
-    query,
-    where,
-    serverTimestamp,
-    onSnapshot
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-alert("MatteoTeam JS u ngarkua ✅");
-  // ==========================
-  // 2) HELPERS
-  // ==========================
-  const $ = (id)=>document.getElementById(id);
-  const todayKey = ()=>new Date().toISOString().slice(0,10);
-
-  function setNotice(el, type, msg){
-    if(!el) return;
-    el.className = "notice show " + (type||"");
-    el.textContent = msg || "";
-  }
-  function clearNotice(el){
-    if(!el) return;
-    el.className = "notice";
-    el.textContent = "";
-  }
-
-  // ==========================
-  // 3) FIREBASE CONFIG (PASTE YOURS HERE)
-  // ==========================
-  const firebaseConfig = {
+/* ================== CONFIG ================== */
+const firebaseConfig = {
   apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
   authDomain: "matteoteam-test.firebaseapp.com",
   projectId: "matteoteam-test",
   storageBucket: "matteoteam-test.firebasestorage.app",
   messagingSenderId: "1084486170913",
-  appId: "1:1084486170913:web:d68cf328becefe226a6660",
-  measurementId: "G-9V887087P0"
+  appId: "1:1084486170913:web:d68cf328becefe226a6660"
 };
-  // ✅ SuperAdmin UID (Milot)
-  const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
 
-  // ==========================
-  // 4) INIT
-  // ==========================
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
 
-  // ==========================
-  // 5) I18N
-  // ==========================
-  const I18N = {
-    de:{
-      subTitle:"Restaurant Management",
-      topHint:"Zugriff erfordert Konto",
-      loginTitle:"Login",
-      registerTitle:"Registrierung",
-      lblEmail:"Email",
-      lblPass:"Passwort",
-      btnLogin:"Login",
-      btnReset:"Passwort zurücksetzen",
-      lblFullname:"Voller Name",
-      lblRole:"Gewünschte Rolle",
-      roleNote:"Admin-Anfragen bleiben pending bis zur Freigabe.",
-      lblRegEmail:"Email",
-      lblRegPass:"Passwort",
-      btnRegister:"Konto erstellen",
-      pendingHint:"Neue Nutzer sind <b>Pending</b> bis zur Freigabe.",
-      dashTitle:"Dashboard",
-      dashSub:"Willkommen",
-      logout:"Logout",
-      tabDashboard:"Dashboard",
-      tabWeekly:"Wochenplan",
-      tabInventory:"Inventar",
-      tabPending:"Pending",
-      tabAdmin:"Admin",
-      kpiUsersLbl:"Benutzer",
-      kpiPendingLbl:"Pending",
-      kpiLastLbl:"Letztes Update",
-      weeklyTitle:"Wochenplan",
-      weeklyInfo:"Klicke Zelle → schreibe Plan → Woche speichern.",
-      thShift:"Schicht",
-      invTitle:"Inventar",
-      invInfo:"Artikel hinzufügen und Heute verkauft / Rest verfolgen.",
-      invThItem:"Artikel",
-      invThUnit:"Einheit",
-      invThStart:"Start",
-      invThSold:"Heute verkauft",
-      invThRemain:"Rest",
-      invThAction:"Aktion",
-      pendingTitle:"Pending Nutzer",
-      pendingInfo:"Freigeben oder ablehnen.",
-      adminTitle:"Admin",
-      adminInfo:"Admin Tools Platzhalter.",
-      btnLoad:"Laden",
-      btnSave:"Speichern",
-      btnAdd:"Hinzufügen",
-      btnReload:"Reload"
-    },
-    en:{
-      subTitle:"Restaurant Management",
-      topHint:"Access requires account",
-      loginTitle:"Login",
-      registerTitle:"Register",
-      lblEmail:"Email",
-      lblPass:"Password",
-      btnLogin:"Login",
-      btnReset:"Reset password",
-      lblFullname:"Full name",
-      lblRole:"Requested role",
-      roleNote:"Admin requests stay pending until approved.",
-      lblRegEmail:"Email",
-      lblRegPass:"Password",
-      btnRegister:"Create account",
-      pendingHint:"New users will be <b>Pending</b> until approved.",
-      dashTitle:"Dashboard",
-      dashSub:"Welcome",
-      logout:"Logout",
-      tabDashboard:"Dashboard",
-      tabWeekly:"Weekly plan",
-      tabInventory:"Inventory",
-      tabPending:"Pending",
-      tabAdmin:"Admin",
-      kpiUsersLbl:"Users",
-      kpiPendingLbl:"Pending",
-      kpiLastLbl:"Last update",
-      weeklyTitle:"Weekly plan",
-      weeklyInfo:"Click cell → write plan → Save week.",
-      thShift:"Shift",
-      invTitle:"Inventory",
-      invInfo:"Add items and track sold/remaining today.",
-      invThItem:"Item",
-      invThUnit:"Unit",
-      invThStart:"Start",
-      invThSold:"Today sold",
-      invThRemain:"Remaining",
-      invThAction:"Action",
-      pendingTitle:"Pending users",
-      pendingInfo:"Approve or reject requests.",
-      adminTitle:"Admin",
-      adminInfo:"Admin tools placeholder.",
-      btnLoad:"Load",
-      btnSave:"Save",
-      btnAdd:"Add",
-      btnReload:"Reload"
-    },
-    sq:{
-      subTitle:"Menaxhim Restoranti",
-      topHint:"Qasja kërkon llogari",
-      loginTitle:"Kyçu",
-      registerTitle:"Regjistrohu",
-      lblEmail:"Email",
-      lblPass:"Fjalëkalimi",
-      btnLogin:"Kyçu",
-      btnReset:"Rivendos fjalëkalimin",
-      lblFullname:"Emri dhe mbiemri",
-      lblRole:"Roli i kërkuar",
-      roleNote:"Kërkesat për admin mbesin pending deri sa të aprovohen.",
-      lblRegEmail:"Email",
-      lblRegPass:"Fjalëkalimi",
-      btnRegister:"Krijo llogari",
-      pendingHint:"Përdoruesit e rinj janë <b>Pending</b> deri sa të aprovohen.",
-      dashTitle:"Paneli",
-      dashSub:"Mirëseerdhe",
-      logout:"Dil",
-      tabDashboard:"Paneli",
-      tabWeekly:"Plani javor",
-      tabInventory:"Inventari",
-      tabPending:"Pending",
-      tabAdmin:"Admin",
-      kpiUsersLbl:"Përdorues",
-      kpiPendingLbl:"Pending",
-      kpiLastLbl:"Përditësimi",
-      weeklyTitle:"Plani javor",
-      weeklyInfo:"Kliko qelinë → shkruaj planin → Ruaj javën.",
-      thShift:"Turni",
-      invTitle:"Inventari",
-      invInfo:"Shto artikuj dhe përcjell sot të shitura / mbetje.",
-      invThItem:"Artikulli",
-      invThUnit:"Njësia",
-      invThStart:"Fillimi",
-      invThSold:"Sot të shitura",
-      invThRemain:"Mbetja",
-      invThAction:"Aksion",
-      pendingTitle:"Përdorues Pending",
-      pendingInfo:"Aprovo ose refuzo kërkesat.",
-      adminTitle:"Admin",
-      adminInfo:"Vend për mjetet e adminit.",
-      btnLoad:"Hape",
-      btnSave:"Ruaj",
-      btnAdd:"Shto",
-      btnReload:"Rifresko"
-    }
-  };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  let currentLang = "de";
-  function applyLang(lang){
-    currentLang = lang;
-    const t = I18N[lang];
+const $ = id => document.getElementById(id);
 
-    $("subTitle").textContent = t.subTitle;
-    $("topHint").textContent = t.topHint;
-
-    $("loginTitle").textContent = t.loginTitle;
-    $("registerTitle").textContent = t.registerTitle;
-
-    $("lblEmail").textContent = t.lblEmail;
-    $("lblPass").textContent = t.lblPass;
-    $("btnLogin").textContent = t.btnLogin;
-    $("btnReset").textContent = t.btnReset;
-
-    $("lblFullname").textContent = t.lblFullname;
-    $("lblRole").textContent = t.lblRole;
-    $("roleNote").textContent = t.roleNote;
-    $("lblRegEmail").textContent = t.lblRegEmail;
-    $("lblRegPass").textContent = t.lblRegPass;
-    $("btnRegister").textContent = t.btnRegister;
-    $("pendingHint").innerHTML = t.pendingHint;
-
-    $("dashTitle").textContent = t.dashTitle;
-    $("dashSub").textContent = t.dashSub;
-    $("btnLogout").textContent = t.logout;
-
-    $("tabDashboard").textContent = t.tabDashboard;
-    $("tabWeekly").textContent = t.tabWeekly;
-    $("tabInventory").textContent = t.tabInventory;
-    $("tabPending").textContent = t.tabPending;
-    $("tabAdmin").textContent = t.tabAdmin;
-
-    $("kpiUsersLbl").textContent = t.kpiUsersLbl;
-    $("kpiPendingLbl").textContent = t.kpiPendingLbl;
-    $("kpiLastLbl").textContent = t.kpiLastLbl;
-
-    $("weeklyTitle").textContent = t.weeklyTitle;
-    $("weeklyInfo").textContent = t.weeklyInfo;
-    $("thShift").textContent = t.thShift;
-
-    $("invTitle").textContent = t.invTitle;
-    $("invInfo").textContent = t.invInfo;
-    $("invThItem").textContent = t.invThItem;
-    $("invThUnit").textContent = t.invThUnit;
-    $("invThStart").textContent = t.invThStart;
-    $("invThSold").textContent = t.invThSold;
-    $("invThRemain").textContent = t.invThRemain;
-    $("invThAction").textContent = t.invThAction;
-
-    $("pendingTitle").textContent = t.pendingTitle;
-    $("pendingInfo").textContent = t.pendingInfo;
-
-    $("adminTitle").textContent = t.adminTitle;
-    $("adminInfo").textContent = t.adminInfo;
-
-    ["langDE","langEN","langSQ"].forEach(id=>$(id).classList.remove("active"));
-    (lang==="de"?$("langDE"):lang==="en"?$("langEN"):$("langSQ")).classList.add("active");
+/* ================== LOGIN ================== */
+$("btnLogin").onclick = async () => {
+  try{
+    await signInWithEmailAndPassword(auth,$("loginEmail").value,$("loginPass").value);
+  }catch(e){
+    showNotice("noticeAuth",e.message,"bad");
   }
+};
 
-  $("langDE").addEventListener("click", ()=>applyLang("de"));
-  $("langEN").addEventListener("click", ()=>applyLang("en"));
-  $("langSQ").addEventListener("click", ()=>applyLang("sq"));
-  applyLang("de");
+$("btnReset").onclick = async () => {
+  try{
+    await sendPasswordResetEmail(auth,$("loginEmail").value);
+    showNotice("noticeAuth","Reset email sent","ok");
+  }catch(e){
+    showNotice("noticeAuth",e.message,"bad");
+  }
+};
 
-  // ==========================
-  // 6) VIEWS
-  // ==========================
-  function showView(name){
-    const views = ["Dashboard","Weekly","Inventory","Pending","Admin"];
-    views.forEach(v=>{
-      $("view"+v).classList.add("hidden");
-      $("tab"+v).classList.remove("active");
+/* ================== REGISTER ================== */
+$("btnRegister").onclick = async () => {
+  try{
+    const cred = await createUserWithEmailAndPassword(auth,$("regEmail").value,$("regPass").value);
+    const uid = cred.user.uid;
+
+    await setDoc(doc(db,"users",uid),{
+      fullName:$("regName").value,
+      role:$("regRole").value==="admin"?"staff":"staff",
+      roleRequested:$("regRole").value,
+      status:$("regRole").value==="admin"?"pending":"active",
+      active:$("regRole").value==="admin"?false:true,
+      createdAt:serverTimestamp()
     });
-    $("view"+name).classList.remove("hidden");
-    $("tab"+name).classList.add("active");
+
+    showNotice("noticeReg","Account created","ok");
+
+  }catch(e){
+    showNotice("noticeReg",e.message,"bad");
+  }
+};
+
+/* ================== LOGOUT ================== */
+$("btnLogout").onclick = async ()=>{ await signOut(auth); };
+
+/* ================== AUTH STATE ================== */
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){
+    $("authSection").classList.remove("hidden");
+    $("appSection").classList.add("hidden");
+    return;
   }
 
-  $("tabDashboard").addEventListener("click", ()=>showView("Dashboard"));
-  $("tabWeekly").addEventListener("click", ()=>showView("Weekly"));
-  $("tabInventory").addEventListener("click", ()=>showView("Inventory"));
-  $("tabPending").addEventListener("click", ()=>showView("Pending"));
-  $("tabAdmin").addEventListener("click", ()=>showView("Admin"));
+  $("authSection").classList.add("hidden");
+  $("appSection").classList.remove("hidden");
 
-  // ==========================
-  // 7) WEEKLY TABLE INIT
-  // ==========================
-  const SHIFTS = ["Morning", "Evening", "Pizza", "Kitchen", "Service"];
-  const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
-
-  function buildWeekTable(){
-    const tb = $("weekBody");
-    tb.innerHTML = "";
-    SHIFTS.forEach(shift=>{
-      const tr = document.createElement("tr");
-      const td0 = document.createElement("td");
-      td0.innerHTML = `<b>${shift}</b>`;
-      tr.appendChild(td0);
-
-      DAYS.forEach(day=>{
-        const td = document.createElement("td");
-        const ta = document.createElement("textarea");
-        ta.className = "cellInput";
-        ta.id = `cell_${shift}_${day}`;
-        ta.placeholder = "…";
-        td.appendChild(ta);
-        tr.appendChild(td);
-      });
-      tb.appendChild(tr);
-    });
+  if(user.uid===SUPERADMIN_UID){
+    await setDoc(doc(db,"users",user.uid),{
+      fullName:"Milot",
+      role:"superadmin",
+      status:"active",
+      active:true
+    },{merge:true});
   }
-  buildWeekTable();
 
-  // ==========================
-  // 8) AUTH ACTIONS
-  // ==========================
-  $("btnLogin").addEventListener("click", async () => {
-  clearNotice($("noticeAuth"));
-  try {
-    const email = $("loginEmail").value.trim();
-    const pass  = $("loginPass").value;
+  const snap = await getDoc(doc(db,"users",user.uid));
+  const data = snap.data();
 
-    await signInWithEmailAndPassword(auth, email, pass);
+  $("userName").textContent = data.fullName;
+  $("userRole").textContent = data.role;
+  $("userStatus").textContent = data.status;
 
-    alert("LOGIN OK ✅");
-  } catch (e) {
-    alert((e?.code || "") + " - " + (e?.message || ""));
-    setNotice($("noticeAuth"), "bad", (e?.code || "") + " " + (e?.message || ""));
+  if(data.role==="admin"||data.role==="superadmin"){
+    $("tabAdmin").classList.remove("hidden");
+  }
+
+  if(user.uid===SUPERADMIN_UID){
+    $("tabPending").classList.remove("hidden");
   }
 });
 
-  $("btnReset").addEventListener("click", async ()=>{
-    clearNotice($("noticeAuth"));
-    try{
-      const email = $("loginEmail").value.trim();
-      if(!email) return setNotice($("noticeAuth"), "warn", "Email missing.");
-      await sendPasswordResetEmail(auth, email);
-      setNotice($("noticeAuth"), "ok", "Reset email sent.");
-    }catch(e){
-      setNotice($("noticeAuth"), "bad", e?.message || String(e));
-    }
+/* ================== WEEK TABLE ================== */
+const shifts=["Morning","Noon","Evening"];
+const days=["mon","tue","wed","thu","fri","sat","sun"];
+const weekBody=$("weekBody");
+
+shifts.forEach(s=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML="<td>"+s+"</td>";
+  days.forEach(d=>{
+    tr.innerHTML+=`<td><textarea data-key="${d}_${s}"></textarea></td>`;
   });
+  weekBody.appendChild(tr);
+});
 
-  $("btnRegister").addEventListener("click", async ()=>{
-    clearNotice($("noticeReg"));
-    try{
-      const fullName = $("regName").value.trim();
-      const roleReq  = $("regRole").value; // staff/admin
-      const email    = $("regEmail").value.trim();
-      const pass     = $("regPass").value;
-
-      if(!fullName) return setNotice($("noticeReg"), "warn", "Name missing.");
-      if(!email)    return setNotice($("noticeReg"), "warn", "Email missing.");
-      if(!pass || pass.length < 6) return setNotice($("noticeReg"), "warn", "Min 6 chars.");
-
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      const uid  = cred.user.uid;
-
-      await setDoc(doc(db, "users", uid), {
-        uid,
-        email,
-        fullName,
-        roleRequested: roleReq,
-        role: "pending",
-        status: "pending",
-        createdAt: serverTimestamp()
-      });
-
-      setNotice($("noticeReg"), "ok", "Created. Waiting for approval.");
-    }catch(e){
-      setNotice($("noticeReg"), "bad", e?.message || String(e));
-    }
+$("btnSaveWeek").onclick=async()=>{
+  const week=$("weekKey").value;
+  const cells={};
+  document.querySelectorAll("#weekBody textarea").forEach(t=>{
+    cells[t.dataset.key]=t.value;
   });
+  await setDoc(doc(db,"weeklyPlans",week),{cells});
+  showNotice("weekNotice","Saved","ok");
+};
 
-  $("btnLogout").addEventListener("click", ()=>signOut(auth));
-
-  // ==========================
-  // 9) DASH KPIs
-  // ==========================
-  async function refreshKPIs(){
-    try{
-      const all = await getDocs(collection(db,"users"));
-      let pending = 0;
-      all.forEach(d=>{
-        const u = d.data();
-        if(u?.status === "pending") pending++;
-      });
-      $("kpiUsers").textContent = String(all.size);
-      $("kpiPending").textContent = String(pending);
-      $("kpiLast").textContent = new Date().toLocaleString();
-    }catch(_){
-      // ignore
-    }
-  }
-
-  // ==========================
-  // 10) SUPERADMIN: PENDING USERS
-  // ==========================
-  async function loadPending(){
-    $("pendingList").innerHTML = "";
-    clearNotice($("noticePending"));
-
-    const qy = query(collection(db,"users"), where("status","==","pending"));
-    const snap = await getDocs(qy);
-
-    if(snap.empty){
-      $("pendingList").innerHTML = `<div class="small">No pending users.</div>`;
-      return;
-    }
-
-    snap.forEach(d=>{
-      const u = d.data();
-      const card = document.createElement("div");
-      card.className = "card";
-      card.style.marginTop = "10px";
-      card.innerHTML = `
-        <div style="font-weight:1000">${u.fullName || "—"}</div>
-        <div class="small">${u.email || ""}</div>
-        <div class="small">requested: <b>${u.roleRequested || "staff"}</b></div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn" data-act="approve" data-id="${d.id}">Approve</button>
-          <button class="btn danger" data-act="reject" data-id="${d.id}">Reject</button>
-        </div>
-      `;
-      $("pendingList").appendChild(card);
-    });
-  }
-
-  $("pendingList").addEventListener("click", async (e)=>{
-    const btn = e.target.closest("button");
-    if(!btn) return;
-    const act = btn.dataset.act;
-    const id  = btn.dataset.id;
-    if(!id) return;
-
-    try{
-      const userRef = doc(db,"users", id);
-      const userSnap = await getDoc(userRef);
-      if(act==="approve"){
-        const newRole = (u?.roleRequested==="admin") ? "admin" : "staff";
-        await updateDoc(userRef, { status:"active", role:newRole, approvedAt: serverTimestamp() });
-        setNotice($("noticePending"), "ok", `Approved: ${u?.fullName || id} as ${newRole}`);
-      }
-      if(act==="reject"){
-        await updateDoc(userRef, { status:"rejected", role:"rejected", rejectedAt: serverTimestamp() });
-        setNotice($("noticePending"), "warn", `Rejected: ${u?.fullName || id}`);
-      }
-
-      await loadPending();
-      await refreshKPIs();
-    }catch(e2){
-      setNotice($("noticePending"), "bad", e2?.message || String(e2));
-    }
+$("btnLoadWeek").onclick=async()=>{
+  const week=$("weekKey").value;
+  const snap=await getDoc(doc(db,"weeklyPlans",week));
+  if(!snap.exists()) return;
+  const data=snap.data().cells;
+  document.querySelectorAll("#weekBody textarea").forEach(t=>{
+    t.value=data[t.dataset.key]||"";
   });
+};
 
-  // ==========================
-  // 11) WEEKLY SAVE/LOAD
-  // Collection: weeklyPlans/{weekKey}
-  // data: { weekKey, updatedAt, updatedBy, cells: { "Morning_mon": "...", ... } }
-  // ==========================
-  function getWeekKeyDefault(){
-    // simple default: yyyy-Www (rough)
-    const d = new Date();
-    const y = d.getFullYear();
-    const firstJan = new Date(y,0,1);
-    const days = Math.floor((d - firstJan) / 86400000);
-    const week = String(Math.floor((days + firstJan.getDay()+1)/7) + 1).padStart(2,"0");
-    return `${y}-W${week}`;
-  }
-  $("weekKey").value = getWeekKeyDefault();
-// ==============================
-// WEEKLY (Departments) UI
-// ==============================
-const WEEK_DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+/* ================== INVENTORY ================== */
+$("btnAddItem").onclick=async()=>{
+  await addDoc(collection(db,"inventory"),{
+    name:$("invName").value,
+    unit:$("invUnit").value,
+    qty:Number($("invQty").value),
+    createdAt:serverTimestamp()
+  });
+  loadInventory();
+};
 
-const DEPARTMENTS = [
-  { key:"pizza", title:"Pizzabäcker PRM", people:["Ajris","Hadis","Qendrim","Milot","Amin","Reis"] },
-  { key:"kasse", title:"Kasse", people:["Eddi","Eset","Milot"] },
-  { key:"service", title:"Service", people:["Afrim","Fadil","Mirela"] },
-  { key:"kueche", title:"Küche", people:["Bekim","Kushtrim","Mirela","Xhemajl","Johnson","Paskualina"] },
-];
-
-function renderWeeklyBlocks(){
-  const container = document.getElementById("weeklyBlocks");
-  if(!container) return;
-
-  container.innerHTML = "";
-
-  DEPARTMENTS.forEach(dept=>{
-    let html = `
-      <div style="margin-bottom:22px">
-        <h4 style="margin:10px 0">${dept.title}</h4>
-        <table style="width:100%;border-collapse:collapse">
-          <thead>
-            <tr>
-              <th style="text-align:left;width:140px">Name</th>
-              ${WEEK_DAYS.map(d=>`<th>${d}</th>`).join("")}
-            </tr>
-          </thead>
-          <tbody>
-    `;
-
-    dept.people.forEach((person,pIndex)=>{
-      html += `
-        <tr>
-          <td style="font-weight:600">${person}</td>
-          ${WEEK_DAYS.map(day=>{
-            const id = `cell_${dept.key}_${pIndex}_${day}`;
-            return `<td><input id="${id}" class="weekCell" placeholder="..."></td>`;
-          }).join("")}
-        </tr>
-      `;
-    });
-
-    html += `
-          </tbody>
-        </table>
-      </div>
-    `;
-
-    container.innerHTML += html;
+async function loadInventory(){
+  const snap=await getDocs(collection(db,"inventory"));
+  $("inventoryList").innerHTML="";
+  snap.forEach(docu=>{
+    const d=docu.data();
+    $("inventoryList").innerHTML+=`
+    <div>
+      ${d.name} - ${d.qty} ${d.unit}
+      <button onclick="deleteItem('${docu.id}')">X</button>
+    </div>`;
   });
 }
 
-// e krijon tabelën menjëherë
-renderWeeklyBlocks();
-  function collectWeekCells(){
-  const cells = {};
-  document.querySelectorAll('#weeklyBlocks input[id^="cell_"]').forEach(inp=>{
-    cells[inp.id] = inp.value || "";
+window.deleteItem=async(id)=>{
+  await deleteDoc(doc(db,"inventory",id));
+  loadInventory();
+};
+
+/* ================== PENDING USERS ================== */
+async function loadPending(){
+  const q=query(collection(db,"users"),where("status","==","pending"));
+  const snap=await getDocs(q);
+  $("pendingList").innerHTML="";
+  snap.forEach(d=>{
+    const u=d.data();
+    $("pendingList").innerHTML+=`
+    <div>
+      ${u.fullName}
+      <button onclick="approveUser('${d.id}')">Approve</button>
+    </div>`;
   });
-  return cells;
 }
 
-function fillWeekCells(cells){
-  document.querySelectorAll('#weeklyBlocks input[id^="cell_"]').forEach(inp=>{
-    inp.value = (cells && cells[inp.id]) ? cells[inp.id] : "";
+window.approveUser=async(id)=>{
+  await updateDoc(doc(db,"users",id),{
+    role:"admin",
+    status:"active",
+    active:true
   });
+  loadPending();
+};
+
+/* ================== ANNOUNCEMENT ================== */
+$("btnSaveAnnouncement").onclick=async()=>{
+  await setDoc(doc(db,"settings","app"),{
+    announcement:$("announcementInput").value
+  });
+};
+
+function showNotice(id,msg,type){
+  const el=$(id);
+  el.textContent=msg;
+  el.className="notice "+type;
+  el.classList.remove("hidden");
 }
 
-  $("btnSaveWeek").addEventListener("click", async ()=>{
-    clearNotice($("noticeWeek"));
-    try{
-      const wk = $("weekKey").value.trim();
-      if(!wk) return setNotice($("noticeWeek"), "warn", "Week key missing.");
-      const user = auth.currentUser;
-      if(!user) return setNotice($("noticeWeek"), "bad", "Not logged in.");
-
-      const cells = collectWeekCells();
-      await setDoc(doc(db,"weeklyPlans", wk), {
-        weekKey: wk,
-        cells,
-        updatedAt: serverTimestamp(),
-        updatedBy: user.uid
-      }, { merge:true });
-
-      setNotice($("noticeWeek"), "ok", "Week saved ✅");
-      $("kpiLast").textContent = new Date().toLocaleString();
-    }catch(e){
-      setNotice($("noticeWeek"), "bad", e?.message || String(e));
-    }
-  });
-
-  $("btnLoadWeek").addEventListener("click", async ()=>{
-    clearNotice($("noticeWeek"));
-    try{
-      const wk = $("weekKey").value.trim();
-      if(!wk) return setNotice($("noticeWeek"), "warn", "Week key missing.");
-      const snap = await getDoc(doc(db,"weeklyPlans", wk));
-      if(!snap.exists()){
-        fillWeekCells({});
-        return setNotice($("noticeWeek"), "warn", "No saved plan for this week yet.");
-      }
-      const data = snap.data();
-      fillWeekCells(data?.cells || {});
-      setNotice($("noticeWeek"), "ok", "Week loaded ✅");
-    }catch(e){
-      setNotice($("noticeWeek"), "bad", e?.message || String(e));
-    }
-  });
-
-  // ==========================
-  // 12) INVENTORY
-  // Collection: inventoryItems (docs)
-  // Fields: name, unit, startQty, soldToday{date:qty}, remainQty, updatedAt
-  // ==========================
-  function invRowHtml(id, d){
-    const name = d?.name || "";
-    const unit = d?.unit || "";
-    const startQty = Number(d?.startQty || 0);
-    const remainQty = Number(d?.remainQty ?? startQty);
-    const soldToday = Number((d?.soldToday && d.soldToday[todayKey()]) || 0);
-
-    return `
-      <tr data-id="${id}">
-        <td><b>${escapeHtml(name)}</b></td>
-        <td>${escapeHtml(unit)}</td>
-        <td>${startQty}</td>
-        <td>
-          <input class="cellInput" style="min-height:auto; height:40px" type="number" value="${soldToday}" data-field="soldToday" />
-        </td>
-        <td><span data-field="remain">${remainQty}</span></td>
-        <td>
-          <button class="btn secondary" data-act="save">Save</button>
-          <button class="btn danger" data-act="del">Del</button>
-        </td>
-      </tr>
-    `;
-  }
-  function escapeHtml(s){
-    return String(s||"").replace(/[&<>"]/g, ch=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[ch]));
-  }
-
-  async function loadInventory(){
-    $("invBody").innerHTML = "";
-    clearNotice($("noticeInv"));
-    const snap = await getDocs(collection(db,"inventoryItems"));
-    if(snap.empty){
-      $("invBody").innerHTML = `<tr><td colspan="6" class="small">No items yet.</td></tr>`;
-      return;
-    }
-    let html = "";
-    snap.forEach(d=> html += invRowHtml(d.id, d.data()));
-    $("invBody").innerHTML = html;
-  }
-
-  $("btnAddInv").addEventListener("click", async ()=>{
-    clearNotice($("noticeInv"));
-    try{
-      const name = $("invName").value.trim();
-      const unit = $("invUnit").value.trim() || "pcs";
-      const startQty = Number($("invStart").value || 0);
-
-      if(!name) return setNotice($("noticeInv"), "warn", "Item name missing.");
-      if(!(startQty >= 0)) return setNotice($("noticeInv"), "warn", "Start qty invalid.");
-
-      await addDoc(collection(db,"inventoryItems"), {
-        name, unit,
-        startQty,
-        remainQty: startQty,
-        soldToday: {},
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-
-      $("invName").value = "";
-      $("invUnit").value = "";
-      $("invStart").value = "";
-
-      setNotice($("noticeInv"), "ok", "Added ✅");
-      await loadInventory();
-    }catch(e){
-      setNotice($("noticeInv"), "bad", e?.message || String(e));
-    }
-  });
-
-  $("btnReloadInv").addEventListener("click", ()=>loadInventory());
-
-  $("invBody").addEventListener("click", async (e)=>{
-    const btn = e.target.closest("button");
-    if(!btn) return;
-    const tr = btn.closest("tr");
-    const id = tr?.dataset?.id;
-    if(!id) return;
-
-    const act = btn.dataset.act;
-
-    try{
-      if(act==="del"){
-        await deleteDoc(doc(db,"inventoryItems", id));
-        setNotice($("noticeInv"), "warn", "Deleted.");
-        await loadInventory();
-        return;
-      }
-
-      if(act==="save"){
-        const soldInput = tr.querySelector('input[data-field="soldToday"]');
-        const sold = Number(soldInput?.value || 0);
-        if(!(sold >= 0)) return setNotice($("noticeInv"), "warn", "Sold qty invalid.");
-
-        const ref = doc(db,"inventoryItems", id);
-        const snap = await getDoc(ref);
-        const d = snap.data();
-
-        const startQty = Number(d?.startQty || 0);
-        const remainBefore = Number(d?.remainQty ?? startQty);
-
-        const day = todayKey();
-        const soldToday = Object.assign({}, d?.soldToday || {});
-        soldToday[day] = sold;
-
-        // remain = start - sold (simple) OR keep subtracting from remainBefore:
-        // we'll compute: remain = startQty - sold (today) if first day,
-        // but safer: remain = remainBefore (from db) updated by delta:
-        // Here we do: remain = startQty - sold for today ONLY is not perfect.
-        // We'll do: remain = max(0, startQty - sold) if no previous days exist.
-        // Better: remain = max(0, remainBefore) then set to remainBefore? We'll keep it simple:
-        let remainQty = remainBefore;
-        // If soldToday changed, just set remain = max(0, startQty - sold) for now:
-        remainQty = Math.max(0, startQty - sold);
-
-        await updateDoc(ref, {
-          soldToday,
-          remainQty,
-          updatedAt: serverTimestamp()
-        });
-
-        setNotice($("noticeInv"), "ok", "Saved ✅");
-        await loadInventory();
-      }
-    }catch(e2){
-      setNotice($("noticeInv"), "bad", e2?.message || String(e2));
-    }
-  });
-
-  // ==========================
-  // 13) ANNOUNCEMENTS (Admin placeholder)
-  // Doc: settings/announcement
-  // ==========================
-  $("btnSaveAnn").addEventListener("click", async ()=>{
-    clearNotice($("noticeAdmin"));
-    try{
-      const user = auth.currentUser;
-      if(!user) return setNotice($("noticeAdmin"), "bad", "Not logged in.");
-
-      const text = $("announceText").value.trim();
-      await setDoc(doc(db,"settings","announcement"), {
-        text,
-        updatedAt: serverTimestamp(),
-        updatedBy: user.uid
-      }, { merge:true });
-
-      setNotice($("noticeAdmin"), "ok", "Announcement saved ✅");
-    }catch(e){
-      setNotice($("noticeAdmin"), "bad", e?.message || String(e));
-    }
-  });
-
-  $("btnLoadAnn").addEventListener("click", async ()=>{
-    clearNotice($("noticeAdmin"));
-    try{
-      const snap = await getDoc(doc(db,"settings","announcement"));
-      const text = snap.exists() ? (snap.data()?.text || "") : "";
-      $("announceText").value = text;
-      setNotice($("noticeAdmin"), "ok", "Loaded ✅");
-    }catch(e){
-      setNotice($("noticeAdmin"), "bad", e?.message || String(e));
-    }
-  });
-
-  // ==========================
-  // 14) AUTH STATE + ROLES
-  // ==========================
-  let unsubAnnouncement = null;
-
-  onAuthStateChanged(auth, async (user)=>{
-    // reset UI
-    $("whoami").textContent = "";
-    $("authGrid").classList.remove("hidden");
-    $("appCard").classList.add("hidden");
-
-    $("tabPending").classList.add("hidden");
-    $("tabAdmin").classList.add("hidden");
-
-    $("pillRole").textContent = "—";
-    $("pillStatus").textContent = "—";
-
-    if(unsubAnnouncement){ unsubAnnouncement(); unsubAnnouncement = null; }
-
-    if(!user){
-      setNotice($("noticeApp"), "warn", "Please login.");
-      return;
-    }
-
-    $("whoami").textContent = user.email || user.uid;
-    $("authGrid").classList.add("hidden");
-    $("appCard").classList.remove("hidden");
-    showView("Dashboard");
-
-    // KPIs
-    await refreshKPIs();
-
-    // SUPERADMIN
-    if(user.uid === SUPERADMIN_UID){
-      $("pillRole").textContent = "superadmin";
-      $("pillStatus").textContent = "active";
-      setNotice($("noticeApp"), "ok", "You are SuperAdmin ✅");
-
-      $("tabPending").classList.remove("hidden");
-      $("tabAdmin").classList.remove("hidden");
-
-      await loadPending();
-      await loadInventory();
-      return;
-    }
-
-    // Normal users (Firestore profile)
-    const ref = doc(db,"users", user.uid);
-    const snap = await getDoc(ref);
-
-    if(!snap.exists()){
-      $("pillRole").textContent = "unknown";
-      $("pillStatus").textContent = "unknown";
-      setNotice($("noticeApp"), "bad", "No profile found in Firestore (users/{uid}).");
-      await loadInventory();
-      return;
-    }
-
-    let u = snap.data() || {};
-    // ✅ DEBUG (vetëm për test – do dalin 4 popup)
-alert("UID: " + user.uid);
-alert("DOC EXISTS: " + snap.exists());
-alert("ROLE: " + (u.role || "NO_ROLE"));
-alert("STATUS: " + (u.status || "NO_STATUS"));
-    $("pillRole").textContent = u.role || "pending";
-    $("pillStatus").textContent = u.status || "pending";
-
-    // Announcement live (for all logged in)
-    unsubAnnouncement = onSnapshot(doc(db,"settings","announcement"), (s)=>{
-      const text = s.exists() ? (s.data()?.text || "") : "";
-      if(text){
-        setNotice($("noticeApp"), "warn", "📣 " + text);
-      }else{
-        setNotice($("noticeApp"), "ok", "Welcome ✅");
-      }
-    });
-// ✅ SUPERADMIN: always allow + auto-create doc
-if (user && user.uid === SUPERADMIN_UID) {
-  u.role = "superadmin";
-  u.status = "active";
-
- await setDoc(
-  doc(db, "users", user.uid),
-  {
-    name: "Milot",
-    email: user.email || "milootshala@gmail.com",
-    role: "superadmin",
-    status: "active",
-    updatedAt: serverTimestamp()
-  },
-  { merge: true }
-);
-}
-    if(u.status !== "active"){
-      setNotice($("noticeApp"), "warn", "Your account is pending approval.");
-      $("tabPending").classList.add("hidden");
-      $("tabAdmin").classList.add("hidden");
-      await loadInventory();
-      return;
-    }
-
-    // Active users
-    setNotice($("noticeApp"), "ok", "Welcome! Your account is active ✅");
-
-    if(u.role === "admin"){
-      $("tabAdmin").classList.remove("hidden");
-    }else{
-      $("tabAdmin").classList.add("hidden");
-    }
-
-    $("tabPending").classList.add("hidden");
-
-    // Load main data
-    await loadInventory();
-  });
-
-  // ==========================
-  // 15) Small UX: set weekday headers (static)
-  // ==========================
-  // Keep as EN shortcuts to avoid long texts; you can translate later if you want.
 </script>
 
 </body>
