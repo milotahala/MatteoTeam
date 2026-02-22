@@ -804,16 +804,20 @@ function renderWeeklyBlocks(){
   // ==========================
   // 8) AUTH ACTIONS
   // ==========================
-  $("btnLogin").addEventListener("click", async ()=>{
-    clearNotice($("noticeAuth"));
-    try{
-      const email = $("loginEmail").value.trim();
-      const pass  = $("loginPass").value;
-      await signInWithEmailAndPassword(auth, email, pass);
-    }catch(e){
-      setNotice($("noticeAuth"), "bad", e?.message || String(e));
-    }
-  });
+  $("btnLogin").addEventListener("click", async () => {
+  clearNotice($("noticeAuth"));
+  try {
+    const email = $("loginEmail").value.trim();
+    const pass  = $("loginPass").value;
+
+    await signInWithEmailAndPassword(auth, email, pass);
+
+    alert("LOGIN OK ✅");
+  } catch (e) {
+    alert((e?.code || "") + " - " + (e?.message || ""));
+    setNotice($("noticeAuth"), "bad", (e?.code || "") + " " + (e?.message || ""));
+  }
+});
 
   $("btnReset").addEventListener("click", async ()=>{
     clearNotice($("noticeAuth"));
