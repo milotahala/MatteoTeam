@@ -291,16 +291,7 @@
       </div>
     </div>
   </div>
-
   <script type="module">
-window.addEventListener("error", (e) => {
-  alert("JS ERROR: " + (e?.message || "unknown"));
-});
-window.addEventListener("unhandledrejection", (e) => {
-  alert("PROMISE ERROR: " + (e?.reason?.message || e?.reason || "unknown"));
-});
-
-    alert("SCRIPT STARTED");
     // ==========================
     // 1) IMPORTS MUST BE FIRST
     // ==========================
