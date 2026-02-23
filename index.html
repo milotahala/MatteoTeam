@@ -854,127 +854,247 @@
       if(unsubInv){ unsubInv(); unsubInv = null; }
       $("invList").innerHTML = "";
     }
+// ==========================
+// 13) WEEKLY PLAN (SECTIONS + WORKERS)
+// ==========================
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const SECTIONS = ["Pizzabäcker","Kasse","Service","Küche"];
 
-    // ==========================
-    // 13) WEEKLY PLAN
-    // ==========================
-    const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-    const SHIFTS = ["Morning","Evening"];
+// Default structure
+function emptyWeek(){
+  const data = {};
+  for(const sec of SECTIONS){
+    data[sec] = {}; // workers will be added manually
+  }
+  return data;
+}
 
-    function emptyWeek(){
-      const data = {};
+function normWeekData(raw){
+  // raw can be null or old format (day->shift)
+  if(!raw || typeof raw !== "object") return emptyWeek();
+
+  // If it's already new format: has sections
+  const hasAnySection = SECTIONS.some(s => raw[s] && typeof raw[s] === "object");
+  if(hasAnySection){
+    // ensure all sections exist
+    const out = emptyWeek();
+    for(const sec of SECTIONS){
+      out[sec] = (raw[sec] && typeof raw[sec] === "object") ? raw[sec] : {};
+    }
+    return out;
+  }
+
+  // Old format fallback -> return empty new format
+  return emptyWeek();
+}
+
+function esc(str){
+  return String(str ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
+
+function renderSectionTable(sec, workersObj, editable){
+  // workersObj: { "Ajris": {Mon:"9", ...}, ...}
+  const rows = Object.keys(workersObj || {}).sort((a,b)=>a.localeCompare(b));
+
+  let html = `
+    <div class="hr"></div>
+    <div class="row" style="align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
+      <h3 style="margin:0">${esc(sec)}</h3>
+      ${editable ? `
+        <div class="row" style="gap:8px;">
+          <input id="addName_${esc(sec)}" type="text" placeholder="Worker name..." style="max-width:180px;">
+          <button class="secondary fit" data-addworker="${esc(sec)}">+ Add</button>
+        </div>
+      ` : ``}
+    </div>
+    <div class="tableWrap">
+      <table class="weekTable" style="width:100%">
+        <thead>
+          <tr>
+            <th style="width:180px">Name</th>
+            ${DAYS.map(d=>`<th>${d}</th>`).join("")}
+            ${editable ? `<th style="width:70px"></th>` : ``}
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  if(rows.length === 0){
+    html += `
+      <tr>
+        <td class="muted" colspan="${DAYS.length + 2}">No workers yet. Add one.</td>
+      </tr>
+    `;
+  } else {
+    for(const name of rows){
+      html += `<tr>
+        <td><strong>${esc(name)}</strong></td>
+        ${DAYS.map(day=>{
+          const val = (workersObj?.[name]?.[day] ?? "");
+          return `
+            <td>
+              <input
+                type="text"
+                placeholder="z.B. 11 / Frei / U / 12-17"
+                value="${esc(val)}"
+                data-sec="${esc(sec)}"
+                data-worker="${esc(name)}"
+                data-day="${esc(day)}"
+                ${editable ? "" : "disabled"}
+              />
+            </td>
+          `;
+        }).join("")}
+        ${editable ? `
+          <td style="text-align:right">
+            <button class="danger fit" data-delworker="${esc(sec)}" data-worker="${esc(name)}">X</button>
+          </td>
+        ` : ``}
+      </tr>`;
+    }
+  }
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+  return html;
+}
+
+function renderWeeklyTable(weekData, editable){
+  const wrap = $("weeklyWrap");
+  wrap.innerHTML = "";
+
+  const data = normWeekData(weekData);
+
+  // Render each section
+  let html = "";
+  for(const sec of SECTIONS){
+    html += renderSectionTable(sec, data[sec], editable);
+  }
+  wrap.innerHTML = html;
+
+  wrap.classList.toggle("readonly", !editable);
+
+  // Wire add/delete only if editable
+  if(!editable) return;
+
+  // Add worker
+  wrap.querySelectorAll("[data-addworker]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const sec = btn.getAttribute("data-addworker");
+      const inp = document.getElementById(`addName_${sec}`);
+      const name = (inp?.value || "").trim();
+      if(!name) return;
+
+      const cur = window.__weekDataCache || emptyWeek();
+      const norm = normWeekData(cur);
+
+      if(!norm[sec]) norm[sec] = {};
+      if(!norm[sec][name]) norm[sec][name] = {};
       for(const d of DAYS){
-        data[d] = { Morning: "", Evening: "" };
-      }
-      return data;
-    }
-
-    function renderWeeklyTable(weekData, editable){
-      const wrap = $("weeklyWrap");
-      wrap.innerHTML = "";
-
-      const table = document.createElement("table");
-      const thead = document.createElement("thead");
-      thead.innerHTML = `
-        <tr>
-          <th style="width:140px;">Day</th>
-          <th>Morning</th>
-          <th>Evening</th>
-        </tr>
-      `;
-      table.appendChild(thead);
-
-      const tbody = document.createElement("tbody");
-
-      for(const d of DAYS){
-        const tr = document.createElement("tr");
-
-        const tdDay = document.createElement("td");
-        tdDay.innerHTML = `<b>${d}</b>`;
-        tr.appendChild(tdDay);
-
-        for(const s of SHIFTS){
-          const td = document.createElement("td");
-          const inp = document.createElement("input");
-          inp.type = "text";
-          inp.placeholder = "Names / notes…";
-          inp.value = (weekData?.[d]?.[s] ?? "");
-          inp.dataset.day = d;
-          inp.dataset.shift = s;
-          if(!editable) inp.disabled = true;
-          td.appendChild(inp);
-          tr.appendChild(td);
-        }
-        tbody.appendChild(tr);
+        if(norm[sec][name][d] == null) norm[sec][name][d] = "";
       }
 
-      table.appendChild(tbody);
-      wrap.appendChild(table);
-
-      wrap.classList.toggle("readonly", !editable);
-    }
-
-    function collectWeeklyFromInputs(){
-      const data = emptyWeek();
-      const inputs = $("weeklyWrap").querySelectorAll("input[data-day][data-shift]");
-      inputs.forEach(inp=>{
-        const d = inp.dataset.day;
-        const s = inp.dataset.shift;
-        data[d][s] = inp.value.trim();
-      });
-      return data;
-    }
-
-    function startWeekListener(){
-      stopWeekListener();
-      const key = getWeekKey();
-      $("weekKeyLabel").textContent = "Week: " + key;
-
-      const ref = doc(db, "schedules", key);
-      unsubWeek = onSnapshot(ref, async (snap)=>{
-        let data = null;
-        if(snap.exists()){
-          data = snap.data()?.data || null;
-        }else{
-          // Create default doc (only if admin/super)
-          data = emptyWeek();
-          if(isAdmin()){
-            try{
-              await setDoc(ref, { data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true });
-            }catch(e){
-              // ignore if not allowed
-            }
-          }
-        }
-        renderWeeklyTable(data || emptyWeek(), isAdmin());
-      }, (err)=> showErr(err.message));
-    }
-
-    function stopWeekListener(){
-      if(unsubWeek){ unsubWeek(); unsubWeek = null; }
-      $("weeklyWrap").innerHTML = "";
-    }
-
-    $("btnReloadWeek").addEventListener("click", ()=>{
-      clearErr();
-      startWeekListener();
+      window.__weekDataCache = norm;
+      renderWeeklyTable(norm, true);
     });
-$("btnSaveWeek").addEventListener("click", async () => {
+  });
+
+  // Delete worker
+  wrap.querySelectorAll("[data-delworker]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const sec = btn.getAttribute("data-delworker");
+      const name = btn.getAttribute("data-worker");
+      const cur = window.__weekDataCache || emptyWeek();
+      const norm = normWeekData(cur);
+      if(norm?.[sec]?.[name]) delete norm[sec][name];
+      window.__weekDataCache = norm;
+      renderWeeklyTable(norm, true);
+    });
+  });
+}
+
+function collectWeeklyFromInputs(){
+  const data = emptyWeek();
+  const inputs = $("weeklyWrap").querySelectorAll("input[data-sec][data-worker][data-day]");
+  inputs.forEach(inp=>{
+    const sec = inp.dataset.sec;
+    const worker = inp.dataset.worker;
+    const day = inp.dataset.day;
+    if(!data[sec]) data[sec] = {};
+    if(!data[sec][worker]) data[sec][worker] = {};
+    data[sec][worker][day] = (inp.value || "").trim();
+  });
+  return data;
+}
+
+// Firestore listener
+let unsubWeek = null;
+
+function startWeekListener(){
+  stopWeekListener();
+
+  const key = getWeekKey(); // your existing function
+  const ref = doc(db, "schedules", key);
+
+  unsubWeek = onSnapshot(ref, async (snap)=>{
+    let data = null;
+
+    if(snap.exists()){
+      data = snap.data()?.data || null;
+    } else {
+      // Create default doc (only if admin)
+      data = emptyWeek();
+      if(isAdmin()){
+        try{
+          await setDoc(ref, { data, createdAt: serverTimestamp() });
+        }catch(e){
+          // ignore if not allowed
+        }
+      }
+    }
+
+    const normalized = normWeekData(data);
+    window.__weekDataCache = normalized; // keep cache for add/delete
+    renderWeeklyTable(normalized, isAdmin());
+  }, (err)=> showErr(err.message));
+}
+
+function stopWeekListener(){
+  if(unsubWeek){ unsubWeek(); unsubWeek = null; }
+  $("weeklyWrap").innerHTML = "";
+  window.__weekDataCache = null;
+}
+
+// Buttons
+$("btnReloadWeek").addEventListener("click", ()=>{
   clearErr();
-  if (!isAdmin()) return;
+  startWeekListener();
+});
+
+$("btnSaveWeek").addEventListener("click", async ()=>{
+  clearErr();
+  if(!isAdmin()) return;
 
   const key = getWeekKey();
   const ref = doc(db, "schedules", key);
 
-  try {
+  try{
     const data = collectWeeklyFromInputs();
-    await setDoc(ref, { data, updatedAt: serverTimestamp() }, { merge: true });
+    await setDoc(ref, { data, updatedAt: serverTimestamp() }, { merge:true });
     alert("Saved!");
-  } catch (e) {
+  }catch(e){
     showErr(e.message);
   }
 });
-    startWeekListener();
+
+// Auto start (so it loads immediately)
+startWeekListener();
+
     // ==========================
     // 14) SUPERADMIN SETUP HELP
     // ==========================
