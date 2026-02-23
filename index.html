@@ -504,7 +504,7 @@
     // ==========================
     // 6) AUTH ACTIONS
     // ==========================
-    $("btnLogin").addEventListener("click", async () => {
+    on("btnLogin","click", async ()=>{
       clearErr();
       const email = $("loginEmail").value.trim();
       const pass = $("loginPass").value;
@@ -514,7 +514,7 @@
       }catch(e){ showErr(e.message); }
     });
 
-    $("btnRegister").addEventListener("click", async () => {
+  on("btnRegister","click", async ()=>{
       clearErr();
       const name = $("regName").value.trim();
       const email = $("regEmail").value.trim();
@@ -987,6 +987,11 @@ function renderWeeklyTable(weekData, editable){
     btn.addEventListener("click", ()=>{
       const sec = btn.getAttribute("data-addworker");
       const inp = document.getElementById(`addName_${sec}`);
+     const on = (id, ev, fn) => {
+  const el = $(id);
+  if (!el) { console.warn("Missing element:", id); return; }
+  el.addEventListener(ev, fn);
+};
       const name = (inp?.value || "").trim();
       if(!name) return;
 
