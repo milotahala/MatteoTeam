@@ -304,7 +304,12 @@
       sendPasswordResetEmail,
       signOut
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
+window.addEventListener("error", (e) => {
+  alert("JS ERROR: " + (e?.message || "unknown"));
+});
+window.addEventListener("unhandledrejection", (e) => {
+  alert("PROMISE ERROR: " + (e?.reason?.message || e?.reason || "unknown"));
+});
     import {
       getFirestore,
       doc,
@@ -349,7 +354,11 @@
     // 4) UI HELPERS
     // ==========================
     const $ = (id) => document.getElementById(id);
-
+const on = (id, ev, fn) => {
+  const el = $(id);
+  if (!el) { console.warn("Missing element:", id); return; }
+  el.addEventListener(ev, fn);
+};
     function showErr(msg){
       const box = $("errBox");
       box.style.display = "block";
@@ -536,7 +545,7 @@
       }catch(e){ showErr(e.message); }
     });
 
-    $("btnReset").addEventListener("click", async () => {
+    on("btnReset","click", async ()=>{
       clearErr();
       const email = $("loginEmail").value.trim();
       if(!email) return showErr("Enter your email in the email field first.");
@@ -546,7 +555,7 @@
       }catch(e){ showErr(e.message); }
     });
 
-    $("btnSignOut").addEventListener("click", async () => {
+  on("btnSignOut","click", async ()=>{
       clearErr();
       await signOut(auth);
     });
