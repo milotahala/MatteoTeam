@@ -690,6 +690,14 @@ MATTEOTEAM PRO 1.0 – PJESA 2/3
     // 4) GLOBAL STATE
     // ==========================
 const $ = (id) => document.getElementById(id);
+    // FIX: modal overlay mos bllokoj klikimet kur s'është i hapur
+setTimeout(() => {
+  const mb = document.getElementById("modalBack");
+  if (mb) {
+    mb.style.pointerEvents = "none";
+    mb.addEventListener("click", () => { mb.style.display = "none"; }, true);
+  }
+}, 0);
 // ===== CLICK DEBUG (tregon a po regjistrohen klikimet) =====
 document.addEventListener("click", (e) => {
   const el = e.target.closest("[id]") || e.target;
