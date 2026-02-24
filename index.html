@@ -1,141 +1,318 @@
+<!-- =========================
+MATTEOTEAM PRO 1.0 (INDEX.HTML) – PJESA 1/3
+✅ IMPORTS jan në PJESËN 2 (duhet me qenë të parat brenda <script type="module">)
+✅ Copy–paste PJESA 1, pastaj 2, pastaj 3 (në të NJEJTIN file index.html)
+========================= -->
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MatteoTeam PRO</title>
+  <title data-i18n="app.title">MatteoTeam PRO</title>
 
+  <meta name="theme-color" content="#0e1a20" />
   <style>
     :root{
       --bg1:#0e1a20; --bg2:#15313a;
-      --glass:rgba(255,255,255,.08);
-      --glass2:rgba(255,255,255,.06);
-      --line:rgba(255,255,255,.14);
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.12);
       --text:#e9f2f5;
-      --muted:rgba(233,242,245,.75);
-      --ok:rgba(44, 211, 143, .18);
-      --warn:rgba(255, 209, 102, .20);
-      --bad:rgba(239, 71, 111, .20);
-      --btn:rgba(255,255,255,.14);
-      --btn2:rgba(255,255,255,.10);
-      --shadow: 0 12px 40px rgba(0,0,0,.35);
-      --radius:16px;
+      --muted:rgba(233,242,245,.70);
+      --good:#39d98a;
+      --warn:#ffcc66;
+      --bad:#ff5c77;
+      --brand:#7dd3fc;
+      --brand2:#a78bfa;
+      --shadow: 0 12px 30px rgba(0,0,0,.28);
+      --r:18px;
     }
-    *{box-sizing:border-box}
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
     body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color:var(--text);
-      background: radial-gradient(1000px 800px at 20% 0%, #214955 0%, transparent 55%),
-                  radial-gradient(900px 700px at 80% 10%, #1b2f3a 0%, transparent 55%),
-                  linear-gradient(180deg, var(--bg1), var(--bg2));
-      min-height:100vh;
+      background: radial-gradient(1200px 700px at 25% 15%, rgba(125,211,252,.20), transparent 55%),
+                  radial-gradient(1000px 650px at 80% 30%, rgba(167,139,250,.18), transparent 55%),
+                  linear-gradient(140deg, var(--bg1), var(--bg2));
     }
-    .wrap{max-width:1100px; margin:0 auto; padding:22px;}
+    a{ color:inherit; }
+    .wrap{ max-width:1200px; margin:0 auto; padding:18px; }
+
+    /* top bar */
     .topbar{
-      display:flex; gap:12px; align-items:center; justify-content:space-between;
-      padding:14px 16px; border:1px solid var(--line); border-radius:var(--radius);
-      background:linear-gradient(180deg, var(--glass), var(--glass2));
-      box-shadow:var(--shadow);
-      position:sticky; top:12px; z-index:10;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; padding:14px 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
-    .brand{display:flex; align-items:center; gap:12px;}
-    .logo{
-      width:42px; height:42px; border-radius:14px;
-      background: linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.06));
-      border:1px solid var(--line);
-      display:grid; place-items:center;
-      box-shadow: 0 10px 25px rgba(0,0,0,.25);
-      font-weight:800;
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      min-width: 240px;
     }
-    .brand h1{margin:0; font-size:16px; letter-spacing:.2px}
-    .brand .sub{font-size:12px; color:var(--muted); margin-top:2px}
-    .right{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;}
-    select, input, textarea{
+    .logo{
+      width:38px; height:38px; border-radius:14px;
+      background: radial-gradient(circle at 30% 30%, rgba(125,211,252,.9), rgba(167,139,250,.65));
+      box-shadow: 0 10px 20px rgba(0,0,0,.25);
+    }
+    .brand h1{
+      font-size:16px; margin:0; line-height:1.1;
+      letter-spacing:.3px;
+    }
+    .brand small{ display:block; color:var(--muted); font-size:12px; margin-top:2px; }
+    .top-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .pill{
+      padding:8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.07);
       border:1px solid var(--line);
-      background:rgba(0,0,0,.15);
+      color:var(--muted);
+      font-size:12px;
+      display:flex; gap:8px; align-items:center;
+    }
+    .pill b{ color:var(--text); font-weight:700; }
+    select, input, button, textarea{
+      font:inherit;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.08);
       color:var(--text);
-      border-radius:12px;
       padding:10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      transition:.15s transform, .15s background;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.11); }
+    .btn.primary{
+      border:1px solid rgba(125,211,252,.35);
+      background: linear-gradient(180deg, rgba(125,211,252,.25), rgba(167,139,250,.18));
+    }
+    .btn.danger{
+      border:1px solid rgba(255,92,119,.45);
+      background: rgba(255,92,119,.10);
+    }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+    .lang{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
       outline:none;
     }
-    input::placeholder{color:rgba(233,242,245,.45)}
-    button{
+
+    /* layout */
+    .grid{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap:16px;
+      margin-top:16px;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    .side, .main{
+      background: rgba(255,255,255,.06);
       border:1px solid var(--line);
-      background:var(--btn);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .side{ padding:14px; }
+    .main{ padding:16px; }
+
+    .nav-title{
+      margin:4px 0 10px 2px;
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+    }
+    .nav{
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .nav button{
+      text-align:left;
+      width:100%;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+      padding:12px 12px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
       color:var(--text);
-      border-radius:12px;
-      padding:10px 12px;
       cursor:pointer;
-      transition:.15s;
     }
-    button:hover{transform: translateY(-1px); background:rgba(255,255,255,.18)}
-    button.secondary{background:var(--btn2)}
-    button.danger{background:rgba(239, 71, 111, .18)}
-    button.ok{background:rgba(44, 211, 143, .18)}
-    .pill{
-      padding:7px 10px; border-radius:999px;
-      border:1px solid var(--line); background:rgba(0,0,0,.12);
-      font-size:12px; color:var(--muted);
+    .nav button.active{
+      border:1px solid rgba(125,211,252,.35);
+      background: linear-gradient(180deg, rgba(125,211,252,.20), rgba(167,139,250,.12));
     }
-    .grid{display:grid; gap:16px; margin-top:16px;}
-    @media(min-width:900px){ .grid{grid-template-columns: 1.1fr .9fr;} }
+    .badge{
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--muted);
+      background: rgba(0,0,0,.12);
+      min-width: 34px;
+      text-align:center;
+    }
 
     .card{
+      background: rgba(255,255,255,.06);
       border:1px solid var(--line);
-      border-radius:var(--radius);
-      background:linear-gradient(180deg, var(--glass), var(--glass2));
-      box-shadow:var(--shadow);
-      padding:16px;
+      border-radius: var(--r);
+      padding:14px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
     }
-    .card h2{margin:0 0 10px; font-size:15px}
-    .muted{color:var(--muted); font-size:12px}
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-    .row > *{flex:1}
-    .row .fit{flex:0 0 auto}
-    .hide{display:none !important;}
-    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 0;}
-    .tab{padding:9px 12px; border-radius:12px; border:1px solid var(--line); background:rgba(0,0,0,.10)}
-    .tab.active{background:rgba(255,255,255,.14)}
-    .hr{height:1px; background:var(--line); margin:14px 0}
-    table{width:100%; border-collapse:collapse; border-radius:14px; overflow:hidden;}
-    th, td{border:1px solid rgba(255,255,255,.10); padding:10px; font-size:13px; vertical-align:top}
-    th{background:rgba(0,0,0,.15); text-align:left}
-    .badge{
-      display:inline-block; padding:6px 10px; border-radius:999px;
-      border:1px solid var(--line); font-size:12px; color:var(--muted);
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
     }
-    .badge.ok{background:var(--ok); color:var(--text)}
-    .badge.warn{background:var(--warn); color:var(--text)}
-    .badge.bad{background:var(--bad); color:var(--text)}
-    .list{display:flex; flex-direction:column; gap:10px; margin-top:10px}
-    .item{
-      border:1px solid var(--line); border-radius:14px;
-      background:rgba(0,0,0,.10);
-      padding:12px;
-      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    @media (max-width: 980px){
+      .cards{ grid-template-columns: 1fr; }
     }
-    .item strong{font-size:14px}
-    .item .meta{font-size:12px; color:var(--muted); margin-top:4px}
-    .item .actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;}
+    .card h2{ margin:0 0 6px 0; font-size:14px; }
+    .card p{ margin:0; color:var(--muted); font-size:13px; }
+    .muted{ color:var(--muted); }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .spacer{ height:10px; }
+
     .err{
-      margin-top:12px;
-      border:1px solid rgba(239,71,111,.35);
-      background:rgba(239,71,111,.12);
-      padding:10px 12px; border-radius:14px;
-      color:rgba(255,255,255,.95);
-      font-size:12px;
       display:none;
-      white-space:pre-wrap;
+      margin-top:12px;
+      padding:12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,92,119,.50);
+      background: rgba(255,92,119,.10);
+      color: var(--text);
+      white-space: pre-wrap;
     }
-    .note{
-      border:1px solid rgba(255,209,102,.35);
-      background:rgba(255,209,102,.12);
-      padding:10px 12px; border-radius:14px;
-      font-size:12px; color:rgba(255,255,255,.92);
+
+    /* auth panels */
+    .auth-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:14px;
     }
-    .small{font-size:12px}
-    .readonly input{opacity:.8}
+    @media (max-width: 980px){
+      .auth-grid{ grid-template-columns: 1fr; }
+    }
+    .field{
+      display:flex; flex-direction:column; gap:6px; margin-top:10px;
+    }
+    .field label{ font-size:12px; color:var(--muted); }
+    .field input, .field textarea, .field select{
+      padding:12px 12px;
+      border-radius: 14px;
+      outline:none;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.14);
+      color: var(--text);
+    }
+    .field textarea{ min-height: 90px; resize: vertical; }
+
+    /* tables */
+    table{ width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; }
+    th, td{
+      padding:10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      font-size:13px;
+      vertical-align: top;
+    }
+    th{
+      text-align:left;
+      color:var(--muted);
+      font-weight:600;
+      background: rgba(255,255,255,.04);
+    }
+    tr:hover td{ background: rgba(255,255,255,.03); }
+    .cell{
+      width:100%;
+      min-height: 58px;
+      padding:10px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.12);
+      color: var(--text);
+      outline:none;
+      resize: vertical;
+    }
+    .tiny{ font-size:12px; color:var(--muted); }
+    .kpi{
+      font-size:22px; font-weight:800; margin-top:6px;
+      background: linear-gradient(90deg, rgba(125,211,252,.9), rgba(167,139,250,.9));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    /* inventory grid */
+    .inv-grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width: 980px){
+      .inv-grid{ grid-template-columns: 1fr; }
+    }
+    .inv{
+      padding:14px;
+      border-radius: var(--r);
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 10px 22px rgba(0,0,0,.20);
+    }
+    .inv h3{ margin:0 0 6px 0; font-size:14px; }
+    .inv .meta{ display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:12px; }
+    .inv .nums{
+      display:grid; grid-template-columns: repeat(3, 1fr);
+      gap:8px; margin-top:10px;
+    }
+    .stat{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.12);
+      border-radius: 14px;
+      padding:10px;
+    }
+    .stat b{ display:block; font-size:12px; color:var(--muted); }
+    .stat span{ display:block; font-size:16px; font-weight:800; margin-top:4px; }
+    .inv .actions{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+
+    /* modal */
+    .modalBack{
+      display:none;
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(6px);
+      z-index: 50;
+      padding: 18px;
+    }
+    .modal{
+      max-width: 720px;
+      margin: 40px auto;
+      background: rgba(20,28,34,.92);
+      border:1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .modalHead{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 6px 6px 10px 6px;
+    }
+    .modalHead h3{ margin:0; font-size:14px; }
+    .hr{ height:1px; background: rgba(255,255,255,.10); margin: 10px 0; }
+
+    .hide{ display:none !important; }
   </style>
 </head>
 
@@ -143,192 +320,357 @@
   <div class="wrap">
     <div class="topbar">
       <div class="brand">
-        <div class="logo">MT</div>
+        <div class="logo" aria-hidden="true"></div>
         <div>
-          <h1 id="t_brand">MatteoTeam PRO</h1>
-          <div class="sub" id="t_sub">Roles • Weekly Plan • Inventory</div>
+          <h1 data-i18n="app.title">MatteoTeam PRO</h1>
+          <small data-i18n="app.subtitle">Restaurant Management • Weekly Plan • Inventory</small>
         </div>
       </div>
 
-      <div class="right">
-        <span class="pill" id="statusPill">…</span>
-        <select id="langSel" class="fit" title="Language">
-          <option value="de">DE</option>
-          <option value="en">EN</option>
-          <option value="sq">SQ</option>
+      <div class="top-actions">
+        <div class="pill"><span data-i18n="top.role">Roli</span>: <b id="pillRole">—</b></div>
+        <div class="pill"><span data-i18n="top.user">User</span>: <b id="pillUser">—</b></div>
+
+        <select id="langSelect" class="lang" title="Language">
+          <option value="de">Deutsch</option>
+          <option value="sq">Shqip</option>
+          <option value="en">English</option>
         </select>
-        <button class="secondary fit" id="btnSignOut">Sign out</button>
+
+        <button id="btnSignOut" class="btn danger" disabled data-i18n="auth.signout">Abmelden</button>
       </div>
     </div>
 
     <div id="errBox" class="err"></div>
 
-    <!-- AUTH -->
-    <div id="authCard" class="grid">
-      <div class="card">
-        <h2 id="t_loginTitle">Login</h2>
-        <div class="row">
-          <input id="loginEmail" type="email" placeholder="Email" autocomplete="email" />
-          <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password" />
-        </div>
-        <div class="row" style="margin-top:10px;">
-          <button class="ok fit" id="btnLogin">Login</button>
-          <button class="secondary fit" id="btnReset">Reset password</button>
-        </div>
-        <div class="hr"></div>
-        <div class="note" id="t_loginNote">
-          Staff mund të hyjë vetëm pasi të aprovohet nga Admin/SuperAdmin.
-        </div>
-      </div>
+    <div class="grid">
+      <aside class="side">
+        <div class="nav-title" data-i18n="nav.title">Navigation</div>
+        <div class="nav">
+          <button data-view="viewDashboard" class="active">
+            <span data-i18n="nav.dashboard">Dashboard</span>
+            <span class="badge" id="badgeDash">•</span>
+          </button>
 
-      <div class="card">
-        <h2 id="t_registerTitle">Register (Staff)</h2>
-        <div class="row">
-          <input id="regName" type="text" placeholder="Full name" />
-          <input id="regEmail" type="email" placeholder="Email" autocomplete="email" />
-        </div>
-        <div class="row" style="margin-top:10px;">
-          <input id="regPass" type="password" placeholder="Password" autocomplete="new-password" />
-          <button class="fit" id="btnRegister">Create account</button>
-        </div>
-        <p class="muted" id="t_regHint" style="margin:10px 0 0;">
-          Account krijohet si <b>staff</b> me status <b>pending</b> derisa të aprovohet.
-        </p>
-      </div>
-    </div>
+          <button data-view="viewWeekly">
+            <span data-i18n="nav.weekly">Weekly Plan</span>
+            <span class="badge" id="badgeWeekly">—</span>
+          </button>
 
-    <!-- APP -->
-    <div id="appArea" class="hide">
-      <div class="card">
-        <div class="row">
-          <div>
-            <div class="badge" id="meBadge">…</div>
-            <div class="muted" id="meInfo">…</div>
-          </div>
-          <div class="fit row" style="justify-content:flex-end;">
-            <button class="tab active fit" data-tab="weekly" id="tabWeekly">Weekly Plan</button>
-            <button class="tab fit" data-tab="inventory" id="tabInventory">Inventory</button>
-            <button class="tab fit hide" data-tab="users" id="tabUsers">Users</button>
-          </div>
-        </div>
-      </div>
+          <button data-view="viewInventory">
+            <span data-i18n="nav.inventory">Inventory</span>
+            <span class="badge" id="badgeInv">—</span>
+          </button>
 
-      <div class="grid">
-        <!-- MAIN -->
+          <button data-view="viewStaff">
+            <span data-i18n="nav.staff">Staff</span>
+            <span class="badge" id="badgeStaff">—</span>
+          </button>
+
+          <button data-view="viewNotifications">
+            <span data-i18n="nav.notifications">Notifications</span>
+            <span class="badge" id="badgeNotif">—</span>
+          </button>
+
+          <button data-view="viewSettings">
+            <span data-i18n="nav.settings">Settings</span>
+            <span class="badge">⚙︎</span>
+          </button>
+        </div>
+
+        <div class="spacer"></div>
+
         <div class="card">
-          <!-- WEEKLY -->
-          <div id="panelWeekly">
-            <div class="row">
-              <div>
-                <h2 id="t_weeklyTitle" style="margin:0;">Weekly Plan</h2>
-                <div class="muted" id="weekKeyLabel">Week: …</div>
+          <h2 data-i18n="side.status">Status</h2>
+          <p class="muted" id="sideStatus" data-i18n="side.loading">Duke u lidhur…</p>
+          <div class="spacer"></div>
+          <div class="tiny" id="sideMeta">v1.0 • Firebase Auth + Firestore</div>
+        </div>
+      </aside>
+
+      <main class="main">
+
+        <!-- ======================
+             AUTH VIEW (LOGIN/REGISTER)
+        ======================= -->
+        <section id="viewAuth" class="card">
+          <h2 data-i18n="auth.title">Login / Register</h2>
+          <p class="muted" data-i18n="auth.desc">
+            Staff mund të regjistrohet vet. Admin/SuperAdmin e aktivizon rolin.
+          </p>
+
+          <div class="auth-grid">
+            <div class="card">
+              <h2 data-i18n="auth.login">Login</h2>
+
+              <div class="field">
+                <label data-i18n="auth.email">Email</label>
+                <input id="loginEmail" type="email" placeholder="name@firma.de" autocomplete="email" />
               </div>
-              <div class="fit row" style="justify-content:flex-end;">
-                <button class="secondary fit" id="btnReloadWeek">Reload</button>
-                <button class="ok fit hide" id="btnSaveWeek">Save</button>
+              <div class="field">
+                <label data-i18n="auth.password">Password</label>
+                <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" />
               </div>
+
+              <div class="row" style="margin-top:12px;">
+                <button id="btnLogin" class="btn primary" data-i18n="auth.loginBtn">Login</button>
+                <button id="btnReset" class="btn" data-i18n="auth.resetBtn">Reset Password</button>
+              </div>
+              <p class="tiny" style="margin-top:10px;" data-i18n="auth.resetHint">
+                Reset dërgon email (kontrollo edhe Spam).
+              </p>
             </div>
 
-            <div class="hr"></div>
+            <div class="card">
+              <h2 data-i18n="auth.register">Register (Staff)</h2>
 
-            <div id="weeklyWrap"></div>
+              <div class="field">
+                <label data-i18n="staff.fullname">Emri & Mbiemri</label>
+                <input id="regName" type="text" placeholder="Rina Lulaj" autocomplete="name" />
+              </div>
+              <div class="field">
+                <label data-i18n="auth.email">Email</label>
+                <input id="regEmail" type="email" placeholder="rina@matteo.de" autocomplete="email" />
+              </div>
+              <div class="field">
+                <label data-i18n="auth.password">Password</label>
+                <input id="regPass" type="password" placeholder="Min. 6 karaktere" autocomplete="new-password" />
+              </div>
 
-            <p class="muted small" id="t_weekHint" style="margin-top:10px;">
-              Admin/SuperAdmin mund ta ndryshojë dhe ruajë planin. Staff e sheh vetëm.
+              <div class="row" style="margin-top:12px;">
+                <button id="btnRegister" class="btn primary" data-i18n="auth.registerBtn">Register</button>
+              </div>
+
+              <p class="tiny" style="margin-top:10px;" data-i18n="auth.registerHint">
+                Pas register, roli është “pending” derisa Admin ta aktivizon.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================
+             DASHBOARD
+        ======================= -->
+        <section id="viewDashboard" class="hide">
+          <div class="cards">
+            <div class="card">
+              <h2 data-i18n="dash.week">Kjo javë</h2>
+              <p class="muted" id="dashWeekRange">—</p>
+              <div class="kpi" id="dashWeekKpi">—</div>
+              <p class="tiny" data-i18n="dash.weekHint">Orari ruhet automatikisht.</p>
+            </div>
+
+            <div class="card">
+              <h2 data-i18n="dash.inventory">Inventory</h2>
+              <p class="muted" data-i18n="dash.invHint">Total artikuj</p>
+              <div class="kpi" id="dashInvKpi">—</div>
+              <p class="tiny" id="dashInvLow">—</p>
+            </div>
+
+            <div class="card">
+              <h2 data-i18n="dash.staff">Staff</h2>
+              <p class="muted" data-i18n="dash.staffHint">Aktiv / Pending</p>
+              <div class="kpi" id="dashStaffKpi">—</div>
+              <p class="tiny" id="dashPendingHint">—</p>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="card">
+            <h2 data-i18n="dash.quick">Quick Actions</h2>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" id="quickOpenWeekly" data-i18n="dash.openWeekly">Hap Weekly Plan</button>
+              <button class="btn primary" id="quickOpenInv" data-i18n="dash.openInv">Hap Inventory</button>
+              <button class="btn" id="quickOpenStaff" data-i18n="dash.openStaff">Hap Staff</button>
+            </div>
+            <p class="tiny" style="margin-top:10px;" data-i18n="dash.note">
+              Admin/SuperAdmin shohin edhe menaxhimin e roleve.
             </p>
           </div>
+        </section>
 
-          <!-- INVENTORY -->
-          <div id="panelInventory" class="hide">
+        <!-- ======================
+             WEEKLY PLAN
+        ======================= -->
+        <section id="viewWeekly" class="hide">
+          <div class="row" style="justify-content:space-between;">
+            <div>
+              <h2 style="margin:0" data-i18n="weekly.title">Weekly Plan</h2>
+              <p class="muted" id="weeklyMeta">—</p>
+            </div>
             <div class="row">
-              <div>
-                <h2 id="t_invTitle" style="margin:0;">Inventory</h2>
-                <div class="muted" id="t_invSub">Add items, update quantity, track usage</div>
-              </div>
-              <div class="fit row" style="justify-content:flex-end;">
-                <button class="ok fit hide" id="btnAddItem">Add Item</button>
-              </div>
+              <button class="btn" id="btnPrevWeek" data-i18n="weekly.prev">◀ Java</button>
+              <button class="btn" id="btnThisWeek" data-i18n="weekly.this">Kjo Javë</button>
+              <button class="btn" id="btnNextWeek" data-i18n="weekly.next">Java ▶</button>
+              <button class="btn primary" id="btnSaveWeekly" data-i18n="weekly.save">Ruaj</button>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="card">
+            <p class="tiny" data-i18n="weekly.hint">
+              Shkruaj orarin si në foto (Morning / Middle / Evening). Admin mund ta ndryshojë. Staff: vetëm lexim (nëse s’je Admin).
+            </p>
+            <div class="spacer"></div>
+            <div style="overflow:auto;">
+              <table id="weeklyTable"></table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================
+             INVENTORY
+        ======================= -->
+        <section id="viewInventory" class="hide">
+          <div class="row" style="justify-content:space-between;">
+            <div>
+              <h2 style="margin:0" data-i18n="inv.title">Inventory</h2>
+              <p class="muted" data-i18n="inv.subtitle">Sasia • Sa do shesim • Sa mbet • Data</p>
+            </div>
+            <div class="row">
+              <button class="btn primary" id="btnAddInv" data-i18n="inv.add">+ Shto Artikull</button>
+              <button class="btn" id="btnRefreshInv" data-i18n="common.refresh">Refresh</button>
+            </div>
+          </div>
+
+          <div class="inv-grid" id="invGrid"></div>
+        </section>
+
+        <!-- ======================
+             STAFF
+        ======================= -->
+        <section id="viewStaff" class="hide">
+          <div class="row" style="justify-content:space-between;">
+            <div>
+              <h2 style="margin:0" data-i18n="staff.title">Staff</h2>
+              <p class="muted" data-i18n="staff.subtitle">Aktivizo Pending • Ndrysho role • Menaxho</p>
+            </div>
+            <div class="row">
+              <button class="btn" id="btnRefreshStaff" data-i18n="common.refresh">Refresh</button>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="card">
+            <h2 data-i18n="staff.pending">Pending Requests</h2>
+            <p class="tiny" data-i18n="staff.pendingHint">Këtu dalin ata që kanë bërë register dhe presin aktivizim.</p>
+            <div class="spacer"></div>
+            <div style="overflow:auto;">
+              <table id="pendingTable"></table>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="card">
+            <h2 data-i18n="staff.active">Active Users</h2>
+            <p class="tiny" data-i18n="staff.activeHint">Ndrysho rolin (staff/admin). SuperAdmin ka gjithmonë të drejtë.</p>
+            <div class="spacer"></div>
+            <div style="overflow:auto;">
+              <table id="usersTable"></table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================
+             NOTIFICATIONS
+        ======================= -->
+        <section id="viewNotifications" class="hide">
+          <div class="row" style="justify-content:space-between;">
+            <div>
+              <h2 style="margin:0" data-i18n="notif.title">Notifications</h2>
+              <p class="muted" data-i18n="notif.subtitle">Mesazhe për staff (ruhen në Firestore)</p>
+            </div>
+            <div class="row">
+              <button class="btn primary" id="btnNewNotif" data-i18n="notif.new">+ Njoftim</button>
+              <button class="btn" id="btnRefreshNotif" data-i18n="common.refresh">Refresh</button>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="card">
+            <div id="notifList" class="muted">—</div>
+          </div>
+        </section>
+
+        <!-- ======================
+             SETTINGS
+        ======================= -->
+        <section id="viewSettings" class="hide">
+          <div class="card">
+            <h2 data-i18n="settings.title">Settings</h2>
+            <p class="muted" data-i18n="settings.subtitle">Info & Debug</p>
+            <div class="spacer"></div>
+
+            <div class="row">
+              <button id="btnTestWrite" class="btn" data-i18n="settings.testWrite">Test Firestore Write</button>
+              <button id="btnClearErr" class="btn" data-i18n="settings.clearErr">Clear Errors</button>
             </div>
 
-            <div class="hr"></div>
-            <div id="invList" class="list"></div>
+            <div class="spacer"></div>
+            <div class="tiny" id="debugInfo">—</div>
           </div>
+        </section>
 
-          <!-- USERS -->
-          <div id="panelUsers" class="hide">
-            <div class="row">
-              <div>
-                <h2 id="t_usersTitle" style="margin:0;">Users / Approvals</h2>
-                <div class="muted" id="t_usersSub">Approve pending accounts and assign roles</div>
-              </div>
-            </div>
-            <div class="hr"></div>
-            <div id="usersList" class="list"></div>
-          </div>
-        </div>
-
-        <!-- SIDE -->
-        <div class="card">
-          <h2 id="t_sideTitle">Quick info</h2>
-          <div class="muted" id="t_sideText">
-            Këtu kemi bazën PRO: Roles + Pending, Weekly Plan, Inventory.
-          </div>
-          <div class="hr"></div>
-
-          <div class="note" id="t_sideNote">
-            Nëse staff s’është aprovuar: login e nxjerr menjëherë (pending).
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="row">
-            <button class="secondary fit" id="btnMakeMeSuperHint">SuperAdmin Setup</button>
-          </div>
-          <p class="muted small" id="t_superHint" style="margin-top:10px;">
-            SuperAdmin është vetëm UID i jot. E vendosim te Firestore doc `users/{UID}`.
-          </p>
-        </div>
-      </div>
+      </main>
     </div>
   </div>
+
+  <!-- MODAL (PËR INVENTORY & NOTIFICATIONS) -->
+  <div id="modalBack" class="modalBack">
+    <div class="modal">
+      <div class="modalHead">
+        <h3 id="modalTitle">—</h3>
+        <button class="btn" id="btnCloseModal" data-i18n="common.close">Mbyll</button>
+      </div>
+      <div class="hr"></div>
+      <div id="modalBody"></div>
+    </div>
+  <!-- =========================
+MATTEOTEAM PRO 1.0 – PJESA 2/3
+✅ IMPORTS MUST BE FIRST (kjo është arsyeja pse e vendosim këtu)
+========================= -->
+
   <script type="module">
     // ==========================
     // 1) IMPORTS MUST BE FIRST
     // ==========================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
     import {
       getAuth,
       onAuthStateChanged,
       signInWithEmailAndPassword,
       createUserWithEmailAndPassword,
       sendPasswordResetEmail,
-      signOut
+      signOut,
+      updateProfile
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-window.addEventListener("error", (e) => {
-  alert("JS ERROR: " + (e?.message || "unknown"));
-});
-window.addEventListener("unhandledrejection", (e) => {
-  alert("PROMISE ERROR: " + (e?.reason?.message || e?.reason || "unknown"));
-});
+
     import {
       getFirestore,
       doc,
       getDoc,
       setDoc,
       updateDoc,
+      deleteDoc,
       collection,
       addDoc,
       getDocs,
-      query,
-      orderBy,
-      where,
       onSnapshot,
-      serverTimestamp,
-      deleteDoc
+      query,
+      where,
+      orderBy,
+      limit,
+      serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // ==========================
-    // 2) FIREBASE CONFIG (PASTE YOURS HERE)
+    // 2) FIREBASE CONFIG (YOURS)
     // ==========================
     const firebaseConfig = {
       apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
@@ -349,16 +691,27 @@ window.addEventListener("unhandledrejection", (e) => {
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-     alert("FIREBASE OK");
+
     // ==========================
-    // 4) UI HELPERS
+    // 4) GLOBAL STATE
     // ==========================
     const $ = (id) => document.getElementById(id);
-const on = (id, ev, fn) => {
-  const el = $(id);
-  if (!el) { console.warn("Missing element:", id); return; }
-  el.addEventListener(ev, fn);
-};
+    let currentUser = null;
+    let currentRole = "guest"; // guest | pending | staff | admin | superadmin
+
+    // Weekly plan week pointer (Monday)
+    let weekMonday = getMonday(new Date());
+
+    // unsubscribers
+    let unsubWeekly = null;
+    let unsubInv = null;
+    let unsubUsers = null;
+    let unsubPending = null;
+    let unsubNotif = null;
+
+    // ==========================
+    // 5) ERROR BOX
+    // ==========================
     function showErr(msg){
       const box = $("errBox");
       box.style.display = "block";
@@ -371,858 +724,1052 @@ const on = (id, ev, fn) => {
       box.textContent = "";
     }
 
-    function setStatus(text){
-      $("statusPill").textContent = text;
-    }
-
-    function show(el){ el.classList.remove("hide"); }
-    function hide(el){ el.classList.add("hide"); }
-
     // ==========================
-    // 5) I18N (DE/EN/SQ)
+    // 6) I18N (DE/SQ/EN)
     // ==========================
-    const i18n = {
+    const I18N = {
       de: {
-        brand: "MatteoTeam PRO",
-        sub: "Rollen • Wochenplan • Lager",
-        loginTitle: "Login",
-        registerTitle: "Registrieren (Mitarbeiter)",
-        loginNote: "Mitarbeiter können sich erst nach Freigabe durch Admin/SuperAdmin anmelden.",
-        regHint: "Konto wird als staff mit Status pending erstellt, bis es freigegeben wird.",
-        weeklyTitle: "Wochenplan",
-        weekHint: "Admin/SuperAdmin kann bearbeiten und speichern. Staff sieht nur.",
-        invTitle: "Lager (Inventory)",
-        invSub: "Artikel hinzufügen, Menge ändern, Verbrauch erfassen",
-        usersTitle: "Benutzer / Freigaben",
-        usersSub: "Pending freigeben und Rollen vergeben",
-        sideTitle: "Kurzinfo",
-        sideText: "PRO-Basis: Rollen + Pending, Wochenplan, Inventory.",
-        sideNote: "Wenn pending: Login wird sofort abgemeldet.",
-        superHintBtn: "SuperAdmin Setup",
-        tabWeekly: "Wochenplan",
-        tabInventory: "Inventory",
-        tabUsers: "Users",
-        save: "Speichern",
-        reload: "Neu laden",
-        addItem: "Artikel hinzufügen",
-        approve: "Freigeben",
-        reject: "Löschen",
-        role: "Rolle",
-        status: "Status",
-        pending: "pending",
-        approved: "approved",
-        staff: "staff",
-        admin: "admin",
-        superadmin: "superadmin",
-      },
-      en: {
-        brand: "MatteoTeam PRO",
-        sub: "Roles • Weekly Plan • Inventory",
-        loginTitle: "Login",
-        registerTitle: "Register (Staff)",
-        loginNote: "Staff can log in only after approval by Admin/SuperAdmin.",
-        regHint: "Account is created as staff with status pending until approved.",
-        weeklyTitle: "Weekly Plan",
-        weekHint: "Admin/SuperAdmin can edit and save. Staff is read-only.",
-        invTitle: "Inventory",
-        invSub: "Add items, update quantity, track usage",
-        usersTitle: "Users / Approvals",
-        usersSub: "Approve pending accounts and assign roles",
-        sideTitle: "Quick info",
-        sideText: "PRO base: Roles + Pending, Weekly Plan, Inventory.",
-        sideNote: "If pending: login signs out immediately.",
-        superHintBtn: "SuperAdmin Setup",
-        tabWeekly: "Weekly Plan",
-        tabInventory: "Inventory",
-        tabUsers: "Users",
-        save: "Save",
-        reload: "Reload",
-        addItem: "Add Item",
-        approve: "Approve",
-        reject: "Delete",
-        role: "Role",
-        status: "Status",
-        pending: "pending",
-        approved: "approved",
-        staff: "staff",
-        admin: "admin",
-        superadmin: "superadmin",
+        "app.title":"MatteoTeam PRO",
+        "app.subtitle":"Restaurant Management • Wochenplan • Inventar",
+        "top.role":"Rolle","top.user":"User",
+        "nav.title":"Navigation",
+        "nav.dashboard":"Dashboard",
+        "nav.weekly":"Wochenplan",
+        "nav.inventory":"Inventar",
+        "nav.staff":"Team",
+        "nav.notifications":"Mitteilungen",
+        "nav.settings":"Einstellungen",
+        "side.status":"Status","side.loading":"Verbinde…",
+        "auth.title":"Login / Registrierung",
+        "auth.desc":"Mitarbeiter können sich selbst registrieren. Admin/SuperAdmin aktiviert die Rolle.",
+        "auth.login":"Login",
+        "auth.email":"E-Mail",
+        "auth.password":"Passwort",
+        "auth.loginBtn":"Einloggen",
+        "auth.resetBtn":"Passwort zurücksetzen",
+        "auth.resetHint":"Reset sendet eine E-Mail (auch Spam prüfen).",
+        "auth.register":"Registrieren (Mitarbeiter)",
+        "auth.registerBtn":"Registrieren",
+        "auth.registerHint":"Nach Registrierung ist die Rolle „pending“ bis Admin aktiviert.",
+        "auth.signout":"Abmelden",
+        "dash.week":"Diese Woche",
+        "dash.weekHint":"Der Plan wird automatisch gespeichert.",
+        "dash.inventory":"Inventar",
+        "dash.invHint":"Artikel insgesamt",
+        "dash.staff":"Team",
+        "dash.staffHint":"Aktiv / Pending",
+        "dash.quick":"Quick Actions",
+        "dash.openWeekly":"Wochenplan öffnen",
+        "dash.openInv":"Inventar öffnen",
+        "dash.openStaff":"Team öffnen",
+        "dash.note":"Admin/SuperAdmin sehen auch Rollenverwaltung.",
+        "weekly.title":"Wochenplan",
+        "weekly.prev":"◀ Woche",
+        "weekly.this":"Diese Woche",
+        "weekly.next":"Woche ▶",
+        "weekly.save":"Speichern",
+        "weekly.hint":"Schreibe wie im Foto (Morning / Middle / Evening). Admin kann ändern. Mitarbeiter: nur Lesen (wenn nicht Admin).",
+        "inv.title":"Inventar",
+        "inv.subtitle":"Menge • Verkauf • Rest • Datum",
+        "inv.add":"+ Artikel",
+        "staff.title":"Team",
+        "staff.subtitle":"Pending aktivieren • Rollen ändern • Verwalten",
+        "staff.pending":"Pending Requests",
+        "staff.pendingHint":"Hier erscheinen neue Registrierungen, die auf Aktivierung warten.",
+        "staff.active":"Aktive Nutzer",
+        "staff.activeHint":"Rolle ändern (staff/admin). SuperAdmin hat immer volle Rechte.",
+        "notif.title":"Mitteilungen",
+        "notif.subtitle":"Nachrichten fürs Team (in Firestore gespeichert)",
+        "notif.new":"+ Mitteilung",
+        "settings.title":"Einstellungen",
+        "settings.subtitle":"Info & Debug",
+        "settings.testWrite":"Firestore Write testen",
+        "settings.clearErr":"Errors löschen",
+        "common.refresh":"Refresh",
+        "common.close":"Schließen",
+        "staff.fullname":"Vor- & Nachname"
       },
       sq: {
-        brand: "MatteoTeam PRO",
-        sub: "Role • Weekly Plan • Inventory",
-        loginTitle: "Login",
-        registerTitle: "Register (Staff)",
-        loginNote: "Staff hyn vetëm pasi aprovohet nga Admin/SuperAdmin.",
-        regHint: "Account krijohet si staff me status pending derisa të aprovohet.",
-        weeklyTitle: "Weekly Plan",
-        weekHint: "Admin/SuperAdmin mund ta ndryshojë dhe ruajë. Staff e sheh vetëm.",
-        invTitle: "Inventory",
-        invSub: "Shto artikuj, ndrysho sasi, shëno përdorim",
-        usersTitle: "Users / Aprovime",
-        usersSub: "Aprovo pending dhe cakto role",
-        sideTitle: "Info shpejt",
-        sideText: "Baza PRO: Role + Pending, Weekly Plan, Inventory.",
-        sideNote: "Nëse pending: login bën sign out menjëherë.",
-        superHintBtn: "SuperAdmin Setup",
-        tabWeekly: "Weekly Plan",
-        tabInventory: "Inventory",
-        tabUsers: "Users",
-        save: "Ruaj",
-        reload: "Reload",
-        addItem: "Shto Item",
-        approve: "Aprovo",
-        reject: "Fshi",
-        role: "Role",
-        status: "Status",
-        pending: "pending",
-        approved: "approved",
-        staff: "staff",
-        admin: "admin",
-        superadmin: "superadmin",
+        "app.title":"MatteoTeam PRO",
+        "app.subtitle":"Menaxhim Restoranti • Plani Javor • Inventari",
+        "top.role":"Roli","top.user":"User",
+        "nav.title":"Navigim",
+        "nav.dashboard":"Dashboard",
+        "nav.weekly":"Plani Javor",
+        "nav.inventory":"Inventari",
+        "nav.staff":"Stafi",
+        "nav.notifications":"Njoftime",
+        "nav.settings":"Settings",
+        "side.status":"Status","side.loading":"Duke u lidhur…",
+        "auth.title":"Login / Register",
+        "auth.desc":"Puntorët mund të regjistrohen vet. Admin/SuperAdmin e aktivizon rolin.",
+        "auth.login":"Login",
+        "auth.email":"Email",
+        "auth.password":"Password",
+        "auth.loginBtn":"Login",
+        "auth.resetBtn":"Reset Password",
+        "auth.resetHint":"Reset dërgon email (kontrollo edhe Spam).",
+        "auth.register":"Register (Staff)",
+        "auth.registerBtn":"Register",
+        "auth.registerHint":"Pas register, roli është “pending” derisa Admin ta aktivizon.",
+        "auth.signout":"Dil",
+        "dash.week":"Kjo javë",
+        "dash.weekHint":"Orari ruhet automatikisht.",
+        "dash.inventory":"Inventari",
+        "dash.invHint":"Total artikuj",
+        "dash.staff":"Stafi",
+        "dash.staffHint":"Aktiv / Pending",
+        "dash.quick":"Veprime të shpejta",
+        "dash.openWeekly":"Hap Planin Javor",
+        "dash.openInv":"Hap Inventarin",
+        "dash.openStaff":"Hap Stafin",
+        "dash.note":"Admin/SuperAdmin shohin edhe menaxhimin e roleve.",
+        "weekly.title":"Plani Javor",
+        "weekly.prev":"◀ Java",
+        "weekly.this":"Kjo Javë",
+        "weekly.next":"Java ▶",
+        "weekly.save":"Ruaj",
+        "weekly.hint":"Shkruaj si në foto (Morning / Middle / Evening). Admin mund ta ndryshojë. Staff: vetëm lexim (nëse s’je Admin).",
+        "inv.title":"Inventari",
+        "inv.subtitle":"Sasia • Sa do shesim • Sa mbet • Data",
+        "inv.add":"+ Shto Artikull",
+        "staff.title":"Stafi",
+        "staff.subtitle":"Aktivizo Pending • Ndrysho role • Menaxho",
+        "staff.pending":"Kërkesa Pending",
+        "staff.pendingHint":"Këtu dalin ata që kanë bërë register dhe presin aktivizim.",
+        "staff.active":"Përdorues Aktiv",
+        "staff.activeHint":"Ndrysho rolin (staff/admin). SuperAdmin ka gjithmonë të drejtë.",
+        "notif.title":"Njoftime",
+        "notif.subtitle":"Mesazhe për staff (ruhen në Firestore)",
+        "notif.new":"+ Njoftim",
+        "settings.title":"Settings",
+        "settings.subtitle":"Info & Debug",
+        "settings.testWrite":"Test Firestore Write",
+        "settings.clearErr":"Fshij Errors",
+        "common.refresh":"Refresh",
+        "common.close":"Mbyll",
+        "staff.fullname":"Emri & Mbiemri"
+      },
+      en: {
+        "app.title":"MatteoTeam PRO",
+        "app.subtitle":"Restaurant Management • Weekly Plan • Inventory",
+        "top.role":"Role","top.user":"User",
+        "nav.title":"Navigation",
+        "nav.dashboard":"Dashboard",
+        "nav.weekly":"Weekly Plan",
+        "nav.inventory":"Inventory",
+        "nav.staff":"Staff",
+        "nav.notifications":"Notifications",
+        "nav.settings":"Settings",
+        "side.status":"Status","side.loading":"Connecting…",
+        "auth.title":"Login / Register",
+        "auth.desc":"Staff can self-register. Admin/SuperAdmin activates roles.",
+        "auth.login":"Login",
+        "auth.email":"Email",
+        "auth.password":"Password",
+        "auth.loginBtn":"Login",
+        "auth.resetBtn":"Reset Password",
+        "auth.resetHint":"Reset sends an email (check Spam).",
+        "auth.register":"Register (Staff)",
+        "auth.registerBtn":"Register",
+        "auth.registerHint":"After register, role is “pending” until Admin activates.",
+        "auth.signout":"Sign out",
+        "dash.week":"This week",
+        "dash.weekHint":"Schedule autosaves.",
+        "dash.inventory":"Inventory",
+        "dash.invHint":"Total items",
+        "dash.staff":"Staff",
+        "dash.staffHint":"Active / Pending",
+        "dash.quick":"Quick Actions",
+        "dash.openWeekly":"Open Weekly Plan",
+        "dash.openInv":"Open Inventory",
+        "dash.openStaff":"Open Staff",
+        "dash.note":"Admin/SuperAdmin can manage roles.",
+        "weekly.title":"Weekly Plan",
+        "weekly.prev":"◀ Week",
+        "weekly.this":"This Week",
+        "weekly.next":"Week ▶",
+        "weekly.save":"Save",
+        "weekly.hint":"Write like in photo (Morning / Middle / Evening). Admin can edit. Staff: read-only (if not Admin).",
+        "inv.title":"Inventory",
+        "inv.subtitle":"Qty • To sell • Remaining • Date",
+        "inv.add":"+ Add Item",
+        "staff.title":"Staff",
+        "staff.subtitle":"Activate pending • Change roles • Manage",
+        "staff.pending":"Pending Requests",
+        "staff.pendingHint":"New registrations waiting for activation appear here.",
+        "staff.active":"Active Users",
+        "staff.activeHint":"Change role (staff/admin). SuperAdmin always has full rights.",
+        "notif.title":"Notifications",
+        "notif.subtitle":"Messages for staff (stored in Firestore)",
+        "notif.new":"+ New Notification",
+        "settings.title":"Settings",
+        "settings.subtitle":"Info & Debug",
+        "settings.testWrite":"Test Firestore Write",
+        "settings.clearErr":"Clear Errors",
+        "common.refresh":"Refresh",
+        "common.close":"Close",
+        "staff.fullname":"Full Name"
       }
     };
 
-    function applyLang(lang){
-      const t = i18n[lang] || i18n.de;
-      $("t_brand").textContent = t.brand;
-      $("t_sub").textContent = t.sub;
-      $("t_loginTitle").textContent = t.loginTitle;
-      $("t_registerTitle").textContent = t.registerTitle;
-      $("t_loginNote").textContent = t.loginNote;
-      $("t_regHint").textContent = t.regHint;
-      $("t_weeklyTitle").textContent = t.weeklyTitle;
-      $("t_weekHint").textContent = t.weekHint;
-      $("t_invTitle").textContent = t.invTitle;
-      $("t_invSub").textContent = t.invSub;
-      $("t_usersTitle").textContent = t.usersTitle;
-      $("t_usersSub").textContent = t.usersSub;
-      $("t_sideTitle").textContent = t.sideTitle;
-      $("t_sideText").textContent = t.sideText;
-      $("t_sideNote").textContent = t.sideNote;
-      $("btnMakeMeSuperHint").textContent = t.superHintBtn;
-      $("tabWeekly").textContent = t.tabWeekly;
-      $("tabInventory").textContent = t.tabInventory;
-      $("tabUsers").textContent = t.tabUsers;
-      $("btnSaveWeek").textContent = t.save;
-      $("btnReloadWeek").textContent = t.reload;
-      $("btnAddItem").textContent = t.addItem;
+    let currentLang = (localStorage.getItem("mt_lang") || "de");
+    function t(key){
+      return (I18N[currentLang] && I18N[currentLang][key]) ? I18N[currentLang][key] : key;
+    }
+    function applyI18n(){
+      document.documentElement.lang = currentLang;
+      document.querySelectorAll("[data-i18n]").forEach(el=>{
+        const k = el.getAttribute("data-i18n");
+        el.textContent = t(k);
+      });
     }
 
-    // ==========================
-    // 6) AUTH ACTIONS
-    // ==========================
-    on("btnLogin","click", async ()=>{
-      clearErr();
-      const email = $("loginEmail").value.trim();
-      const pass = $("loginPass").value;
-      if(!email || !pass) return showErr("Please enter email and password.");
-      try{
-        await signInWithEmailAndPassword(auth, email, pass);
-      }catch(e){ showErr(e.message); }
-    });
-
-  on("btnRegister","click", async ()=>{
-      clearErr();
-      const name = $("regName").value.trim();
-      const email = $("regEmail").value.trim();
-      const pass = $("regPass").value;
-      if(!name || !email || !pass) return showErr("Please fill name, email, password.");
-      try{
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-
-        // Create user doc -> staff + pending
-        await setDoc(doc(db, "users", cred.user.uid), {
-          name,
-          email,
-          role: "staff",
-          status: "pending",
-          createdAt: serverTimestamp()
-        });
-
-        alert("Account created. Waiting for approval.");
-        await signOut(auth);
-      }catch(e){ showErr(e.message); }
-    });
-
-    on("btnReset","click", async ()=>{
-      clearErr();
-      const email = $("loginEmail").value.trim();
-      if(!email) return showErr("Enter your email in the email field first.");
-      try{
-        await sendPasswordResetEmail(auth, email);
-        alert("Reset email sent (check inbox/spam).");
-      }catch(e){ showErr(e.message); }
-    });
-
-  on("btnSignOut","click", async ()=>{
-      clearErr();
-      await signOut(auth);
+    $("langSelect").value = currentLang;
+    $("langSelect").addEventListener("change", ()=>{
+      currentLang = $("langSelect").value;
+      localStorage.setItem("mt_lang", currentLang);
+      applyI18n();
+      renderAllIfReady();
     });
 
     // ==========================
-    // 7) WEEK KEY (ISO week by Monday date)
+    // 7) NAV + VIEW SWITCH
     // ==========================
-    function getMonday(d=new Date()){
+    const views = ["viewAuth","viewDashboard","viewWeekly","viewInventory","viewStaff","viewNotifications","viewSettings"];
+
+    function setActiveNav(targetView){
+      document.querySelectorAll(".nav button").forEach(b=>{
+        b.classList.toggle("active", b.getAttribute("data-view") === targetView);
+      });
+    }
+
+    function showView(id){
+      views.forEach(v => $(v).classList.toggle("hide", v !== id));
+      if(id !== "viewAuth") setActiveNav(id);
+    }
+
+    document.querySelectorAll(".nav button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const v = btn.getAttribute("data-view");
+        if(!currentUser){
+          showView("viewAuth");
+          return;
+        }
+        // Role-gating: staff/pending/guest
+        if(currentRole === "pending" && v !== "viewDashboard" && v !== "viewSettings"){
+          showErr(t("staff.pendingHint"));
+          return;
+        }
+        showView(v);
+      });
+    });
+
+    $("quickOpenWeekly").addEventListener("click", ()=>{ showView("viewWeekly"); });
+    $("quickOpenInv").addEventListener("click", ()=>{ showView("viewInventory"); });
+    $("quickOpenStaff").addEventListener("click", ()=>{ showView("viewStaff"); });
+
+    // ==========================
+    // 8) MODAL
+    // ==========================
+    function openModal(title, html){
+      $("modalTitle").textContent = title;
+      $("modalBody").innerHTML = html;
+      $("modalBack").style.display = "block";
+    }
+    function closeModal(){
+      $("modalBack").style.display = "none";
+      $("modalTitle").textContent = "—";
+      $("modalBody").innerHTML = "";
+    }
+    $("btnCloseModal").addEventListener("click", closeModal);
+    $("modalBack").addEventListener("click", (e)=>{
+      if(e.target === $("modalBack")) closeModal();
+    });
+
+    // ==========================
+    // 9) HELPERS
+    // ==========================
+    function getMonday(d){
       const x = new Date(d);
-      const day = (x.getDay()+6)%7; // Mon=0
-      x.setDate(x.getDate()-day);
+      const day = x.getDay(); // 0 Sun .. 6 Sat
+      const diff = (day === 0 ? -6 : 1) - day; // move to Monday
+      x.setDate(x.getDate() + diff);
       x.setHours(0,0,0,0);
       return x;
     }
     function fmtDate(d){
-      const y = d.getFullYear();
-      const m = String(d.getMonth()+1).padStart(2,"0");
-      const da = String(d.getDate()).padStart(2,"0");
-      return `${y}-${m}-${da}`;
+      const x = new Date(d);
+      const dd = String(x.getDate()).padStart(2,"0");
+      const mm = String(x.getMonth()+1).padStart(2,"0");
+      const yy = x.getFullYear();
+      return `${dd}.${mm}.${yy}`;
     }
-    function getWeekKey(){
-      return fmtDate(getMonday(new Date())); // doc id = monday date
+    function weekKeyFromMonday(monday){
+      const x = new Date(monday);
+      const y = x.getFullYear();
+      const m = String(x.getMonth()+1).padStart(2,"0");
+      const d = String(x.getDate()).padStart(2,"0");
+      return `${y}-${m}-${d}`; // YYYY-MM-DD (monday)
+    }
+    function isAdmin(){
+      return currentRole === "admin" || currentRole === "superadmin";
+    }
+    function isSuper(){
+      return currentRole === "superadmin";
     }
 
-    // ==========================
-    // 8) GLOBAL STATE
-    // ==========================
-    let currentUser = null;
-    let currentUserDoc = null; // {name,email,role,status}
-    let unsubUsers = null;
-    let unsubInv = null;
-    let unsubWeek = null;
-    let activeTab = "weekly";
-
-    // ==========================
-    // 9) TAB NAV
-    // ==========================
-    function setTab(tab){
-      activeTab = tab;
-      // tabs
-      document.querySelectorAll(".tab").forEach(b=>{
-        b.classList.toggle("active", b.dataset.tab === tab);
-      });
-      // panels
-      hide($("panelWeekly")); hide($("panelInventory")); hide($("panelUsers"));
-      if(tab === "weekly") show($("panelWeekly"));
-      if(tab === "inventory") show($("panelInventory"));
-      if(tab === "users") show($("panelUsers"));
+    function setStatus(text){
+      $("sideStatus").textContent = text;
     }
-    document.querySelectorAll(".tab").forEach(btn=>{
-      btn.addEventListener("click", ()=> setTab(btn.dataset.tab));
-    });
 
-    // ==========================
-    // 10) ROLE UI
-    // ==========================
-    function isSuper(){ return currentUser?.uid === SUPERADMIN_UID || currentUserDoc?.role === "superadmin"; }
-    function isAdmin(){ return isSuper() || currentUserDoc?.role === "admin"; }
-    function isStaff(){ return currentUserDoc?.role === "staff"; }
-
-    function updateRoleUI(){
-      // show/hide admin features
-      if(isAdmin()){
-        show($("btnSaveWeek"));
-        show($("btnAddItem"));
-        show($("tabUsers"));
-      }else{
-        hide($("btnSaveWeek"));
-        hide($("btnAddItem"));
-        hide($("tabUsers"));
-        if(activeTab === "users") setTab("weekly");
-      }
-
-      const role = currentUserDoc?.role || "unknown";
-      const status = currentUserDoc?.status || "unknown";
-      const badge = $("meBadge");
-      badge.textContent = `${role.toUpperCase()} • ${status}`;
-      badge.className = "badge " + (status === "approved" ? "ok" : "warn");
-
-      $("meInfo").textContent = `${currentUserDoc?.name || ""} — ${currentUser?.email || ""}`;
+    function setTopPills(){
+      $("pillUser").textContent = currentUser ? (currentUser.email || "—") : "—";
+      $("pillRole").textContent = currentRole || "—";
+      $("btnSignOut").disabled = !currentUser;
     }
 
     // ==========================
-    // 11) USERS / APPROVALS (Admin/Super)
+    // 10) AUTH ACTIONS
     // ==========================
-    function renderUserCard(uid, u){
-      const div = document.createElement("div");
-      div.className = "item";
-      const left = document.createElement("div");
-      left.innerHTML = `
-        <strong>${escapeHtml(u.name || "—")}</strong>
-        <div class="meta">${escapeHtml(u.email || "—")}</div>
-        <div class="meta">${escapeHtml("role: " + (u.role || "—") + " | status: " + (u.status || "—"))}</div>
-      `;
-
-      const actions = document.createElement("div");
-      actions.className = "actions";
-
-      const selRole = document.createElement("select");
-      ["staff","admin","superadmin"].forEach(r=>{
-        const opt = document.createElement("option");
-        opt.value = r; opt.textContent = r;
-        if((u.role||"staff") === r) opt.selected = true;
-        selRole.appendChild(opt);
-      });
-
-      const btnApprove = document.createElement("button");
-      btnApprove.className = "ok";
-      btnApprove.textContent = "Approve";
-      btnApprove.disabled = (u.status === "approved");
-      btnApprove.addEventListener("click", async ()=>{
-        clearErr();
-        try{
-          await updateDoc(doc(db,"users",uid), {
-            status: "approved",
-            role: selRole.value
-          });
-        }catch(e){ showErr(e.message); }
-      });
-
-      const btnSaveRole = document.createElement("button");
-      btnSaveRole.textContent = "Save role";
-      btnSaveRole.addEventListener("click", async ()=>{
-        clearErr();
-        try{
-          await updateDoc(doc(db,"users",uid), { role: selRole.value });
-        }catch(e){ showErr(e.message); }
-      });
-
-      const btnDelete = document.createElement("button");
-      btnDelete.className = "danger";
-      btnDelete.textContent = "Delete";
-      btnDelete.addEventListener("click", async ()=>{
-        clearErr();
-        if(!confirm("Delete user document? (Auth user stays in Firebase Auth)")) return;
-        try{
-          await deleteDoc(doc(db,"users",uid));
-        }catch(e){ showErr(e.message); }
-      });
-
-      actions.appendChild(selRole);
-      actions.appendChild(btnSaveRole);
-      actions.appendChild(btnApprove);
-      actions.appendChild(btnDelete);
-
-      div.appendChild(left);
-      div.appendChild(actions);
-      return div;
-    }
-
-    function startUsersListener(){
-      stopUsersListener();
-      if(!isAdmin()) return;
-
-      const qy = query(collection(db,"users"), orderBy("createdAt","desc"));
-      unsubUsers = onSnapshot(qy, (snap)=>{
-        const list = $("usersList");
-        list.innerHTML = "";
-        if(snap.empty){
-          list.innerHTML = `<div class="muted">No users found.</div>`;
-          return;
-        }
-        snap.forEach(docu=>{
-          list.appendChild(renderUserCard(docu.id, docu.data()));
-        });
-      }, (err)=> showErr(err.message));
-    }
-    function stopUsersListener(){
-      if(unsubUsers){ unsubUsers(); unsubUsers = null; }
-      $("usersList").innerHTML = "";
-    }
-
-    // ==========================
-    // 12) INVENTORY
-    // ==========================
-    function renderInvCard(id, it){
-      const div = document.createElement("div");
-      div.className = "item";
-
-      const left = document.createElement("div");
-      left.innerHTML = `
-        <strong>${escapeHtml(it.name || "—")}</strong>
-        <div class="meta">Qty: ${escapeHtml(String(it.qty ?? "—"))} ${escapeHtml(it.unit || "")}</div>
-        <div class="meta">Used: ${escapeHtml(String(it.used ?? 0))} | Left: ${escapeHtml(String((it.qty ?? 0) - (it.used ?? 0)))}</div>
-        <div class="meta">Date: ${escapeHtml(it.date || "—")}</div>
-      `;
-
-      const actions = document.createElement("div");
-      actions.className = "actions";
-
-      if(isAdmin()){
-        const btnUse = document.createElement("button");
-        btnUse.textContent = "Use";
-        btnUse.addEventListener("click", async ()=>{
-          clearErr();
-          const add = prompt("How much used now? (number)", "1");
-          if(add === null) return;
-          const val = Number(add);
-          if(Number.isNaN(val)) return alert("Not a number");
-          try{
-            await updateDoc(doc(db,"inventory",id), {
-              used: Number((it.used ?? 0) + val)
-            });
-          }catch(e){ showErr(e.message); }
-        });
-
-        const btnEdit = document.createElement("button");
-        btnEdit.textContent = "Edit";
-        btnEdit.addEventListener("click", async ()=>{
-          clearErr();
-          const name = prompt("Name", it.name || "");
-          if(name === null) return;
-          const qty = prompt("Quantity (number)", String(it.qty ?? 0));
-          if(qty === null) return;
-          const unit = prompt("Unit (kg, L, pcs...)", it.unit || "");
-          if(unit === null) return;
-          const date = prompt("Date (YYYY-MM-DD)", it.date || "");
-          if(date === null) return;
-          const used = prompt("Used (number)", String(it.used ?? 0));
-          if(used === null) return;
-
-          const qn = Number(qty);
-          const un = Number(used);
-          if(Number.isNaN(qn) || Number.isNaN(un)) return alert("Quantity/Used must be number.");
-
-          try{
-            await updateDoc(doc(db,"inventory",id), {
-              name: name.trim(),
-              qty: qn,
-              unit: unit.trim(),
-              date: date.trim(),
-              used: un
-            });
-          }catch(e){ showErr(e.message); }
-        });
-
-        const btnDel = document.createElement("button");
-        btnDel.className = "danger";
-        btnDel.textContent = "Delete";
-        btnDel.addEventListener("click", async ()=>{
-          clearErr();
-          if(!confirm("Delete this item?")) return;
-          try{
-            await deleteDoc(doc(db,"inventory",id));
-          }catch(e){ showErr(e.message); }
-        });
-
-        actions.appendChild(btnUse);
-        actions.appendChild(btnEdit);
-        actions.appendChild(btnDel);
-      } else {
-        actions.innerHTML = `<span class="muted">Read only</span>`;
-      }
-
-      div.appendChild(left);
-      div.appendChild(actions);
-      return div;
-    }
-
-    $("btnAddItem").addEventListener("click", async ()=>{
+    $("btnLogin").addEventListener("click", async ()=>{
       clearErr();
-      if(!isAdmin()) return;
-
-      const name = prompt("Item name (e.g. Mehl 25kg)", "");
-      if(!name) return;
-      const qty = prompt("Quantity (number)", "1");
-      if(qty === null) return;
-      const unit = prompt("Unit (kg, L, pcs...)", "kg");
-      if(unit === null) return;
-      const date = prompt("Date (YYYY-MM-DD)", fmtDate(new Date()));
-      if(date === null) return;
-
-      const qn = Number(qty);
-      if(Number.isNaN(qn)) return alert("Quantity must be number.");
-
       try{
-        await addDoc(collection(db,"inventory"), {
-          name: name.trim(),
-          qty: qn,
-          unit: unit.trim(),
-          used: 0,
-          date: date.trim(),
-          createdAt: serverTimestamp()
-        });
-      }catch(e){ showErr(e.message); }
+        const email = $("loginEmail").value.trim();
+        const pass = $("loginPass").value;
+        if(!email || !pass) throw new Error("Email/Password missing");
+        await signInWithEmailAndPassword(auth, email, pass);
+      }catch(e){ showErr(e.message || e); }
     });
 
-    function startInventoryListener(){
-      stopInventoryListener();
-      const qy = query(collection(db,"inventory"), orderBy("createdAt","desc"));
-      unsubInv = onSnapshot(qy, (snap)=>{
-        const list = $("invList");
-        list.innerHTML = "";
-        if(snap.empty){
-          list.innerHTML = `<div class="muted">No inventory items yet.</div>`;
-          return;
-        }
-        snap.forEach(d=>{
-          list.appendChild(renderInvCard(d.id, d.data()));
-        });
-      }, (err)=> showErr(err.message));
-    }
-    function stopInventoryListener(){
-      if(unsubInv){ unsubInv(); unsubInv = null; }
-      $("invList").innerHTML = "";
-    }
-// ==========================
-// 13) WEEKLY PLAN (SECTIONS + WORKERS)
-// ==========================
-const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const SECTIONS = ["Pizzabäcker","Kasse","Service","Küche"];
+    $("btnReset").addEventListener("click", async ()=>{
+      clearErr();
+      try{
+        const email = $("loginEmail").value.trim();
+        if(!email) throw new Error("Email missing");
+        await sendPasswordResetEmail(auth, email);
+        showErr("✅ Reset email sent (check Spam).");
+      }catch(e){ showErr(e.message || e); }
+    });
 
-// Default structure
-function emptyWeek(){
-  const data = {};
-  for(const sec of SECTIONS){
-    data[sec] = {}; // workers will be added manually
-  }
-  return data;
-}
+    $("btnRegister").addEventListener("click", async ()=>{
+      clearErr();
+      try{
+        const name = $("regName").value.trim();
+        const email = $("regEmail").value.trim();
+        const pass = $("regPass").value;
+        if(!name || !email || !pass) throw new Error("Missing fields");
+        if(pass.length < 6) throw new Error("Password min 6");
 
-function normWeekData(raw){
-  // raw can be null or old format (day->shift)
-  if(!raw || typeof raw !== "object") return emptyWeek();
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateProfile(cred.user, { displayName: name });
 
-  // If it's already new format: has sections
-  const hasAnySection = SECTIONS.some(s => raw[s] && typeof raw[s] === "object");
-  if(hasAnySection){
-    // ensure all sections exist
-    const out = emptyWeek();
-    for(const sec of SECTIONS){
-      out[sec] = (raw[sec] && typeof raw[sec] === "object") ? raw[sec] : {};
-    }
-    return out;
-  }
+        // Create user doc as pending
+        await setDoc(doc(db,"users", cred.user.uid), {
+          uid: cred.user.uid,
+          email,
+          displayName: name,
+          role: "pending",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge:true });
 
-  // Old format fallback -> return empty new format
-  return emptyWeek();
-}
+      }catch(e){ showErr(e.message || e); }
+    });
 
-function esc(str){
-  return String(str ?? "").replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[m]));
-}
+    $("btnSignOut").addEventListener("click", async ()=>{
+      clearErr();
+      try{ await signOut(auth); }
+      catch(e){ showErr(e.message || e); }
+    });
 
-function renderSectionTable(sec, workersObj, editable){
-  // workersObj: { "Ajris": {Mon:"9", ...}, ...}
-  const rows = Object.keys(workersObj || {}).sort((a,b)=>a.localeCompare(b));
+    // ==========================
+    // 11) ROLE LOAD + BOOT
+    // ==========================
+    async function loadRoleAndProfile(uid){
+      // SuperAdmin override
+      if(uid === SUPERADMIN_UID) return { role:"superadmin" };
 
-  let html = `
-    <div class="hr"></div>
-    <div class="row" style="align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
-      <h3 style="margin:0">${esc(sec)}</h3>
-      ${editable ? `
-        <div class="row" style="gap:8px;">
-          <input id="addName_${esc(sec)}" type="text" placeholder="Worker name..." style="max-width:180px;">
-          <button class="secondary fit" data-addworker="${esc(sec)}">+ Add</button>
-        </div>
-      ` : ``}
-    </div>
-    <div class="tableWrap">
-      <table class="weekTable" style="width:100%">
-        <thead>
-          <tr>
-            <th style="width:180px">Name</th>
-            ${DAYS.map(d=>`<th>${d}</th>`).join("")}
-            ${editable ? `<th style="width:70px"></th>` : ``}
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
-  if(rows.length === 0){
-    html += `
-      <tr>
-        <td class="muted" colspan="${DAYS.length + 2}">No workers yet. Add one.</td>
-      </tr>
-    `;
-  } else {
-    for(const name of rows){
-      html += `<tr>
-        <td><strong>${esc(name)}</strong></td>
-        ${DAYS.map(day=>{
-          const val = (workersObj?.[name]?.[day] ?? "");
-          return `
-            <td>
-              <input
-                type="text"
-                placeholder="z.B. 11 / Frei / U / 12-17"
-                value="${esc(val)}"
-                data-sec="${esc(sec)}"
-                data-worker="${esc(name)}"
-                data-day="${esc(day)}"
-                ${editable ? "" : "disabled"}
-              />
-            </td>
-          `;
-        }).join("")}
-        ${editable ? `
-          <td style="text-align:right">
-            <button class="danger fit" data-delworker="${esc(sec)}" data-worker="${esc(name)}">X</button>
-          </td>
-        ` : ``}
-      </tr>`;
-    }
-  }
-
-  html += `
-        </tbody>
-      </table>
-    </div>
-  `;
-  return html;
-}
-
-function renderWeeklyTable(weekData, editable){
-  const wrap = $("weeklyWrap");
-  wrap.innerHTML = "";
-
-  const data = normWeekData(weekData);
-
-  // Render each section
-  let html = "";
-  for(const sec of SECTIONS){
-    html += renderSectionTable(sec, data[sec], editable);
-  }
-  wrap.innerHTML = html;
-
-  wrap.classList.toggle("readonly", !editable);
-
-  // Wire add/delete only if editable
-  if(!editable) return;
-
-  // Add worker
-  wrap.querySelectorAll("[data-addworker]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const sec = btn.getAttribute("data-addworker");
-      const inp = document.getElementById(`addName_${sec}`);
-     const on = (id, ev, fn) => {
-  const el = $(id);
-  if (!el) { console.warn("Missing element:", id); return; }
-  el.addEventListener(ev, fn);
-};
-      const name = (inp?.value || "").trim();
-      if(!name) return;
-
-      const cur = window.__weekDataCache || emptyWeek();
-      const norm = normWeekData(cur);
-
-      if(!norm[sec]) norm[sec] = {};
-      if(!norm[sec][name]) norm[sec][name] = {};
-      for(const d of DAYS){
-        if(norm[sec][name][d] == null) norm[sec][name][d] = "";
+      const ref = doc(db,"users", uid);
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
+        // If user exists in auth but no doc, create pending
+        await setDoc(ref, {
+          uid,
+          email: auth.currentUser?.email || "",
+          displayName: auth.currentUser?.displayName || "",
+          role: "pending",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, { merge:true });
+        return { role:"pending" };
       }
-
-      window.__weekDataCache = norm;
-      renderWeeklyTable(norm, true);
-    });
-  });
-
-  // Delete worker
-  wrap.querySelectorAll("[data-delworker]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const sec = btn.getAttribute("data-delworker");
-      const name = btn.getAttribute("data-worker");
-      const cur = window.__weekDataCache || emptyWeek();
-      const norm = normWeekData(cur);
-      if(norm?.[sec]?.[name]) delete norm[sec][name];
-      window.__weekDataCache = norm;
-      renderWeeklyTable(norm, true);
-    });
-  });
-}
-
-function collectWeeklyFromInputs(){
-  const data = emptyWeek();
-  const inputs = $("weeklyWrap").querySelectorAll("input[data-sec][data-worker][data-day]");
-  inputs.forEach(inp=>{
-    const sec = inp.dataset.sec;
-    const worker = inp.dataset.worker;
-    const day = inp.dataset.day;
-    if(!data[sec]) data[sec] = {};
-    if(!data[sec][worker]) data[sec][worker] = {};
-    data[sec][worker][day] = (inp.value || "").trim();
-  });
-  return data;
-}
-
-// Firestore listener
-let unsubWeek = null;
-
-function startWeekListener(){
-  stopWeekListener();
-
-  const key = getWeekKey(); // your existing function
-  const ref = doc(db, "schedules", key);
-
-  unsubWeek = onSnapshot(ref, async (snap)=>{
-    let data = null;
-
-    if(snap.exists()){
-      data = snap.data()?.data || null;
-    } else {
-      // Create default doc (only if admin)
-      data = emptyWeek();
-      if(isAdmin()){
-        try{
-          await setDoc(ref, { data, createdAt: serverTimestamp() });
-        }catch(e){
-          // ignore if not allowed
-        }
-      }
+      return snap.data();
     }
 
-    const normalized = normWeekData(data);
-    window.__weekDataCache = normalized; // keep cache for add/delete
-    renderWeeklyTable(normalized, isAdmin());
-  }, (err)=> showErr(err.message));
-}
+    function cleanupListeners(){
+      if(unsubWeekly) { unsubWeekly(); unsubWeekly=null; }
+      if(unsubInv) { unsubInv(); unsubInv=null; }
+      if(unsubUsers) { unsubUsers(); unsubUsers=null; }
+      if(unsubPending) { unsubPending(); unsubPending=null; }
+      if(unsubNotif) { unsubNotif(); unsubNotif=null; }
+    }
 
-function stopWeekListener(){
-  if(unsubWeek){ unsubWeek(); unsubWeek = null; }
-  $("weeklyWrap").innerHTML = "";
-  window.__weekDataCache = null;
-}
-
-// Buttons
-$("btnReloadWeek").addEventListener("click", ()=>{
-  clearErr();
-  startWeekListener();
-});
-
-$("btnSaveWeek").addEventListener("click", async ()=>{
-  clearErr();
-  if(!isAdmin()) return;
-
-  const key = getWeekKey();
-  const ref = doc(db, "schedules", key);
-
-  try{
-    const data = collectWeeklyFromInputs();
-    await setDoc(ref, { data, updatedAt: serverTimestamp() }, { merge:true });
-    alert("Saved!");
-  }catch(e){
-    showErr(e.message);
-  }
-});
-
-// Auto start (so it loads immediately)
-startWeekListener();
-
-    // ==========================
-    // 14) SUPERADMIN SETUP HELP
-    // ==========================
-    $("btnMakeMeSuperHint").addEventListener("click", ()=>{
-      alert(
-`SuperAdmin setup:
-1) Firestore -> collection "users"
-2) document id = YOUR UID:
-   ${SUPERADMIN_UID}
-3) fields:
-   name: "Milot Muzlijaj"
-   email: "milootshala@gmail.com"
-   role: "superadmin"
-   status: "approved"
-
-Pastaj rihap app-in.`
-      );
-    });
-
-    // ==========================
-    // 15) AUTH STATE + ROLE CHECK
-    // ==========================
     onAuthStateChanged(auth, async (user)=>{
       clearErr();
+      cleanupListeners();
+
       currentUser = user || null;
+      currentRole = "guest";
+      setTopPills();
 
       if(!user){
-        setStatus("Not signed in");
-        hide($("appArea"));
-        show($("authCard"));
-        stopUsersListener();
-        stopInventoryListener();
-        stopWeekListener();
+        setStatus(t("side.loading"));
+        showView("viewAuth");
+        $("debugInfo").textContent = "—";
         return;
       }
 
-      setStatus("Signed in");
-
-      // Ensure user doc exists
       try{
-        // Superadmin force doc (if missing)
-        if(user.uid === SUPERADMIN_UID){
-          const suRef = doc(db,"users",user.uid);
-          const suSnap = await getDoc(suRef);
-          if(!suSnap.exists()){
-            await setDoc(suRef, {
-              name: "Milot Muzlijaj",
-              email: user.email || "milootshala@gmail.com",
-              role: "superadmin",
-              status: "approved",
-              createdAt: serverTimestamp()
-            }, { merge: true });
-          }
-        }
+        setStatus("Loading profile…");
+        const profile = await loadRoleAndProfile(user.uid);
+        currentRole = profile.role || "pending";
 
-        const ref = doc(db,"users", user.uid);
-        const snap = await getDoc(ref);
+        setTopPills();
+        setStatus(`✅ Connected • ${currentRole}`);
 
-        if(!snap.exists()){
-          // if user created by auth but no doc => create pending staff
-          await setDoc(ref, {
-            name: user.email?.split("@")[0] || "Staff",
-            email: user.email || "",
-            role: "staff",
-            status: "pending",
-            createdAt: serverTimestamp()
-          }, { merge: true });
-        }
+        // gate UI badges/sections
+        applyI18n();
+        showView("viewDashboard");
 
-        const snap2 = await getDoc(ref);
-        currentUserDoc = snap2.data();
+        // start modules
+        startWeekly();
+        startInventory();
+        startStaff();
+        startNotifications();
+        updateDashboardKPIs();
 
-        // Pending -> kick out
-        if(currentUserDoc?.status === "pending" && user.uid !== SUPERADMIN_UID){
-          alert("Your account is waiting for approval.");
-          await signOut(auth);
-          return;
-        }
-
-        // Show app
-        hide($("authCard"));
-        show($("appArea"));
-
-        updateRoleUI();
-
-        // default tab
-        if(isAdmin()) setTab(activeTab || "weekly");
-        else setTab(activeTab === "users" ? "weekly" : activeTab);
-
-        // start listeners
-        startWeekListener();
-        startInventoryListener();
-        startUsersListener();
+        $("debugInfo").textContent = `uid=${user.uid} • role=${currentRole} • project=${firebaseConfig.projectId}`;
 
       }catch(e){
-        showErr(e.message);
+        showErr(e.message || e);
       }
     });
 
     // ==========================
-    // 16) LANG SELECT
+    // 12) SETTINGS BUTTONS
     // ==========================
-    $("langSel").addEventListener("change", ()=>{
-      applyLang($("langSel").value);
+    $("btnClearErr").addEventListener("click", clearErr);
+
+    $("btnTestWrite").addEventListener("click", async ()=>{
+      clearErr();
+      try{
+        if(!currentUser) throw new Error("Not logged in");
+        const ref = doc(db, "debug", currentUser.uid);
+        await setDoc(ref, { ping:"ok", at: serverTimestamp(), role: currentRole }, { merge:true });
+        showErr("✅ Firestore write OK");
+      }catch(e){ showErr(e.message || e); }
     });
-    applyLang("de");
 
     // ==========================
-    // 17) SAFE HTML
+    // 13) RENDER IF READY
     // ==========================
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, (m)=>({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-      }[m]));
+    function renderAllIfReady(){
+      // refresh texts that are dynamic
+      updateWeeklyMeta();
     }
+<!-- =========================
+MATTEOTEAM PRO 1.0 – PJESA 3/3
+Weekly • Inventory • Staff • Notifications • Dashboard
+========================= -->
+    // ==========================
+    // A) WEEKLY PLAN
+    // ==========================
+    const DAYS = [
+      { key:"mon", de:"Montag", sq:"E Hënë", en:"Monday" },
+      { key:"tue", de:"Dienstag", sq:"E Martë", en:"Tuesday" },
+      { key:"wed", de:"Mittwoch", sq:"E Mërkurë", en:"Wednesday" },
+      { key:"thu", de:"Donnerstag", sq:"E Enjte", en:"Thursday" },
+      { key:"fri", de:"Freitag", sq:"E Premte", en:"Friday" },
+      { key:"sat", de:"Samstag", sq:"E Shtunë", en:"Saturday" },
+      { key:"sun", de:"Sonntag", sq:"E Diel", en:"Sunday" }
+    ];
+    const SHIFTS = [
+      { key:"morning", label:{de:"Morning", sq:"Morning", en:"Morning"} },
+      { key:"middle",  label:{de:"Middle",  sq:"Middle",  en:"Middle"}  },
+      { key:"evening", label:{de:"Evening", sq:"Evening", en:"Evening"} }
+    ];
+
+    function updateWeeklyMeta(){
+      const start = new Date(weekMonday);
+      const end = new Date(weekMonday); end.setDate(end.getDate()+6);
+      const range = `${fmtDate(start)} – ${fmtDate(end)}`;
+      $("weeklyMeta").textContent = range;
+      $("dashWeekRange").textContent = range;
+    }
+
+    function weeklyDocRef(){
+      const k = weekKeyFromMonday(weekMonday);
+      return doc(db, "weeklyPlans", k);
+    }
+
+    function buildWeeklyEmpty(){
+      const data = {};
+      DAYS.forEach(d=>{
+        data[d.key] = { morning:"", middle:"", evening:"" };
+      });
+      return data;
+    }
+
+    function renderWeeklyTable(data){
+      const isEditable = isAdmin(); // admin/superadmin can edit
+      const table = $("weeklyTable");
+      table.innerHTML = "";
+
+      // head
+      const thead = document.createElement("thead");
+      const trh = document.createElement("tr");
+      const th0 = document.createElement("th");
+      th0.textContent = "Shift";
+      trh.appendChild(th0);
+      DAYS.forEach((d, idx)=>{
+        const th = document.createElement("th");
+        const date = new Date(weekMonday); date.setDate(date.getDate()+idx);
+        const name = d[currentLang] || d.de;
+        th.textContent = `${name} • ${fmtDate(date)}`;
+        trh.appendChild(th);
+      });
+      thead.appendChild(trh);
+      table.appendChild(thead);
+
+      // body
+      const tbody = document.createElement("tbody");
+      SHIFTS.forEach(s=>{
+        const tr = document.createElement("tr");
+        const th = document.createElement("th");
+        th.textContent = s.label[currentLang] || s.label.de;
+        tr.appendChild(th);
+
+        DAYS.forEach(d=>{
+          const td = document.createElement("td");
+          const val = (data?.[d.key]?.[s.key] ?? "");
+
+          if(isEditable){
+            const ta = document.createElement("textarea");
+            ta.className = "cell";
+            ta.value = val;
+            ta.setAttribute("data-day", d.key);
+            ta.setAttribute("data-shift", s.key);
+            td.appendChild(ta);
+          }else{
+            const div = document.createElement("div");
+            div.className = "cell";
+            div.style.whiteSpace = "pre-wrap";
+            div.textContent = val || "—";
+            td.appendChild(div);
+          }
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+    }
+
+    async function saveWeeklyFromUI(){
+      if(!isAdmin()) return showErr("No permission");
+      const data = buildWeeklyEmpty();
+
+      document.querySelectorAll("#weeklyTable textarea.cell").forEach(ta=>{
+        const day = ta.getAttribute("data-day");
+        const shift = ta.getAttribute("data-shift");
+        data[day][shift] = ta.value || "";
+      });
+
+      const ref = weeklyDocRef();
+      await setDoc(ref, {
+        monday: weekKeyFromMonday(weekMonday),
+        data,
+        updatedAt: serverTimestamp(),
+        updatedBy: currentUser.uid
+      }, { merge:true });
+    }
+
+    function startWeekly(){
+      updateWeeklyMeta();
+
+      $("btnPrevWeek").onclick = ()=>{
+        weekMonday.setDate(weekMonday.getDate()-7);
+        updateWeeklyMeta();
+        startWeekly();
+      };
+      $("btnNextWeek").onclick = ()=>{
+        weekMonday.setDate(weekMonday.getDate()+7);
+        updateWeeklyMeta();
+        startWeekly();
+      };
+      $("btnThisWeek").onclick = ()=>{
+        weekMonday = getMonday(new Date());
+        updateWeeklyMeta();
+        startWeekly();
+      };
+      $("btnSaveWeekly").onclick = async ()=>{
+        clearErr();
+        try{
+          await saveWeeklyFromUI();
+          showErr("✅ Weekly saved");
+        }catch(e){ showErr(e.message || e); }
+      };
+
+      if(unsubWeekly) { unsubWeekly(); unsubWeekly=null; }
+
+      const ref = weeklyDocRef();
+      unsubWeekly = onSnapshot(ref, (snap)=>{
+        const data = snap.exists() ? (snap.data().data || buildWeeklyEmpty()) : buildWeeklyEmpty();
+        renderWeeklyTable(data);
+
+        // badge
+        $("badgeWeekly").textContent = "7×3";
+        updateDashboardKPIs();
+      }, (err)=> showErr(err.message || err));
+    }
+
+    // ==========================
+    // B) INVENTORY
+    // Collection: inventoryItems
+    // Fields: name, unit, qty, sell, remaining, date, updatedAt
+    // ==========================
+    function invCol(){ return collection(db,"inventoryItems"); }
+
+    function calcRemaining(qty, sell){
+      const q = Number(qty || 0);
+      const s = Number(sell || 0);
+      const r = q - s;
+      return Number.isFinite(r) ? r : 0;
+    }
+
+    function invCardHTML(item){
+      const rem = calcRemaining(item.qty, item.sell);
+      const low = (Number.isFinite(rem) && rem <= (item.lowThreshold ?? 0)) ? " ⚠︎" : "";
+      const dateTxt = item.date || "—";
+      return `
+        <div class="inv">
+          <h3>${escapeHtml(item.name || "—")}${low}</h3>
+          <div class="meta">
+            <span>${escapeHtml(item.unit || "")}</span>
+            <span>•</span>
+            <span>${t("inv.subtitle")}</span>
+          </div>
+
+          <div class="nums">
+            <div class="stat"><b>Qty</b><span>${fmtNum(item.qty)}</span></div>
+            <div class="stat"><b>Sell</b><span>${fmtNum(item.sell)}</span></div>
+            <div class="stat"><b>Remaining</b><span>${fmtNum(rem)}</span></div>
+          </div>
+
+          <div class="spacer"></div>
+          <div class="tiny">Date: ${escapeHtml(dateTxt)}</div>
+
+          <div class="actions">
+            <button class="btn primary" data-act="edit" data-id="${item.id}">Edit</button>
+            <button class="btn danger" data-act="del" data-id="${item.id}">Delete</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function fmtNum(x){
+      const n = Number(x);
+      if(!Number.isFinite(n)) return "0";
+      // show integers clean, decimals max 2
+      if(Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+      return n.toFixed(2);
+    }
+
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function openInvModal(mode, item){
+      const isEdit = mode === "edit";
+      const title = isEdit ? "Edit Inventory Item" : "Add Inventory Item";
+
+      const html = `
+        <div class="field">
+          <label>Name</label>
+          <input id="mInvName" value="${escapeHtml(item?.name || "")}" placeholder="Mehl (25)" />
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1; min-width:180px;">
+            <label>Unit</label>
+            <input id="mInvUnit" value="${escapeHtml(item?.unit || "")}" placeholder="kg / L / pcs" />
+          </div>
+          <div class="field" style="flex:1; min-width:180px;">
+            <label>Date</label>
+            <input id="mInvDate" value="${escapeHtml(item?.date || "")}" placeholder="24.02.2026" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field" style="flex:1; min-width:180px;">
+            <label>Qty</label>
+            <input id="mInvQty" type="number" step="0.01" value="${item?.qty ?? 0}" />
+          </div>
+          <div class="field" style="flex:1; min-width:180px;">
+            <label>Sell</label>
+            <input id="mInvSell" type="number" step="0.01" value="${item?.sell ?? 0}" />
+          </div>
+          <div class="field" style="flex:1; min-width:180px;">
+            <label>Low Threshold (optional)</label>
+            <input id="mInvLow" type="number" step="0.01" value="${item?.lowThreshold ?? 0}" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px; justify-content:flex-end;">
+          <button class="btn primary" id="mInvSave">${isEdit ? "Save" : "Add"}</button>
+        </div>
+      `;
+
+      openModal(title, html);
+
+      $("mInvSave").onclick = async ()=>{
+        clearErr();
+        try{
+          if(!isAdmin()) throw new Error("No permission");
+
+          const payload = {
+            name: $("mInvName").value.trim(),
+            unit: $("mInvUnit").value.trim(),
+            date: $("mInvDate").value.trim(),
+            qty: Number($("mInvQty").value || 0),
+            sell: Number($("mInvSell").value || 0),
+            lowThreshold: Number($("mInvLow").value || 0),
+            updatedAt: serverTimestamp(),
+            updatedBy: currentUser.uid
+          };
+          if(!payload.name) throw new Error("Name missing");
+
+          if(isEdit){
+            await updateDoc(doc(db,"inventoryItems", item.id), payload);
+          }else{
+            await addDoc(invCol(), { ...payload, createdAt: serverTimestamp() });
+          }
+          closeModal();
+        }catch(e){ showErr(e.message || e); }
+      };
+    }
+
+    function startInventory(){
+      $("btnAddInv").onclick = ()=>{
+        if(!isAdmin()) return showErr("No permission");
+        openInvModal("add", null);
+      };
+      $("btnRefreshInv").onclick = ()=> startInventory();
+
+      if(unsubInv) { unsubInv(); unsubInv=null; }
+
+      // Live list
+      const qInv = query(invCol(), orderBy("updatedAt","desc"));
+      unsubInv = onSnapshot(qInv, (snap)=>{
+        const list = [];
+        snap.forEach(d=>{
+          const x = d.data();
+          list.push({ ...x, id: d.id });
+        });
+
+        $("badgeInv").textContent = String(list.length);
+        renderInventory(list);
+        updateDashboardKPIs(list);
+      }, (err)=> showErr(err.message || err));
+    }
+
+    function renderInventory(list){
+      const grid = $("invGrid");
+      if(!list || list.length === 0){
+        grid.innerHTML = `<div class="card"><p class="muted">No items.</p></div>`;
+        return;
+      }
+      grid.innerHTML = list.map(invCardHTML).join("");
+
+      // actions
+      grid.querySelectorAll("button[data-act]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          clearErr();
+          try{
+            const act = btn.getAttribute("data-act");
+            const id = btn.getAttribute("data-id");
+            if(!isAdmin()) throw new Error("No permission");
+
+            if(act === "edit"){
+              // fetch item from DOM list? simplest: read doc
+              const snap = await getDoc(doc(db,"inventoryItems", id));
+              if(!snap.exists()) throw new Error("Not found");
+              openInvModal("edit", { ...snap.data(), id });
+            }
+            if(act === "del"){
+              if(!confirm("Delete item?")) return;
+              await deleteDoc(doc(db,"inventoryItems", id));
+            }
+          }catch(e){ showErr(e.message || e); }
+        });
+      });
+    }
+
+    // ==========================
+    // C) STAFF (roles + pending)
+    // Collection: users
+    // Roles: pending | staff | admin | superadmin
+    // ==========================
+    function startStaff(){
+      $("btnRefreshStaff").onclick = ()=> startStaff();
+
+      // Only admins should see staff management tables; staff can view but not edit
+      const canManage = isAdmin();
+
+      if(unsubUsers) { unsubUsers(); unsubUsers=null; }
+      if(unsubPending) { unsubPending(); unsubPending=null; }
+
+      // Active users (role != pending)
+      const qUsers = query(collection(db,"users"), orderBy("updatedAt","desc"));
+      unsubUsers = onSnapshot(qUsers, (snap)=>{
+        const users = [];
+        const pending = [];
+        snap.forEach(d=>{
+          const u = d.data();
+          const obj = { ...u, id: d.id };
+          if((obj.role || "pending") === "pending") pending.push(obj);
+          else users.push(obj);
+        });
+
+        $("badgeStaff").textContent = `${users.length}/${pending.length}`;
+        renderPending(pending, canManage);
+        renderUsers(users, canManage);
+        updateDashboardKPIs(null, users, pending);
+      }, (err)=> showErr(err.message || err));
+    }
+
+    function renderPending(list, canManage){
+      const table = $("pendingTable");
+      if(!list || list.length === 0){
+        table.innerHTML = `<tr><td class="muted">No pending users.</td></tr>`;
+        return;
+      }
+
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Name</th><th>Email</th><th>UID</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(u=>`
+            <tr>
+              <td>${escapeHtml(u.displayName || "")}</td>
+              <td>${escapeHtml(u.email || "")}</td>
+              <td class="tiny">${escapeHtml(u.uid || u.id)}</td>
+              <td>
+                ${canManage ? `
+                  <button class="btn primary" data-act="approve" data-id="${escapeHtml(u.id)}">Approve → staff</button>
+                  <button class="btn" data-act="approveAdmin" data-id="${escapeHtml(u.id)}">Approve → admin</button>
+                  <button class="btn danger" data-act="block" data-id="${escapeHtml(u.id)}">Block</button>
+                ` : `<span class="muted tiny">View only</span>`}
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      `;
+
+      if(!canManage) return;
+
+      table.querySelectorAll("button[data-act]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          clearErr();
+          try{
+            const act = btn.getAttribute("data-act");
+            const id = btn.getAttribute("data-id");
+
+            if(act === "approve"){
+              await updateDoc(doc(db,"users", id), { role:"staff", updatedAt: serverTimestamp() });
+            }else if(act === "approveAdmin"){
+              if(!isSuper()) throw new Error("Only SuperAdmin can make admin");
+              await updateDoc(doc(db,"users", id), { role:"admin", updatedAt: serverTimestamp() });
+            }else if(act === "block"){
+              await updateDoc(doc(db,"users", id), { role:"blocked", updatedAt: serverTimestamp() });
+            }
+          }catch(e){ showErr(e.message || e); }
+        });
+      });
+    }
+
+    function renderUsers(list, canManage){
+      const table = $("usersTable");
+      if(!list || list.length === 0){
+        table.innerHTML = `<tr><td class="muted">No users.</td></tr>`;
+        return;
+      }
+
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Name</th><th>Email</th><th>Role</th><th>UID</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(u=>{
+            const uid = u.uid || u.id;
+            const role = u.role || "staff";
+            const lock = (uid === SUPERADMIN_UID) ? " (locked)" : "";
+            return `
+              <tr>
+                <td>${escapeHtml(u.displayName || "")}</td>
+                <td>${escapeHtml(u.email || "")}</td>
+                <td><b>${escapeHtml(role)}</b>${escapeHtml(lock)}</td>
+                <td class="tiny">${escapeHtml(uid)}</td>
+                <td>
+                  ${canManage ? `
+                    ${(uid === SUPERADMIN_UID) ? `<span class="muted tiny">Locked</span>` : `
+                      <button class="btn" data-act="toStaff" data-id="${escapeHtml(u.id)}">staff</button>
+                      <button class="btn" data-act="toAdmin" data-id="${escapeHtml(u.id)}">admin</button>
+                      <button class="btn danger" data-act="toPending" data-id="${escapeHtml(u.id)}">pending</button>
+                    `}
+                  ` : `<span class="muted tiny">View only</span>`}
+                </td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      `;
+
+      if(!canManage) return;
+
+      table.querySelectorAll("button[data-act]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          clearErr();
+          try{
+            const act = btn.getAttribute("data-act");
+            const id = btn.getAttribute("data-id");
+
+            if(act === "toStaff"){
+              await updateDoc(doc(db,"users", id), { role:"staff", updatedAt: serverTimestamp() });
+            }else if(act === "toAdmin"){
+              if(!isSuper()) throw new Error("Only SuperAdmin can set admin");
+              await updateDoc(doc(db,"users", id), { role:"admin", updatedAt: serverTimestamp() });
+            }else if(act === "toPending"){
+              await updateDoc(doc(db,"users", id), { role:"pending", updatedAt: serverTimestamp() });
+            }
+          }catch(e){ showErr(e.message || e); }
+        });
+      });
+    }
+
+    // ==========================
+    // D) NOTIFICATIONS
+    // Collection: notifications
+    // Fields: title, message, createdAt, createdBy
+    // ==========================
+    function notifCol(){ return collection(db,"notifications"); }
+
+    function startNotifications(){
+      $("btnNewNotif").onclick = ()=>{
+        if(!isAdmin()) return showErr("No permission");
+
+        const html = `
+          <div class="field">
+            <label>Title</label>
+            <input id="mNTitle" placeholder="Info" />
+          </div>
+          <div class="field">
+            <label>Message</label>
+            <textarea id="mNMsg" placeholder="Write message..."></textarea>
+          </div>
+          <div class="row" style="justify-content:flex-end; margin-top:12px;">
+            <button class="btn primary" id="mNSend">Send</button>
+          </div>
+        `;
+        openModal("New Notification", html);
+
+        $("mNSend").onclick = async ()=>{
+          clearErr();
+          try{
+            const title = $("mNTitle").value.trim();
+            const message = $("mNMsg").value.trim();
+            if(!title || !message) throw new Error("Missing title/message");
+            await addDoc(notifCol(), {
+              title, message,
+              createdAt: serverTimestamp(),
+              createdBy: currentUser.uid
+            });
+            closeModal();
+          }catch(e){ showErr(e.message || e); }
+        };
+      };
+
+      $("btnRefreshNotif").onclick = ()=> startNotifications();
+
+      if(unsubNotif) { unsubNotif(); unsubNotif=null; }
+
+      const qN = query(notifCol(), orderBy("createdAt","desc"), limit(30));
+      unsubNotif = onSnapshot(qN, (snap)=>{
+        const list = [];
+        snap.forEach(d=> list.push({ ...d.data(), id:d.id }));
+        $("badgeNotif").textContent = String(list.length);
+        renderNotifications(list);
+      }, (err)=> showErr(err.message || err));
+    }
+
+    function renderNotifications(list){
+      const box = $("notifList");
+      if(!list || list.length === 0){
+        box.innerHTML = `<p class="muted">No notifications.</p>`;
+        return;
+      }
+      box.innerHTML = list.map(n=>{
+        const title = escapeHtml(n.title || "—");
+        const msg = escapeHtml(n.message || "");
+        return `
+          <div class="card" style="margin-bottom:10px;">
+            <h2>${title}</h2>
+            <p class="muted" style="white-space:pre-wrap;">${msg}</p>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // ==========================
+    // E) DASHBOARD KPI
+    // ==========================
+    function updateDashboardKPIs(invListMaybe, usersMaybe, pendingMaybe){
+      // weekly KPI: just show "7 days / 3 shifts"
+      $("dashWeekKpi").textContent = "7×3";
+
+      // inventory count + low items hint
+      if(invListMaybe){
+        $("dashInvKpi").textContent = String(invListMaybe.length);
+        const low = invListMaybe.filter(x => calcRemaining(x.qty,x.sell) <= (x.lowThreshold ?? 0));
+        $("dashInvLow").textContent = low.length ? `⚠︎ Low items: ${low.length}` : "✅ No low items";
+      }
+
+      // staff KPI
+      if(usersMaybe && pendingMaybe){
+        $("dashStaffKpi").textContent = `${usersMaybe.length}/${pendingMaybe.length}`;
+        $("dashPendingHint").textContent = pendingMaybe.length ? `Pending: ${pendingMaybe.length}` : "✅ No pending";
+      }
+    }
+
+    // ==========================
+    // F) FINAL BOOT
+    // ==========================
+    applyI18n();
+    updateWeeklyMeta();
+
   </script>
 </body>
 </html>
+    
+  
