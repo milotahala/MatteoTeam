@@ -831,89 +831,171 @@
 
   safeOn("quickOpenWeekly","click", ()=> { showView("viewWeekly"); loadWeekly(); });
   safeOn("quickOpenInv","click", ()=> { showView("viewInventory"); loadInventory(); });
-  safeOn("quickOpenStaff","click", ()=> { showView("viewStaff"); loadUsers(); });
+  safeOn("quickOpenStaff","click", ()=> { showView("viewStaff"); 
+    // ============================
+// WEEKLY PLAN PRO VERSION
+// ============================
 
-  // ==========================
-  // 10) WEEKLY PLAN
-  // ==========================
-  function weeklyDocId(){
-    return ymd(weekMonday); // monday date
-  }
+let currentWeekStart = getMonday(new Date());
 
-  function renderWeeklyTable(data){
-    const body = $("weeklyBody");
-    body.innerHTML = "";
-    DAY_KEYS.forEach((d, idx)=>{
-      const row = document.createElement("tr");
-      const dayObj = (data?.days?.[d.key]) || {morning:"", evening:"", notes:""};
-      row.innerHTML = `
-        <td><b>${d.label}</b><div class="muted mono" style="font-size:12px">${ymd(addDays(weekMonday, idx))}</div></td>
-        <td><input id="w_${d.key}_m" value="${escapeHtml(dayObj.morning||"")}" placeholder="p.sh. Rina 10-16, Fitim…" /></td>
-        <td><input id="w_${d.key}_e" value="${escapeHtml(dayObj.evening||"")}" placeholder="p.sh. Milot 16-23…" /></td>
-        <td><input id="w_${d.key}_n" value="${escapeHtml(dayObj.notes||"")}" placeholder="Notes…" /></td>
-      `;
-      body.appendChild(row);
+function formatDate(d){
+  return d.toISOString().split("T")[0];
+}
+
+function getMonday(date){
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff));
+}
+
+function addDays(date, days){
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function minutesBetween(start, end){
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  return (eh*60+em)-(sh*60+sm);
+}
+
+function netMinutes(start,end){
+  const worked = minutesBetween(start,end);
+  const breakMin = worked >= 240 ? 30 : 0;
+  return worked - breakMin;
+}
+
+function renderWeekLabel(){
+  const end = addDays(currentWeekStart,6);
+  document.getElementById("weekLabel").textContent =
+    formatDate(currentWeekStart)+" → "+formatDate(end);
+}
+
+async function loadWeeklyPlan(){
+  renderWeekLabel();
+
+  const weekId = formatDate(currentWeekStart);
+  const shiftsSnap = await getDocs(collection(db,"weeks",weekId,"shifts"));
+
+  const usersSnap = await getDocs(collection(db,"users"));
+
+  const users = [];
+  usersSnap.forEach(doc=>{
+    const d=doc.data();
+    if(d.active!==false){
+      users.push({uid:doc.id,name:d.name,role:d.role});
+    }
+  });
+
+  const shifts = {};
+  shiftsSnap.forEach(doc=>{
+    shifts[doc.id]=doc.data();
+  });
+
+  const days=["mon","tue","wed","thu","fri","sat","sun"];
+  let html = "<table border='1' cellpadding='5'><tr><th>Name</th>";
+
+  days.forEach(d=>html+="<th>"+d.toUpperCase()+"</th>");
+  html+="</tr>";
+
+  users.forEach(u=>{
+    if(currentRole==="staff" && u.uid!==currentUser.uid) return;
+
+    html+="<tr>";
+    html+="<td>"+u.name+"</td>";
+
+    days.forEach(d=>{
+      const shift = shifts[u.uid]?.days?.[d];
+      const val = shift?.start && shift?.end ? shift.start+"-"+shift.end : "";
+      if(currentRole==="admin" || currentRole==="superadmin"){
+        html+=`<td><input data-uid="${u.uid}" data-day="${d}" value="${val}" placeholder="11:00-18:00"></td>`;
+      }else{
+        html+="<td>"+(val||"Frei")+"</td>";
+      }
     });
-    $("weekLabel").textContent = `${weeklyDocId()}  →  ${ymd(addDays(weekMonday,6))}`;
-  }
 
-  function escapeHtml(str){
-    return String(str)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;");
-  }
-
-  async function loadWeekly(){
-    clearErr();
-    try{
-      if(!currentUser) return;
-      $("weekLabel").textContent = "Loading…";
-      const ref = doc(db,"weeklyPlans", weeklyDocId());
-      const snap = await getDoc(ref);
-      const data = snap.exists() ? snap.data() : { days:{} };
-      renderWeeklyTable(data);
-    }catch(e){
-      showErr(e?.message || e);
-    }
-  }
-
-  safeOn("btnPrevWeek","click", async ()=>{
-    weekMonday = addDays(weekMonday, -7);
-    await loadWeekly();
+    html+="</tr>";
   });
 
-  safeOn("btnNextWeek","click", async ()=>{
-    weekMonday = addDays(weekMonday, 7);
-    await loadWeekly();
-  });
+  html+="</table>";
 
-  safeOn("btnSaveWeekly","click", async ()=>{
-    clearErr();
-    try{
-      if(!currentUser) return;
-      if(currentRole==="pending") return showErr("Pending s’mund me ruajt Weekly Plan.");
-      const days = {};
-      DAY_KEYS.forEach(d=>{
-        days[d.key] = {
-          morning: $("w_"+d.key+"_m")?.value || "",
-          evening: $("w_"+d.key+"_e")?.value || "",
-          notes: $("w_"+d.key+"_n")?.value || ""
-        };
-      });
-      await setDoc(doc(db,"weeklyPlans", weeklyDocId()),{
-        monday: weeklyDocId(),
-        days,
-        updatedAt: serverTimestamp(),
-        updatedBy: currentUser.uid
-      }, {merge:true});
-      showErr("✅ Weekly Plan u ruajt.");
-    }catch(e){
-      showErr(e?.message || e);
+  document.getElementById("weeklyTableWrap").innerHTML=html;
+
+  if(currentRole==="staff"){
+    renderMyHours(shifts);
+  }
+}
+
+function renderMyHours(shifts){
+  const days=["mon","tue","wed","thu","fri","sat","sun"];
+  const my = shifts[currentUser.uid];
+  if(!my){document.getElementById("myHoursBox").style.display="none";return;}
+
+  let html="";
+  let total=0;
+
+  days.forEach(d=>{
+    const shift=my.days?.[d];
+    if(shift?.start && shift?.end){
+      const net=netMinutes(shift.start,shift.end);
+      total+=net;
+      const pause=minutesBetween(shift.start,shift.end)>=240?30:0;
+
+      html+=`<div>
+        ${d.toUpperCase()}: ${shift.start}-${shift.end}
+        ${pause?`(Pauza 30min)`:""}
+        → ${Math.floor(net/60)}h ${net%60}min
+      </div>`;
     }
   });
 
+  html+=`<hr><b>Total javor: ${Math.floor(total/60)}h ${total%60}min</b>`;
+
+  document.getElementById("myHoursContent").innerHTML=html;
+  document.getElementById("myHoursBox").style.display="block";
+}
+
+async function saveWeeklyPlan(){
+  if(!(currentRole==="admin"||currentRole==="superadmin")) return;
+
+  const weekId = formatDate(currentWeekStart);
+  const inputs = document.querySelectorAll("#weeklyTableWrap input");
+
+  const data={};
+
+  inputs.forEach(inp=>{
+    const uid=inp.dataset.uid;
+    const day=inp.dataset.day;
+    const val=inp.value.trim();
+    if(!data[uid]) data[uid]={days:{}};
+
+    if(val.includes("-")){
+      const [start,end]=val.split("-");
+      data[uid].days[day]={start:start.trim(),end:end.trim()};
+    }
+  });
+
+  for(const uid in data){
+    await setDoc(doc(db,"weeks",weekId,"shifts",uid),{
+      uid,
+      days:data[uid].days
+    },{merge:true});
+  }
+
+  alert("Weekly Plan saved");
+}
+
+document.getElementById("btnPrevWeek").onclick=()=>{
+  currentWeekStart=addDays(currentWeekStart,-7);
+  loadWeeklyPlan();
+};
+document.getElementById("btnNextWeek").onclick=()=>{
+  currentWeekStart=addDays(currentWeekStart,7);
+  loadWeeklyPlan();
+};
+document.getElementById("btnSaveWeek").onclick=saveWeeklyPlan;                                     
   // ==========================
   // 11) INVENTORY
   // ==========================
