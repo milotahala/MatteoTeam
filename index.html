@@ -690,6 +690,19 @@ MATTEOTEAM PRO 1.0 – PJESA 2/3
     // 4) GLOBAL STATE
     // ==========================
     const $ = (id) => document.getElementById(id);
+   // ✅ SHOW JS ERRORS ON SCREEN (very important)
+window.addEventListener("error", (e) => {
+  const msg = e?.message || e?.error?.message || String(e);
+  const box = document.getElementById("errBox");
+  if (box) { box.style.display = "block"; box.textContent = "JS ERROR: " + msg; }
+  console.error(e);
+});
+window.addEventListener("unhandledrejection", (e) => {
+  const msg = e?.reason?.message || String(e?.reason || e);
+  const box = document.getElementById("errBox");
+  if (box) { box.style.display = "block"; box.textContent = "PROMISE ERROR: " + msg; }
+  console.error(e);
+});
     let currentUser = null;
     let currentRole = "guest"; // guest | pending | staff | admin | superadmin
 
