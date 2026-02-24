@@ -1,1349 +1,1192 @@
-<!DOCTYPE html>
-<html lang="de">
+<!doctype html>
+<html lang="sq">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MatteoTeam PRO</title>
-
   <style>
     :root{
-      --bg1:#0e1a20; --bg2:#15313a;
-      --glass:rgba(255,255,255,.08);
-      --glass2:rgba(255,255,255,.06);
-      --line:rgba(255,255,255,.12);
-      --text:#e9f2f5;
-      --muted:rgba(233,242,245,.75);
-      --accent:#87d7ff;
-      --good:#2ecc71;
-      --bad:#ff5c5c;
-      --warn:#f1c40f;
-      --radius:22px;
-      --shadow:0 18px 50px rgba(0,0,0,.35);
-      --btn:#2b5160;
-      --btn2:#355f70;
+      --bg:#0f1a22;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.06);
+      --text:#e8f0f8;
+      --muted:rgba(232,240,248,.7);
+      --line:rgba(255,255,255,.14);
+      --good:#27c168;
+      --bad:#ff5a6a;
+      --warn:#ffcc66;
+      --btn:rgba(255,255,255,.10);
+      --btn2:rgba(255,255,255,.14);
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --radius:24px;
+      --radius2:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
-    *{box-sizing:border-box}
+
+    html,body{height:100%}
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background: radial-gradient(1200px 600px at 20% 10%, #1b5a73 0%, transparent 50%),
-                  radial-gradient(1200px 700px at 90% 30%, #1f3f4e 0%, transparent 55%),
-                  linear-gradient(160deg, var(--bg1), var(--bg2));
-      min-height:100vh;
-      padding:16px;
+      font-family: var(--sans);
+      background: radial-gradient(1200px 900px at 20% 10%, #264a5f 0%, var(--bg) 55%, #0b1218 100%);
+      color: var(--text);
+      overflow-x:hidden;
     }
 
-    .wrap{max-width:1100px;margin:0 auto}
-    .grid{display:grid;gap:14px}
+    .wrap{max-width:1100px;margin:0 auto;padding:18px 14px 80px}
     .card{
-      background:linear-gradient(180deg,var(--glass),var(--glass2));
+      background:var(--card);
       border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:18px;
+      backdrop-filter: blur(10px);
     }
-    .head{
-      padding:16px 18px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-    }
-    .brand{
-      display:flex;align-items:center;gap:12px;
-    }
-    .logo{
-      width:44px;height:44px;border-radius:14px;
-      background: radial-gradient(circle at 30% 30%, #b7f0ff, #4b8cff 60%, #1a2a3a 100%);
-      border:1px solid rgba(255,255,255,.18);
-    }
-    h1{font-size:20px;margin:0}
-    .sub{color:var(--muted);font-size:13px;margin-top:2px}
+    .card + .card{margin-top:14px}
 
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .sp{justify-content:space-between}
+    .muted{color:var(--muted);font-size:13px}
+    .h1{font-size:30px;letter-spacing:.3px;margin:0}
+    .h2{font-size:22px;margin:0}
     .pill{
-      padding:8px 12px;border-radius:999px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.12);
-      color:var(--text);
-      font-size:13px;
+      background:var(--card2);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 12px;
+      display:inline-flex;gap:8px;align-items:center;
     }
-
+    .pill.mono{font-family:var(--mono)}
+    .badge{
+      padding:6px 10px;border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      font-size:12px;
+    }
+    .badge.good{border-color:rgba(39,193,104,.45);background:rgba(39,193,104,.12)}
+    .badge.bad{border-color:rgba(255,90,106,.45);background:rgba(255,90,106,.12)}
     .btn{
-      cursor:pointer;
-      border:none;
-      border-radius:14px;
+      background:var(--btn);
+      border:1px solid var(--line);
+      color:var(--text);
       padding:10px 14px;
-      background:linear-gradient(180deg,var(--btn2),var(--btn));
-      color:var(--text);
-      font-weight:600;
-      border:1px solid rgba(255,255,255,.14);
-    }
-    .btn:disabled{
-      opacity:.45; cursor:not-allowed;
-    }
-    .btn.red{background:linear-gradient(180deg,#7a2b2b,#4d1f1f); border-color:rgba(255,255,255,.12)}
-    .btn.green{background:linear-gradient(180deg,#2e7d32,#1f5d24)}
-    .btn.gray{background:rgba(255,255,255,.08)}
-    .btn.small{padding:8px 10px;border-radius:12px;font-size:13px}
-
-    .content{padding:14px 18px}
-    .hr{height:1px;background:var(--line);margin:0}
-
-    label{font-size:12px;color:var(--muted)}
-    input, select, textarea{
-      width:100%;
-      padding:12px 12px;
-      border-radius:14px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      color:var(--text);
-      outline:none;
-      font-size:15px;
-    }
-    textarea{min-height:90px;resize:vertical}
-    .cols{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
-    .col6{grid-column:span 6}
-    .col4{grid-column:span 4}
-    .col8{grid-column:span 8}
-    .col12{grid-column:span 12}
-    @media (max-width: 820px){
-      .col6,.col4,.col8{grid-column:span 12}
-    }
-
-    .nav{
-      display:grid;gap:10px;
-      padding:14px;
-    }
-    .navbtn{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:14px 14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
       cursor:pointer;
+      font-weight:600;
+      transition:.15s transform ease, .15s background ease;
       user-select:none;
     }
-    .navbtn strong{font-size:16px}
-    .navbtn span{color:var(--muted);font-size:12px}
-    .navbtn:hover{background:rgba(255,255,255,.08)}
-    .righticon{
-      width:34px;height:34px;border-radius:12px;
-      display:flex;align-items:center;justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.12);
-      font-weight:900;
-    }
+    .btn:hover{background:var(--btn2)}
+    .btn:active{transform:scale(.98)}
+    .btn.good{background:rgba(39,193,104,.18);border-color:rgba(39,193,104,.5)}
+    .btn.bad{background:rgba(255,90,106,.18);border-color:rgba(255,90,106,.5)}
+    .btn.small{padding:8px 12px;border-radius:12px;font-size:13px}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
 
-    .statusBox{
-      padding:14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .muted{color:var(--muted)}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .grid{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:900px){.grid{grid-template-columns: 430px 1fr}}
+    .divider{height:1px;background:var(--line);margin:12px 0}
 
-    .table{
+    input, select, textarea{
       width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      overflow:hidden;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.12);
-    }
-    .table th,.table td{
-      padding:10px 10px;
-      border-bottom:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      outline:none;
       font-size:14px;
-      text-align:left;
-      vertical-align:top;
     }
-    .table th{color:var(--muted);font-weight:700;background:rgba(255,255,255,.05)}
-    .table tr:last-child td{border-bottom:none}
+    input::placeholder, textarea::placeholder{color:rgba(232,240,248,.5)}
+    textarea{min-height:90px;resize:vertical}
 
-    /* Modal */
+    .navBtn{
+      width:100%;
+      text-align:left;
+      padding:14px 16px;
+      border-radius: 18px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      cursor:pointer;
+      display:flex;align-items:center;justify-content:space-between;
+      font-weight:700;
+    }
+    .navBtn .sub{font-weight:500;color:var(--muted);font-size:13px;margin-top:2px}
+    .navBtn .right{
+      min-width:42px;height:42px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      border:1px solid var(--line);background:rgba(255,255,255,.04);
+      font-family:var(--mono);
+    }
+
+    .tableWrap{
+      overflow:auto;
+      border-radius: 18px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.10);
+    }
+    table{border-collapse:collapse;min-width:980px;width:100%}
+    th,td{
+      border-bottom:1px solid rgba(255,255,255,.08);
+      border-right:1px solid rgba(255,255,255,.08);
+      padding:10px 10px;
+      vertical-align:top;
+      font-size:13px;
+    }
+    th{
+      position:sticky;top:0;z-index:2;
+      background:rgba(20,30,40,.92);
+      text-align:left;
+      font-size:12px;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      color:rgba(232,240,248,.85);
+    }
+    td:first-child, th:first-child{
+      position:sticky;left:0;z-index:3;
+      background:rgba(20,30,40,.92);
+      min-width:220px;
+    }
+    .cellBox{display:flex;flex-direction:column;gap:6px}
+    .cellRow{display:flex;gap:6px}
+    .mini{font-size:12px;color:var(--muted)}
+    .tiny{font-size:11px;color:rgba(232,240,248,.55)}
+    .mono{font-family:var(--mono)}
+    .okLine{background:rgba(39,193,104,.10);border:1px solid rgba(39,193,104,.35);padding:10px 12px;border-radius:14px}
+    .errLine{background:rgba(255,90,106,.10);border:1px solid rgba(255,90,106,.35);padding:10px 12px;border-radius:14px}
+    .warnLine{background:rgba(255,204,102,.10);border:1px solid rgba(255,204,102,.35);padding:10px 12px;border-radius:14px}
+    .hidden{display:none !important}
+
+    .footerPad{height:20px}
+
+    /* modal */
     .modalBack{
       position:fixed;inset:0;
-      display:none;
       background:rgba(0,0,0,.55);
+      display:none;
       align-items:center;justify-content:center;
       padding:16px;
-      z-index:9999;
+      z-index:999;
     }
-    .modalBack.show{display:flex}
     .modal{
-      width:min(760px, 100%);
-      background:linear-gradient(180deg,var(--bg2),#0d1a20);
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .modalHead{
-      padding:14px 16px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-    }
-
-    /* Error box */
-    #errBox{
-      display:none;
-      margin:12px 0 0 0;
-      padding:12px 12px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.18);
-      background:rgba(255,92,92,.12);
-      color:#ffd9d9;
-      white-space:pre-wrap;
+      width:min(780px, 100%);
+      background:rgba(18,26,34,.96);
+      border:1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding:16px;
+      max-height: 85vh;
+      overflow:auto;
     }
   </style>
 </head>
 
 <body>
-  <div class="wrap grid">
-
-    <!-- TOP -->
+  <div class="wrap">
+    <!-- TOP CARD -->
     <div class="card">
-      <div class="head">
-        <div class="brand">
-          <div class="logo"></div>
+      <div class="row sp">
+        <div class="row" style="gap:14px">
+          <div style="width:46px;height:46px;border-radius:16px;background:linear-gradient(145deg,#8bd1ff,#3f6bff);box-shadow:0 10px 30px rgba(63,107,255,.25)"></div>
           <div>
-            <h1>MatteoTeam PRO</h1>
-            <div class="sub">Restaurant Management · Weekly Plan · Inventory</div>
+            <div class="h2">MatteoTeam <span style="font-weight:900">PRO</span></div>
+            <div class="muted">Restaurant Management · Weekly Plan · Firestore</div>
           </div>
         </div>
 
-        <div class="row">
-          <div class="pill">Roli: <b id="pillRole">—</b></div>
-          <div class="pill">User: <b id="pillName">—</b></div>
+        <div class="row" style="gap:10px">
+          <div class="pill"><span class="muted">Roli:</span> <span id="topRole" style="font-weight:800">guest</span></div>
+          <div class="pill"><span class="muted">User:</span> <span id="topUser" style="font-weight:800">—</span></div>
 
-          <select id="langSel" class="pill" style="padding:10px 10px;">
-            <option value="de">Deutsch</option>
+          <select id="langSel" style="width:auto;min-width:140px">
             <option value="sq">Shqip</option>
+            <option value="de">Deutsch</option>
             <option value="en">English</option>
           </select>
 
-          <button id="btnLogout" class="btn red" disabled>Abmelden</button>
+          <button id="btnLogout" class="btn bad small hidden">Abmelden</button>
         </div>
       </div>
 
-      <div class="hr"></div>
-      <div class="content">
-        <div id="errBox" class="mono"></div>
-      </div>
+      <div id="errBox" class="errLine hidden" style="margin-top:12px"></div>
+      <div id="okBox" class="okLine hidden" style="margin-top:12px"></div>
+      <div id="warnBox" class="warnLine hidden" style="margin-top:12px"></div>
     </div>
 
     <!-- MAIN GRID -->
-    <div class="cols">
-
+    <div class="grid">
       <!-- LEFT NAV -->
-      <div class="col4">
-        <div class="card">
-          <div class="content">
-            <div class="muted" style="letter-spacing:3px;font-size:12px;margin-bottom:10px;">NAVIGATION</div>
+      <div class="card">
+        <div class="muted" style="letter-spacing:3px">NAVIGATION</div>
+        <div style="height:10px"></div>
 
-            <div class="nav">
-              <div class="navbtn" id="navDashboard">
-                <div><strong>Dashboard</strong><br><span>Quick actions</span></div>
-                <div class="righticon">•</div>
-              </div>
-
-              <div class="navbtn" id="navWeekly">
-                <div><strong>Weekly Plan</strong><br><span>Planifikimi javor</span></div>
-                <div class="righticon">—</div>
-              </div>
-
-              <div class="navbtn" id="navInventory">
-                <div><strong>Inventory</strong><br><span>Stoku & sasia</span></div>
-                <div class="righticon">—</div>
-              </div>
-
-              <div class="navbtn" id="navStaff">
-                <div><strong>Staff</strong><br><span>Users / Roles / Pending</span></div>
-                <div class="righticon">—</div>
-              </div>
-
-              <div class="navbtn" id="navNotif">
-                <div><strong>Notifications</strong><br><span>Njoftime</span></div>
-                <div class="righticon">—</div>
-              </div>
-
-              <div class="navbtn" id="navSettings">
-                <div><strong>Settings</strong><br><span>Konfigurime</span></div>
-                <div class="righticon">⚙︎</div>
-              </div>
-            </div>
-
-            <div class="statusBox" style="margin-top:14px">
-              <div style="font-weight:800">Status</div>
-              <div class="muted" id="statusLine">Duke u lidhur…</div>
-              <div class="muted" style="margin-top:6px;font-size:12px">v1.0 · Firebase Auth + Firestore</div>
-            </div>
+        <button id="navDashboard" class="navBtn">
+          <div>
+            Dashboard
+            <div class="sub">Quick actions</div>
           </div>
+          <div class="right">•</div>
+        </button>
+
+        <div style="height:10px"></div>
+
+        <button id="navWeekly" class="navBtn">
+          <div>
+            Weekly Plan
+            <div class="sub">Planifikimi javor</div>
+          </div>
+          <div class="right">—</div>
+        </button>
+
+        <div style="height:10px"></div>
+
+        <button id="navMyHours" class="navBtn">
+          <div>
+            My Hours
+            <div class="sub">Orët e mia (me pauzë)</div>
+          </div>
+          <div class="right">—</div>
+        </button>
+
+        <div style="height:10px"></div>
+
+        <button id="navStaff" class="navBtn">
+          <div>
+            Staff
+            <div class="sub">Users / Roles</div>
+          </div>
+          <div class="right">—</div>
+        </button>
+
+        <div style="height:14px"></div>
+
+        <div class="card" style="background:rgba(255,255,255,.04);box-shadow:none">
+          <div class="h2" style="font-size:16px;margin-bottom:6px">Status</div>
+          <div class="muted" id="statusText">Duke u lidhur…</div>
+          <div class="tiny" style="margin-top:6px">v1.0 · Firebase Auth + Firestore</div>
         </div>
       </div>
 
       <!-- RIGHT CONTENT -->
-      <div class="col8">
-        <div class="card">
-          <div class="content">
-
-            <!-- AUTH VIEW -->
-            <div id="viewAuth">
-              <h2 style="margin:0 0 6px 0">Login / Register</h2>
-              <div class="muted" style="margin-bottom:14px">Staff mund të regjistrohet vet. Admin/SuperAdmin e aktivizon rolin.</div>
-
-              <div class="cols">
-                <div class="col6">
-                  <div class="card" style="box-shadow:none">
-                    <div class="content">
-                      <h3 style="margin:0 0 10px 0">Login</h3>
-                      <div class="grid">
-                        <div>
-                          <label>Email</label>
-                          <input id="loginEmail" type="email" autocomplete="email" placeholder="email@..." />
-                        </div>
-                        <div>
-                          <label>Password</label>
-                          <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••" />
-                        </div>
-                        <div class="row">
-                          <button id="btnLogin" class="btn">Login</button>
-                          <button id="btnReset" class="btn gray">Reset Password</button>
-                        </div>
-                        <div class="muted" style="font-size:12px">Reset dërgon email (kontrollo edhe Spam).</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col6">
-                  <div class="card" style="box-shadow:none">
-                    <div class="content">
-                      <h3 style="margin:0 0 10px 0">Register (Staff)</h3>
-                      <div class="grid">
-                        <div>
-                          <label>Emri & Mbiemri</label>
-                          <input id="regName" type="text" placeholder="Rina Lulaj" />
-                        </div>
-                        <div>
-                          <label>Email</label>
-                          <input id="regEmail" type="email" placeholder="rina@..." />
-                        </div>
-                        <div>
-                          <label>Password</label>
-                          <input id="regPass" type="password" placeholder="min 6 karaktere" />
-                        </div>
-                        <button id="btnRegister" class="btn green">Register</button>
-                        <div class="muted" style="font-size:12px">Pas register: status = pending (deri sa Admin ta aprovoj).</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
+      <div class="card">
+        <!-- AUTH VIEW -->
+        <div id="viewAuth">
+          <div class="row sp">
+            <div>
+              <div class="h2">Login / Register</div>
+              <div class="muted">Hyr me email + password (Firebase Auth).</div>
             </div>
+          </div>
 
-            <!-- DASHBOARD VIEW -->
-            <div id="viewDashboard" style="display:none">
-              <h2 style="margin:0 0 10px 0">Dashboard</h2>
-              <div class="muted" style="margin-bottom:14px">Quick actions</div>
+          <div class="divider"></div>
 
-              <div class="row">
-                <button id="quickOpenWeekly" class="btn">Open Weekly Plan</button>
-                <button id="quickOpenInv" class="btn">Open Inventory</button>
-                <button id="quickOpenStaff" class="btn">Open Staff</button>
-              </div>
-
-              <div style="height:14px"></div>
-
-              <div class="card" style="box-shadow:none">
-                <div class="content">
-                  <div style="font-weight:800;margin-bottom:8px">Info</div>
-                  <div class="muted">Nëse ndonjë buton s’reagon, shiko errBox sipër (do tregojë error).</div>
-                </div>
-              </div>
+          <div class="row" style="gap:12px">
+            <div style="flex:1;min-width:240px">
+              <div class="muted">Email</div>
+              <input id="authEmail" type="email" placeholder="email@domain.com" autocomplete="email" />
             </div>
-
-            <!-- WEEKLY VIEW -->
-            <div id="viewWeekly" style="display:none">
-              <div class="row" style="justify-content:space-between">
-                <div>
-                  <h2 style="margin:0 0 6px 0">Weekly Plan</h2>
-                  <div class="muted">Ruhet në Firestore (javë sipas të Hënës).</div>
-                </div>
-                <div class="row">
-                  <button id="btnPrevWeek" class="btn small gray">‹ Java</button>
-                  <div class="pill mono" id="weekLabel">—</div>
-                  <button id="btnNextWeek" class="btn small gray">Java ›</button>
-                  <button id="btnSaveWeekly" class="btn small green">Save</button>
-                </div>
-              </div>
-
-              <div style="height:12px"></div>
-
-              <div class="tableWrap">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th style="width:140px">Dita</th>
-                      <th>Morning</th>
-                      <th>Evening</th>
-                      <th style="width:220px">Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody id="weeklyBody"></tbody>
-                </table>
-              </div>
+            <div style="flex:1;min-width:240px">
+              <div class="muted">Password</div>
+              <input id="authPass" type="password" placeholder="••••••••" autocomplete="current-password" />
             </div>
+          </div>
 
-            <!-- INVENTORY VIEW -->
-            <div id="viewInventory" style="display:none">
-              <div class="row" style="justify-content:space-between">
-                <div>
-                  <h2 style="margin:0 0 6px 0">Inventory</h2>
-                  <div class="muted">Shto / Ndrysho / Fshi artikuj në Firestore.</div>
-                </div>
-                <button id="btnNewItem" class="btn green">+ New Item</button>
-              </div>
+          <div style="height:12px"></div>
 
-              <div style="height:12px"></div>
+          <div class="row" style="gap:10px">
+            <button id="btnLogin" class="btn good">Login</button>
+            <button id="btnRegister" class="btn">Register</button>
+            <button id="btnReset" class="btn small">Forgot password</button>
+          </div>
 
-              <div class="tableWrap">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th style="width:90px">Unit</th>
-                      <th style="width:110px">Qty</th>
-                      <th style="width:110px">Min</th>
-                      <th style="width:150px">Updated</th>
-                      <th style="width:140px">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="invBody"></tbody>
-                </table>
-              </div>
+          <div style="height:12px"></div>
+          <div class="muted">
+            ⚠️ Nëse del <span class="mono">auth/invalid-credential</span> do të thotë email/password s’përputhen ose user s’është krijuar në atë Firebase projekt.
+          </div>
+        </div>
+
+        <!-- DASHBOARD VIEW -->
+        <div id="viewDashboard" class="hidden">
+          <div class="row sp">
+            <div>
+              <div class="h2">Dashboard</div>
+              <div class="muted">Zgjedh nga menu majtas.</div>
             </div>
-
-            <!-- STAFF VIEW -->
-            <div id="viewStaff" style="display:none">
-              <h2 style="margin:0 0 6px 0">Staff</h2>
-              <div class="muted" style="margin-bottom:14px">SuperAdmin/Admin menaxhon rolet & pending.</div>
-
-              <div class="cols">
-                <div class="col12">
-                  <div class="card" style="box-shadow:none">
-                    <div class="content">
-                      <div class="row" style="justify-content:space-between">
-                        <div style="font-weight:900">Users</div>
-                        <button id="btnReloadUsers" class="btn small gray">Reload</button>
-                      </div>
-                      <div style="height:10px"></div>
-                      <table class="table">
-                        <thead>
-                          <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th style="width:120px">Role</th>
-                            <th style="width:120px">Status</th>
-                            <th style="width:190px">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody id="usersBody"></tbody>
-                      </table>
-                      <div class="muted" style="font-size:12px;margin-top:10px">
-                        Pending = user i regjistruar por pa autorizim. SuperAdmin/Admin e bën “staff” ose “admin”.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div class="row" style="gap:8px">
+              <button id="quickWeekly" class="btn small">Open Weekly</button>
+              <button id="quickMyHours" class="btn small">My Hours</button>
+              <button id="quickStaff" class="btn small">Staff</button>
             </div>
+          </div>
 
-            <!-- NOTIF VIEW -->
-            <div id="viewNotif" style="display:none">
-              <div class="row" style="justify-content:space-between">
-                <div>
-                  <h2 style="margin:0 0 6px 0">Notifications</h2>
-                  <div class="muted">Dërgo njoftime (vetëm Admin/SuperAdmin).</div>
-                </div>
-                <button id="btnReloadNotif" class="btn small gray">Reload</button>
-              </div>
+          <div class="divider"></div>
 
-              <div style="height:12px"></div>
+          <div class="row" style="gap:10px;flex-wrap:wrap">
+            <span class="badge" id="bUid">UID: —</span>
+            <span class="badge" id="bEmail">Email: —</span>
+            <span class="badge" id="bRole">Role: —</span>
+          </div>
 
-              <div id="notifComposer" class="card" style="box-shadow:none;display:none">
-                <div class="content">
-                  <div class="cols">
-                    <div class="col8">
-                      <label>Message</label>
-                      <textarea id="notifMsg" placeholder="Sot: ndryshim orari / informacion…"></textarea>
-                    </div>
-                    <div class="col4">
-                      <label>Target</label>
-                      <select id="notifTarget">
-                        <option value="all">All</option>
-                        <option value="staff">Staff</option>
-                        <option value="admin">Admins</option>
-                      </select>
-                      <div style="height:10px"></div>
-                      <button id="btnSendNotif" class="btn green" style="width:100%">Send</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div style="height:14px"></div>
+          <div class="muted">
+            Weekly Plan PRO: Admin/SuperAdmin mundet me ndërru planin për çdo javë (edhe të kaluarat).
+            Punëtori mundet me i pa orët e veta në çdo moment.
+          </div>
+        </div>
 
-              <div style="height:12px"></div>
-
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Time</th>
-                    <th>Message</th>
-                    <th style="width:120px">Target</th>
-                  </tr>
-                </thead>
-                <tbody id="notifBody"></tbody>
-              </table>
+        <!-- WEEKLY PLAN PRO -->
+        <div id="viewWeekly" class="hidden">
+          <div class="row sp">
+            <div>
+              <div class="h2">Weekly Plan</div>
+              <div class="muted">Tabela me emra (rreshta) dhe ditë (kolona). Ruhet në Firestore.</div>
             </div>
-
-            <!-- SETTINGS VIEW -->
-            <div id="viewSettings" style="display:none">
-              <h2 style="margin:0 0 6px 0">Settings</h2>
-              <div class="muted" style="margin-bottom:14px">Konfigurime lokale (language) + info.</div>
-
-              <div class="card" style="box-shadow:none">
-                <div class="content">
-                  <div class="cols">
-                    <div class="col6">
-                      <label>Language</label>
-                      <select id="langSel2">
-                        <option value="de">Deutsch</option>
-                        <option value="sq">Shqip</option>
-                        <option value="en">English</option>
-                      </select>
-                    </div>
-                    <div class="col6">
-                      <label>Project</label>
-                      <input id="projInfo" disabled value="Firebase Auth + Firestore · GitHub Pages" />
-                    </div>
-                    <div class="col12">
-                      <div class="muted" style="font-size:12px;margin-top:10px">
-                        Nëse s’të hapet app pas update: hap linkun me <b>?v=123</b> (cache bust).
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+            <div class="row" style="gap:8px">
+              <button id="btnPrevWeek" class="btn small">‹ Java</button>
+              <div class="pill mono" id="weekLabel">—</div>
+              <button id="btnNextWeek" class="btn small">Java ›</button>
+              <button id="btnSaveWeek" class="btn good small">Save</button>
             </div>
+          </div>
 
+          <div style="height:10px"></div>
+
+          <div class="warnLine" id="weeklyPermInfo">
+            Vetëm <b>Admin/SuperAdmin</b> mundet me e ndryshu planin. Puntori e sheh planin, por s’ruan.
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Emri / Roli</th>
+                  <th id="thMon">Mon</th>
+                  <th id="thTue">Tue</th>
+                  <th id="thWed">Wed</th>
+                  <th id="thThu">Thu</th>
+                  <th id="thFri">Fri</th>
+                  <th id="thSat">Sat</th>
+                  <th id="thSun">Sun</th>
+                </tr>
+              </thead>
+              <tbody id="weeklyBody"></tbody>
+            </table>
+          </div>
+
+          <div style="height:12px"></div>
+          <div class="muted">
+            Format i orës: <span class="mono">HH:MM-HH:MM</span> (p.sh. <span class="mono">11:00-19:00</span>) ose <span class="mono">Frei</span>.
+            Pauza automatike 30 min <b>nuk shfaqet këtu</b>, por llogaritet te “My Hours” kur dita ka ≥ 4 orë.
+          </div>
+        </div>
+
+        <!-- MY HOURS -->
+        <div id="viewMyHours" class="hidden">
+          <div class="row sp">
+            <div>
+              <div class="h2">My Hours</div>
+              <div class="muted">Orët e mia të llogarituna (me pauzë automatike).</div>
+            </div>
+            <div class="row" style="gap:8px">
+              <button id="btnMyPrev" class="btn small">‹ Java</button>
+              <div class="pill mono" id="myWeekLabel">—</div>
+              <button id="btnMyNext" class="btn small">Java ›</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div id="myHoursBox"></div>
+        </div>
+
+        <!-- STAFF -->
+        <div id="viewStaff" class="hidden">
+          <div class="row sp">
+            <div>
+              <div class="h2">Staff</div>
+              <div class="muted">Admin/SuperAdmin: shton/ndryshon rolet. Puntori i thjeshtë: vetëm shikon veten.</div>
+            </div>
+            <div class="row" style="gap:8px">
+              <button id="btnAddStaff" class="btn small">+ Add user</button>
+              <button id="btnRefreshStaff" class="btn small">Refresh</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="tableWrap">
+            <table style="min-width:700px">
+              <thead>
+                <tr>
+                  <th style="min-width:220px">Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Active</th>
+                  <th style="min-width:180px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="staffBody"></tbody>
+            </table>
+          </div>
+
+          <div style="height:10px"></div>
+          <div class="muted">
+            Role: <span class="mono">superadmin</span>, <span class="mono">admin</span>, <span class="mono">staff</span>.
           </div>
         </div>
       </div>
-
     </div>
+
+    <div class="footerPad"></div>
   </div>
 
   <!-- MODAL -->
-  <div id="modalBack" class="modalBack" aria-hidden="true">
+  <div id="modalBack" class="modalBack">
     <div class="modal">
-      <div class="modalHead">
-        <h3 id="modalTitle" style="margin:0">Modal</h3>
-        <button id="btnCloseModal" class="btn gray small">Close</button>
+      <div class="row sp">
+        <div class="h2" id="modalTitle" style="font-size:18px">Modal</div>
+        <button id="btnCloseModal" class="btn small">✕</button>
       </div>
-      <div class="hr"></div>
-      <div id="modalBody" class="content"></div>
+      <div class="divider"></div>
+      <div id="modalBody"></div>
     </div>
   </div>
-<script type="module">
-  // ==========================
-  // 1) IMPORTS MUST BE FIRST
-  // ==========================
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
-  import {
-    getAuth,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    sendPasswordResetEmail,
-    signOut,
-    updateProfile
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  <script type="module">
+    // ============================================================
+    // 1) FIREBASE IMPORTS
+    // ============================================================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      sendPasswordResetEmail,
+      signOut,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      collection,
+      getDocs,
+      query,
+      where,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  import {
-    getFirestore,
-    doc,
-    getDoc,
-    setDoc,
-    updateDoc,
-    collection,
-    addDoc,
-    getDocs,
-    query,
-    orderBy,
-    where,
-    serverTimestamp,
-    deleteDoc
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    // ============================================================
+    // 2) FIREBASE CONFIG  (PUT YOUR REAL CONFIG HERE)
+    // ============================================================
+    const firebaseConfig = {
+      apiKey: "PASTE_API_KEY",
+      authDomain: "PASTE_AUTH_DOMAIN",
+      projectId: "PASTE_PROJECT_ID",
+      storageBucket: "PASTE_STORAGE_BUCKET",
+      messagingSenderId: "PASTE_SENDER_ID",
+      appId: "PASTE_APP_ID"
+    };
 
-  // ==========================
-  // 2) FIREBASE CONFIG (PËRDOR I YTI)
-  // ==========================
-  const firebaseConfig = {
-    apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
-    authDomain: "matteoteam-test.firebaseapp.com",
-    projectId: "matteoteam-test",
-    storageBucket: "matteoteam-test.firebasestorage.app",
-    messagingSenderId: "1084486170913",
-    appId: "1:1084486170913:web:d68cf328becefe226a6660",
-    measurementId: "G-9V887087P0"
-  };
+    // ============================================================
+    // 3) INIT
+    // ============================================================
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // ✅ SuperAdmin UID (Milot)
-  const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
+    // ============================================================
+    // 4) HELPERS
+    // ============================================================
+    const $ = (id) => document.getElementById(id);
 
-  // ==========================
-  // 3) INIT
-  // ==========================
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    const safeOn = (id, ev, fn) => {
+      const el = $(id);
+      if (el) el.addEventListener(ev, fn);
+    };
 
-  // ==========================
-  // 4) HELPERS
-  // ==========================
-  const $ = (id) => document.getElementById(id);
-
-  function showErr(msg){
-    const box = $("errBox");
-    if(!box) return;
-    box.style.display = "block";
-    box.textContent = String(msg);
-    console.error(msg);
-  }
-  function clearErr(){
-    const box = $("errBox");
-    if(!box) return;
-    box.style.display = "none";
-    box.textContent = "";
-  }
-
-  function setStatus(t){
-    const s = $("statusLine");
-    if(s) s.textContent = t;
-  }
-
-  function safeOn(id, ev, fn){
-    const el = $(id);
-    if (el) el.addEventListener(ev, fn);
-  }
-
-  function showView(viewId){
-    const ids = ["viewAuth","viewDashboard","viewWeekly","viewInventory","viewStaff","viewNotif","viewSettings"];
-    ids.forEach(id => { const el=$(id); if(el) el.style.display = (id===viewId ? "block" : "none"); });
-  }
-
-  // Modal
-  function openModal(title, html){
-    $("modalTitle").textContent = title || "Modal";
-    $("modalBody").innerHTML = html || "";
-    $("modalBack").classList.add("show");
-    $("modalBack").setAttribute("aria-hidden","false");
-  }
-  function closeModal(){
-    $("modalBack").classList.remove("show");
-    $("modalBack").setAttribute("aria-hidden","true");
-    $("modalBody").innerHTML = "";
-  }
-  safeOn("btnCloseModal","click", closeModal);
-  safeOn("modalBack","click",(e)=>{ if(e.target.id==="modalBack") closeModal(); });
-
-  // ==========================
-  // 5) GLOBAL STATE
-  // ==========================
-  let currentUser = null;
-  let currentRole = "guest"; // guest | pending | staff | admin | superadmin
-  let currentName = "—";
-
-  // Weekly pointer
-  let weekMonday = getMonday(new Date());
-
-  // ==========================
-  // 6) DATE HELPERS
-  // ==========================
-  function pad(n){ return String(n).padStart(2,"0"); }
-  function ymd(d){
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  }
-  function getMonday(date){
-    const d = new Date(date);
-    const day = d.getDay(); // 0 Sun
-    const diff = (day===0 ? -6 : 1 - day);
-    d.setDate(d.getDate()+diff);
-    d.setHours(0,0,0,0);
-    return d;
-  }
-  function addDays(date, days){
-    const d = new Date(date);
-    d.setDate(d.getDate()+days);
-    return d;
-  }
-
-  const DAY_KEYS = [
-    {key:"mon", label:"Monday"},
-    {key:"tue", label:"Tuesday"},
-    {key:"wed", label:"Wednesday"},
-    {key:"thu", label:"Thursday"},
-    {key:"fri", label:"Friday"},
-    {key:"sat", label:"Saturday"},
-    {key:"sun", label:"Sunday"},
-  ];
-
-  // ==========================
-  // 7) AUTH + USERS (ROLES)
-  // ==========================
-  async function ensureUserDoc(user){
-    // superadmin
-    if(user.uid === SUPERADMIN_UID){
-      currentRole = "superadmin";
-      currentName = user.displayName || "Milot (SuperAdmin)";
-      await setDoc(doc(db,"users",user.uid),{
-        name: currentName,
-        email: user.email || "",
-        role: "superadmin",
-        status: "active",
-        updatedAt: serverTimestamp()
-      }, {merge:true});
-      return;
-    }
-
-    const ref = doc(db,"users",user.uid);
-    const snap = await getDoc(ref);
-
-    if(!snap.exists()){
-      // default -> pending
-      await setDoc(ref,{
-        name: user.displayName || "Staff",
-        email: user.email || "",
-        role: "pending",
-        status: "pending",
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-      currentRole = "pending";
-      currentName = user.displayName || "Staff";
-      return;
-    }
-
-    const data = snap.data() || {};
-    currentRole = data.role || "pending";
-    currentName = data.name || user.displayName || "Staff";
-  }
-
-  function refreshTopBar(){
-    $("pillRole").textContent = currentRole || "—";
-    $("pillName").textContent = currentName || "—";
-    $("btnLogout").disabled = !currentUser;
-  }
-
-  function canAdmin(){
-    return currentRole === "admin" || currentRole === "superadmin";
-  }
-
-  // ==========================
-  // 8) UI LISTENERS (AUTH)
-  // ==========================
-  safeOn("btnLogin","click", async ()=>{
-    clearErr();
-    try{
-      const email = $("loginEmail").value.trim();
-      const pass  = $("loginPass").value;
-      if(!email || !pass) return showErr("Shkruaj Email + Password.");
-      setStatus("Login…");
-      await signInWithEmailAndPassword(auth, email, pass);
-    }catch(e){
-      showErr(e?.message || e);
-      setStatus("Login error");
-    }
-  });
-
-  safeOn("btnRegister","click", async ()=>{
-    clearErr();
-    try{
-      const name = $("regName").value.trim();
-      const email = $("regEmail").value.trim();
-      const pass = $("regPass").value;
-      if(!name || !email || !pass) return showErr("Plotëso Name + Email + Password.");
-      if(pass.length < 6) return showErr("Password min 6 karaktere.");
-
-      setStatus("Register…");
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      await updateProfile(cred.user, { displayName: name });
-
-      await setDoc(doc(db,"users",cred.user.uid),{
-        name,
-        email,
-        role:"pending",
-        status:"pending",
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      }, {merge:true});
-
-      showErr("✅ Register OK. Status = pending. Admin duhet me aprovu.");
-    }catch(e){
-      showErr(e?.message || e);
-      setStatus("Register error");
-    }
-  });
-
-  safeOn("btnReset","click", async ()=>{
-    clearErr();
-    try{
-      const email = $("loginEmail").value.trim();
-      if(!email) return showErr("Shkruaj email te Login pastaj Reset.");
-      await sendPasswordResetEmail(auth, email);
-      showErr("✅ Reset email u dërgua (kontrollo edhe Spam).");
-    }catch(e){
-      showErr(e?.message || e);
-    }
-  });
-
-  safeOn("btnLogout","click", async ()=>{
-    clearErr();
-    try{
-      await signOut(auth);
-    }catch(e){
-      showErr(e?.message || e);
-    }
-  });
-
-  // ==========================
-  // 9) NAV LISTENERS
-  // ==========================
-  safeOn("navDashboard","click", ()=> showView("viewDashboard"));
-  safeOn("navWeekly","click", async ()=> { showView("viewWeekly"); await loadWeekly(); });
-  safeOn("navInventory","click", async ()=> { showView("viewInventory"); await loadInventory(); });
-  safeOn("navStaff","click", async ()=> { showView("viewStaff"); await loadUsers(); });
-  safeOn("navNotif","click", async ()=> { showView("viewNotif"); await loadNotifications(); });
-  safeOn("navSettings","click", ()=> showView("viewSettings"));
-
-  safeOn("quickOpenWeekly","click", ()=> { showView("viewWeekly"); loadWeekly(); });
-  safeOn("quickOpenInv","click", ()=> { showView("viewInventory"); loadInventory(); });
-  safeOn("quickOpenStaff","click", ()=> { showView("viewStaff"); 
-    // ============================
-// WEEKLY PLAN PRO VERSION
-// ============================
-
-let currentWeekStart = getMonday(new Date());
-
-function formatDate(d){
-  return d.toISOString().split("T")[0];
-}
-
-function getMonday(date){
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff));
-}
-
-function addDays(date, days){
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
-
-function minutesBetween(start, end){
-  const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = end.split(":").map(Number);
-  return (eh*60+em)-(sh*60+sm);
-}
-
-function netMinutes(start,end){
-  const worked = minutesBetween(start,end);
-  const breakMin = worked >= 240 ? 30 : 0;
-  return worked - breakMin;
-}
-
-function renderWeekLabel(){
-  const end = addDays(currentWeekStart,6);
-  document.getElementById("weekLabel").textContent =
-    formatDate(currentWeekStart)+" → "+formatDate(end);
-}
-
-async function loadWeeklyPlan(){
-  renderWeekLabel();
-
-  const weekId = formatDate(currentWeekStart);
-  const shiftsSnap = await getDocs(collection(db,"weeks",weekId,"shifts"));
-
-  const usersSnap = await getDocs(collection(db,"users"));
-
-  const users = [];
-  usersSnap.forEach(doc=>{
-    const d=doc.data();
-    if(d.active!==false){
-      users.push({uid:doc.id,name:d.name,role:d.role});
-    }
-  });
-
-  const shifts = {};
-  shiftsSnap.forEach(doc=>{
-    shifts[doc.id]=doc.data();
-  });
-
-  const days=["mon","tue","wed","thu","fri","sat","sun"];
-  let html = "<table border='1' cellpadding='5'><tr><th>Name</th>";
-
-  days.forEach(d=>html+="<th>"+d.toUpperCase()+"</th>");
-  html+="</tr>";
-
-  users.forEach(u=>{
-    if(currentRole==="staff" && u.uid!==currentUser.uid) return;
-
-    html+="<tr>";
-    html+="<td>"+u.name+"</td>";
-
-    days.forEach(d=>{
-      const shift = shifts[u.uid]?.days?.[d];
-      const val = shift?.start && shift?.end ? shift.start+"-"+shift.end : "";
-      if(currentRole==="admin" || currentRole==="superadmin"){
-        html+=`<td><input data-uid="${u.uid}" data-day="${d}" value="${val}" placeholder="11:00-18:00"></td>`;
-      }else{
-        html+="<td>"+(val||"Frei")+"</td>";
+    function showErr(msg){
+      const box = $("errBox");
+      const ok = $("okBox");
+      const warn = $("warnBox");
+      if (ok) ok.classList.add("hidden");
+      if (warn) warn.classList.add("hidden");
+      if (box){
+        box.textContent = msg;
+        box.classList.remove("hidden");
       }
-    });
-
-    html+="</tr>";
-  });
-
-  html+="</table>";
-
-  document.getElementById("weeklyTableWrap").innerHTML=html;
-
-  if(currentRole==="staff"){
-    renderMyHours(shifts);
-  }
-}
-
-function renderMyHours(shifts){
-  const days=["mon","tue","wed","thu","fri","sat","sun"];
-  const my = shifts[currentUser.uid];
-  if(!my){document.getElementById("myHoursBox").style.display="none";return;}
-
-  let html="";
-  let total=0;
-
-  days.forEach(d=>{
-    const shift=my.days?.[d];
-    if(shift?.start && shift?.end){
-      const net=netMinutes(shift.start,shift.end);
-      total+=net;
-      const pause=minutesBetween(shift.start,shift.end)>=240?30:0;
-
-      html+=`<div>
-        ${d.toUpperCase()}: ${shift.start}-${shift.end}
-        ${pause?`(Pauza 30min)`:""}
-        → ${Math.floor(net/60)}h ${net%60}min
-      </div>`;
+      console.error(msg);
     }
-  });
-
-  html+=`<hr><b>Total javor: ${Math.floor(total/60)}h ${total%60}min</b>`;
-
-  document.getElementById("myHoursContent").innerHTML=html;
-  document.getElementById("myHoursBox").style.display="block";
-}
-
-async function saveWeeklyPlan(){
-  if(!(currentRole==="admin"||currentRole==="superadmin")) return;
-
-  const weekId = formatDate(currentWeekStart);
-  const inputs = document.querySelectorAll("#weeklyTableWrap input");
-
-  const data={};
-
-  inputs.forEach(inp=>{
-    const uid=inp.dataset.uid;
-    const day=inp.dataset.day;
-    const val=inp.value.trim();
-    if(!data[uid]) data[uid]={days:{}};
-
-    if(val.includes("-")){
-      const [start,end]=val.split("-");
-      data[uid].days[day]={start:start.trim(),end:end.trim()};
+    function showOk(msg){
+      const box = $("okBox");
+      const err = $("errBox");
+      const warn = $("warnBox");
+      if (err) err.classList.add("hidden");
+      if (warn) warn.classList.add("hidden");
+      if (box){
+        box.textContent = msg;
+        box.classList.remove("hidden");
+      }
     }
-  });
-
-  for(const uid in data){
-    await setDoc(doc(db,"weeks",weekId,"shifts",uid),{
-      uid,
-      days:data[uid].days
-    },{merge:true});
-  }
-
-  alert("Weekly Plan saved");
-}
-
-document.getElementById("btnPrevWeek").onclick=()=>{
-  currentWeekStart=addDays(currentWeekStart,-7);
-  loadWeeklyPlan();
-};
-document.getElementById("btnNextWeek").onclick=()=>{
-  currentWeekStart=addDays(currentWeekStart,7);
-  loadWeeklyPlan();
-};
-document.getElementById("btnSaveWeek").onclick=saveWeeklyPlan;                                     
-  // ==========================
-  // 11) INVENTORY
-  // ==========================
-  async function loadInventory(){
-    clearErr();
-    try{
-      if(!currentUser) return;
-      const qy = query(collection(db,"inventory"), orderBy("name","asc"));
-      const snap = await getDocs(qy);
-      const body = $("invBody");
-      body.innerHTML = "";
-      snap.forEach(docu=>{
-        const d = docu.data() || {};
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><b>${escapeHtml(d.name||"")}</b></td>
-          <td>${escapeHtml(d.unit||"")}</td>
-          <td>${escapeHtml(d.qty ?? "")}</td>
-          <td>${escapeHtml(d.minQty ?? "")}</td>
-          <td class="muted">${d.updatedAt?.toDate ? d.updatedAt.toDate().toLocaleString() : ""}</td>
-          <td>
-            <button class="btn small" data-edit="${docu.id}">Edit</button>
-            <button class="btn small red" data-del="${docu.id}">Del</button>
-          </td>
-        `;
-        body.appendChild(tr);
-      });
-
-      // attach actions
-      body.querySelectorAll("[data-edit]").forEach(b=>{
-        b.addEventListener("click", ()=> openInventoryModal(b.getAttribute("data-edit")));
-      });
-      body.querySelectorAll("[data-del]").forEach(b=>{
-        b.addEventListener("click", ()=> deleteInventory(b.getAttribute("data-del")));
-      });
-
-    }catch(e){
-      showErr(e?.message || e);
+    function showWarn(msg){
+      const box = $("warnBox");
+      const err = $("errBox");
+      const ok = $("okBox");
+      if (err) err.classList.add("hidden");
+      if (ok) ok.classList.add("hidden");
+      if (box){
+        box.textContent = msg;
+        box.classList.remove("hidden");
+      }
     }
-  }
+    function clearMsg(){
+      ["errBox","okBox","warnBox"].forEach(id => {
+        const el = $(id);
+        if (el) el.classList.add("hidden");
+      });
+    }
 
-  function openInventoryModal(id=null){
-    if(currentRole==="pending") return showErr("Pending s’mund me ndryshu inventory.");
-    const isNew = !id;
-    openModal(isNew ? "New Inventory Item" : "Edit Inventory Item", `
-      <div class="grid">
-        <div>
-          <label>Item Name</label>
-          <input id="m_inv_name" placeholder="Mehl (25)" />
-        </div>
-        <div class="cols">
-          <div class="col4">
-            <label>Unit</label>
-            <input id="m_inv_unit" placeholder="kg / l / pcs" />
-          </div>
-          <div class="col4">
-            <label>Qty</label>
-            <input id="m_inv_qty" type="number" step="0.01" placeholder="0" />
-          </div>
-          <div class="col4">
-            <label>Min Qty</label>
-            <input id="m_inv_min" type="number" step="0.01" placeholder="0" />
-          </div>
-        </div>
-        <div class="row">
-          <button id="m_inv_save" class="btn green">Save</button>
-          <button id="m_inv_cancel" class="btn gray">Cancel</button>
-        </div>
-        <div class="muted" style="font-size:12px">Ruhet në Firestore collection: inventory</div>
-      </div>
-    `);
+    function showView(which){
+      // content views
+      ["viewAuth","viewDashboard","viewWeekly","viewMyHours","viewStaff"].forEach(v=>{
+        const el = $(v);
+        if (el) el.classList.add("hidden");
+      });
+      const target = $(which);
+      if (target) target.classList.remove("hidden");
+      clearMsg();
+    }
 
-    $("m_inv_cancel").addEventListener("click", closeModal);
+    // modal
+    function openModal(title, html){
+      $("modalTitle").textContent = title;
+      $("modalBody").innerHTML = html;
+      $("modalBack").style.display = "flex";
+    }
+    function closeModal(){
+      $("modalBack").style.display = "none";
+      $("modalBody").innerHTML = "";
+    }
+    safeOn("btnCloseModal","click", closeModal);
+    safeOn("modalBack","click", (e)=>{ if(e.target.id==="modalBack") closeModal(); });
 
-    (async ()=>{
-      if(!id) return;
-      const ref = doc(db,"inventory",id);
+    // date helpers
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function ymd(d){
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    }
+    function getMonday(date){
+      const d = new Date(date);
+      const day = d.getDay(); // 0=Sun
+      const diff = d.getDate() - day + (day===0 ? -6 : 1);
+      d.setDate(diff);
+      d.setHours(0,0,0,0);
+      return d;
+    }
+    function addDays(date, days){
+      const d = new Date(date);
+      d.setDate(d.getDate()+days);
+      return d;
+    }
+
+    function minutesBetween(start, end){
+      const [sh, sm] = start.split(":").map(Number);
+      const [eh, em] = end.split(":").map(Number);
+      return (eh*60+em) - (sh*60+sm);
+    }
+
+    function parseShift(val){
+      // returns {kind:'off'} or {kind:'range', start, end} or {kind:'bad'}
+      if (!val) return {kind:"empty"};
+      const s = String(val).trim();
+      if (!s) return {kind:"empty"};
+      if (s.toLowerCase() === "frei" || s.toLowerCase() === "off") return {kind:"off"};
+      if (s.includes("-")){
+        const [a,b] = s.split("-");
+        const start = (a||"").trim();
+        const end = (b||"").trim();
+        if (/^\d{1,2}:\d{2}$/.test(start) && /^\d{1,2}:\d{2}$/.test(end)){
+          // normalize 7:00 -> 07:00
+          const [sh, sm] = start.split(":");
+          const [eh, em] = end.split(":");
+          return {kind:"range", start:`${pad2(sh)}:${sm}`, end:`${pad2(eh)}:${em}`};
+        }
+        return {kind:"bad"};
+      }
+      return {kind:"bad"};
+    }
+
+    // pause rule
+    const PAUSE_MINUTES = 30;
+    const PAUSE_THRESHOLD_MINUTES = 4 * 60; // from 4 hours
+
+    function computeDayMinutes(shiftStr){
+      const p = parseShift(shiftStr);
+      if (p.kind !== "range") return {work:0, pause:0, net:0, ok:false, kind:p.kind};
+      const work = Math.max(0, minutesBetween(p.start, p.end));
+      const pause = work >= PAUSE_THRESHOLD_MINUTES ? PAUSE_MINUTES : 0;
+      const net = Math.max(0, work - pause);
+      return {work, pause, net, ok:true, start:p.start, end:p.end, kind:p.kind};
+    }
+
+    function minToHM(min){
+      const h = Math.floor(min/60);
+      const m = min%60;
+      return `${h}h ${pad2(m)}m`;
+    }
+
+    // ============================================================
+    // 5) GLOBAL STATE
+    // ============================================================
+    let currentUser = null;
+    let currentProfile = null; // {name, role, active}
+    let currentRole = "guest";
+
+    // weekly
+    const DAY_KEYS = [
+      {key:"mon", label:"Monday"},
+      {key:"tue", label:"Tuesday"},
+      {key:"wed", label:"Wednesday"},
+      {key:"thu", label:"Thursday"},
+      {key:"fri", label:"Friday"},
+      {key:"sat", label:"Saturday"},
+      {key:"sun", label:"Sunday"},
+    ];
+
+    let weekStart = getMonday(new Date());
+    let myWeekStart = getMonday(new Date());
+
+    function isAdmin(){
+      return currentRole === "admin" || currentRole === "superadmin";
+    }
+
+    // ============================================================
+    // 6) FIRESTORE PATHS
+    // ============================================================
+    // users/{uid}: {name, email, role, active, createdAt}
+    // weeklyPlans/{weekId}/shifts/{uid}: {uid, name, role, days:{mon:"11:00-19:00", ...}, updatedAt}
+    function weekIdFromStart(d){
+      return ymd(getMonday(d)); // monday date
+    }
+
+    // ============================================================
+    // 7) AUTH FUNCTIONS
+    // ============================================================
+    async function ensureUserProfile(u){
+      const ref = doc(db, "users", u.uid);
       const snap = await getDoc(ref);
-      if(!snap.exists()) return;
-      const d = snap.data() || {};
-      $("m_inv_name").value = d.name || "";
-      $("m_inv_unit").value = d.unit || "";
-      $("m_inv_qty").value  = (d.qty ?? "");
-      $("m_inv_min").value  = (d.minQty ?? "");
-    })();
+      if (!snap.exists()){
+        const name = u.displayName || (u.email ? u.email.split("@")[0] : "User");
+        await setDoc(ref, {
+          uid: u.uid,
+          name,
+          email: u.email || "",
+          role: "staff",
+          active: true,
+          createdAt: serverTimestamp()
+        }, {merge:true});
+      }
+      const snap2 = await getDoc(ref);
+      return snap2.data();
+    }
 
-    $("m_inv_save").addEventListener("click", async ()=>{
-      clearErr();
+    async function doLogin(){
+      clearMsg();
+      const email = ($("authEmail").value || "").trim();
+      const pass  = ($("authPass").value || "");
+      if (!email || !pass) return showErr("Shkruaj email dhe password.");
       try{
-        const name = $("m_inv_name").value.trim();
-        const unit = $("m_inv_unit").value.trim();
-        const qty = Number($("m_inv_qty").value || 0);
-        const minQty = Number($("m_inv_min").value || 0);
-        if(!name) return showErr("Shkruaj emrin e artikullit.");
-
-        if(id){
-          await updateDoc(doc(db,"inventory",id),{
-            name, unit, qty, minQty,
-            updatedAt: serverTimestamp(),
-            updatedBy: currentUser.uid
-          });
-        }else{
-          await addDoc(collection(db,"inventory"),{
-            name, unit, qty, minQty,
-            createdAt: serverTimestamp(),
-            createdBy: currentUser.uid,
-            updatedAt: serverTimestamp(),
-            updatedBy: currentUser.uid
-          });
-        }
-        closeModal();
-        await loadInventory();
-        showErr("✅ Inventory saved.");
+        await signInWithEmailAndPassword(auth, email, pass);
       }catch(e){
-        showErr(e?.message || e);
+        showErr(`Firebase: ${e.code || "error"} — ${e.message || e}`);
       }
-    });
-  }
-
-  async function deleteInventory(id){
-    if(currentRole==="pending") return showErr("Pending s’mund me fshi inventory.");
-    const ok = confirm("Delete this item?");
-    if(!ok) return;
-    try{
-      await deleteDoc(doc(db,"inventory",id));
-      await loadInventory();
-    }catch(e){
-      showErr(e?.message || e);
     }
-  }
 
-  safeOn("btnNewItem","click", ()=> openInventoryModal(null));
-
-  // ==========================
-  // 12) STAFF / USERS
-  // ==========================
-  safeOn("btnReloadUsers","click", loadUsers);
-
-  async function loadUsers(){
-    clearErr();
-    try{
-      if(!currentUser) return;
-      if(!canAdmin()) {
-        $("usersBody").innerHTML = `<tr><td colspan="5">Only Admin/SuperAdmin can see staff list.</td></tr>`;
-        return;
+    async function doRegister(){
+      clearMsg();
+      const email = ($("authEmail").value || "").trim();
+      const pass  = ($("authPass").value || "");
+      if (!email || pass.length < 6) return showErr("Email duhet dhe password min 6 karaktere.");
+      try{
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        // set displayName if empty
+        const baseName = email.split("@")[0];
+        try { await updateProfile(cred.user, {displayName: baseName}); } catch(_){}
+        showOk("User u krijua. Tash je i kyçur.");
+      }catch(e){
+        showErr(`Firebase: ${e.code || "error"} — ${e.message || e}`);
       }
+    }
 
-      const snap = await getDocs(query(collection(db,"users"), orderBy("name","asc")));
-      const body = $("usersBody");
-      body.innerHTML = "";
+    async function doReset(){
+      clearMsg();
+      const email = ($("authEmail").value || "").trim();
+      if (!email) return showErr("Shkruaj email për reset.");
+      try{
+        await sendPasswordResetEmail(auth, email);
+        showOk("U dërgua email për reset password.");
+      }catch(e){
+        showErr(`Firebase: ${e.code || "error"} — ${e.message || e}`);
+      }
+    }
 
-      snap.forEach(docu=>{
-        const u = docu.data() || {};
-        const uid = docu.id;
-        const tr = document.createElement("tr");
-        const role = u.role || "pending";
-        const status = u.status || (role==="pending" ? "pending" : "active");
+    async function doLogout(){
+      clearMsg();
+      await signOut(auth);
+    }
 
-        let actions = "";
-        if(uid === SUPERADMIN_UID){
-          actions = `<span class="muted">SuperAdmin</span>`;
-        }else{
-          actions = `
-            <button class="btn small" data-setrole="${uid}" data-role="staff">Staff</button>
-            <button class="btn small" data-setrole="${uid}" data-role="admin">Admin</button>
-            <button class="btn small red" data-setrole="${uid}" data-role="pending">Pending</button>
-          `;
+    safeOn("btnLogin","click", doLogin);
+    safeOn("btnRegister","click", doRegister);
+    safeOn("btnReset","click", doReset);
+    safeOn("btnLogout","click", doLogout);
+
+    // ============================================================
+    // 8) NAV
+    // ============================================================
+    safeOn("navDashboard","click", ()=> showView("viewDashboard"));
+    safeOn("navWeekly","click", ()=> { showView("viewWeekly"); loadWeeklyPlan(); });
+    safeOn("navMyHours","click", ()=> { showView("viewMyHours"); loadMyHours(); });
+    safeOn("navStaff","click", ()=> { showView("viewStaff"); loadStaff(); });
+
+    safeOn("quickWeekly","click", ()=> { showView("viewWeekly"); loadWeeklyPlan(); });
+    safeOn("quickMyHours","click", ()=> { showView("viewMyHours"); loadMyHours(); });
+    safeOn("quickStaff","click", ()=> { showView("viewStaff"); loadStaff(); });
+
+    // ============================================================
+    // 9) WEEKLY PLAN PRO (UI RENDER)
+    // ============================================================
+    function setWeekHeaderLabels(base){
+      const d0 = getMonday(base);
+      const thIds = ["thMon","thTue","thWed","thThu","thFri","thSat","thSun"];
+      for (let i=0;i<7;i++){
+        const dd = addDays(d0,i);
+        const el = $(thIds[i]);
+        if (el) el.textContent = `${DAY_KEYS[i].label} (${ymd(dd)})`;
+      }
+    }
+
+    function makeShiftCell(uid, dayKey, value, editable){
+      const id = `w_${uid}_${dayKey}`;
+      const disabled = editable ? "" : "disabled";
+      return `
+        <div class="cellBox">
+          <input id="${id}" ${disabled} class="mono" placeholder="Frei ose 11:00-19:00" value="${escapeHtml(value||"")}" />
+          <div class="tiny">Format: HH:MM-HH:MM · Frei</div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;");
+    }
+
+    async function loadWeeklyPlan(){
+      try{
+        const weekId = weekIdFromStart(weekStart);
+        $("weekLabel").textContent = `${weekId} → ${ymd(addDays(getMonday(weekStart),6))}`;
+        setWeekHeaderLabels(weekStart);
+
+        // permissions
+        const canEdit = isAdmin();
+        $("weeklyPermInfo").classList.toggle("hidden", canEdit);
+
+        // get staff list
+        const usersSnap = await getDocs(query(collection(db,"users"), orderBy("name")));
+        const users = [];
+        usersSnap.forEach(s=>{
+          const u = s.data();
+          if (u && u.active !== false) users.push(u);
+        });
+
+        // load shifts docs
+        const shiftsCol = collection(db, "weeklyPlans", weekId, "shifts");
+        const shiftsSnap = await getDocs(shiftsCol);
+        const byUid = {};
+        shiftsSnap.forEach(s=> byUid[s.id] = s.data());
+
+        const tbody = $("weeklyBody");
+        tbody.innerHTML = "";
+
+        for (const u of users){
+          const docData = byUid[u.uid] || {days:{}};
+          const days = docData.days || {};
+
+          const roleTxt = (u.role||"staff");
+          const nameTxt = u.name || u.email || u.uid;
+
+          let rowHtml = `<tr>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <div style="font-weight:900">${escapeHtml(nameTxt)}</div>
+                <div class="mini">Role: <span class="mono">${escapeHtml(roleTxt)}</span></div>
+              </div>
+            </td>`;
+
+          for (const d of DAY_KEYS){
+            rowHtml += `<td>${makeShiftCell(u.uid, d.key, days[d.key]||"", canEdit)}</td>`;
+          }
+
+          rowHtml += `</tr>`;
+          tbody.insertAdjacentHTML("beforeend", rowHtml);
         }
 
-        tr.innerHTML = `
-          <td><b>${escapeHtml(u.name||"")}</b></td>
-          <td class="muted">${escapeHtml(u.email||"")}</td>
-          <td>${escapeHtml(role)}</td>
-          <td>${escapeHtml(status)}</td>
-          <td>${actions}</td>
-        `;
-        body.appendChild(tr);
-      });
+        // save button enabled only for admin
+        $("btnSaveWeek").disabled = !canEdit;
 
-      body.querySelectorAll("[data-setrole]").forEach(btn=>{
-        btn.addEventListener("click", async ()=>{
-          const uid = btn.getAttribute("data-setrole");
-          const role = btn.getAttribute("data-role");
-          await setUserRole(uid, role);
+        showOk("Weekly Plan loaded.");
+      }catch(e){
+        showErr(`Weekly load error: ${e.message || e}`);
+      }
+    }
+
+    async function saveWeeklyPlan(){
+      if (!isAdmin()) return showErr("Nuk ke leje me ruajt (vetëm Admin/SuperAdmin).");
+
+      try{
+        const weekId = weekIdFromStart(weekStart);
+
+        // get users
+        const usersSnap = await getDocs(query(collection(db,"users"), orderBy("name")));
+        const users = [];
+        usersSnap.forEach(s=>{
+          const u = s.data();
+          if (u && u.active !== false) users.push(u);
         });
-      });
 
-    }catch(e){
-      showErr(e?.message || e);
+        for (const u of users){
+          const days = {};
+          for (const d of DAY_KEYS){
+            const el = $(`w_${u.uid}_${d.key}`);
+            const val = el ? (el.value||"").trim() : "";
+            days[d.key] = val;
+          }
+          await setDoc(doc(db, "weeklyPlans", weekId, "shifts", u.uid), {
+            uid: u.uid,
+            name: u.name || "",
+            role: u.role || "staff",
+            days,
+            updatedAt: serverTimestamp()
+          }, {merge:true});
+        }
+
+        showOk("✅ Weekly Plan u ruajt.");
+      }catch(e){
+        showErr(`Save error: ${e.message || e}`);
+      }
     }
-  }
 
-  async function setUserRole(uid, role){
-    clearErr();
-    try{
-      if(!canAdmin()) return showErr("No permission.");
-      if(uid === SUPERADMIN_UID) return;
+    safeOn("btnPrevWeek","click", async ()=>{
+      weekStart = addDays(weekStart, -7);
+      await loadWeeklyPlan();
+    });
+    safeOn("btnNextWeek","click", async ()=>{
+      weekStart = addDays(weekStart, 7);
+      await loadWeeklyPlan();
+    });
+    safeOn("btnSaveWeek","click", saveWeeklyPlan);
 
-      const status = (role==="pending") ? "pending" : "active";
-      await updateDoc(doc(db,"users",uid),{
-        role,
-        status,
-        updatedAt: serverTimestamp(),
-        updatedBy: currentUser.uid
-      });
-      await loadUsers();
-      showErr("✅ Role updated.");
-    }catch(e){
-      showErr(e?.message || e);
+    // ============================================================
+    // 10) MY HOURS (with auto pause)
+    // ============================================================
+    async function loadMyHours(){
+      if (!currentUser) return;
+
+      try{
+        const weekId = weekIdFromStart(myWeekStart);
+        $("myWeekLabel").textContent = `${weekId} → ${ymd(addDays(getMonday(myWeekStart),6))}`;
+
+        const shiftRef = doc(db, "weeklyPlans", weekId, "shifts", currentUser.uid);
+        const snap = await getDoc(shiftRef);
+        const data = snap.exists() ? snap.data() : {days:{}};
+        const days = data.days || {};
+
+        let totalWork = 0, totalPause = 0, totalNet = 0;
+
+        let html = `<div class="tableWrap"><table style="min-width:700px">
+          <thead>
+            <tr>
+              <th style="min-width:180px">Dita</th>
+              <th>Shift</th>
+              <th>Work</th>
+              <th>Pauza</th>
+              <th>Net</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+        for (let i=0;i<7;i++){
+          const dk = DAY_KEYS[i].key;
+          const lbl = DAY_KEYS[i].label;
+          const date = ymd(addDays(getMonday(myWeekStart), i));
+          const v = (days[dk]||"").trim();
+          const m = computeDayMinutes(v);
+
+          totalWork += m.work;
+          totalPause += m.pause;
+          totalNet += m.net;
+
+          const shiftTxt = v ? escapeHtml(v) : "—";
+          const workTxt = m.work ? minToHM(m.work) : "0h 00m";
+          const pauseTxt = m.pause ? `30 min` : "0 min";
+          const netTxt = m.net ? minToHM(m.net) : "0h 00m";
+
+          html += `<tr>
+            <td><b>${escapeHtml(lbl)}</b><div class="tiny mono">${date}</div></td>
+            <td class="mono">${shiftTxt}</td>
+            <td>${workTxt}</td>
+            <td>${pauseTxt}</td>
+            <td><b>${netTxt}</b></td>
+          </tr>`;
+        }
+
+        html += `</tbody></table></div>`;
+
+        html += `<div style="height:12px"></div>
+          <div class="okLine">
+            <b>Total</b> · Work: <span class="mono">${minToHM(totalWork)}</span> ·
+            Pauza: <span class="mono">${Math.floor(totalPause/60)}h ${pad2(totalPause%60)}m</span> ·
+            Net: <span class="mono">${minToHM(totalNet)}</span>
+            <div class="tiny" style="margin-top:6px">
+              Pauza automatike 30 min llogaritet vetëm kur dita ka ≥ 4 orë punë.
+            </div>
+          </div>`;
+
+        $("myHoursBox").innerHTML = html;
+        showOk("My Hours loaded.");
+      }catch(e){
+        showErr(`MyHours error: ${e.message || e}`);
+      }
     }
-  }
 
-  // ==========================
-  // 13) NOTIFICATIONS
-  // ==========================
-  safeOn("btnReloadNotif","click", loadNotifications);
+    safeOn("btnMyPrev","click", async ()=>{
+      myWeekStart = addDays(myWeekStart, -7);
+      await loadMyHours();
+    });
+    safeOn("btnMyNext","click", async ()=>{
+      myWeekStart = addDays(myWeekStart, 7);
+      await loadMyHours();
+    });
 
-  async function loadNotifications(){
-    clearErr();
-    try{
-      if(!currentUser) return;
+    // ============================================================
+    // 11) STAFF (Admin/SuperAdmin)
+    // ============================================================
+    async function loadStaff(){
+      try{
+        const body = $("staffBody");
+        body.innerHTML = "";
 
-      // composer only for admins
-      $("notifComposer").style.display = canAdmin() ? "block" : "none";
+        const snap = await getDocs(query(collection(db,"users"), orderBy("name")));
+        const rows = [];
+        snap.forEach(s=>{
+          const u = s.data();
+          if (!u) return;
+          // staff sees only self if not admin
+          if (!isAdmin() && currentUser && u.uid !== currentUser.uid) return;
+          rows.push(u);
+        });
 
-      const snap = await getDocs(query(collection(db,"notifications"), orderBy("createdAt","desc")));
-      const body = $("notifBody");
-      body.innerHTML = "";
+        for (const u of rows){
+          const canEdit = isAdmin();
+          const roleOptions = ["superadmin","admin","staff"].map(r=>{
+            const sel = (u.role===r) ? "selected" : "";
+            return `<option ${sel} value="${r}">${r}</option>`;
+          }).join("");
 
-      snap.forEach(docu=>{
-        const n = docu.data() || {};
-        const target = n.target || "all";
+          const activeChecked = (u.active !== false) ? "checked" : "";
+          const disabled = canEdit ? "" : "disabled";
 
-        // filter by role
-        const ok =
-          target === "all" ||
-          (target === "staff" && (currentRole==="staff" || currentRole==="admin" || currentRole==="superadmin")) ||
-          (target === "admin" && (currentRole==="admin" || currentRole==="superadmin"));
+          body.insertAdjacentHTML("beforeend", `
+            <tr>
+              <td><b>${escapeHtml(u.name||"")}</b><div class="tiny mono">${escapeHtml(u.uid||"")}</div></td>
+              <td class="mono">${escapeHtml(u.email||"")}</td>
+              <td>
+                <select id="role_${u.uid}" ${disabled}>${roleOptions}</select>
+              </td>
+              <td>
+                <input id="act_${u.uid}" type="checkbox" ${activeChecked} ${disabled} />
+              </td>
+              <td>
+                <button class="btn small" ${disabled} id="save_${u.uid}">Save</button>
+              </td>
+            </tr>
+          `);
 
-        if(!ok) return;
+          safeOn(`save_${u.uid}`,"click", async ()=>{
+            try{
+              const newRole = $(`role_${u.uid}`).value;
+              const newAct = $(`act_${u.uid}`).checked;
+              await updateDoc(doc(db,"users",u.uid), {
+                role: newRole,
+                active: newAct,
+                updatedAt: serverTimestamp()
+              });
+              showOk("User updated.");
+              // refresh current role if editing self
+              if (currentUser && u.uid === currentUser.uid){
+                currentProfile = await ensureUserProfile(currentUser);
+                currentRole = currentProfile.role || "staff";
+                updateTopBar();
+              }
+            }catch(e){
+              showErr(`Update error: ${e.message || e}`);
+            }
+          });
+        }
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="muted">${n.createdAt?.toDate ? n.createdAt.toDate().toLocaleString() : ""}</td>
-          <td>${escapeHtml(n.message||"")}</td>
-          <td>${escapeHtml(target)}</td>
-        `;
-        body.appendChild(tr);
-      });
-
-    }catch(e){
-      showErr(e?.message || e);
+        $("btnAddStaff").disabled = !isAdmin();
+        showOk("Staff loaded.");
+      }catch(e){
+        showErr(`Staff error: ${e.message || e}`);
+      }
     }
-  }
 
-  safeOn("btnSendNotif","click", async ()=>{
-    clearErr();
-    try{
-      if(!canAdmin()) return showErr("Only Admin/SuperAdmin can send notifications.");
-      const msg = $("notifMsg").value.trim();
-      const target = $("notifTarget").value;
-      if(!msg) return showErr("Write message.");
+    safeOn("btnRefreshStaff","click", loadStaff);
 
-      await addDoc(collection(db,"notifications"),{
-        message: msg,
-        target,
-        createdAt: serverTimestamp(),
-        createdBy: currentUser.uid
+    safeOn("btnAddStaff","click", ()=>{
+      if (!isAdmin()) return showErr("Vetëm Admin/SuperAdmin mundet me shtu user.");
+
+      openModal("Add Staff User (Firestore list)", `
+        <div class="muted">Kjo vetëm e shton user-in në listën <span class="mono">users</span>. Login krijohet me Register në app ose në Firebase Auth.</div>
+        <div style="height:10px"></div>
+
+        <div class="row" style="gap:10px">
+          <div style="flex:1;min-width:220px">
+            <div class="muted">Name</div>
+            <input id="m_name" placeholder="p.sh. Eset" />
+          </div>
+          <div style="flex:1;min-width:220px">
+            <div class="muted">Email</div>
+            <input id="m_email" placeholder="email@domain.com" />
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="row" style="gap:10px">
+          <div style="flex:1;min-width:220px">
+            <div class="muted">Role</div>
+            <select id="m_role">
+              <option value="staff">staff</option>
+              <option value="admin">admin</option>
+              <option value="superadmin">superadmin</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:220px">
+            <div class="muted">UID (optional)</div>
+            <input id="m_uid" placeholder="nëse e din UID, nëse jo lëre bosh" />
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+        <div class="row" style="gap:10px;justify-content:flex-end">
+          <button class="btn" id="m_cancel">Cancel</button>
+          <button class="btn good" id="m_save">Save</button>
+        </div>
+      `);
+
+      safeOn("m_cancel","click", closeModal);
+      safeOn("m_save","click", async ()=>{
+        try{
+          const name = ($("m_name").value||"").trim();
+          const email = ($("m_email").value||"").trim();
+          const role = $("m_role").value;
+          const uid = ($("m_uid").value||"").trim();
+
+          if (!name) return showErr("Shkruaj Name.");
+          // If uid not known, create doc id as email (safe), but better to use uid later.
+          const docId = uid || (email ? `email_${email}` : `name_${name.replace(/\s+/g,"_")}`);
+
+          await setDoc(doc(db,"users",docId), {
+            uid: uid || docId,
+            name,
+            email,
+            role,
+            active: true,
+            createdAt: serverTimestamp()
+          }, {merge:true});
+
+          closeModal();
+          await loadStaff();
+          showOk("User added to Firestore list.");
+        }catch(e){
+          showErr(`Add user error: ${e.message || e}`);
+        }
       });
+    });
 
-      $("notifMsg").value = "";
-      await loadNotifications();
-      showErr("✅ Notification sent.");
-    }catch(e){
-      showErr(e?.message || e);
+    // ============================================================
+    // 12) TOP BAR / STATUS
+    // ============================================================
+    function updateTopBar(){
+      $("topRole").textContent = currentRole || "guest";
+      $("topUser").textContent = currentProfile?.name || currentUser?.email || "—";
+      $("bUid").textContent = `UID: ${currentUser?.uid || "—"}`;
+      $("bEmail").textContent = `Email: ${currentUser?.email || "—"}`;
+      $("bRole").textContent = `Role: ${currentRole || "—"}`;
     }
-  });
 
-  // ==========================
-  // 14) LANGUAGE (LOCAL)
-  // ==========================
-  function setLang(v){
-    localStorage.setItem("mt_lang", v);
-    if($("langSel")) $("langSel").value = v;
-    if($("langSel2")) $("langSel2").value = v;
-  }
-  function getLang(){
-    return localStorage.getItem("mt_lang") || "de";
-  }
-  safeOn("langSel","change",(e)=> setLang(e.target.value));
-  safeOn("langSel2","change",(e)=> setLang(e.target.value));
+    function setStatus(msg){
+      $("statusText").textContent = msg;
+    }
 
-  // ==========================
-  // 15) AUTH STATE
-  // ==========================
-  onAuthStateChanged(auth, async (user)=>{
-    clearErr();
-    try{
-      setLang(getLang());
+    // ============================================================
+    // 13) AUTH STATE LISTENER
+    // ============================================================
+    onAuthStateChanged(auth, async (u)=>{
+      currentUser = u || null;
 
-      if(!user){
-        currentUser = null;
+      if (!u){
+        currentProfile = null;
         currentRole = "guest";
-        currentName = "—";
-        refreshTopBar();
-        setStatus("Not logged in");
+        updateTopBar();
+        setStatus("Not logged in.");
+        $("btnLogout").classList.add("hidden");
         showView("viewAuth");
         return;
       }
 
-      currentUser = user;
-      setStatus("Loading user…");
-      await ensureUserDoc(user);
-      refreshTopBar();
+      $("btnLogout").classList.remove("hidden");
+      setStatus("Logged in");
 
-      if(currentRole === "pending"){
-        setStatus("Logged in (pending)");
+      try{
+        currentProfile = await ensureUserProfile(u);
+        currentRole = currentProfile?.role || "staff";
+        updateTopBar();
         showView("viewDashboard");
-        showErr("⏳ Status: PENDING. Admin duhet me aprovu rolin.");
-      }else{
-        setStatus("Logged in");
+        showOk("✅ Logged in.");
+      }catch(e){
+        showErr(`Profile error: ${e.message || e}`);
         showView("viewDashboard");
       }
+    });
 
-      // preload
-      await loadNotifications();
+    // ============================================================
+    // 14) PAGE START
+    // ============================================================
+    showView("viewAuth");
 
-    }catch(e){
-      showErr(e?.message || e);
-      setStatus("Auth state error");
-    }
-  });
+    // ============================================================
+    // 15) GLOBAL ERROR DISPLAY
+    // ============================================================
+    window.addEventListener("error", (e)=>{
+      const msg = e?.message || "JS error";
+      showErr(`JS Error: ${msg}`);
+    });
+    window.addEventListener("unhandledrejection", (e)=>{
+      const msg = e?.reason?.message || String(e?.reason || "Promise error");
+      showErr(`Promise Error: ${msg}`);
+    });
 
-  // ==========================
-  // 16) DOM READY INIT
-  // ==========================
-  window.addEventListener("DOMContentLoaded", ()=>{
-    try{
-      // default view
-      showView("viewAuth");
-      $("langSel").value = getLang();
-      $("langSel2").value = getLang();
-      setStatus("Ready");
-    }catch(e){
-      showErr(e?.message || e);
-    }
-  });
-
-</script>
+  </script>
 </body>
 </html>
