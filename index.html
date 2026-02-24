@@ -689,7 +689,13 @@ MATTEOTEAM PRO 1.0 – PJESA 2/3
     // ==========================
     // 4) GLOBAL STATE
     // ==========================
-    const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
+
+document.getElementById("errBox").style.display = "block";
+document.getElementById("errBox").textContent = "✅ JS Loaded";
+
+let currentUser = null;
+let currentRole = "guest";
    // ✅ SHOW JS ERRORS ON SCREEN (very important)
 window.addEventListener("error", (e) => {
   const msg = e?.message || e?.error?.message || String(e);
@@ -703,8 +709,6 @@ window.addEventListener("unhandledrejection", (e) => {
   if (box) { box.style.display = "block"; box.textContent = "PROMISE ERROR: " + msg; }
   console.error(e);
 });
-    let currentUser = null;
-    let currentRole = "guest"; // guest | pending | staff | admin | superadmin
 
     // Weekly plan week pointer (Monday)
     let weekMonday = getMonday(new Date());
