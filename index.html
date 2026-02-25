@@ -208,7 +208,25 @@
   gap:8px;
   flex-wrap:wrap;
 }
+/* ===== EXTRA COMPACT MODE ===== */
 
+.week-scroll{ max-height: 40vh; }
+
+.week-grid th,
+.week-grid td{
+  padding:4px 6px;
+  font-size:11px;
+}
+
+.staff-cell{ min-width:180px; }
+
+.shift-cell{ min-width:105px; }
+
+/* Placeholder me i zbehte */
+.week-grid input::placeholder{
+  opacity:.35;
+  font-size:11px;
+}
 .weekly-toolbar .chip{
   padding: 6px 10px;
   border-radius: 999px;
@@ -225,7 +243,10 @@
   color: inherit;
   cursor: pointer;
 }
-
+.weekly-toolbar button{
+  padding: 7px 10px;
+  border-radius: 12px;
+}
 /* Scroll container: e ben tabelen “me hy brenda” jo me e shty faqen poshte */
 .week-scroll{
   max-height: 52vh;          /* ndrysho 45-65vh sipas qefit */
