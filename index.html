@@ -943,7 +943,7 @@
 
         // get staff list
         const usersSnap = await getDocs(query(collection(db,"users"), orderBy("name")));
-        const users = [];
+        let users = [];
         usersSnap.forEach(s=>{
           const u = s.data();
           if (u && u.active !== false) users.push(u);
@@ -957,7 +957,15 @@
 
         const tbody = $("weeklyBody");
 tbody.innerHTML = "";
-
+// ✅ REMOVE DUPLICATES (same uid/email appearing twice)
+const seenU = new Set();
+users = users.filter(u => {
+  const key = u?.uid || u?.id || u?.email || u?.name;
+  if (!key) return true;
+  if (seenU.has(key)) return false;
+  seenU.add(key);
+  return true;
+});
 // 1) sort sipas rubrikës + emrit
 users.sort((a,b)=>{
   const da = (a.department || a.dept || a.team || a.section || "Staff").toLowerCase();
