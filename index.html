@@ -930,8 +930,10 @@
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;");
     }
-
+   let weeklyLoading = false;
     async function loadWeeklyPlan(){
+      if (weeklyLoading) return;
+  weeklyLoading = true;
       try{
         const weekId = weekIdFromStart(weekStart);
         $("weekLabel").textContent = `${weekId} → ${ymd(addDays(getMonday(weekStart),6))}`;
