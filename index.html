@@ -1043,10 +1043,11 @@ for (const u of users){
         $("btnSaveWeek").disabled = !canEdit;
 
         showOk("Weekly Plan loaded.");
-      }catch(e){
-        showErr(`Weekly load error: ${e.message || e}`);
-      }
-    }
+       }catch(e){
+  showErr(`Weekly load error: ${e.message}`)
+} finally {
+  weeklyLoading = false;
+}
 
     async function saveWeeklyPlan(){
       if (!isAdmin()) return showErr("Nuk ke leje me ruajt (vetëm Admin/SuperAdmin).");
