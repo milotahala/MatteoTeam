@@ -178,6 +178,137 @@
       max-height: 85vh;
       overflow:auto;
     }
+    /* ===== Weekly Plan PRO UI (compact + full view) ===== */
+.weekly-card{
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  backdrop-filter: blur(10px);
+}
+
+.weekly-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+
+.weekly-top h2{
+  margin:0;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.weekly-toolbar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.weekly-toolbar .chip{
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  font-size: 12px;
+}
+
+.weekly-toolbar button{
+  padding: 7px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.07);
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Scroll container: e ben tabelen “me hy brenda” jo me e shty faqen poshte */
+.week-scroll{
+  max-height: 52vh;          /* ndrysho 45-65vh sipas qefit */
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.12);
+}
+
+/* Table */
+.week-grid{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 980px;          /* e detyron scroll horizontal ne mobile */
+}
+
+.week-grid th,
+.week-grid td{
+  border-right: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 6px 8px;
+  font-size: 12px;           /* me e vogel */
+  white-space: nowrap;
+}
+
+.week-grid thead th{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(10,20,26,.92);
+  backdrop-filter: blur(10px);
+  font-weight: 600;
+}
+
+/* Sticky first column (Staff) */
+.week-grid th:first-child,
+.week-grid td:first-child{
+  position: sticky;
+  left: 0;
+  z-index: 6;
+  background: rgba(10,20,26,.92);
+}
+
+/* Qeliza e staff */
+.staff-cell{
+  min-width: 220px;
+}
+.staff-name{
+  font-weight: 700;
+  font-size: 12px;
+}
+.staff-role{
+  opacity: .75;
+  font-size: 11px;
+}
+
+/* Qeliza e turnit (me input) */
+.shift-cell{
+  min-width: 120px;
+}
+
+.shift-input{
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.shift-input:focus{
+  border-color: rgba(120,200,255,.45);
+}
+
+/* Mobile: edhe me kompakt */
+@media (max-width: 520px){
+  .weekly-top h2{ font-size: 15px; }
+  .week-scroll{ max-height: 56vh; }
+  .week-grid{ min-width: 900px; }
+}
   </style>
 </head>
 
