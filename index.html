@@ -178,46 +178,104 @@
       max-height: 85vh;
       overflow:auto;
     }
-    /* ===== Weekly Plan PRO UI (compact + full view) ===== */
-.weekly-card{
-  padding: 12px;
-  border-radius: 16px;
+/* ==========================
+   WEEKLY PLAN (PRO TABLE UI)
+   ========================== */
+
+.tableOuter.week-scroll{
+  overflow:auto;
+  -webkit-overflow-scrolling: touch;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background: rgba(0,0,0,.12);
+  max-height: 62vh;            /* mos e “mbyt” ekranin */
+}
+
+/* tabela kompakte */
+table.weekTable.week-grid{
+  width: max-content;          /* lejon scroll horizontal */
+  min-width: 980px;            /* Mon–Sun të kenë hapësirë */
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+/* header */
+#weekTable thead th{
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: rgba(18,30,36,.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* qeliza */
+#weekTable td{
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 8px 10px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* rreshta më të pastër */
+#weekTable tbody tr:hover td{
+  background: rgba(255,255,255,.04);
+}
+
+/* kolona e emrit sticky majtas */
+#weekTable thead th:first-child,
+#weekTable td:first-child{
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: rgba(12,22,28,.92);
+  backdrop-filter: blur(8px);
+  border-right: 1px solid rgba(255,255,255,.10);
+  min-width: 220px;
+  max-width: 260px;
+}
+
+/* emri + roli më kompakt */
+#weekTable td:first-child{
+  font-weight: 600;
+}
+#weekTable td:first-child .muted{
+  font-weight: 400;
+  opacity: .8;
+  font-size: 12px;
+}
+
+/* inputet e orëve - kompakte */
+#weekTable input[type="text"],
+#weekTable input[type="time"],
+#weekTable input{
+  width: 150px;                /* mos i bëj gjigante */
+  max-width: 150px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.14);
   background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  backdrop-filter: blur(10px);
+  color: var(--text);
+  outline: none;
 }
 
-.weekly-top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:10px;
+#weekTable input:focus{
+  border-color: rgba(120,200,255,.55);
+  background: rgba(255,255,255,.08);
 }
 
-.weekly-top h2{
-  margin:0;
-  font-size: 16px;
-  line-height: 1.2;
+/* Mobile tuning */
+@media (max-width: 520px){
+  table.weekTable.week-grid{ min-width: 920px; font-size: 12px; }
+  #weekTable td:first-child, #weekTable thead th:first-child{
+    min-width: 190px; max-width: 220px;
+  }
+  #weekTable input{ width: 135px; max-width: 135px; }
 }
-
-.weekly-toolbar{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-}
-/* ===== EXTRA COMPACT MODE ===== */
-
-.week-scroll{ max-height: 40vh; }
-
-.week-grid th,
-.week-grid td{
-  padding:4px 6px;
-  font-size:11px;
-}
-
 .staff-cell{ min-width:180px; }
 
 .shift-cell{ min-width:105px; }
