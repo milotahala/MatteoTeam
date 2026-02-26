@@ -930,125 +930,103 @@
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;");
     }
-   let weeklyLoading = false;
-    async function loadWeeklyPlan(){
-      if (weeklyLoading) return;
+  let weeklyLoading = false;
+
+async function loadWeeklyPlan(){
+
+  if (weeklyLoading) return;
   weeklyLoading = true;
-      try{
-        const weekId = weekIdFromStart(weekStart);
-        $("weekLabel").textContent = `${weekId} → ${ymd(addDays(getMonday(weekStart),6))}`;
-        setWeekHeaderLabels(weekStart);
 
-        // permissions
-        const canEdit = isAdmin();
-        $("weeklyPermInfo").classList.toggle("hidden", canEdit);
+  try{
 
-        // get staff list
-        const usersSnap = await getDocs(query(collection(db,"users"), orderBy("name")));
-        let users = [];
-        usersSnap.forEach(s=>{
-          const u = s.data();
-          if (u && u.active !== false) users.push(u);
-        });
+    const weekId = weekIdFromStart(weekStart);
+    $("weekLabel").textContent = `${weekId}`;
+    setWeekHeaderLabels(weekStart);
 
-        // load shifts docs
-        const shiftsCol = collection(db, "weeklyPlans", weekId, "shifts");
-        const shiftsSnap = await getDocs(shiftsCol);
-        const byUid = {};
-        shiftsSnap.forEach(s=> byUid[s.id] = s.data());
+    // permissions
+    const canEdit = isAdmin();
+    $("weeklyPermInfo").classList.toggle("hidden", canEdit);
 
-        const tbody = $("weeklyBody");
-tbody.innerHTML = "";
-// ✅ REMOVE DUPLICATES (same uid/email appearing twice)
-const seenU = new Set();
-users = users.filter(u => {
-  const key = u?.uid || u?.id || u?.email || u?.name;
-  if (!key) return true;
-  if (seenU.has(key)) return false;
-  seenU.add(key);
-  return true;
-});
-// 1) sort sipas rubrikës + emrit
-users.sort((a,b)=>{
-  const da = (a.department || a.dept || a.team || a.section || "Staff").toLowerCase();
-  const db = (b.department || b.dept || b.team || b.section || "Staff").toLowerCase();
-  if (da < db) return -1;
-  if (da > db) return 1;
-  const na = (a.name || a.email || "").toLowerCase();
-  const nb = (b.name || b.email || "").toLowerCase();
-  return na.localeCompare(nb);
-});
+    // get staff list
+    const usersSnap = await getDocs(query(collection(db,"users")));
+    let users = [];
 
-// 2) rubrika kur ndryshon department
-let lastDept = null;
+    usersSnap.forEach(s=>{
+      const u = s.data();
+      if (u && u.active !== false) users.push(u);
+    });
 
-for (const u of users){
-  const dept = (u.department || u.dept || u.team || u.section || "Staff");
+    // load shifts docs
+    const shiftsCol = collection(db,"weeklyPlans");
+    const shiftsSnap = await getDocs(shiftsCol);
 
-  if (dept !== lastDept){
-    lastDept = dept;
-    const trS = document.createElement("tr");
-    trS.className = "weekSectionRow";
-    trS.innerHTML = `<td colspan="${1 + DAY_KEYS.length}">${escapeHtml(dept)}</td>`;
-    tbody.appendChild(trS);
+    const byUid = {};
+    shiftsSnap.forEach(s=>{
+      byUid[s.id] = s.data();
+    });
+
+    const tbody = $("weeklyBody");
+    tbody.innerHTML = "";
+
+    // remove duplicates
+    const seenU = new Set();
+    users = users.filter(u=>{
+      const key = u?.uid || u?.id || u?.email;
+      if(!key) return true;
+      if(seenU.has(key)) return false;
+      seenU.add(key);
+      return true;
+    });
+
+    // build rows
+    for(const u of users){
+
+      let rowHtml = `<tr>`;
+
+      rowHtml += `
+        <td class="staff-cell">
+          <div><strong>${escapeHtml(u.name || u.email || "")}</strong></div>
+          <div class="muted">Role: ${escapeHtml(u.role || "staff")}</div>
+        </td>
+      `;
+
+      const userDoc = byUid[u.uid] || {};
+      const days = userDoc.days || {};
+
+      for(const d of DAY_KEYS){
+
+        const val = days[d.key] || "";
+        const disabled = canEdit ? "" : "disabled";
+
+        rowHtml += `
+          <td class="shift-cell">
+            <input
+              id="w_${u.uid}_${d.key}"
+              type="text"
+              value="${escapeHtml(val)}"
+              placeholder="HH:MM-HH:MM ose Frei"
+              ${disabled}
+            />
+          </td>
+        `;
+      }
+
+      rowHtml += `</tr>`;
+
+      tbody.insertAdjacentHTML("beforeend", rowHtml);
+    }
+
+    $("btnSaveWeek").disabled = !canEdit;
+
+    showOk("Weekly Plan loaded.");
+
+  } catch(e){
+    showErr(`Weekly load error: ${e.message}`);
+  } finally {
+    weeklyLoading = false;
   }
 
-  const docData = byUid[u.uid] || { days:{} };
-  const days = docData.days || {};
-
-  const roleTxt = (u.role || "staff");
-  const nameTxt = u.name || u.email || u.uid;
-
-  let rowHtml = `<tr>
-    <td>
-      <div style="display:flex;flex-direction:column;gap:2px">
-        <div style="font-weight:900">${escapeHtml(nameTxt)}</div>
-        <div class="mini">Role: <span class="pill mono">${escapeHtml(roleTxt)}</span></div>
-      </div>
-    </td>`;
-
-  for (const d of DAY_KEYS){
-    rowHtml += `<td>${makeShiftCell(u.uid, d.key, days[d.key] || null)}</td>`;
-  }
-
-  rowHtml += `</tr>`;
-
-  tbody.insertAdjacentHTML("beforeend", rowHtml);
 }
-
-        for (const u of users){
-          const docData = byUid[u.uid] || {days:{}};
-          const days = docData.days || {};
-
-          const roleTxt = (u.role||"staff");
-          const nameTxt = u.name || u.email || u.uid;
-
-          let rowHtml = `<tr>
-            <td>
-              <div style="display:flex;flex-direction:column;gap:4px">
-                <div style="font-weight:900">${escapeHtml(nameTxt)}</div>
-                <div class="mini">Role: <span class="mono">${escapeHtml(roleTxt)}</span></div>
-              </div>
-            </td>`;
-
-          for (const d of DAY_KEYS){
-            rowHtml += `<td>${makeShiftCell(u.uid, d.key, days[d.key]||"", canEdit)}</td>`;
-          }
-
-          rowHtml += `</tr>`;
-          tbody.insertAdjacentHTML("beforeend", rowHtml);
-        }
-
-        // save button enabled only for admin
-        $("btnSaveWeek").disabled = !canEdit;
-
-        showOk("Weekly Plan loaded.");
-       }catch(e){
-  showErr(`Weekly load error: ${e.message}`)
-} finally {
-  weeklyLoading = false;
-}
-
     async function saveWeeklyPlan(){
       if (!isAdmin()) return showErr("Nuk ke leje me ruajt (vetëm Admin/SuperAdmin).");
 
