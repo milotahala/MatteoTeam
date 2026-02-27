@@ -443,15 +443,25 @@ table.weekTable.week-grid{
         <button id="navWeekly" class="navBtn">
           <div>
             Weekly Plan
-            <div class="sub">Planifikimi javor</div>
-          </div>
-          <div class="right">—</div>
-        </button>
+          <div id="viewWeekly" class="hidden">
 
-        <div style="height:10px"></div>
+  <div class="row sp" style="margin-bottom:15px;">
+    <h2 style="margin:0;">Dienstplan – MatteoTeam</h2>
 
-        <button id="navMyHours" class="navBtn">
-          <div>
+    <div class="row" style="gap:8px;">
+      <input type="date" id="weekDate" class="inp">
+      <button class="btn" onclick="changeWeek(-7)">◀</button>
+      <button class="btn" onclick="changeWeek(7)">▶</button>
+      <button class="btn primary" onclick="saveWeeklyPlan()">💾 Save</button>
+      <button class="btn" onclick="exportPDF()">🖨 PDF</button>
+    </div>
+  </div>
+
+  <div class="week-wrapper">
+    <div id="weeklyContainer"></div>
+  </div>
+
+</div>
             My Hours
             <div class="sub">Orët e mia (me pauzë)</div>
           </div>
