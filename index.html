@@ -738,6 +738,29 @@ body.weeklyMode .weekly-top{
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    // ==========================
+// LOGIN FIX
+// ==========================
+const btnLogin = document.getElementById("btnLogin");
+const emailEl  = document.getElementById("authEmail");
+const passEl   = document.getElementById("authPass");
+
+btnLogin.addEventListener("click", async () => {
+  try {
+    const email = emailEl.value.trim();
+    const pass  = passEl.value.trim();
+
+    if (!email || !pass) {
+      alert("Shkruaj email dhe password.");
+      return;
+    }
+
+    await signInWithEmailAndPassword(auth, email, pass);
+    console.log("Login OK");
+  } catch (e) {
+    alert("Login error: " + e.code);
+  }
+});
 // =========================
 // WEEKLY PLAN (PRO) - TABLE + FIRESTORE + PDF
 // =========================
