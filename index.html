@@ -817,9 +817,9 @@
   "Milot",
   "Ajris",
   "Qendrim",
-  "Edi"
-  "Hadis"
-  "Amin"
+  "Edi",
+  "Hadis",
+  "Amin",
 ];
     const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
     const DAY_LABELS = { mon:"Mon", tue:"Tue", wed:"Wed", thu:"Thu", fri:"Fri", sat:"Sat", sun:"Sun" };
@@ -870,25 +870,24 @@
       return doc(db, "weeklyPlans", wk);
     }
 
-    function getWeeklyPayloadFromUI(){
-      const data = {};
-      document.querySelectorAll('#weekBody textarea[data-day][data-shift]').forEach(t => {
-        const day = t.getAttribute("data-day");
-        const shift = t.getAttribute("data-shift");
-        if(!data[shift]) data[shift] = {};
-        data[shift][day] = t.value || "";
-      });
-      return data;
-    }
+ function getWeeklyPayloadFromUI(){
+  const data = {};
+  document.querySelectorAll('#weekBody textarea[data-name][data-day]').forEach(t => {
+    const name = t.getAttribute("data-name");
+    const day = t.getAttribute("data-day");
+    if(!data[name]) data[name] = {};
+    data[name][day] = t.value || "";
+  });
+  return data;
+}
 
-    function setWeeklyUIFromPayload(payload){
-      document.querySelectorAll('#weekBody textarea[data-day][data-shift]').forEach(t => {
-        const day = t.getAttribute("data-day");
-        const shift = t.getAttribute("data-shift");
-        t.value = payload?.[shift]?.[day] ?? "";
-      });
-    }
-
+   function setWeeklyUIFromPayload(payload){
+  document.querySelectorAll('#weekBody textarea[data-name][data-day]').forEach(t => {
+    const name = t.getAttribute("data-name");
+    const day = t.getAttribute("data-day");
+    t.value = payload?.[name]?.[day] ?? "";
+  });
+}
     async function loadWeekly(){
       if(!CURRENT_USER) return;
       try{
