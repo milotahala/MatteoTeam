@@ -1635,7 +1635,7 @@ function showView(viewId){
   const target = document.getElementById(viewId);
   if(target) target.classList.remove("hidden");
 }
-
+document.body.classList.toggle("weeklyMode", viewId === "viewWeekly");
 // NAV
 document.getElementById("navDashboard")?.addEventListener("click", ()=>{
   showView("viewDashboard");
