@@ -1580,7 +1580,30 @@ async function loadWeeklyPlan(){
       const msg = e?.reason?.message || String(e?.reason || "Promise error");
       showErr(`Promise Error: ${msg}`);
     });
+// ==========================
+// VIEW SWITCHER
+// ==========================
+function showView(viewId){
+  ["viewDashboard","viewWeekly","viewMyHours","viewStaff"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.add("hidden");
+  });
 
+  const target = document.getElementById(viewId);
+  if(target) target.classList.remove("hidden");
+}
+
+// NAV
+document.getElementById("navDashboard")?.addEventListener("click", ()=>{
+  showView("viewDashboard");
+});
+
+document.getElementById("navWeekly")?.addEventListener("click", ()=>{
+  showView("viewWeekly");
+  if(window.initWeeklyPlanPRO){
+    window.initWeeklyPlanPRO();
+  }
+});
   </script>
 </body>
 </html>
