@@ -361,7 +361,7 @@
               <table class="week" id="weekTable">
                 <thead>
                   <tr>
-                    <th style="width:160px">Shift</th>
+                    <th style="width:160px">Staff</th>
                     <th>Mon</th>
                     <th>Tue</th>
                     <th>Wed</th>
@@ -813,11 +813,14 @@
           // ==========================
     // 8) WEEKLY PLAN
     // ==========================
-    const SHIFTS = [
-      { key:"morning", label:"Morning" },
-      { key:"mid", label:"Mid" },
-      { key:"evening", label:"Evening" }
-    ];
+   const STAFF = [
+  "Milot",
+  "Ajris",
+  "Qendrim",
+  "Edi"
+  "Hadis"
+  "Amin"
+];
     const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
     const DAY_LABELS = { mon:"Mon", tue:"Tue", wed:"Wed", thu:"Thu", fri:"Fri", sat:"Sat", sun:"Sun" };
 
@@ -831,33 +834,32 @@
       const start = new Date(year,0,1);
       const diff = Math.floor((d - start) / 86400000);
       const week = Math.floor(diff/7) + 1;
-      return `${year}-W${String(week).padStart(2,"0")}`;
+      return `${year}-W${String(week).padStart(
+      function buildWeeklyTable(){
+       const body = $("weekBody");
+       body.innerHTML = "";
+
+     for(const name of STAFF){
+     const tr = document.createElement("tr");
+
+    const td0 = document.createElement("td");
+    td0.innerHTML = `<b>${name}</b>`;
+    tr.appendChild(td0);
+
+    for(const day of DAYS){
+      const td = document.createElement("td");
+      td.innerHTML = `
+        <textarea class="mini"
+          data-name="${name}"
+          data-day="${day}"
+          placeholder="17-23"></textarea>
+      `;
+      tr.appendChild(td);
     }
 
-    function buildWeeklyTable(){
-      const body = $("weekBody");
-      body.innerHTML = "";
-
-      for(const s of SHIFTS){
-        const tr = document.createElement("tr");
-
-        const td0 = document.createElement("td");
-        td0.innerHTML = `<div class="cellHead"><b>${s.label}</b><span class="pill mono">${s.key}</span></div>
-                         <div class="muted" style="font-size:12px">Write names + hours</div>`;
-        tr.appendChild(td0);
-
-        for(const day of DAYS){
-          const td = document.createElement("td");
-          td.innerHTML = `
-            <div class="cell">
-              <textarea class="mini" data-day="${day}" data-shift="${s.key}" placeholder="e.g. Rina 17-23"></textarea>
-            </div>
-          `;
-          tr.appendChild(td);
-        }
-        body.appendChild(tr);
-      }
-    }
+    body.appendChild(tr);
+  }
+}
 
     buildWeeklyTable();
 
