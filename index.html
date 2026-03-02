@@ -388,6 +388,49 @@ table.weekTable.week-grid{
   .week-scroll{ max-height: 56vh; }
   .week-grid{ min-width: 900px; }
 }
+    /* ==========================
+   WEEKLY FULLSCREEN MODE
+   ========================== */
+body.weeklyMode .grid{
+  grid-template-columns: 1fr !important; /* heq kolonën e majtë */
+}
+
+/* fsheh krejt kartat e majta (Navigation card) kur je në Weekly */
+body.weeklyMode .grid > .card:first-child{
+  display:none !important;
+}
+
+/* viewWeekly të marrë krejt hapësirën */
+body.weeklyMode #viewWeekly{
+  display:block;
+  width:100%;
+}
+
+/* tabela me scroll horizontal (si Excel) */
+body.weeklyMode .week-scroll{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* detyro gjerësi që të mos ngjeshen kolonat */
+body.weeklyMode .weekTable{
+  min-width: 980px;
+}
+
+/* input-at pak më të qartë */
+body.weeklyMode .weekTable input{
+  min-width: 120px;
+  width: 100%;
+}
+
+/* pak më shumë hapësirë sipër */
+body.weeklyMode .weekly-top{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+}
   </style>
 </head>
 
