@@ -1141,11 +1141,12 @@ window.initWeeklyPlanPRO = initWeeklyPlanPRO;
       await signOut(auth);
     }
 
-    safeOn("btnLogin","click", doLogin);
-    safeOn("btnRegister","click", doRegister);
-    safeOn("btnReset","click", doReset);
-    safeOn("btnLogout","click", doLogout);
-
+    window.addEventListener("DOMContentLoaded", () => {
+  safeOn("btnLogin","click", doLogin);
+  safeOn("btnRegister","click", doRegister);
+  safeOn("btnReset","click", doReset);
+  safeOn("btnLogout","click", doLogout);
+});
     // ============================================================
     // 8) NAV
     // ============================================================
