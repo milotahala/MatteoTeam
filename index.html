@@ -1137,7 +1137,23 @@ window.addEventListener("DOMContentLoaded", () => {
     // 10) DEFAULT UI STATE
     // ==========================
     setSignedOutUI();
+// ===== FORCE BUTTON ACTIONS (PUT THIS JUST BEFORE </script>) =====
+window.doLogin = async () => {
+  alert("✅ FORCE Login clicked");
 
+  const email = (document.getElementById("email")?.value || "").trim();
+  const pass  = (document.getElementById("pass")?.value || "");
+
+  if (!email || !pass) return alert("Shkruaj Email + Password");
+
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    alert("✅ LOGIN OK: " + cred.user.uid);
+  } catch (err) {
+    alert("❌ " + (err.code || err.message));
+    console.error(err);
+  }
+};
   </script>
 </body>
 </html>
