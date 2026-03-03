@@ -534,7 +534,34 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+// ✅ Hook Login buttons AFTER DOM is ready
+window.addEventListener("DOMContentLoaded", () => {
+  const elEmail = document.getElementById("email");
+  const elPass  = document.getElementById("pass");
+  const btnLogin = document.getElementById("btnLogin");
 
+  console.log("DOM READY", { elEmail: !!elEmail, elPass: !!elPass, btnLogin: !!btnLogin });
+
+  if (!btnLogin || !elEmail || !elPass) {
+    showErr("Login elements not found (IDs must be: email, pass, btnLogin)");
+    return;
+  }
+
+  btnLogin.addEventListener("click", async () => {
+    const email = elEmail.value.trim();
+    const pass  = elPass.value;
+
+    console.log("CLICK LOGIN", email);
+
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      console.log("LOGIN OK");
+    } catch (err) {
+      console.log("LOGIN ERROR", err);
+      showErr(err.message);
+    }
+  });
+});
     // ==========================
     // 4) UI HELPERS
     // ==========================
