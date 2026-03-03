@@ -556,10 +556,10 @@ window.addEventListener("DOMContentLoaded", () => {
     try {
       await signInWithEmailAndPassword(auth, email, pass);
       console.log("LOGIN OK");
-    } catch (err) {
-      console.log("LOGIN ERROR", err);
-      showErr(err.message);
-    }
+    catch (err) {
+  alert(err.code + " — " + err.message);
+  showErr(err.message);
+}
   });
 });
     // ==========================
