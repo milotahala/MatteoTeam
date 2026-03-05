@@ -380,16 +380,25 @@ async function loadStaff(){
   for(const s of staffArr){
 
     // staff list card
-    const row = document.createElement("div");
-    row.style = "margin:6px 0;padding:10px;background:#1b3944;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;";
-    row.innerHTML = `
-      <div style="font-weight:700">${s.name}</div>
-      <button data-delstaff="${s.id}" style="background:#ff6b6b;color:white;border:none;padding:7px 10px;border-radius:6px;cursor:pointer">
-        Delete
-      </button>
-    `;
-    $("staffList").appendChild(row);
+   const row = document.createElement("div");
+row.style = "margin:6px 0;padding:10px;background:#1b3944;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;";
 
+const nameSpan = document.createElement("div");
+nameSpan.style.fontWeight = "700";
+nameSpan.textContent = s.name;
+
+const delBtn = document.createElement("button");
+delBtn.textContent = "Delete";
+delBtn.style = "background:red;color:white;border:none;padding:6px 10px;border-radius:6px";
+delBtn.onclick = async () => {
+  await deleteDoc(doc(db,"staff",s.id));
+  await loadStaff();
+};
+
+row.appendChild(nameSpan);
+row.appendChild(delBtn);
+
+$("staffList").appendChild(row);
     // weekly table row
     const tr = document.createElement("tr");
     tr.innerHTML = `
