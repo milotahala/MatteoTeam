@@ -272,6 +272,8 @@ $("btnLogin").onclick = async ()=>{
   const email = $("email").value.trim();
   const pass  = $("pass").value;
 
+alert("Trying login...");
+
   try{
     await signInWithEmailAndPassword(auth,email,pass);
     alert("Login OK ✅");
