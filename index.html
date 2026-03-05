@@ -701,6 +701,33 @@ onAuthStateChanged(auth, async (user)=>{
    15) FIRST LOAD
 ========================== */
 showLoggedOutUI();
+// =========================
+// SAVE WEEKLY PLAN
+// =========================
+$("btnSaveWeekly").onclick = async ()=>{
+
+  const days = ["mon","tue","wed","thu","fri","sat","sun"];
+
+  const snap = await getDocs(collection(db,"staff"));
+
+  snap.forEach(async (docSnap)=>{
+
+    const staffId = docSnap.id;
+
+    const data = {};
+
+    days.forEach(d=>{
+      const el = document.getElementById(`w_${staffId}_${d}`);
+      data[d] = el ? el.value : "";
+    });
+
+    await setDoc(doc(db,"weekly",staffId),data);
+
+  });
+
+  alert("Weekly Plan saved");
+
+};
 
 // ✅ END SCRIPT
 </script>
