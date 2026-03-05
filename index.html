@@ -13,208 +13,154 @@
       --line:rgba(255,255,255,.12);
       --text:#e9f2f5;
       --muted:rgba(233,242,245,.7);
-      --good:#35d07f;
-      --bad:#ff5c5c;
-      --warn:#ffcc66;
-      --btn:#2cc5ff;
-      --btn2:#7c5cff;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --r:16px;
-      --r2:22px;
-      --pad:16px;
-      --pad2:22px;
-      --max:1100px;
+      --good:#49d17d; --bad:#ff5a6b; --warn:#ffcc66;
+      --pri:#6ee7ff;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --r:18px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
     }
-
     *{box-sizing:border-box}
     body{
-      margin:0; font-family:var(--sans);
+      margin:0;
+      font-family:var(--sans);
       color:var(--text);
-      background: radial-gradient(1000px 700px at 15% 10%, rgba(44,197,255,.25), transparent 60%),
-                  radial-gradient(900px 650px at 85% 20%, rgba(124,92,255,.25), transparent 60%),
-                  linear-gradient(140deg, var(--bg1), var(--bg2));
+      background: radial-gradient(1200px 800px at 20% 10%, #1f4450 0%, transparent 50%),
+                  radial-gradient(900px 700px at 80% 30%, #213a52 0%, transparent 55%),
+                  linear-gradient(160deg,var(--bg1),var(--bg2));
       min-height:100vh;
     }
     a{color:inherit}
-    .wrap{max-width:var(--max); margin:0 auto; padding:22px 16px 40px;}
+    .wrap{max-width:1200px;margin:0 auto;padding:18px}
     .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; padding:14px 16px; border:1px solid var(--line);
-      background:linear-gradient(180deg, var(--glass), transparent);
-      border-radius:var(--r2); box-shadow:var(--shadow);
-      position:sticky; top:10px; z-index:30; backdrop-filter: blur(10px);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);
+      background:linear-gradient(180deg,var(--glass),transparent);
+      box-shadow:var(--shadow);
     }
-    .brand{display:flex; align-items:center; gap:10px}
+    .brand{display:flex;gap:12px;align-items:center}
     .logo{
-      width:40px; height:40px; border-radius:12px;
-      background:linear-gradient(135deg, rgba(44,197,255,.9), rgba(124,92,255,.9));
-      box-shadow:0 10px 20px rgba(0,0,0,.25);
-    }
-    .brand h1{font-size:16px; margin:0; line-height:1.1}
-    .brand small{display:block; color:var(--muted); font-size:12px; margin-top:2px}
-    .chip{
-      padding:6px 10px; border-radius:999px; border:1px solid var(--line);
-      background:rgba(0,0,0,.15); font-size:12px; color:var(--muted);
-      display:flex; gap:8px; align-items:center;
-    }
-    .dot{width:8px; height:8px; border-radius:999px; background:var(--warn)}
-    .dot.good{background:var(--good)}
-    .dot.bad{background:var(--bad)}
-    .actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
-    button, input, select, textarea{
-      font:inherit; color:inherit;
-    }
-    .btn{
+      width:42px;height:42px;border-radius:14px;
+      background:linear-gradient(135deg,#2a7f92,#1d2b55);
       border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      padding:10px 12px; border-radius:12px;
-      cursor:pointer; transition:.15s transform, .15s opacity;
-    }
-    .btn:hover{transform:translateY(-1px)}
-    .btn.primary{
-      border:none;
-      background:linear-gradient(135deg, rgba(44,197,255,.95), rgba(124,92,255,.95));
       box-shadow:0 10px 20px rgba(0,0,0,.25);
     }
-    .btn.danger{border-color:rgba(255,92,92,.35); background:rgba(255,92,92,.12)}
-    .btn.ghost{background:transparent}
-    .btn.small{padding:7px 10px; border-radius:10px; font-size:13px}
-
+    .brand h1{margin:0;font-size:18px;letter-spacing:.3px}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .chip{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid var(--line);
+      background:var(--glass2);
+      font-size:13px;
+    }
+    .dot{width:10px;height:10px;border-radius:999px;background:var(--bad);box-shadow:0 0 0 3px rgba(255,90,107,.15)}
+    .dot.good{background:var(--good);box-shadow:0 0 0 3px rgba(73,209,125,.15)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .btn{
+      border:1px solid var(--line); background:var(--glass2);
+      color:var(--text);
+      padding:10px 12px;border-radius:14px;
+      cursor:pointer; font-weight:600;
+      transition:transform .05s ease, background .15s ease, border .15s ease;
+      user-select:none;
+    }
+    .btn:hover{background:rgba(255,255,255,.10)}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{border-color:rgba(110,231,255,.35); background:rgba(110,231,255,.12)}
+    .btn.danger{border-color:rgba(255,90,107,.35); background:rgba(255,90,107,.12)}
+    .btn.small{padding:8px 10px;border-radius:12px;font-size:13px}
+    .hidden{display:none !important}
     .grid{
-      display:grid; grid-template-columns: 1fr; gap:14px; margin-top:14px;
+      display:grid; gap:14px; margin-top:14px;
+      grid-template-columns: 360px 1fr;
     }
-    @media(min-width: 980px){
-      .grid{grid-template-columns: 340px 1fr;}
+    @media (max-width: 980px){
+      .grid{grid-template-columns: 1fr}
     }
-
     .card{
       border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
-      border-radius:var(--r2);
-      box-shadow: var(--shadow);
+      background:linear-gradient(180deg,var(--glass),transparent);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
       overflow:hidden;
     }
     .card .hd{
-      padding:14px 16px; border-bottom:1px solid var(--line);
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      background:rgba(0,0,0,.12);
+      padding:12px 14px;border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
     }
-    .card .hd h2{margin:0; font-size:14px}
-    .card .bd{padding:16px}
-
-    .muted{color:var(--muted)}
-    .hidden{display:none !important}
-
-    .errBox{
-      margin-top:12px;
-      border:1px solid rgba(255,92,92,.35);
-      background:rgba(255,92,92,.12);
-      padding:10px 12px;
-      border-radius:14px;
-      font-family:var(--mono);
-      white-space:pre-wrap;
+    .card .bd{padding:14px}
+    .pill{
+      font-size:12px;padding:6px 10px;border-radius:999px;
+      border:1px solid var(--line);background:var(--glass2)
     }
-    .okBox{
-      margin-top:12px;
-      border:1px solid rgba(53,208,127,.35);
-      background:rgba(53,208,127,.10);
-      padding:10px 12px;
-      border-radius:14px;
-      font-family:var(--mono);
-      white-space:pre-wrap;
-    }
-
-    .field{display:flex; flex-direction:column; gap:6px; margin:10px 0}
-    .field label{font-size:12px; color:var(--muted)}
-    .input, textarea, select{
+    .sep{height:1px;background:var(--line);margin:12px 0}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+    label{font-size:13px;color:var(--muted)}
+    .input, .select, textarea{
       width:100%;
+      padding:10px 12px;border-radius:14px;
       border:1px solid var(--line);
       background:rgba(0,0,0,.18);
-      padding:11px 12px;
-      border-radius:14px;
+      color:var(--text);
       outline:none;
     }
-    textarea{min-height:90px; resize:vertical}
-
-    .nav{
-      display:flex; flex-direction:column; gap:8px;
+    textarea{min-height:78px;resize:vertical}
+    .okBox,.errBox{
+      margin-top:12px;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.22);
+      font-size:13px;
     }
-    .nav .btn{width:100%; text-align:left}
-    .nav .btn.active{
-      border:none;
-      background:linear-gradient(135deg, rgba(44,197,255,.35), rgba(124,92,255,.25));
+    .okBox{border-color:rgba(73,209,125,.35)}
+    .errBox{border-color:rgba(255,90,107,.35)}
+    .menu{
+      display:flex;flex-direction:column;gap:8px;
     }
-
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .row.sp{justify-content:space-between}
-    .pill{
-      padding:6px 10px; border-radius:999px;
-      border:1px solid var(--line); background:rgba(0,0,0,.14);
-      font-size:12px; color:var(--muted);
-    }
-    .mono{font-family:var(--mono)}
-    .sep{height:1px; background:var(--line); margin:14px 0}
+    .menu .btn{justify-content:flex-start;text-align:left}
+    .viewTitle{margin:0;font-size:16px}
+    .sub{font-size:13px;color:var(--muted);margin-top:4px}
 
     /* Weekly table */
-    .weekWrap{overflow:auto; border:1px solid var(--line); border-radius:16px; background:rgba(0,0,0,.10)}
-    table.week{
-      width:100%; border-collapse:collapse; min-width:900px;
-      font-size:13px;
-    }
-    table.week th, table.week td{
-      border-bottom:1px solid rgba(255,255,255,.08);
-      border-right:1px solid rgba(255,255,255,.08);
-      padding:10px;
-      vertical-align:top;
-    }
-    table.week th{
-      position:sticky; top:0; z-index:5;
-      background:rgba(0,0,0,.35);
-      text-align:left;
-      font-size:12px; color:var(--muted);
-    }
-    table.week td:last-child, table.week th:last-child{border-right:none}
-    .cellHead{display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:6px}
-    .cellHead b{font-size:12px}
+    .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:16px}
+    table{border-collapse:separate;border-spacing:0;width:100%;min-width:860px}
+    th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:10px;vertical-align:top}
+    th{position:sticky;top:0;background:rgba(10,20,28,.85);backdrop-filter: blur(6px);z-index:2}
+    th:first-child{left:0;z-index:3}
+    td:first-child{position:sticky;left:0;background:rgba(10,20,28,.75);backdrop-filter: blur(6px);z-index:1}
+    tr:last-child td{border-bottom:none}
+    th:last-child, td:last-child{border-right:none}
+    .nameCell{min-width:210px}
     .cell{
-      display:flex; flex-direction:column; gap:8px;
+      min-height:54px;border-radius:12px;padding:8px;
+      background:rgba(255,255,255,.05);
+      border:1px dashed rgba(255,255,255,.14);
+      white-space:pre-wrap;
+      font-family:var(--mono);
+      font-size:12.5px;
+      outline:none;
     }
-    .mini{
-      width:100%; padding:9px 10px; border-radius:12px;
-      border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.18);
-      font-size:13px;
+    .toolbar{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+      margin-bottom:10px
     }
+    .toolbar .left, .toolbar .right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .kpi{font-size:12px;color:var(--muted)}
 
-    /* Fullscreen weekly */
-    .fullscreen{
-      position:fixed !important;
-      inset:10px !important;
-      z-index:9999 !important;
-      max-width:none !important;
-      margin:0 !important;
-    }
-
-    /* Inventory list */
-    .list{
-      display:flex; flex-direction:column; gap:10px;
-    }
+    /* Lists */
+    .list{display:flex;flex-direction:column;gap:8px}
     .item{
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:16px;
-      background:rgba(0,0,0,.14);
-      padding:12px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
+      padding:10px 12px;border:1px solid var(--line);border-radius:16px;
+      background:rgba(255,255,255,.05);
+      display:flex;gap:10px;align-items:flex-start;justify-content:space-between;
     }
-    @media(min-width: 720px){
-      .item{grid-template-columns: 1.2fr 1fr}
-    }
-    .kv{display:grid; grid-template-columns: 120px 1fr; gap:8px; font-size:13px}
-    .kv div:nth-child(odd){color:var(--muted)}
-    .item .tools{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .item .meta{display:flex;flex-direction:column;gap:3px}
+    .item .meta b{font-size:14px}
+    .item .meta small{color:var(--muted)}
+    .item .ops{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .tag{font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04)}
   </style>
 </head>
 
@@ -225,7 +171,7 @@
         <div class="logo"></div>
         <div>
           <h1>MatteoTeam PRO</h1>
-          <small class="muted">Login • Roles • Weekly Plan • Inventory</small>
+          <small class="muted" id="subTitle">Login • Roles • Weekly Plan • Inventory</small>
         </div>
       </div>
 
@@ -235,15 +181,19 @@
           <span id="statusText">Not signed in</span>
         </div>
         <div class="chip">
-          <span class="muted">Role:</span>
+          <span class="muted" id="roleLbl">Role:</span>
           <b id="roleText">—</b>
         </div>
-      </div>
 
-      <div class="actions">
-        <button class="btn small ghost" id="btnOpenLogin">Login</button>
-        <button class="btn small ghost hidden" id="btnOpenApp">App</button>
-        <button class="btn small danger hidden" id="btnLogout">Logout</button>
+        <div class="actions">
+          <button class="btn small" id="langDE">DE</button>
+          <button class="btn small" id="langEN">EN</button>
+          <button class="btn small" id="langSQ">SQ</button>
+
+          <button class="btn small ghost" id="btnOpenLogin">Login</button>
+          <button class="btn small ghost hidden" id="btnOpenPanel">Panel</button>
+          <button class="btn small danger hidden" id="btnLogout">Logout</button>
+        </div>
       </div>
     </div>
 
@@ -251,239 +201,259 @@
     <div id="okBox" class="okBox hidden"></div>
 
     <div class="grid">
-
       <!-- LEFT: MENU / AUTH -->
       <div class="card" id="leftCard">
         <div class="hd">
-          <h2>Menu</h2>
+          <h2 class="viewTitle" id="menuTitle">Menu</h2>
           <span class="pill" id="userPill">Guest</span>
         </div>
-        <div class="bd">
 
+        <div class="bd">
+          <!-- AUTH BOX -->
           <div id="authBox">
             <div class="field">
-              <label>Email</label>
-              <input class="input" id="email" type="email" placeholder="name@matteo.de" autocomplete="email" />
+              <label id="lblEmail">Email</label>
+              <input class="input" id="email" type="email" placeholder="name@matteo.de" autocomplete="username" />
             </div>
+
             <div class="field">
-              <label>Password</label>
+              <label id="lblPass">Password</label>
               <input class="input" id="pass" type="password" placeholder="••••••••" autocomplete="current-password" />
             </div>
 
-      <div class="row">
-  <button type="button" class="btn primary" id="btnLogin" onclick="doLogin()">Login</button>
-  <button class="btn" id="btnRegister">Register</button>
-  <button class="btn" id="btnReset">Reset</button>
-</div>
-            <div class="sep"></div>
-
-            <div class="muted" style="font-size:12px; line-height:1.4">
-              Register krijon user te ri. Për role admin/staff vendoset automatikisht:
-              <b>SuperAdmin</b> vetëm nëse UID përputhet me tënden.
-            </div>
-          </div>
-
-          <div id="navBox" class="hidden">
-            <div class="nav">
-              <button class="btn active" data-view="dashboard">Dashboard</button>
-              <button class="btn" data-view="weekly">Weekly Plan</button>
-              <button class="btn" data-view="inventory">Inventory</button>
-              <button class="btn hidden" id="btnAdminOnly" data-view="admin">Admin Panel</button>
+            <div class="row">
+              <button type="button" class="btn primary" id="btnLogin">Login</button>
+              <button type="button" class="btn" id="btnRegister">Register</button>
+              <button type="button" class="btn" id="btnReset">Reset</button>
             </div>
 
             <div class="sep"></div>
-
-            <div class="muted" style="font-size:12px; line-height:1.4">
-              <div><b>Quick:</b> Weekly plan ruhet në Firestore.</div>
-              <div><b>Inventory:</b> shto artikuj, sasi, shitur, mbetur, datë.</div>
-            </div>
+            <small class="muted" id="authHint">
+              SuperAdmin/Admin/Staff — pas login hapet paneli.
+            </small>
           </div>
 
+          <!-- MENU BUTTONS -->
+          <div id="menuBox" class="hidden">
+            <div class="menu">
+              <button class="btn primary" id="goWeekly">📅 Weekly Plan</button>
+              <button class="btn" id="goInventory">📦 Inventory</button>
+              <button class="btn" id="goStaff">👥 Staff</button>
+              <button class="btn" id="goSettings">⚙️ Settings</button>
+            </div>
+
+            <div class="sep"></div>
+            <small class="muted" id="menuHint">
+              Weekly plan: emrat majtas, ditët sipër. Ruaj me Save.
+            </small>
+          </div>
         </div>
       </div>
 
-      <!-- RIGHT: CONTENT -->
+      <!-- RIGHT: VIEWS -->
       <div class="card" id="rightCard">
         <div class="hd">
-          <h2 id="viewTitle">Login</h2>
+          <div>
+            <h2 class="viewTitle" id="viewTitle">Welcome</h2>
+            <div class="sub" id="viewSub">Login first.</div>
+          </div>
           <div class="row">
-            <button class="btn small hidden" id="btnWeeklyFullscreen">Weekly Fullscreen</button>
-            <button class="btn small hidden" id="btnSaveWeekly">Save Weekly</button>
-            <button class="btn small hidden" id="btnReloadWeekly">Reload Weekly</button>
+            <span class="kpi" id="kpiText"></span>
           </div>
         </div>
 
-        <div class="bd">
-
-          <!-- DASHBOARD -->
-          <div id="viewDashboard" class="hidden">
-            <div class="row sp">
-              <div>
-                <div class="muted">Welcome</div>
-                <h3 style="margin:6px 0 0 0" id="helloName">—</h3>
-                <div class="muted" style="margin-top:6px">UID: <span class="mono" id="uidText">—</span></div>
-              </div>
-              <div class="pill" id="projectPill">matteoteam</div>
-            </div>
-
-            <div class="sep"></div>
-
-            <div class="row" style="gap:12px">
-              <div class="card" style="flex:1; min-width:220px">
-                <div class="hd"><h2>Weekly Plan</h2></div>
-                <div class="bd muted">Hap Weekly Plan në menu dhe ruaje me “Save Weekly”.</div>
-              </div>
-              <div class="card" style="flex:1; min-width:220px">
-                <div class="hd"><h2>Inventory</h2></div>
-                <div class="bd muted">Shto artikuj dhe përditëso “sold/left”.</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- WEEKLY -->
+        <div class="bd" id="viewHost">
+          <!-- VIEWS will continue in Part 2 -->
+                    <!-- VIEW: WEEKLY -->
           <div id="viewWeekly" class="hidden">
-            <div class="row sp">
-              <div class="muted">
-                Java: <b id="weekLabel">—</b>
+            <div class="toolbar">
+              <div class="left">
+                <button class="btn small" id="weekPrev">←</button>
+                <button class="btn small" id="weekToday">This Week</button>
+                <button class="btn small" id="weekNext">→</button>
+                <span class="chip">
+                  <span class="muted" id="weekLbl">Week:</span>
+                  <b id="weekText">—</b>
+                </span>
               </div>
-              <div class="row">
-                <select class="input" id="weekSelect" style="width:auto">
-                  <option value="current">This week</option>
-                  <option value="next">Next week</option>
-                </select>
+              <div class="right">
+                <button class="btn small" id="weekLoad">Load</button>
+                <button class="btn small primary" id="weekSave">Save</button>
+                <button class="btn small danger" id="weekClear">Clear</button>
               </div>
             </div>
 
-            <div class="sep"></div>
-
-            <div class="weekWrap" id="weekWrap">
-              <table class="week" id="weekTable">
+            <div class="tableWrap">
+              <table id="weeklyTable">
                 <thead>
                   <tr>
-                    <th style="width:160px">Staff</th>
-                    <th>Mon</th>
-                    <th>Tue</th>
-                    <th>Wed</th>
-                    <th>Thu</th>
-                    <th>Fri</th>
-                    <th>Sat</th>
-                    <th>Sun</th>
+                    <th class="nameCell" id="thName">Staff</th>
+                    <th id="thMon">Mon</th>
+                    <th id="thTue">Tue</th>
+                    <th id="thWed">Wed</th>
+                    <th id="thThu">Thu</th>
+                    <th id="thFri">Fri</th>
+                    <th id="thSat">Sat</th>
+                    <th id="thSun">Sun</th>
                   </tr>
                 </thead>
-                <tbody id="weekBody">
-                  <!-- injected by JS -->
+                <tbody id="weeklyBody">
+                  <!-- rows generated -->
                 </tbody>
               </table>
             </div>
 
             <div class="sep"></div>
-
-            <div class="muted" style="font-size:12px; line-height:1.4">
-              Tip: Shkruaj emra + orar në çdo cell. P.sh. “Rina 17-23, Milot 18-24”.
-            </div>
+            <small class="muted" id="weeklyHint">
+              Kliko në qeli dhe shkruaj (p.sh. "10-18 Küche"). Pastaj Save.
+            </small>
           </div>
 
-          <!-- INVENTORY -->
+          <!-- VIEW: INVENTORY -->
           <div id="viewInventory" class="hidden">
-            <div class="row sp">
-              <div>
-                <div class="muted">Inventory Items</div>
-                <div class="muted" style="font-size:12px; margin-top:6px">
-                  Ruhet në Firestore: <span class="mono">inventory</span>
-                </div>
+            <div class="toolbar">
+              <div class="left">
+                <span class="chip"><b>Inventory</b></span>
+                <span class="kpi" id="invKpi"></span>
+              </div>
+              <div class="right">
+                <button class="btn small primary" id="invAddOpen">+ Add Item</button>
+                <button class="btn small" id="invReload">Reload</button>
               </div>
             </div>
 
-            <div class="sep"></div>
-
-            <div class="card" style="margin-bottom:12px">
-              <div class="hd"><h2>Add / Update Item</h2></div>
+            <div id="invForm" class="card" style="border-radius:16px;margin-bottom:10px" class="hidden">
               <div class="bd">
-                <div class="row" style="gap:12px; align-items:flex-end">
-                  <div style="flex:1; min-width:220px" class="field">
-                    <label>Name</label>
+                <div class="row" style="gap:12px">
+                  <div style="flex:1;min-width:220px" class="field">
+                    <label id="invLblName">Name</label>
                     <input class="input" id="invName" placeholder="Mehl (25kg)" />
                   </div>
                   <div style="width:140px" class="field">
-                    <label>Qty</label>
+                    <label id="invLblQty">Qty</label>
                     <input class="input" id="invQty" type="number" step="0.01" placeholder="25" />
                   </div>
                   <div style="width:140px" class="field">
-                    <label>Sold</label>
-                    <input class="input" id="invSold" type="number" step="0.01" placeholder="0" />
+                    <label id="invLblUnit">Unit</label>
+                    <select class="select" id="invUnit">
+                      <option>kg</option><option>g</option><option>l</option><option>ml</option><option>pcs</option>
+                    </select>
                   </div>
-                  <div style="width:140px" class="field">
-                    <label>Left</label>
-                    <input class="input" id="invLeft" type="number" step="0.01" placeholder="25" />
-                  </div>
-                  <div style="width:190px" class="field">
-                    <label>Date</label>
-                    <input class="input" id="invDate" type="date" />
+                  <div style="width:160px" class="field">
+                    <label id="invLblExp">Expiry</label>
+                    <input class="input" id="invExp" type="date" />
                   </div>
                 </div>
 
-                <div class="row" style="margin-top:10px">
-                  <button class="btn primary" id="btnInvSave">Save Item</button>
-                  <button class="btn" id="btnInvClear">Clear</button>
+                <div class="row" style="gap:12px">
+                  <div style="width:160px" class="field">
+                    <label id="invLblMin">Min</label>
+                    <input class="input" id="invMin" type="number" step="0.01" placeholder="5" />
+                  </div>
+                  <div style="flex:1;min-width:240px" class="field">
+                    <label id="invLblNote">Note</label>
+                    <input class="input" id="invNote" placeholder="Supplier / Location / info" />
+                  </div>
                 </div>
 
-                <div class="muted" style="font-size:12px; margin-top:10px">
-                  Kliko “Edit” në listë për me e ndryshu një item.
+                <div class="row">
+                  <button class="btn small primary" id="invSaveBtn">Save</button>
+                  <button class="btn small" id="invCancelBtn">Cancel</button>
+                  <span class="muted" id="invEditHint"></span>
                 </div>
               </div>
             </div>
 
-            <div class="list" id="invList">
-              <!-- items injected -->
-            </div>
+            <div class="list" id="invList"></div>
           </div>
 
-          <!-- ADMIN -->
-          <div id="viewAdmin" class="hidden">
-            <div class="row sp">
-              <div>
-                <div class="muted">Admin Panel</div>
-                <h3 style="margin:6px 0 0 0">Users / Roles</h3>
+          <!-- VIEW: STAFF -->
+          <div id="viewStaff" class="hidden">
+            <div class="toolbar">
+              <div class="left">
+                <span class="chip"><b id="staffTitle">Staff</b></span>
+                <span class="kpi" id="staffKpi"></span>
               </div>
-              <div class="pill">Only SuperAdmin/Admin</div>
+              <div class="right">
+                <button class="btn small primary" id="staffAddOpen">+ Add Staff</button>
+                <button class="btn small" id="staffReload">Reload</button>
+              </div>
             </div>
+
+            <div id="staffForm" class="card" style="border-radius:16px;margin-bottom:10px" class="hidden">
+              <div class="bd">
+                <div class="row" style="gap:12px">
+                  <div style="flex:1;min-width:220px" class="field">
+                    <label id="staffLblName">Name</label>
+                    <input class="input" id="staffName" placeholder="Rina Lulaj" />
+                  </div>
+                  <div style="width:220px" class="field">
+                    <label id="staffLblRole">Role</label>
+                    <select class="select" id="staffRole">
+                      <option value="staff">staff</option>
+                      <option value="admin">admin</option>
+                    </select>
+                  </div>
+                  <div style="width:220px" class="field">
+                    <label id="staffLblArea">Area</label>
+                    <select class="select" id="staffArea">
+                      <option>Pizza</option>
+                      <option>Küche</option>
+                      <option>Theke</option>
+                      <option>Service</option>
+                      <option>Delivery</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <button class="btn small primary" id="staffSaveBtn">Save</button>
+                  <button class="btn small" id="staffCancelBtn">Cancel</button>
+                  <span class="muted" id="staffEditHint"></span>
+                </div>
+
+                <div class="sep"></div>
+                <small class="muted" id="staffHint">
+                  Staff list përdoret edhe për Weekly Plan (emrat vertikal).
+                </small>
+              </div>
+            </div>
+
+            <div class="list" id="staffList"></div>
+          </div>
+
+          <!-- VIEW: SETTINGS -->
+          <div id="viewSettings" class="hidden">
+            <p class="muted" id="settingsInfo">
+              Settings (placeholder). Këtu mund të shtojmë: printer, PDF export, module rights, etj.
+            </p>
 
             <div class="sep"></div>
 
-            <div class="card">
-              <div class="hd"><h2>Set user role by UID</h2></div>
-              <div class="bd">
-                <div class="row" style="gap:12px; align-items:flex-end">
-                  <div style="flex:1; min-width:240px" class="field">
-                    <label>User UID</label>
-                    <input class="input" id="roleUid" placeholder="paste UID" />
-                  </div>
-                  <div style="width:200px" class="field">
-                    <label>Role</label>
-                    <select class="input" id="roleSelect">
-                      <option value="staff">staff</option>
-                      <option value="admin">admin</option>
-                      <option value="superadmin">superadmin</option>
-                    </select>
-                  </div>
-                  <button class="btn primary" id="btnSetRole">Set Role</button>
-                </div>
-
-                <div class="muted" style="font-size:12px; margin-top:10px">
-                  Roles ruhen te: <span class="mono">users/{uid}</span>
-                </div>
-              </div>
+            <div class="field">
+              <label id="orgLbl">Organization</label>
+              <input class="input" id="orgName" placeholder="Pizzeria Ristorante Matteo GmbH" />
             </div>
+
+            <button class="btn small primary" id="saveSettingsBtn">Save Settings</button>
           </div>
 
-        </div>
-      </div>
+          <!-- FALLBACK -->
+          <div id="viewWelcome">
+            <p class="muted" id="welcomeText">
+              Mirë se vjen në MatteoTeam PRO. Bëj login për të hapur Panelin.
+            </p>
+          </div>
 
-    </div>
-  </div>
+        </div><!-- /bd viewHost -->
+      </div><!-- /rightCard -->
+    </div><!-- /grid -->
+  </div><!-- /wrap -->
+
+  <!-- Part 3 continues with Firebase + JS -->
     <script type="module">
     // ==========================
-    // 1) IMPORTS MUST BE FIRST
+    // 1) FIREBASE IMPORTS (must be first)
     // ==========================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
@@ -506,23 +476,23 @@
       addDoc,
       getDocs,
       query,
-      orderBy,
-      serverTimestamp,
-      deleteDoc
+      where,
+      deleteDoc,
+      serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // ==========================
     // 2) FIREBASE CONFIG (PASTE YOURS HERE)
     // ==========================
-  const firebaseConfig = {
-  apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
-  authDomain: "matteoteam-test.firebaseapp.com",
-  projectId: "matteoteam-test",
-  storageBucket: "matteoteam-test.firebasestorage.app",
-  messagingSenderId: "1084486170913",
-  appId: "1:1084486170913:web:d68cf328becefe226a6660",
-  measurementId: "G-9V887087P0"
-};
+    const firebaseConfig = {
+      apiKey: "PASTE_YOURS",
+      authDomain: "PASTE_YOURS",
+      projectId: "PASTE_YOURS",
+      storageBucket: "PASTE_YOURS",
+      messagingSenderId: "PASTE_YOURS",
+      appId: "PASTE_YOURS",
+      measurementId: "PASTE_YOURS"
+    };
 
     // ✅ SuperAdmin UID (Milot)
     const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
@@ -533,553 +503,654 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-// ✅ Hook Login buttons AFTER DOM is ready
-window.addEventListener("DOMContentLoaded", () => {
-  const elEmail = document.getElementById("email");
-  const elPass  = document.getElementById("pass");
-  const btnLogin = document.getElementById("btnLogin");
 
-  console.log("DOM READY", { elEmail: !!elEmail, elPass: !!elPass, btnLogin: !!btnLogin });
-
-  if (!btnLogin || !elEmail || !elPass) {
-    showErr("Login elements not found (IDs must be: email, pass, btnLogin)");
-    return;
-  }
-
-  btnLogin.addEventListener("click", async () => {
-    const email = elEmail.value.trim();
-    const pass  = elPass.value;
-
-    console.log("CLICK LOGIN", email);
-
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-      console.log("LOGIN OK");
-    catch (err) {
-  alert(err.code + " — " + err.message);
-  showErr(err.message);
-}
-  });
-});
     // ==========================
     // 4) UI HELPERS
     // ==========================
     const $ = (id) => document.getElementById(id);
 
-    function showErr(msg){
-      const box = $("errBox");
-      box.textContent = String(msg || "Unknown error");
-      box.classList.remove("hidden");
-      $("okBox").classList.add("hidden");
-      console.error(msg);
-    }
     function showOk(msg){
-      const box = $("okBox");
-      box.textContent = String(msg || "OK");
-      box.classList.remove("hidden");
+      $("okBox").textContent = msg;
+      $("okBox").classList.remove("hidden");
       $("errBox").classList.add("hidden");
+      setTimeout(()=> $("okBox").classList.add("hidden"), 3500);
     }
-    function clearMsg(){
-      $("errBox").classList.add("hidden");
+    function showErr(msg){
+      $("errBox").textContent = msg;
+      $("errBox").classList.remove("hidden");
       $("okBox").classList.add("hidden");
-    }
-
-    function setStatus(signedIn, email){
-      const dot = $("statusDot");
-      const text = $("statusText");
-      if(signedIn){
-        dot.classList.add("good");
-        dot.classList.remove("bad");
-        text.textContent = `Signed in: ${email || ""}`.trim();
-      }else{
-        dot.classList.remove("good");
-        dot.classList.remove("bad");
-        text.textContent = "Not signed in";
-      }
-    }
-
-    function setRole(role){
-      $("roleText").textContent = role || "—";
-    }
-
-    // views
-    const views = {
-      dashboard: $("viewDashboard"),
-      weekly: $("viewWeekly"),
-      inventory: $("viewInventory"),
-      admin: $("viewAdmin")
-    };
-
-    function setView(name){
-      for(const k of Object.keys(views)) views[k].classList.add("hidden");
-      if(views[name]) views[name].classList.remove("hidden");
-
-      // title
-      const map = {
-        dashboard: "Dashboard",
-        weekly: "Weekly Plan",
-        inventory: "Inventory",
-        admin: "Admin Panel"
-      };
-      $("viewTitle").textContent = map[name] || "App";
-
-      // nav active
-      document.querySelectorAll(".nav .btn").forEach(b => b.classList.remove("active"));
-      const activeBtn = document.querySelector(`.nav .btn[data-view="${name}"]`);
-      if(activeBtn) activeBtn.classList.add("active");
-
-      // weekly buttons
-      const wBtns = ["btnWeeklyFullscreen","btnSaveWeekly","btnReloadWeekly"];
-      if(name === "weekly"){
-        wBtns.forEach(id => $(id).classList.remove("hidden"));
-      }else{
-        wBtns.forEach(id => $(id).classList.add("hidden"));
-      }
-    }
-
-    // ==========================
-    // 5) AUTH BUTTONS
-    // ==========================
-    $("btnLogin").addEventListener("click", async () => {
-      clearMsg();
-      const email = $("email").value.trim();
-      const pass = $("pass").value;
-      if(!email || !pass) return showErr("Shkruaj email + password.");
-
-      try{
-        await signInWithEmailAndPassword(auth, email, pass);
-        showOk("Login OK ✅");
-      }catch(e){
-        showErr(e?.message || e);
-      }
-    });
-
-    $("btnRegister").addEventListener("click", async () => {
-      clearMsg();
-      const email = $("email").value.trim();
-      const pass = $("pass").value;
-      if(!email || !pass) return showErr("Shkruaj email + password për register.");
-
-      try{
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-        // create user doc default role
-        const uid = cred.user.uid;
-        const role = (uid === SUPERADMIN_UID) ? "superadmin" : "staff";
-
-        await setDoc(doc(db, "users", uid), {
-          email,
-          role,
-          createdAt: serverTimestamp()
-        }, { merge: true });
-
-        showOk(`Registered ✅ role=${role}`);
-      }catch(e){
-        showErr(e?.message || e);
-      }
-    });
-
-    $("btnReset").addEventListener("click", async () => {
-      clearMsg();
-      const email = $("email").value.trim();
-      if(!email) return showErr("Shkruaj email për reset.");
-
-      try{
-        await sendPasswordResetEmail(auth, email);
-        showOk("Reset email u dërgua ✅ (kontrollo spam).");
-      }catch(e){
-        showErr(e?.message || e);
-      }
-    });
-
-    $("btnLogout").addEventListener("click", async () => {
-      clearMsg();
-      try{
-        await signOut(auth);
-        showOk("Logout ✅");
-      }catch(e){
-        showErr(e?.message || e);
-      }
-    });
-
-    $("btnOpenLogin").addEventListener("click", () => {
-      $("authBox").classList.remove("hidden");
-      $("navBox").classList.add("hidden");
-      $("btnOpenLogin").classList.remove("hidden");
-      $("btnOpenApp").classList.add("hidden");
-      setView("dashboard"); // hidden anyway
-      $("viewTitle").textContent = "Login";
-    });
-
-    $("btnOpenApp").addEventListener("click", () => {
-      setView("dashboard");
-    });
-
-    // nav clicks
-    document.addEventListener("click", (e) => {
-      const b = e.target.closest(".nav .btn");
-      if(!b) return;
-      const v = b.getAttribute("data-view");
-      if(v) setView(v);
-    });
-
-    // ==========================
-    // 6) ROLE + SESSION
-    // ==========================
-    let CURRENT_USER = null;
-    let CURRENT_ROLE = null;
-
-    async function ensureUserDoc(user){
-      const uref = doc(db, "users", user.uid);
-      const snap = await getDoc(uref);
-
-      // if missing -> create
-      if(!snap.exists()){
-        const role = (user.uid === SUPERADMIN_UID) ? "superadmin" : "staff";
-        await setDoc(uref, {
-          email: user.email || "",
-          role,
-          createdAt: serverTimestamp()
-        }, { merge: true });
-        return { role };
-      }
-      return snap.data();
     }
 
     function setSignedInUI(user, role){
-      setStatus(true, user.email);
-      $("userPill").textContent = user.email || "User";
-      $("btnLogout").classList.remove("hidden");
-      $("btnOpenApp").classList.remove("hidden");
+      $("statusText").textContent = "Signed in";
+      $("statusDot").classList.add("good");
       $("btnOpenLogin").classList.add("hidden");
-
+      $("btnLogout").classList.remove("hidden");
+      $("btnOpenPanel").classList.remove("hidden");
+      $("userPill").textContent = user?.email || "User";
+      $("roleText").textContent = role || "staff";
       $("authBox").classList.add("hidden");
-      $("navBox").classList.remove("hidden");
+      $("menuBox").classList.remove("hidden");
+    }
+    function setSignedOutUI(){
+      $("statusText").textContent = "Not signed in";
+      $("statusDot").classList.remove("good");
+      $("btnOpenLogin").classList.remove("hidden");
+      $("btnLogout").classList.add("hidden");
+      $("btnOpenPanel").classList.add("hidden");
+      $("userPill").textContent = "Guest";
+      $("roleText").textContent = "—";
+      $("authBox").classList.remove("hidden");
+      $("menuBox").classList.add("hidden");
+      showView("welcome");
+    }
 
-      $("helloName").textContent = user.email || "—";
-      $("uidText").textContent = user.uid;
-      setRole(role);
+    function showView(which){
+      const views = ["Weekly","Inventory","Staff","Settings"];
+      for(const v of views) $("view"+v).classList.add("hidden");
+      $("viewWelcome").classList.add("hidden");
 
-      // admin button show/hide
-      if(role === "superadmin" || role === "admin"){
-        $("btnAdminOnly").classList.remove("hidden");
-      }else{
-        $("btnAdminOnly").classList.add("hidden");
+      if(which === "weekly"){
+        $("viewWeekly").classList.remove("hidden");
+        $("viewTitle").textContent = t("weekly.title");
+        $("viewSub").textContent   = t("weekly.sub");
+      } else if(which === "inventory"){
+        $("viewInventory").classList.remove("hidden");
+        $("viewTitle").textContent = t("inv.title");
+        $("viewSub").textContent   = t("inv.sub");
+      } else if(which === "staff"){
+        $("viewStaff").classList.remove("hidden");
+        $("viewTitle").textContent = t("staff.title");
+        $("viewSub").textContent   = t("staff.sub");
+      } else if(which === "settings"){
+        $("viewSettings").classList.remove("hidden");
+        $("viewTitle").textContent = t("settings.title");
+        $("viewSub").textContent   = t("settings.sub");
+      } else {
+        $("viewWelcome").classList.remove("hidden");
+        $("viewTitle").textContent = t("welcome.title");
+        $("viewSub").textContent   = t("welcome.sub");
+      }
+    }
+
+    // ==========================
+    // 5) i18n (DE/EN/SQ)
+    // ==========================
+    let LANG = "de";
+    const I18N = {
+      de:{
+        "welcome.title":"Willkommen",
+        "welcome.sub":"Bitte einloggen.",
+        "weekly.title":"Wochenplan",
+        "weekly.sub":"Namen links, Tage oben. Bearbeiten & Speichern.",
+        "inv.title":"Inventar",
+        "inv.sub":"Artikel hinzufügen, bearbeiten, löschen.",
+        "staff.title":"Mitarbeiter",
+        "staff.sub":"Liste vertikal. Wird im Wochenplan genutzt.",
+        "settings.title":"Einstellungen",
+        "settings.sub":"Organisation & Module.",
+        "ui.login":"Login",
+        "ui.register":"Register",
+        "ui.reset":"Reset Password",
+      },
+      en:{
+        "welcome.title":"Welcome",
+        "welcome.sub":"Please login.",
+        "weekly.title":"Weekly Plan",
+        "weekly.sub":"Names left, days top. Edit & Save.",
+        "inv.title":"Inventory",
+        "inv.sub":"Add, edit, delete items.",
+        "staff.title":"Staff",
+        "staff.sub":"Vertical list. Used in weekly plan.",
+        "settings.title":"Settings",
+        "settings.sub":"Organization & modules.",
+        "ui.login":"Login",
+        "ui.register":"Register",
+        "ui.reset":"Reset Password",
+      },
+      sq:{
+        "welcome.title":"Mirë se vjen",
+        "welcome.sub":"Bëj login.",
+        "weekly.title":"Plani Javor",
+        "weekly.sub":"Emrat majtas, ditët lart. Ndrysho & ruaj.",
+        "inv.title":"Inventari",
+        "inv.sub":"Shto, edito, fshij artikuj.",
+        "staff.title":"Stafi",
+        "staff.sub":"Listë vertikale. Përdoret në plan.",
+        "settings.title":"Rregullime",
+        "settings.sub":"Organizata & modulet.",
+        "ui.login":"Login",
+        "ui.register":"Regjistro",
+        "ui.reset":"Reset Password",
+      }
+    };
+    const t = (k)=> (I18N[LANG] && I18N[LANG][k]) ? I18N[LANG][k] : k;
+
+    function applyLang(){
+      // Basic labels
+      $("viewTitle").textContent = t("welcome.title");
+      $("viewSub").textContent   = t("welcome.sub");
+      $("goWeekly").textContent  = "📅 " + t("weekly.title");
+      $("goInventory").textContent = "📦 " + t("inv.title");
+      $("goStaff").textContent   = "👥 " + t("staff.title");
+      $("goSettings").textContent= "⚙️ " + t("settings.title");
+    }
+
+    $("langDE").addEventListener("click", ()=>{ LANG="de"; applyLang(); showOk("DE"); });
+    $("langEN").addEventListener("click", ()=>{ LANG="en"; applyLang(); showOk("EN"); });
+    $("langSQ").addEventListener("click", ()=>{ LANG="sq"; applyLang(); showOk("SQ"); });
+
+    // ==========================
+    // 6) AUTH + ROLE
+    // ==========================
+    async function getOrCreateUserProfile(user){
+      const ref = doc(db, "users", user.uid);
+      const snap = await getDoc(ref);
+
+      if(snap.exists()) return snap.data();
+
+      // Default: staff, except superadmin
+      const role = (user.uid === SUPERADMIN_UID) ? "superadmin" : "staff";
+      const profile = {
+        uid:user.uid,
+        email:user.email || "",
+        role,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+      await setDoc(ref, profile);
+      return profile;
+    }
+
+    $("btnLogin").addEventListener("click", async ()=>{
+      const email = $("email").value.trim();
+      const pass  = $("pass").value;
+
+      if(!email || !pass) return showErr("Enter email & password");
+
+      try{
+        await signInWithEmailAndPassword(auth, email, pass);
+      }catch(e){
+        showErr(e.message);
+      }
+    });
+
+    $("btnRegister").addEventListener("click", async ()=>{
+      const email = $("email").value.trim();
+      const pass  = $("pass").value;
+
+      if(!email || !pass) return showErr("Enter email & password");
+
+      try{
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        await getOrCreateUserProfile(cred.user);
+        showOk("Registered ✅");
+      }catch(e){
+        showErr(e.message);
+      }
+    });
+
+    $("btnReset").addEventListener("click", async ()=>{
+      const email = $("email").value.trim();
+      if(!email) return showErr("Enter your email first");
+      try{
+        await sendPasswordResetEmail(auth, email);
+        showOk("Reset email sent ✅");
+      }catch(e){
+        showErr(e.message);
+      }
+    });
+
+    $("btnLogout").addEventListener("click", async ()=>{
+      await signOut(auth);
+      showOk("Logged out");
+    });
+
+    $("btnOpenLogin").addEventListener("click", ()=>{
+      $("authBox").classList.remove("hidden");
+      $("menuBox").classList.add("hidden");
+      showView("welcome");
+    });
+
+    $("btnOpenPanel").addEventListener("click", ()=>{
+      showView("weekly");
+    });
+
+    // ==========================
+    // 7) STAFF MODULE (Firestore: staff)
+    // ==========================
+    let STAFF = []; // cached list
+    let staffEditId = null;
+
+    function staffCanManage(role){
+      return role === "superadmin" || role === "admin";
+    }
+
+    async function loadStaff(){
+      STAFF = [];
+      const qs = await getDocs(collection(db, "staff"));
+      qs.forEach(d => STAFF.push({id:d.id, ...d.data()}));
+      STAFF.sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+      renderStaff();
+      buildWeeklyRows(); // refresh weekly rows after staff update
+    }
+
+    function renderStaff(){
+      $("staffList").innerHTML = "";
+      $("staffKpi").textContent = `${STAFF.length} staff`;
+      for(const s of STAFF){
+        const el = document.createElement("div");
+        el.className = "item";
+        const roleTag = `<span class="tag">${s.role || "staff"}</span>`;
+        const areaTag = `<span class="tag">${s.area || "—"}</span>`;
+        el.innerHTML = `
+          <div class="meta">
+            <b>${escapeHtml(s.name || "—")}</b>
+            <small>${roleTag} ${areaTag}</small>
+          </div>
+          <div class="ops">
+            <button class="btn small" data-edit="${s.id}">Edit</button>
+            <button class="btn small danger" data-del="${s.id}">Delete</button>
+          </div>
+        `;
+        $("staffList").appendChild(el);
       }
 
-      setView("dashboard");
+      $("staffList").querySelectorAll("[data-edit]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-edit");
+          const s = STAFF.find(x=>x.id===id);
+          if(!s) return;
+          staffEditId = id;
+          $("staffForm").classList.remove("hidden");
+          $("staffName").value = s.name || "";
+          $("staffRole").value = s.role || "staff";
+          $("staffArea").value = s.area || "Pizza";
+          $("staffEditHint").textContent = "Editing…";
+        });
+      });
+
+      $("staffList").querySelectorAll("[data-del]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const id = btn.getAttribute("data-del");
+          if(!confirm("Delete staff?")) return;
+          await deleteDoc(doc(db, "staff", id));
+          showOk("Deleted");
+          await loadStaff();
+        });
+      });
     }
 
-    function setSignedOutUI(){
-      setStatus(false);
-      $("userPill").textContent = "Guest";
-      $("btnLogout").classList.add("hidden");
-      $("btnOpenApp").classList.add("hidden");
-      $("btnOpenLogin").classList.remove("hidden");
+    $("staffAddOpen").addEventListener("click", ()=>{
+      staffEditId = null;
+      $("staffForm").classList.remove("hidden");
+      $("staffName").value = "";
+      $("staffRole").value = "staff";
+      $("staffArea").value = "Pizza";
+      $("staffEditHint").textContent = "";
+    });
 
-      $("authBox").classList.remove("hidden");
-      $("navBox").classList.add("hidden");
+    $("staffCancelBtn").addEventListener("click", ()=>{
+      $("staffForm").classList.add("hidden");
+      staffEditId = null;
+    });
 
-      $("helloName").textContent = "—";
-      $("uidText").textContent = "—";
-      setRole("—");
+    $("staffSaveBtn").addEventListener("click", async ()=>{
+      const name = $("staffName").value.trim();
+      const role = $("staffRole").value;
+      const area = $("staffArea").value;
 
-      // hide views
-      Object.values(views).forEach(v => v.classList.add("hidden"));
-      $("viewTitle").textContent = "Login";
+      if(!name) return showErr("Name required");
+
+      const payload = { name, role, area, updatedAt: serverTimestamp() };
+
+      if(staffEditId){
+        await updateDoc(doc(db, "staff", staffEditId), payload);
+        showOk("Updated ✅");
+      }else{
+        await addDoc(collection(db, "staff"), { ...payload, createdAt: serverTimestamp() });
+        showOk("Added ✅");
+      }
+
+      $("staffForm").classList.add("hidden");
+      staffEditId = null;
+      await loadStaff();
+    });
+
+    $("staffReload").addEventListener("click", loadStaff);
+
+    // ==========================
+    // 8) WEEKLY MODULE (Firestore: weeklyPlans)
+    // ==========================
+    const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
+    let weekStart = startOfWeek(new Date()); // Monday
+    let weeklyDocId = ""; // computed
+    let currentRole = "staff";
+    let currentUser = null;
+
+    function formatDate(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const dd= String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${dd}`;
+    }
+    function startOfWeek(date){
+      const d = new Date(date);
+      d.setHours(0,0,0,0);
+      const day = d.getDay(); // 0 sun
+      const diff = (day === 0 ? -6 : 1) - day; // to Monday
+      d.setDate(d.getDate() + diff);
+      return d;
+    }
+    function weekIdFromStart(d){
+      return formatDate(d);
     }
 
-    onAuthStateChanged(auth, async (user) => {
-      clearMsg();
+    function weekLabel(d){
+      const end = new Date(d); end.setDate(end.getDate()+6);
+      return `${formatDate(d)} → ${formatDate(end)}`;
+    }
+
+    function buildWeeklyRows(){
+      const body = $("weeklyBody");
+      body.innerHTML = "";
+
+      for(const s of STAFF){
+        const tr = document.createElement("tr");
+        const nameTd = document.createElement("td");
+        nameTd.className = "nameCell";
+        nameTd.innerHTML = `<b>${escapeHtml(s.name||"—")}</b><div class="muted" style="font-size:12px">${escapeHtml(s.area||"")}</div>`;
+        tr.appendChild(nameTd);
+
+        for(const day of DAYS){
+          const td = document.createElement("td");
+          const div = document.createElement("div");
+          div.className = "cell";
+          div.contentEditable = (currentRole === "superadmin" || currentRole === "admin") ? "true" : "false";
+          div.setAttribute("data-staff", s.id);
+          div.setAttribute("data-day", day);
+          div.spellcheck = false;
+          td.appendChild(div);
+          tr.appendChild(td);
+        }
+        body.appendChild(tr);
+      }
+
+      $("weekText").textContent = weekLabel(weekStart);
+    }
+
+    async function loadWeekly(){
+      weeklyDocId = weekIdFromStart(weekStart);
+
+      // Ensure staff loaded first
+      if(STAFF.length === 0) await loadStaff();
+      buildWeeklyRows();
+
+      const ref = doc(db, "weeklyPlans", weeklyDocId);
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
+        showOk("No weekly data yet.");
+        return;
+      }
+
+      const data = snap.data();
+      const entries = data.entries || {}; // entries[staffId][day] = text
+
+      document.querySelectorAll(".cell").forEach(cell=>{
+        const sid = cell.getAttribute("data-staff");
+        const day = cell.getAttribute("data-day");
+        cell.textContent = (entries[sid] && entries[sid][day]) ? entries[sid][day] : "";
+      });
+
+      showOk("Weekly loaded ✅");
+    }
+
+    async function saveWeekly(){
+      if(!(currentRole === "superadmin" || currentRole === "admin")){
+        return showErr("No permission to save weekly.");
+      }
+
+      weeklyDocId = weekIdFromStart(weekStart);
+      const entries = {};
+
+      document.querySelectorAll(".cell").forEach(cell=>{
+        const sid = cell.getAttribute("data-staff");
+        const day = cell.getAttribute("data-day");
+        const val = (cell.textContent || "").trim();
+        if(!entries[sid]) entries[sid] = {};
+        entries[sid][day] = val;
+      });
+
+      const ref = doc(db, "weeklyPlans", weeklyDocId);
+      await setDoc(ref, {
+        weekStart: weeklyDocId,
+        entries,
+        updatedAt: serverTimestamp(),
+        updatedBy: currentUser?.uid || null
+      }, { merge:true });
+
+      showOk("Weekly saved ✅");
+    }
+
+    function clearWeeklyUI(){
+      document.querySelectorAll(".cell").forEach(c=> c.textContent = "");
+    }
+
+    $("weekPrev").addEventListener("click", ()=>{
+      weekStart.setDate(weekStart.getDate()-7);
+      $("weekText").textContent = weekLabel(weekStart);
+      loadWeekly();
+    });
+    $("weekNext").addEventListener("click", ()=>{
+      weekStart.setDate(weekStart.getDate()+7);
+      $("weekText").textContent = weekLabel(weekStart);
+      loadWeekly();
+    });
+    $("weekToday").addEventListener("click", ()=>{
+      weekStart = startOfWeek(new Date());
+      $("weekText").textContent = weekLabel(weekStart);
+      loadWeekly();
+    });
+    $("weekLoad").addEventListener("click", loadWeekly);
+    $("weekSave").addEventListener("click", saveWeekly);
+    $("weekClear").addEventListener("click", ()=>{
+      if(!(currentRole === "superadmin" || currentRole === "admin")) return;
+      if(!confirm("Clear weekly table (UI only)?")) return;
+      clearWeeklyUI();
+    });
+
+    // ==========================
+    // 9) INVENTORY MODULE (Firestore: inventory)
+    // ==========================
+    let INV = [];
+    let invEditId = null;
+
+    function openInvForm(edit=false){
+      $("invForm").classList.remove("hidden");
+      $("invEditHint").textContent = edit ? "Editing…" : "";
+    }
+    function closeInvForm(){
+      $("invForm").classList.add("hidden");
+      invEditId = null;
+      $("invName").value=""; $("invQty").value=""; $("invMin").value="";
+      $("invUnit").value="kg"; $("invExp").value=""; $("invNote").value="";
+      $("invEditHint").textContent = "";
+    }
+
+    async function loadInventory(){
+      INV = [];
+      const qs = await getDocs(collection(db, "inventory"));
+      qs.forEach(d => INV.push({id:d.id, ...d.data()}));
+      INV.sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+      renderInventory();
+    }
+
+    function renderInventory(){
+      $("invList").innerHTML = "";
+      $("invKpi").textContent = `${INV.length} items`;
+
+      for(const it of INV){
+        const qty = (it.qty ?? 0);
+        const min = (it.min ?? "");
+        const unit= (it.unit ?? "");
+        const exp = it.expiry ? String(it.expiry) : "";
+        const low = (min !== "" && Number(qty) <= Number(min));
+        const tags = [
+          `<span class="tag">${qty} ${escapeHtml(unit)}</span>`,
+          min!=="" ? `<span class="tag">min ${escapeHtml(min)}</span>` : "",
+          exp ? `<span class="tag">exp ${escapeHtml(exp)}</span>` : "",
+          low ? `<span class="tag" style="border-color:rgba(255,204,102,.35);background:rgba(255,204,102,.12)">LOW</span>` : ""
+        ].filter(Boolean).join(" ");
+
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+          <div class="meta">
+            <b>${escapeHtml(it.name || "—")}</b>
+            <small>${tags}</small>
+            ${it.note ? `<small class="muted">${escapeHtml(it.note)}</small>` : ""}
+          </div>
+          <div class="ops">
+            <button class="btn small" data-iedit="${it.id}">Edit</button>
+            <button class="btn small danger" data-idel="${it.id}">Delete</button>
+          </div>
+        `;
+        $("invList").appendChild(el);
+      }
+
+      $("invList").querySelectorAll("[data-iedit]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-iedit");
+          const it = INV.find(x=>x.id===id);
+          if(!it) return;
+          invEditId = id;
+          openInvForm(true);
+          $("invName").value = it.name || "";
+          $("invQty").value  = it.qty ?? "";
+          $("invUnit").value = it.unit || "kg";
+          $("invMin").value  = it.min ?? "";
+          $("invExp").value  = it.expiry || "";
+          $("invNote").value = it.note || "";
+        });
+      });
+
+      $("invList").querySelectorAll("[data-idel]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const id = btn.getAttribute("data-idel");
+          if(!confirm("Delete item?")) return;
+          await deleteDoc(doc(db, "inventory", id));
+          showOk("Deleted");
+          await loadInventory();
+        });
+      });
+    }
+
+    $("invAddOpen").addEventListener("click", ()=>{
+      invEditId = null;
+      openInvForm(false);
+    });
+    $("invCancelBtn").addEventListener("click", closeInvForm);
+    $("invReload").addEventListener("click", loadInventory);
+
+    $("invSaveBtn").addEventListener("click", async ()=>{
+      const name = $("invName").value.trim();
+      const qty  = Number($("invQty").value || 0);
+      const unit = $("invUnit").value;
+      const min  = $("invMin").value === "" ? "" : Number($("invMin").value);
+      const exp  = $("invExp").value || "";
+      const note = $("invNote").value.trim();
+
+      if(!name) return showErr("Name required");
+
+      const payload = {
+        name, qty, unit,
+        min, expiry: exp,
+        note,
+        updatedAt: serverTimestamp()
+      };
+
+      if(invEditId){
+        await updateDoc(doc(db, "inventory", invEditId), payload);
+        showOk("Updated ✅");
+      }else{
+        await addDoc(collection(db, "inventory"), { ...payload, createdAt: serverTimestamp() });
+        showOk("Added ✅");
+      }
+
+      closeInvForm();
+      await loadInventory();
+    });
+
+    // ==========================
+    // 10) SETTINGS (simple)
+    // ==========================
+    $("saveSettingsBtn").addEventListener("click", async ()=>{
+      const name = $("orgName").value.trim();
+      if(!currentUser) return showErr("Login first");
+      await setDoc(doc(db, "settings", "main"), {
+        orgName: name,
+        updatedAt: serverTimestamp(),
+        updatedBy: currentUser.uid
+      }, { merge:true });
+      showOk("Settings saved ✅");
+    });
+
+    // ==========================
+    // 11) NAV
+    // ==========================
+    $("goWeekly").addEventListener("click", async ()=>{
+      showView("weekly");
+      await loadWeekly();
+    });
+    $("goInventory").addEventListener("click", async ()=>{
+      showView("inventory");
+      await loadInventory();
+    });
+    $("goStaff").addEventListener("click", async ()=>{
+      showView("staff");
+      await loadStaff();
+    });
+    $("goSettings").addEventListener("click", async ()=>{
+      showView("settings");
+    });
+
+    // ==========================
+    // 12) AUTH STATE
+    // ==========================
+    onAuthStateChanged(auth, async (user)=>{
+      currentUser = user;
+
       if(!user){
-        CURRENT_USER = null;
-        CURRENT_ROLE = null;
+        currentRole = "staff";
         setSignedOutUI();
         return;
       }
 
       try{
-        CURRENT_USER = user;
-        // force superadmin if UID matches
-        if(user.uid === SUPERADMIN_UID){
-          await setDoc(doc(db,"users",user.uid), { role:"superadmin" }, { merge:true });
-        }
+        const profile = await getOrCreateUserProfile(user);
+        currentRole = profile.role || "staff";
 
-        const data = await ensureUserDoc(user);
-        CURRENT_ROLE = (user.uid === SUPERADMIN_UID) ? "superadmin" : (data?.role || "staff");
-        setSignedInUI(user, CURRENT_ROLE);
+        // If superadmin uid, force role superadmin
+        if(user.uid === SUPERADMIN_UID) currentRole = "superadmin";
 
-        // load initial data
+        setSignedInUI(user, currentRole);
+        applyLang();
+
+        // Preload staff so weekly table is ready
+        await loadStaff();
+        showView("weekly");
         await loadWeekly();
-        await loadInventory();
 
       }catch(e){
-        showErr(e?.message || e);
+        showErr(e.message);
       }
     });
 
     // ==========================
-    // 7) ADMIN: SET ROLE
+    // 13) utils
     // ==========================
-    $("btnSetRole").addEventListener("click", async () => {
-      clearMsg();
-      if(!CURRENT_USER) return showErr("Duhet me qen logged in.");
-      if(!(CURRENT_ROLE === "superadmin" || CURRENT_ROLE === "admin")) return showErr("S'ke autorizim.");
-
-      const uid = $("roleUid").value.trim();
-      const role = $("roleSelect").value;
-      if(!uid) return showErr("Shkruaj UID.");
-
-      try{
-        await setDoc(doc(db, "users", uid), { role }, { merge:true });
-        showOk(`Role u vendos: ${uid} => ${role}`);
-      }catch(e){
-        showErr(e?.message || e);
-      }
-    });
-          // ==========================
-    // 8) WEEKLY PLAN
-    // ==========================
-   const STAFF = [
-  "Milot",
-  "Ajris",
-  "Qendrim",
-  "Edi",
-  "Hadis",
-  "Amin",
-];
-    const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
-    const DAY_LABELS = { mon:"Mon", tue:"Tue", wed:"Wed", thu:"Thu", fri:"Fri", sat:"Sat", sun:"Sun" };
-
-    function getWeekKey(mode){
-      // simple key: YYYY-WW-current/next (not perfect ISO, but stable)
-      const now = new Date();
-      const d = new Date(now);
-      if(mode === "next") d.setDate(d.getDate()+7);
-
-      const year = d.getFullYear();
-      const start = new Date(year,0,1);
-      const diff = Math.floor((d - start) / 86400000);
-      const week = Math.floor(diff/7) + 1;
-      return `${year}-W${String(week).padStart(
-      function buildWeeklyTable(){
-       const body = $("weekBody");
-       body.innerHTML = "";
-
-     for(const name of STAFF){
-     const tr = document.createElement("tr");
-
-    const td0 = document.createElement("td");
-    td0.innerHTML = `<b>${name}</b>`;
-    tr.appendChild(td0);
-
-    for(const day of DAYS){
-      const td = document.createElement("td");
-      td.innerHTML = `
-        <textarea class="mini"
-          data-name="${name}"
-          data-day="${day}"
-          placeholder="17-23"></textarea>
-      `;
-      tr.appendChild(td);
-    }
-
-    body.appendChild(tr);
-  }
-}
-
-    buildWeeklyTable();
-
-    function weekDocRef(){
-      const mode = $("weekSelect").value;
-      const wk = getWeekKey(mode);
-      $("weekLabel").textContent = wk;
-      return doc(db, "weeklyPlans", wk);
-    }
-
- function getWeeklyPayloadFromUI(){
-  const data = {};
-  document.querySelectorAll('#weekBody textarea[data-name][data-day]').forEach(t => {
-    const name = t.getAttribute("data-name");
-    const day = t.getAttribute("data-day");
-    if(!data[name]) data[name] = {};
-    data[name][day] = t.value || "";
-  });
-  return data;
-}
-
-   function setWeeklyUIFromPayload(payload){
-  document.querySelectorAll('#weekBody textarea[data-name][data-day]').forEach(t => {
-    const name = t.getAttribute("data-name");
-    const day = t.getAttribute("data-day");
-    t.value = payload?.[name]?.[day] ?? "";
-  });
-}
-    async function loadWeekly(){
-      if(!CURRENT_USER) return;
-      try{
-        const ref = weekDocRef();
-        const snap = await getDoc(ref);
-        if(snap.exists()){
-          setWeeklyUIFromPayload(snap.data()?.plan || {});
-        }else{
-          setWeeklyUIFromPayload({});
-        }
-      }catch(e){
-        showErr(e?.message || e);
-      }
-    }
-
-    async function saveWeekly(){
-      if(!CURRENT_USER) return showErr("Duhet me qen logged in.");
-      try{
-        const ref = weekDocRef();
-        const plan = getWeeklyPayloadFromUI();
-        await setDoc(ref, {
-          plan,
-          updatedAt: serverTimestamp(),
-          updatedBy: CURRENT_USER.uid,
-          updatedByEmail: CURRENT_USER.email || ""
-        }, { merge:true });
-
-        showOk("Weekly saved ✅");
-      }catch(e){
-        showErr(e?.message || e);
-      }
-    }
-
-    $("btnSaveWeekly").addEventListener("click", saveWeekly);
-    $("btnReloadWeekly").addEventListener("click", loadWeekly);
-    $("weekSelect").addEventListener("change", loadWeekly);
-
-    $("btnWeeklyFullscreen").addEventListener("click", () => {
-      const card = $("rightCard");
-      card.classList.toggle("fullscreen");
-    });
-
-    // ==========================
-    // 9) INVENTORY
-    // ==========================
-    let EDIT_INV_ID = null;
-
-    function invFormClear(){
-      EDIT_INV_ID = null;
-      $("invName").value = "";
-      $("invQty").value = "";
-      $("invSold").value = "";
-      $("invLeft").value = "";
-      $("invDate").value = "";
-      showOk("Form cleared.");
-    }
-
-    $("btnInvClear").addEventListener("click", () => {
-      clearMsg();
-      invFormClear();
-    });
-
-    function parseNum(v){
-      const n = Number(v);
-      return Number.isFinite(n) ? n : 0;
-    }
-
-    async function saveInventoryItem(){
-      clearMsg();
-      if(!CURRENT_USER) return showErr("Duhet me qen logged in.");
-
-      const name = $("invName").value.trim();
-      const qty = parseNum($("invQty").value);
-      const sold = parseNum($("invSold").value);
-      const left = parseNum($("invLeft").value);
-      const date = $("invDate").value || "";
-
-      if(!name) return showErr("Name është i zbrazët.");
-
-      try{
-        const payload = {
-          name,
-          qty,
-          sold,
-          left,
-          date,
-          updatedAt: serverTimestamp(),
-          updatedBy: CURRENT_USER.uid
-        };
-
-        if(EDIT_INV_ID){
-          await updateDoc(doc(db, "inventory", EDIT_INV_ID), payload);
-          showOk("Inventory updated ✅");
-        }else{
-          await addDoc(collection(db, "inventory"), {
-            ...payload,
-            createdAt: serverTimestamp(),
-            createdBy: CURRENT_USER.uid
-          });
-          showOk("Inventory saved ✅");
-        }
-
-        invFormClear();
-        await loadInventory();
-      }catch(e){
-        showErr(e?.message || e);
-      }
-    }
-
-    $("btnInvSave").addEventListener("click", saveInventoryItem);
-
-    async function loadInventory(){
-      if(!CURRENT_USER) return;
-      try{
-        const q = query(collection(db, "inventory"), orderBy("updatedAt", "desc"));
-        const snap = await getDocs(q);
-        const list = $("invList");
-        list.innerHTML = "";
-
-        if(snap.empty){
-          list.innerHTML = `<div class="muted">No items yet.</div>`;
-          return;
-        }
-
-        snap.forEach(docSnap => {
-          const it = docSnap.data();
-          const id = docSnap.id;
-
-          const div = document.createElement("div");
-          div.className = "item";
-          div.innerHTML = `
-            <div>
-              <div style="display:flex; justify-content:space-between; gap:10px; align-items:center">
-                <b>${escapeHtml(it.name || "")}</b>
-                <span class="pill mono">${id.slice(0,6)}…</span>
-              </div>
-              <div class="sep" style="margin:10px 0"></div>
-              <div class="kv">
-                <div>Qty</div><div><b>${numFmt(it.qty)}</b></div>
-                <div>Sold</div><div><b>${numFmt(it.sold)}</b></div>
-                <div>Left</div><div><b>${numFmt(it.left)}</b></div>
-                <div>Date</div><div><b>${escapeHtml(it.date || "-")}</b></div>
-              </div>
-            </div>
-
-            <div class="tools">
-              <button class="btn small" data-edit="${id}">Edit</button>
-              <button class="btn small danger" data-del="${id}">Delete</button>
-            </div>
-          `;
-          list.appendChild(div);
-        });
-
-      }catch(e){
-        showErr(e?.message || e);
-      }
-    }
-
-    function numFmt(n){
-      const x = Number(n);
-      if(!Number.isFinite(x)) return "0";
-      return String(x);
-    }
-
-    function escapeHtml(s){
-      return String(s)
+    function escapeHtml(str){
+      return String(str)
         .replaceAll("&","&amp;")
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;")
@@ -1087,73 +1158,9 @@ window.addEventListener("DOMContentLoaded", () => {
         .replaceAll("'","&#039;");
     }
 
-    // inventory click handlers
-    $("invList").addEventListener("click", async (e) => {
-      const editId = e.target?.getAttribute("data-edit");
-      const delId = e.target?.getAttribute("data-del");
-
-      if(editId){
-        clearMsg();
-        try{
-          const snap = await getDoc(doc(db, "inventory", editId));
-          if(!snap.exists()) return showErr("Item not found.");
-          const it = snap.data();
-          EDIT_INV_ID = editId;
-
-          $("invName").value = it.name || "";
-          $("invQty").value = (it.qty ?? "");
-          $("invSold").value = (it.sold ?? "");
-          $("invLeft").value = (it.left ?? "");
-          $("invDate").value = it.date || "";
-
-          showOk(`Editing: ${editId}`);
-          // auto open inventory view
-          setView("inventory");
-        }catch(err){
-          showErr(err?.message || err);
-        }
-      }
-
-      if(delId){
-        clearMsg();
-        if(!CURRENT_USER) return showErr("Duhet me qen logged in.");
-
-        // allow delete for admin/superadmin; staff can delete own? (simple: admin only)
-        if(!(CURRENT_ROLE === "superadmin" || CURRENT_ROLE === "admin")){
-          return showErr("Delete lejohet vetëm për admin/superadmin.");
-        }
-
-        try{
-          await deleteDoc(doc(db, "inventory", delId));
-          showOk("Deleted ✅");
-          await loadInventory();
-        }catch(err){
-          showErr(err?.message || err);
-        }
-      }
-    });
-
-    // ==========================
-    // 10) DEFAULT UI STATE
-    // ==========================
-    setSignedOutUI();
-// ===== FORCE BUTTON ACTIONS (TEST) =====
-window.doLogin = async () => {
-  alert("✅ FORCE Login clicked");
-
-  const email = (document.getElementById("email")?.value || "").trim();
-  const pass  = (document.getElementById("pass")?.value || "");
-
-  if (!email || !pass) return alert("Shkruaj Email + Password");
-
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
-    alert("✅ LOGIN OK: " + cred.user.uid);
-  } catch (err) {
-    alert("❌ " + (err.code || err.message));
-    console.error(err);
-  }
-};
+    // initial
+    applyLang();
+    showView("welcome");
   </script>
 </body>
 </html>
