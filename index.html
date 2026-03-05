@@ -1,490 +1,234 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MatteoTeam PRO</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MatteoTeam PRO</title>
 
-  <style>
-    :root{
-      --bg1:#0e1a20; --bg2:#15313a;
-      --glass:rgba(255,255,255,.08);
-      --glass2:rgba(255,255,255,.06);
-      --line:rgba(255,255,255,.12);
-      --text:#e9f2f5;
-      --muted:rgba(233,242,245,.7);
-      --good:#49d17d; --bad:#ff5a6b; --warn:#ffcc66;
-      --pri:#6ee7ff;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --r:18px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:var(--sans);
-      color:var(--text);
-      background: radial-gradient(1200px 800px at 20% 10%, #1f4450 0%, transparent 50%),
-                  radial-gradient(900px 700px at 80% 30%, #213a52 0%, transparent 55%),
-                  linear-gradient(160deg,var(--bg1),var(--bg2));
-      min-height:100vh;
-    }
-    a{color:inherit}
-    .wrap{max-width:1200px;margin:0 auto;padding:18px}
-    .topbar{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-      padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);
-      background:linear-gradient(180deg,var(--glass),transparent);
-      box-shadow:var(--shadow);
-    }
-    .brand{display:flex;gap:12px;align-items:center}
-    .logo{
-      width:42px;height:42px;border-radius:14px;
-      background:linear-gradient(135deg,#2a7f92,#1d2b55);
-      border:1px solid var(--line);
-      box-shadow:0 10px 20px rgba(0,0,0,.25);
-    }
-    .brand h1{margin:0;font-size:18px;letter-spacing:.3px}
-    .muted{color:var(--muted)}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .chip{
-      display:inline-flex;gap:8px;align-items:center;
-      padding:8px 10px;border-radius:999px;
-      border:1px solid var(--line);
-      background:var(--glass2);
-      font-size:13px;
-    }
-    .dot{width:10px;height:10px;border-radius:999px;background:var(--bad);box-shadow:0 0 0 3px rgba(255,90,107,.15)}
-    .dot.good{background:var(--good);box-shadow:0 0 0 3px rgba(73,209,125,.15)}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .btn{
-      border:1px solid var(--line); background:var(--glass2);
-      color:var(--text);
-      padding:10px 12px;border-radius:14px;
-      cursor:pointer; font-weight:600;
-      transition:transform .05s ease, background .15s ease, border .15s ease;
-      user-select:none;
-    }
-    .btn:hover{background:rgba(255,255,255,.10)}
-    .btn:active{transform:translateY(1px)}
-    .btn.primary{border-color:rgba(110,231,255,.35); background:rgba(110,231,255,.12)}
-    .btn.danger{border-color:rgba(255,90,107,.35); background:rgba(255,90,107,.12)}
-    .btn.small{padding:8px 10px;border-radius:12px;font-size:13px}
-    .hidden{display:none !important}
-    .grid{
-      display:grid; gap:14px; margin-top:14px;
-      grid-template-columns: 360px 1fr;
-    }
-    @media (max-width: 980px){
-      .grid{grid-template-columns: 1fr}
-    }
-    .card{
-      border:1px solid var(--line);
-      background:linear-gradient(180deg,var(--glass),transparent);
-      border-radius:var(--r);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .card .hd{
-      padding:12px 14px;border-bottom:1px solid var(--line);
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-    }
-    .card .bd{padding:14px}
-    .pill{
-      font-size:12px;padding:6px 10px;border-radius:999px;
-      border:1px solid var(--line);background:var(--glass2)
-    }
-    .sep{height:1px;background:var(--line);margin:12px 0}
-    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
-    label{font-size:13px;color:var(--muted)}
-    .input, .select, textarea{
-      width:100%;
-      padding:10px 12px;border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
-    }
-    textarea{min-height:78px;resize:vertical}
-    .okBox,.errBox{
-      margin-top:12px;
-      padding:10px 12px;border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.22);
-      font-size:13px;
-    }
-    .okBox{border-color:rgba(73,209,125,.35)}
-    .errBox{border-color:rgba(255,90,107,.35)}
-    .menu{
-      display:flex;flex-direction:column;gap:8px;
-    }
-    .menu .btn{justify-content:flex-start;text-align:left}
-    .viewTitle{margin:0;font-size:16px}
-    .sub{font-size:13px;color:var(--muted);margin-top:4px}
+<style>
 
-    /* Weekly table */
-    .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:16px}
-    table{border-collapse:separate;border-spacing:0;width:100%;min-width:860px}
-    th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:10px;vertical-align:top}
-    th{position:sticky;top:0;background:rgba(10,20,28,.85);backdrop-filter: blur(6px);z-index:2}
-    th:first-child{left:0;z-index:3}
-    td:first-child{position:sticky;left:0;background:rgba(10,20,28,.75);backdrop-filter: blur(6px);z-index:1}
-    tr:last-child td{border-bottom:none}
-    th:last-child, td:last-child{border-right:none}
-    .nameCell{min-width:210px}
-    .cell{
-      min-height:54px;border-radius:12px;padding:8px;
-      background:rgba(255,255,255,.05);
-      border:1px dashed rgba(255,255,255,.14);
-      white-space:pre-wrap;
-      font-family:var(--mono);
-      font-size:12.5px;
-      outline:none;
-    }
-    .toolbar{
-      display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;
-      margin-bottom:10px
-    }
-    .toolbar .left, .toolbar .right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .kpi{font-size:12px;color:var(--muted)}
+body{
+margin:0;
+font-family:Arial;
+background:#0e1a20;
+color:white;
+}
 
-    /* Lists */
-    .list{display:flex;flex-direction:column;gap:8px}
-    .item{
-      padding:10px 12px;border:1px solid var(--line);border-radius:16px;
-      background:rgba(255,255,255,.05);
-      display:flex;gap:10px;align-items:flex-start;justify-content:space-between;
-    }
-    .item .meta{display:flex;flex-direction:column;gap:3px}
-    .item .meta b{font-size:14px}
-    .item .meta small{color:var(--muted)}
-    .item .ops{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .tag{font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04)}
-  </style>
+header{
+background:#142c35;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+button{
+padding:10px 14px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.primary{background:#4dabf7;color:white}
+.good{background:#20c997;color:white}
+.bad{background:#ff6b6b;color:white}
+
+.card{
+background:#132931;
+margin:15px;
+padding:15px;
+border-radius:10px;
+}
+
+.hidden{display:none}
+
+input,select{
+padding:8px;
+border:none;
+border-radius:6px;
+width:100%;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th,td{
+border:1px solid #284b57;
+padding:8px;
+text-align:center;
+}
+
+textarea{
+width:100%;
+height:60px;
+background:#0f2027;
+color:white;
+border:none;
+}
+
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo"></div>
-        <div>
-          <h1>MatteoTeam PRO</h1>
-          <small class="muted" id="subTitle">Login • Roles • Weekly Plan • Inventory</small>
-        </div>
-      </div>
 
-      <div class="row">
-        <div class="chip" id="statusChip">
-          <span class="dot" id="statusDot"></span>
-          <span id="statusText">Not signed in</span>
-        </div>
-        <div class="chip">
-          <span class="muted" id="roleLbl">Role:</span>
-          <b id="roleText">—</b>
-        </div>
+<header>
 
-        <div class="actions">
-          <button class="btn small" id="langDE">DE</button>
-          <button class="btn small" id="langEN">EN</button>
-          <button class="btn small" id="langSQ">SQ</button>
+<h2>MatteoTeam PRO</h2>
 
-          <button class="btn small ghost" id="btnOpenLogin">Login</button>
-          <button class="btn small ghost hidden" id="btnOpenPanel">Panel</button>
-          <button class="btn small danger hidden" id="btnLogout">Logout</button>
-        </div>
-      </div>
-    </div>
+<div>
 
-    <div id="errBox" class="errBox hidden"></div>
-    <div id="okBox" class="okBox hidden"></div>
+<select id="langSel">
+<option value="de">DE</option>
+<option value="en">EN</option>
+<option value="sq">SQ</option>
+</select>
 
-    <div class="grid">
-      <!-- LEFT: MENU / AUTH -->
-      <div class="card" id="leftCard">
-        <div class="hd">
-          <h2 class="viewTitle" id="menuTitle">Menu</h2>
-          <span class="pill" id="userPill">Guest</span>
-        </div>
+<button id="btnOpenLogin" class="primary">
+Login
+</button>
 
-        <div class="bd">
-          <!-- AUTH BOX -->
-          <div id="authBox">
-            <div class="field">
-              <label id="lblEmail">Email</label>
-              <input class="input" id="email" type="email" placeholder="name@matteo.de" autocomplete="username" />
-            </div>
+<button id="btnLogout" class="bad hidden">
+Logout
+</button>
 
-            <div class="field">
-              <label id="lblPass">Password</label>
-              <input class="input" id="pass" type="password" placeholder="••••••••" autocomplete="current-password" />
-            </div>
+</div>
 
-            <div class="row">
-              <button type="button" class="btn primary" id="btnLogin">Login</button>
-              <button type="button" class="btn" id="btnRegister">Register</button>
-              <button type="button" class="btn" id="btnReset">Reset</button>
-            </div>
+</header>
 
-            <div class="sep"></div>
-            <small class="muted" id="authHint">
-              SuperAdmin/Admin/Staff — pas login hapet paneli.
-            </small>
-          </div>
 
-          <!-- MENU BUTTONS -->
-          <div id="menuBox" class="hidden">
-            <div class="menu">
-              <button class="btn primary" id="goWeekly">📅 Weekly Plan</button>
-              <button class="btn" id="goInventory">📦 Inventory</button>
-              <button class="btn" id="goStaff">👥 Staff</button>
-              <button class="btn" id="goSettings">⚙️ Settings</button>
-            </div>
+<div id="loginPanel" class="card hidden">
 
-            <div class="sep"></div>
-            <small class="muted" id="menuHint">
-              Weekly plan: emrat majtas, ditët sipër. Ruaj me Save.
-            </small>
-          </div>
-        </div>
-      </div>
+<h3>Login</h3>
 
-      <!-- RIGHT: VIEWS -->
-      <div class="card" id="rightCard">
-        <div class="hd">
-          <div>
-            <h2 class="viewTitle" id="viewTitle">Welcome</h2>
-            <div class="sub" id="viewSub">Login first.</div>
-          </div>
-          <div class="row">
-            <span class="kpi" id="kpiText"></span>
-          </div>
-        </div>
+<input id="email" placeholder="Email">
 
-        <div class="bd" id="viewHost">
-          <!-- VIEWS will continue in Part 2 -->
-                    <!-- VIEW: WEEKLY -->
-          <div id="viewWeekly" class="hidden">
-            <div class="toolbar">
-              <div class="left">
-                <button class="btn small" id="weekPrev">←</button>
-                <button class="btn small" id="weekToday">This Week</button>
-                <button class="btn small" id="weekNext">→</button>
-                <span class="chip">
-                  <span class="muted" id="weekLbl">Week:</span>
-                  <b id="weekText">—</b>
-                </span>
-              </div>
-              <div class="right">
-                <button class="btn small" id="weekLoad">Load</button>
-                <button class="btn small primary" id="weekSave">Save</button>
-                <button class="btn small danger" id="weekClear">Clear</button>
-              </div>
-            </div>
+<br><br>
 
-            <div class="tableWrap">
-              <table id="weeklyTable">
-                <thead>
-                  <tr>
-                    <th class="nameCell" id="thName">Staff</th>
-                    <th id="thMon">Mon</th>
-                    <th id="thTue">Tue</th>
-                    <th id="thWed">Wed</th>
-                    <th id="thThu">Thu</th>
-                    <th id="thFri">Fri</th>
-                    <th id="thSat">Sat</th>
-                    <th id="thSun">Sun</th>
-                  </tr>
-                </thead>
-                <tbody id="weeklyBody">
-                  <!-- rows generated -->
-                </tbody>
-              </table>
-            </div>
+<input id="pass" type="password" placeholder="Password">
 
-            <div class="sep"></div>
-            <small class="muted" id="weeklyHint">
-              Kliko në qeli dhe shkruaj (p.sh. "10-18 Küche"). Pastaj Save.
-            </small>
-          </div>
+<br><br>
 
-          <!-- VIEW: INVENTORY -->
-          <div id="viewInventory" class="hidden">
-            <div class="toolbar">
-              <div class="left">
-                <span class="chip"><b>Inventory</b></span>
-                <span class="kpi" id="invKpi"></span>
-              </div>
-              <div class="right">
-                <button class="btn small primary" id="invAddOpen">+ Add Item</button>
-                <button class="btn small" id="invReload">Reload</button>
-              </div>
-            </div>
+<button id="btnLogin" class="primary">Login</button>
 
-            <div id="invForm" class="card" style="border-radius:16px;margin-bottom:10px" class="hidden">
-              <div class="bd">
-                <div class="row" style="gap:12px">
-                  <div style="flex:1;min-width:220px" class="field">
-                    <label id="invLblName">Name</label>
-                    <input class="input" id="invName" placeholder="Mehl (25kg)" />
-                  </div>
-                  <div style="width:140px" class="field">
-                    <label id="invLblQty">Qty</label>
-                    <input class="input" id="invQty" type="number" step="0.01" placeholder="25" />
-                  </div>
-                  <div style="width:140px" class="field">
-                    <label id="invLblUnit">Unit</label>
-                    <select class="select" id="invUnit">
-                      <option>kg</option><option>g</option><option>l</option><option>ml</option><option>pcs</option>
-                    </select>
-                  </div>
-                  <div style="width:160px" class="field">
-                    <label id="invLblExp">Expiry</label>
-                    <input class="input" id="invExp" type="date" />
-                  </div>
-                </div>
+<button id="btnRegister">Register</button>
 
-                <div class="row" style="gap:12px">
-                  <div style="width:160px" class="field">
-                    <label id="invLblMin">Min</label>
-                    <input class="input" id="invMin" type="number" step="0.01" placeholder="5" />
-                  </div>
-                  <div style="flex:1;min-width:240px" class="field">
-                    <label id="invLblNote">Note</label>
-                    <input class="input" id="invNote" placeholder="Supplier / Location / info" />
-                  </div>
-                </div>
+<button id="btnReset">Reset Password</button>
 
-                <div class="row">
-                  <button class="btn small primary" id="invSaveBtn">Save</button>
-                  <button class="btn small" id="invCancelBtn">Cancel</button>
-                  <span class="muted" id="invEditHint"></span>
-                </div>
-              </div>
-            </div>
+</div>
 
-            <div class="list" id="invList"></div>
-          </div>
 
-          <!-- VIEW: STAFF -->
-          <div id="viewStaff" class="hidden">
-            <div class="toolbar">
-              <div class="left">
-                <span class="chip"><b id="staffTitle">Staff</b></span>
-                <span class="kpi" id="staffKpi"></span>
-              </div>
-              <div class="right">
-                <button class="btn small primary" id="staffAddOpen">+ Add Staff</button>
-                <button class="btn small" id="staffReload">Reload</button>
-              </div>
-            </div>
+<div id="appPanel" class="hidden">
 
-            <div id="staffForm" class="card" style="border-radius:16px;margin-bottom:10px" class="hidden">
-              <div class="bd">
-                <div class="row" style="gap:12px">
-                  <div style="flex:1;min-width:220px" class="field">
-                    <label id="staffLblName">Name</label>
-                    <input class="input" id="staffName" placeholder="Rina Lulaj" />
-                  </div>
-                  <div style="width:220px" class="field">
-                    <label id="staffLblRole">Role</label>
-                    <select class="select" id="staffRole">
-                      <option value="staff">staff</option>
-                      <option value="admin">admin</option>
-                    </select>
-                  </div>
-                  <div style="width:220px" class="field">
-                    <label id="staffLblArea">Area</label>
-                    <select class="select" id="staffArea">
-                      <option>Pizza</option>
-                      <option>Küche</option>
-                      <option>Theke</option>
-                      <option>Service</option>
-                      <option>Delivery</option>
-                    </select>
-                  </div>
-                </div>
 
-                <div class="row">
-                  <button class="btn small primary" id="staffSaveBtn">Save</button>
-                  <button class="btn small" id="staffCancelBtn">Cancel</button>
-                  <span class="muted" id="staffEditHint"></span>
-                </div>
+<div class="card">
 
-                <div class="sep"></div>
-                <small class="muted" id="staffHint">
-                  Staff list përdoret edhe për Weekly Plan (emrat vertikal).
-                </small>
-              </div>
-            </div>
+<h3>Weekly Plan</h3>
 
-            <div class="list" id="staffList"></div>
-          </div>
+<table>
 
-          <!-- VIEW: SETTINGS -->
-          <div id="viewSettings" class="hidden">
-            <p class="muted" id="settingsInfo">
-              Settings (placeholder). Këtu mund të shtojmë: printer, PDF export, module rights, etj.
-            </p>
+<thead>
 
-            <div class="sep"></div>
+<tr>
 
-            <div class="field">
-              <label id="orgLbl">Organization</label>
-              <input class="input" id="orgName" placeholder="Pizzeria Ristorante Matteo GmbH" />
-            </div>
+<th>Staff</th>
+<th>Mon</th>
+<th>Tue</th>
+<th>Wed</th>
+<th>Thu</th>
+<th>Fri</th>
+<th>Sat</th>
+<th>Sun</th>
 
-            <button class="btn small primary" id="saveSettingsBtn">Save Settings</button>
-          </div>
+</tr>
 
-          <!-- FALLBACK -->
-          <div id="viewWelcome">
-            <p class="muted" id="welcomeText">
-              Mirë se vjen në MatteoTeam PRO. Bëj login për të hapur Panelin.
-            </p>
-          </div>
+</thead>
 
-        </div><!-- /bd viewHost -->
-      </div><!-- /rightCard -->
-    </div><!-- /grid -->
-  </div><!-- /wrap -->
+<tbody id="weeklyBody"></tbody>
 
-  <!-- Part 3 continues with Firebase + JS -->
-    <script type="module">
-    // ==========================
-    // 1) FIREBASE IMPORTS (must be first)
-    // ==========================
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+</table>
 
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      sendPasswordResetEmail,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+<br>
 
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      setDoc,
-      updateDoc,
-      collection,
-      addDoc,
-      getDocs,
-      query,
-      where,
-      deleteDoc,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<button id="btnSaveWeekly" class="good">
+Save Weekly
+</button>
 
-   ==========================
-  // 3) FIREBASE CONFIG (PASTE YOURS HERE)
-  // ==========================
- const firebaseConfig = {
+</div>
+
+
+<div class="card">
+
+<h3>Staff</h3>
+
+<input id="staffName" placeholder="Staff name">
+
+<br><br>
+
+<button id="btnAddStaff" class="good">
+Add Staff
+</button>
+
+<div id="staffList"></div>
+
+</div>
+
+
+<div class="card">
+
+<h3>Inventory</h3>
+
+<input id="invName" placeholder="Item name">
+
+<br><br>
+
+<input id="invQty" type="number" placeholder="Quantity">
+
+<br><br>
+
+<button id="btnAddInv" class="good">
+Add Item
+</button>
+
+<div id="invList"></div>
+
+</div>
+
+</div>
+<script type="module">
+/* ==========================
+   1) IMPORTS
+========================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+
+/* ==========================
+   2) FIREBASE CONFIG (YOURS)
+========================== */
+const firebaseConfig = {
   apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
   authDomain: "matteoteam-test.firebaseapp.com",
   projectId: "matteoteam-test",
@@ -494,724 +238,459 @@
   measurementId: "G-9V887087P0"
 };
 
-  // ✅ SuperAdmin UID (Milot)
-  const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
+// ✅ SuperAdmin UID (Milot)
+const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
 
 
-    // ==========================
-    // 3) INIT
-    // ==========================
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-// ==========================
-// AUTH BUTTONS (FIX IDs)
-// ==========================
-$("btnLogin").addEventListener("click", async () => {
+/* ==========================
+   3) INIT (DATABASE IS HERE ✅)
+========================== */
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);   // ✅ DATABASE
+
+
+/* ==========================
+   4) HELPERS
+========================== */
+const $ = (id)=>document.getElementById(id);
+
+function showLoginPanel(){
+  $("loginPanel").classList.toggle("hidden");
+}
+
+/* ==========================
+   5) BUTTON: OPEN LOGIN
+========================== */
+$("btnOpenLogin").onclick = showLoginPanel;
+
+
+/* ==========================
+   6) AUTH ACTIONS
+========================== */
+$("btnLogin").onclick = async ()=>{
   const email = $("email").value.trim();
   const pass  = $("pass").value;
 
-  if(!email || !pass){
-    showErr("Shkruaj email dhe password.");
-    return;
-  }
-
   try{
-    await signInWithEmailAndPassword(auth, email, pass);
-    showOk("Login OK ✅");
+    await signInWithEmailAndPassword(auth,email,pass);
+    alert("Login OK ✅");
   }catch(e){
-    showErr(e.message);
+    alert(e.message);
   }
-});
+};
 
-$("btnRegister").addEventListener("click", async () => {
+$("btnRegister").onclick = async ()=>{
   const email = $("email").value.trim();
   const pass  = $("pass").value;
 
-  if(!email || !pass){
-    showErr("Shkruaj email dhe password.");
-    return;
-  }
-
   try{
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    showOk("User u krijua ✅");
-    // këtu më vonë e ruajmë rolin në Firestore
-  }catch(e){
-    showErr(e.message);
-  }
-});
+    const cred = await createUserWithEmailAndPassword(auth,email,pass);
 
-$("btnReset").addEventListener("click", async () => {
+    // create user doc (pending) in Firestore
+    await setDoc(doc(db,"users",cred.user.uid),{
+      uid: cred.user.uid,
+      email: cred.user.email,
+      role: (cred.user.uid===SUPERADMIN_UID) ? "superadmin" : "pending",
+      status: (cred.user.uid===SUPERADMIN_UID) ? "active" : "pending",
+      createdAt: serverTimestamp()
+    });
+
+    alert("User created ✅ (pending)");
+  }catch(e){
+    alert(e.message);
+  }
+};
+
+$("btnReset").onclick = async ()=>{
   const email = $("email").value.trim();
-  if(!email){
-    showErr("Shkruaj email për reset.");
+  try{
+    await sendPasswordResetEmail(auth,email);
+    alert("Reset email sent ✅ (check spam)");
+  }catch(e){
+    alert(e.message);
+  }
+};
+
+$("btnLogout").onclick = async ()=>{
+  await signOut(auth);
+};
+
+
+/* ==========================
+   7) AUTH STATE
+========================== */
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){
+    $("btnLogout").classList.add("hidden");
+    $("btnOpenLogin").classList.remove("hidden");
+    $("appPanel").classList.add("hidden");
     return;
   }
-  try{
-    await sendPasswordResetEmail(auth, email);
-    showOk("Reset email u dërgua ✅ (kontrollo Spam)");
-  }catch(e){
-    showErr(e.message);
+
+  $("loginPanel").classList.add("hidden");
+  $("btnLogout").classList.remove("hidden");
+  $("btnOpenLogin").classList.add("hidden");
+  $("appPanel").classList.remove("hidden");
+
+  // ensure superadmin doc always active
+  if(user.uid===SUPERADMIN_UID){
+    await setDoc(doc(db,"users",user.uid),{
+      uid:user.uid,
+      email:user.email||"",
+      role:"superadmin",
+      status:"active",
+      updatedAt: serverTimestamp()
+    },{merge:true});
   }
+
+  // after login load modules
+  await loadStaff();
+  await loadWeekly();
+  await loadInventory();
 });
-    // ==========================
-    // 4) UI HELPERS
-    // ==========================
-    const $ = (id) => document.getElementById(id);
 
-    function showOk(msg){
-      $("okBox").textContent = msg;
-      $("okBox").classList.remove("hidden");
-      $("errBox").classList.add("hidden");
-      setTimeout(()=> $("okBox").classList.add("hidden"), 3500);
-    }
-    function showErr(msg){
-      $("errBox").textContent = msg;
-      $("errBox").classList.remove("hidden");
-      $("okBox").classList.add("hidden");
-    }
+</script>
+/* ==========================
+   8) STAFF (Firestore: staff)
+========================== */
 
-    function setSignedInUI(user, role){
-      $("statusText").textContent = "Signed in";
-      $("statusDot").classList.add("good");
-      $("btnOpenLogin").classList.add("hidden");
-      $("btnLogout").classList.remove("hidden");
-      $("btnOpenPanel").classList.remove("hidden");
-      $("userPill").textContent = user?.email || "User";
-      $("roleText").textContent = role || "staff";
-      $("authBox").classList.add("hidden");
-      $("menuBox").classList.remove("hidden");
-    }
-    function setSignedOutUI(){
-      $("statusText").textContent = "Not signed in";
-      $("statusDot").classList.remove("good");
-      $("btnOpenLogin").classList.remove("hidden");
-      $("btnLogout").classList.add("hidden");
-      $("btnOpenPanel").classList.add("hidden");
-      $("userPill").textContent = "Guest";
-      $("roleText").textContent = "—";
-      $("authBox").classList.remove("hidden");
-      $("menuBox").classList.add("hidden");
-      showView("welcome");
-    }
+async function loadStaff(){
+  const snap = await getDocs(collection(db,"staff"));
 
-    function showView(which){
-      const views = ["Weekly","Inventory","Staff","Settings"];
-      for(const v of views) $("view"+v).classList.add("hidden");
-      $("viewWelcome").classList.add("hidden");
+  $("staffList").innerHTML = "";
+  $("weeklyBody").innerHTML = "";
 
-      if(which === "weekly"){
-        $("viewWeekly").classList.remove("hidden");
-        $("viewTitle").textContent = t("weekly.title");
-        $("viewSub").textContent   = t("weekly.sub");
-      } else if(which === "inventory"){
-        $("viewInventory").classList.remove("hidden");
-        $("viewTitle").textContent = t("inv.title");
-        $("viewSub").textContent   = t("inv.sub");
-      } else if(which === "staff"){
-        $("viewStaff").classList.remove("hidden");
-        $("viewTitle").textContent = t("staff.title");
-        $("viewSub").textContent   = t("staff.sub");
-      } else if(which === "settings"){
-        $("viewSettings").classList.remove("hidden");
-        $("viewTitle").textContent = t("settings.title");
-        $("viewSub").textContent   = t("settings.sub");
-      } else {
-        $("viewWelcome").classList.remove("hidden");
-        $("viewTitle").textContent = t("welcome.title");
-        $("viewSub").textContent   = t("welcome.sub");
-      }
-    }
+  const staffArr = [];
 
-    // ==========================
-    // 5) i18n (DE/EN/SQ)
-    // ==========================
-    let LANG = "de";
-    const I18N = {
-      de:{
-        "welcome.title":"Willkommen",
-        "welcome.sub":"Bitte einloggen.",
-        "weekly.title":"Wochenplan",
-        "weekly.sub":"Namen links, Tage oben. Bearbeiten & Speichern.",
-        "inv.title":"Inventar",
-        "inv.sub":"Artikel hinzufügen, bearbeiten, löschen.",
-        "staff.title":"Mitarbeiter",
-        "staff.sub":"Liste vertikal. Wird im Wochenplan genutzt.",
-        "settings.title":"Einstellungen",
-        "settings.sub":"Organisation & Module.",
-        "ui.login":"Login",
-        "ui.register":"Register",
-        "ui.reset":"Reset Password",
-      },
-      en:{
-        "welcome.title":"Welcome",
-        "welcome.sub":"Please login.",
-        "weekly.title":"Weekly Plan",
-        "weekly.sub":"Names left, days top. Edit & Save.",
-        "inv.title":"Inventory",
-        "inv.sub":"Add, edit, delete items.",
-        "staff.title":"Staff",
-        "staff.sub":"Vertical list. Used in weekly plan.",
-        "settings.title":"Settings",
-        "settings.sub":"Organization & modules.",
-        "ui.login":"Login",
-        "ui.register":"Register",
-        "ui.reset":"Reset Password",
-      },
-      sq:{
-        "welcome.title":"Mirë se vjen",
-        "welcome.sub":"Bëj login.",
-        "weekly.title":"Plani Javor",
-        "weekly.sub":"Emrat majtas, ditët lart. Ndrysho & ruaj.",
-        "inv.title":"Inventari",
-        "inv.sub":"Shto, edito, fshij artikuj.",
-        "staff.title":"Stafi",
-        "staff.sub":"Listë vertikale. Përdoret në plan.",
-        "settings.title":"Rregullime",
-        "settings.sub":"Organizata & modulet.",
-        "ui.login":"Login",
-        "ui.register":"Regjistro",
-        "ui.reset":"Reset Password",
-      }
-    };
-    const t = (k)=> (I18N[LANG] && I18N[LANG][k]) ? I18N[LANG][k] : k;
-
-    function applyLang(){
-      // Basic labels
-      $("viewTitle").textContent = t("welcome.title");
-      $("viewSub").textContent   = t("welcome.sub");
-      $("goWeekly").textContent  = "📅 " + t("weekly.title");
-      $("goInventory").textContent = "📦 " + t("inv.title");
-      $("goStaff").textContent   = "👥 " + t("staff.title");
-      $("goSettings").textContent= "⚙️ " + t("settings.title");
-    }
-
-    $("langDE").addEventListener("click", ()=>{ LANG="de"; applyLang(); showOk("DE"); });
-    $("langEN").addEventListener("click", ()=>{ LANG="en"; applyLang(); showOk("EN"); });
-    $("langSQ").addEventListener("click", ()=>{ LANG="sq"; applyLang(); showOk("SQ"); });
-
-    // ==========================
-    // 6) AUTH + ROLE
-    // ==========================
-    async function getOrCreateUserProfile(user){
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-
-      if(snap.exists()) return snap.data();
-
-      // Default: staff, except superadmin
-      const role = (user.uid === SUPERADMIN_UID) ? "superadmin" : "staff";
-      const profile = {
-        uid:user.uid,
-        email:user.email || "",
-        role,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-      await setDoc(ref, profile);
-      return profile;
-    }
-
-    $("btnLogin").addEventListener("click", async ()=>{
-      const email = $("email").value.trim();
-      const pass  = $("pass").value;
-
-      if(!email || !pass) return showErr("Enter email & password");
-
-      try{
-        await signInWithEmailAndPassword(auth, email, pass);
-      }catch(e){
-        showErr(e.message);
-      }
+  snap.forEach(d=>{
+    const data = d.data() || {};
+    staffArr.push({
+      id: d.id,
+      name: data.name || "—"
     });
+  });
 
-    $("btnRegister").addEventListener("click", async ()=>{
-      const email = $("email").value.trim();
-      const pass  = $("pass").value;
+  // sort by name
+  staffArr.sort((a,b)=> (a.name||"").localeCompare(b.name||""));
 
-      if(!email || !pass) return showErr("Enter email & password");
+  // render staff list + build weekly rows
+  for(const s of staffArr){
 
-      try{
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-        await getOrCreateUserProfile(cred.user);
-        showOk("Registered ✅");
-      }catch(e){
-        showErr(e.message);
-      }
-    });
+    // staff list card
+    const row = document.createElement("div");
+    row.style = "margin:6px 0;padding:10px;background:#1b3944;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;";
+    row.innerHTML = `
+      <div style="font-weight:700">${s.name}</div>
+      <button data-delstaff="${s.id}" style="background:#ff6b6b;color:white;border:none;padding:7px 10px;border-radius:6px;cursor:pointer">
+        Delete
+      </button>
+    `;
+    $("staffList").appendChild(row);
 
-    $("btnReset").addEventListener("click", async ()=>{
-      const email = $("email").value.trim();
-      if(!email) return showErr("Enter your email first");
-      try{
-        await sendPasswordResetEmail(auth, email);
-        showOk("Reset email sent ✅");
-      }catch(e){
-        showErr(e.message);
-      }
-    });
+    // weekly table row
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="font-weight:700">${s.name}</td>
+      <td><textarea id="w_${s.id}_mon"></textarea></td>
+      <td><textarea id="w_${s.id}_tue"></textarea></td>
+      <td><textarea id="w_${s.id}_wed"></textarea></td>
+      <td><textarea id="w_${s.id}_thu"></textarea></td>
+      <td><textarea id="w_${s.id}_fri"></textarea></td>
+      <td><textarea id="w_${s.id}_sat"></textarea></td>
+      <td><textarea id="w_${s.id}_sun"></textarea></td>
+    `;
+    $("weeklyBody").appendChild(tr);
+  }
 
-    $("btnLogout").addEventListener("click", async ()=>{
-      await signOut(auth);
-      showOk("Logged out");
-    });
-
-    $("btnOpenLogin").addEventListener("click", ()=>{
-      $("authBox").classList.remove("hidden");
-      $("menuBox").classList.add("hidden");
-      showView("welcome");
-    });
-
-    $("btnOpenPanel").addEventListener("click", ()=>{
-      showView("weekly");
-    });
-
-    // ==========================
-    // 7) STAFF MODULE (Firestore: staff)
-    // ==========================
-    let STAFF = []; // cached list
-    let staffEditId = null;
-
-    function staffCanManage(role){
-      return role === "superadmin" || role === "admin";
-    }
-
-    async function loadStaff(){
-      STAFF = [];
-      const qs = await getDocs(collection(db, "staff"));
-      qs.forEach(d => STAFF.push({id:d.id, ...d.data()}));
-      STAFF.sort((a,b)=>(a.name||"").localeCompare(b.name||""));
-      renderStaff();
-      buildWeeklyRows(); // refresh weekly rows after staff update
-    }
-
-    function renderStaff(){
-      $("staffList").innerHTML = "";
-      $("staffKpi").textContent = `${STAFF.length} staff`;
-      for(const s of STAFF){
-        const el = document.createElement("div");
-        el.className = "item";
-        const roleTag = `<span class="tag">${s.role || "staff"}</span>`;
-        const areaTag = `<span class="tag">${s.area || "—"}</span>`;
-        el.innerHTML = `
-          <div class="meta">
-            <b>${escapeHtml(s.name || "—")}</b>
-            <small>${roleTag} ${areaTag}</small>
-          </div>
-          <div class="ops">
-            <button class="btn small" data-edit="${s.id}">Edit</button>
-            <button class="btn small danger" data-del="${s.id}">Delete</button>
-          </div>
-        `;
-        $("staffList").appendChild(el);
-      }
-
-      $("staffList").querySelectorAll("[data-edit]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-edit");
-          const s = STAFF.find(x=>x.id===id);
-          if(!s) return;
-          staffEditId = id;
-          $("staffForm").classList.remove("hidden");
-          $("staffName").value = s.name || "";
-          $("staffRole").value = s.role || "staff";
-          $("staffArea").value = s.area || "Pizza";
-          $("staffEditHint").textContent = "Editing…";
-        });
-      });
-
-      $("staffList").querySelectorAll("[data-del]").forEach(btn=>{
-        btn.addEventListener("click", async ()=>{
-          const id = btn.getAttribute("data-del");
-          if(!confirm("Delete staff?")) return;
-          await deleteDoc(doc(db, "staff", id));
-          showOk("Deleted");
-          await loadStaff();
-        });
-      });
-    }
-
-    $("staffAddOpen").addEventListener("click", ()=>{
-      staffEditId = null;
-      $("staffForm").classList.remove("hidden");
-      $("staffName").value = "";
-      $("staffRole").value = "staff";
-      $("staffArea").value = "Pizza";
-      $("staffEditHint").textContent = "";
-    });
-
-    $("staffCancelBtn").addEventListener("click", ()=>{
-      $("staffForm").classList.add("hidden");
-      staffEditId = null;
-    });
-
-    $("staffSaveBtn").addEventListener("click", async ()=>{
-      const name = $("staffName").value.trim();
-      const role = $("staffRole").value;
-      const area = $("staffArea").value;
-
-      if(!name) return showErr("Name required");
-
-      const payload = { name, role, area, updatedAt: serverTimestamp() };
-
-      if(staffEditId){
-        await updateDoc(doc(db, "staff", staffEditId), payload);
-        showOk("Updated ✅");
-      }else{
-        await addDoc(collection(db, "staff"), { ...payload, createdAt: serverTimestamp() });
-        showOk("Added ✅");
-      }
-
-      $("staffForm").classList.add("hidden");
-      staffEditId = null;
+  // bind delete buttons
+  document.querySelectorAll("[data-delstaff]").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = btn.getAttribute("data-delstaff");
+      await deleteDoc(doc(db,"staff",id));
       await loadStaff();
-    });
-
-    $("staffReload").addEventListener("click", loadStaff);
-
-    // ==========================
-    // 8) WEEKLY MODULE (Firestore: weeklyPlans)
-    // ==========================
-    const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
-    let weekStart = startOfWeek(new Date()); // Monday
-    let weeklyDocId = ""; // computed
-    let currentRole = "staff";
-    let currentUser = null;
-
-    function formatDate(d){
-      const y = d.getFullYear();
-      const m = String(d.getMonth()+1).padStart(2,"0");
-      const dd= String(d.getDate()).padStart(2,"0");
-      return `${y}-${m}-${dd}`;
-    }
-    function startOfWeek(date){
-      const d = new Date(date);
-      d.setHours(0,0,0,0);
-      const day = d.getDay(); // 0 sun
-      const diff = (day === 0 ? -6 : 1) - day; // to Monday
-      d.setDate(d.getDate() + diff);
-      return d;
-    }
-    function weekIdFromStart(d){
-      return formatDate(d);
-    }
-
-    function weekLabel(d){
-      const end = new Date(d); end.setDate(end.getDate()+6);
-      return `${formatDate(d)} → ${formatDate(end)}`;
-    }
-
-    function buildWeeklyRows(){
-      const body = $("weeklyBody");
-      body.innerHTML = "";
-
-      for(const s of STAFF){
-        const tr = document.createElement("tr");
-        const nameTd = document.createElement("td");
-        nameTd.className = "nameCell";
-        nameTd.innerHTML = `<b>${escapeHtml(s.name||"—")}</b><div class="muted" style="font-size:12px">${escapeHtml(s.area||"")}</div>`;
-        tr.appendChild(nameTd);
-
-        for(const day of DAYS){
-          const td = document.createElement("td");
-          const div = document.createElement("div");
-          div.className = "cell";
-          div.contentEditable = (currentRole === "superadmin" || currentRole === "admin") ? "true" : "false";
-          div.setAttribute("data-staff", s.id);
-          div.setAttribute("data-day", day);
-          div.spellcheck = false;
-          td.appendChild(div);
-          tr.appendChild(td);
-        }
-        body.appendChild(tr);
-      }
-
-      $("weekText").textContent = weekLabel(weekStart);
-    }
-
-    async function loadWeekly(){
-      weeklyDocId = weekIdFromStart(weekStart);
-
-      // Ensure staff loaded first
-      if(STAFF.length === 0) await loadStaff();
-      buildWeeklyRows();
-
-      const ref = doc(db, "weeklyPlans", weeklyDocId);
-      const snap = await getDoc(ref);
-      if(!snap.exists()){
-        showOk("No weekly data yet.");
-        return;
-      }
-
-      const data = snap.data();
-      const entries = data.entries || {}; // entries[staffId][day] = text
-
-      document.querySelectorAll(".cell").forEach(cell=>{
-        const sid = cell.getAttribute("data-staff");
-        const day = cell.getAttribute("data-day");
-        cell.textContent = (entries[sid] && entries[sid][day]) ? entries[sid][day] : "";
-      });
-
-      showOk("Weekly loaded ✅");
-    }
-
-    async function saveWeekly(){
-      if(!(currentRole === "superadmin" || currentRole === "admin")){
-        return showErr("No permission to save weekly.");
-      }
-
-      weeklyDocId = weekIdFromStart(weekStart);
-      const entries = {};
-
-      document.querySelectorAll(".cell").forEach(cell=>{
-        const sid = cell.getAttribute("data-staff");
-        const day = cell.getAttribute("data-day");
-        const val = (cell.textContent || "").trim();
-        if(!entries[sid]) entries[sid] = {};
-        entries[sid][day] = val;
-      });
-
-      const ref = doc(db, "weeklyPlans", weeklyDocId);
-      await setDoc(ref, {
-        weekStart: weeklyDocId,
-        entries,
-        updatedAt: serverTimestamp(),
-        updatedBy: currentUser?.uid || null
-      }, { merge:true });
-
-      showOk("Weekly saved ✅");
-    }
-
-    function clearWeeklyUI(){
-      document.querySelectorAll(".cell").forEach(c=> c.textContent = "");
-    }
-
-    $("weekPrev").addEventListener("click", ()=>{
-      weekStart.setDate(weekStart.getDate()-7);
-      $("weekText").textContent = weekLabel(weekStart);
-      loadWeekly();
-    });
-    $("weekNext").addEventListener("click", ()=>{
-      weekStart.setDate(weekStart.getDate()+7);
-      $("weekText").textContent = weekLabel(weekStart);
-      loadWeekly();
-    });
-    $("weekToday").addEventListener("click", ()=>{
-      weekStart = startOfWeek(new Date());
-      $("weekText").textContent = weekLabel(weekStart);
-      loadWeekly();
-    });
-    $("weekLoad").addEventListener("click", loadWeekly);
-    $("weekSave").addEventListener("click", saveWeekly);
-    $("weekClear").addEventListener("click", ()=>{
-      if(!(currentRole === "superadmin" || currentRole === "admin")) return;
-      if(!confirm("Clear weekly table (UI only)?")) return;
-      clearWeeklyUI();
-    });
-
-    // ==========================
-    // 9) INVENTORY MODULE (Firestore: inventory)
-    // ==========================
-    let INV = [];
-    let invEditId = null;
-
-    function openInvForm(edit=false){
-      $("invForm").classList.remove("hidden");
-      $("invEditHint").textContent = edit ? "Editing…" : "";
-    }
-    function closeInvForm(){
-      $("invForm").classList.add("hidden");
-      invEditId = null;
-      $("invName").value=""; $("invQty").value=""; $("invMin").value="";
-      $("invUnit").value="kg"; $("invExp").value=""; $("invNote").value="";
-      $("invEditHint").textContent = "";
-    }
-
-    async function loadInventory(){
-      INV = [];
-      const qs = await getDocs(collection(db, "inventory"));
-      qs.forEach(d => INV.push({id:d.id, ...d.data()}));
-      INV.sort((a,b)=>(a.name||"").localeCompare(b.name||""));
-      renderInventory();
-    }
-
-    function renderInventory(){
-      $("invList").innerHTML = "";
-      $("invKpi").textContent = `${INV.length} items`;
-
-      for(const it of INV){
-        const qty = (it.qty ?? 0);
-        const min = (it.min ?? "");
-        const unit= (it.unit ?? "");
-        const exp = it.expiry ? String(it.expiry) : "";
-        const low = (min !== "" && Number(qty) <= Number(min));
-        const tags = [
-          `<span class="tag">${qty} ${escapeHtml(unit)}</span>`,
-          min!=="" ? `<span class="tag">min ${escapeHtml(min)}</span>` : "",
-          exp ? `<span class="tag">exp ${escapeHtml(exp)}</span>` : "",
-          low ? `<span class="tag" style="border-color:rgba(255,204,102,.35);background:rgba(255,204,102,.12)">LOW</span>` : ""
-        ].filter(Boolean).join(" ");
-
-        const el = document.createElement("div");
-        el.className = "item";
-        el.innerHTML = `
-          <div class="meta">
-            <b>${escapeHtml(it.name || "—")}</b>
-            <small>${tags}</small>
-            ${it.note ? `<small class="muted">${escapeHtml(it.note)}</small>` : ""}
-          </div>
-          <div class="ops">
-            <button class="btn small" data-iedit="${it.id}">Edit</button>
-            <button class="btn small danger" data-idel="${it.id}">Delete</button>
-          </div>
-        `;
-        $("invList").appendChild(el);
-      }
-
-      $("invList").querySelectorAll("[data-iedit]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-iedit");
-          const it = INV.find(x=>x.id===id);
-          if(!it) return;
-          invEditId = id;
-          openInvForm(true);
-          $("invName").value = it.name || "";
-          $("invQty").value  = it.qty ?? "";
-          $("invUnit").value = it.unit || "kg";
-          $("invMin").value  = it.min ?? "";
-          $("invExp").value  = it.expiry || "";
-          $("invNote").value = it.note || "";
-        });
-      });
-
-      $("invList").querySelectorAll("[data-idel]").forEach(btn=>{
-        btn.addEventListener("click", async ()=>{
-          const id = btn.getAttribute("data-idel");
-          if(!confirm("Delete item?")) return;
-          await deleteDoc(doc(db, "inventory", id));
-          showOk("Deleted");
-          await loadInventory();
-        });
-      });
-    }
-
-    $("invAddOpen").addEventListener("click", ()=>{
-      invEditId = null;
-      openInvForm(false);
-    });
-    $("invCancelBtn").addEventListener("click", closeInvForm);
-    $("invReload").addEventListener("click", loadInventory);
-
-    $("invSaveBtn").addEventListener("click", async ()=>{
-      const name = $("invName").value.trim();
-      const qty  = Number($("invQty").value || 0);
-      const unit = $("invUnit").value;
-      const min  = $("invMin").value === "" ? "" : Number($("invMin").value);
-      const exp  = $("invExp").value || "";
-      const note = $("invNote").value.trim();
-
-      if(!name) return showErr("Name required");
-
-      const payload = {
-        name, qty, unit,
-        min, expiry: exp,
-        note,
-        updatedAt: serverTimestamp()
-      };
-
-      if(invEditId){
-        await updateDoc(doc(db, "inventory", invEditId), payload);
-        showOk("Updated ✅");
-      }else{
-        await addDoc(collection(db, "inventory"), { ...payload, createdAt: serverTimestamp() });
-        showOk("Added ✅");
-      }
-
-      closeInvForm();
-      await loadInventory();
-    });
-
-    // ==========================
-    // 10) SETTINGS (simple)
-    // ==========================
-    $("saveSettingsBtn").addEventListener("click", async ()=>{
-      const name = $("orgName").value.trim();
-      if(!currentUser) return showErr("Login first");
-      await setDoc(doc(db, "settings", "main"), {
-        orgName: name,
-        updatedAt: serverTimestamp(),
-        updatedBy: currentUser.uid
-      }, { merge:true });
-      showOk("Settings saved ✅");
-    });
-
-    // ==========================
-    // 11) NAV
-    // ==========================
-    $("goWeekly").addEventListener("click", async ()=>{
-      showView("weekly");
       await loadWeekly();
+    };
+  });
+
+}
+
+
+/* ==========================
+   9) ADD STAFF
+========================== */
+
+$("btnAddStaff").onclick = async ()=>{
+  const name = $("staffName").value.trim();
+  if(!name) return;
+
+  await addDoc(collection(db,"staff"),{
+    name,
+    createdAt: serverTimestamp()
+  });
+
+  $("staffName").value = "";
+
+  await loadStaff();
+  await loadWeekly();
+};
+
+
+/* ==========================
+   10) WEEKLY (Firestore: weekly/week_main)
+   Strukturë: weekly/week_main -> { rows: { staffId: {mon,tue..} } }
+========================== */
+
+async function loadWeekly(){
+  const ref = doc(db,"weekly","week_main");
+  const snap = await getDoc(ref);
+  const data = snap.exists() ? (snap.data()||{}) : {};
+  const rows = data.rows || {};
+
+  // apply values
+  Object.keys(rows).forEach(staffId=>{
+    const r = rows[staffId] || {};
+    if($("w_"+staffId+"_mon")) $("w_"+staffId+"_mon").value = r.mon || "";
+    if($("w_"+staffId+"_tue")) $("w_"+staffId+"_tue").value = r.tue || "";
+    if($("w_"+staffId+"_wed")) $("w_"+staffId+"_wed").value = r.wed || "";
+    if($("w_"+staffId+"_thu")) $("w_"+staffId+"_thu").value = r.thu || "";
+    if($("w_"+staffId+"_fri")) $("w_"+staffId+"_fri").value = r.fri || "";
+    if($("w_"+staffId+"_sat")) $("w_"+staffId+"_sat").value = r.sat || "";
+    if($("w_"+staffId+"_sun")) $("w_"+staffId+"_sun").value = r.sun || "";
+  });
+}
+
+
+/* ==========================
+   11) SAVE WEEKLY
+========================== */
+
+$("btnSaveWeekly").onclick = async ()=>{
+
+  const snap = await getDocs(collection(db,"staff"));
+  const rows = {};
+
+  snap.forEach(d=>{
+    const id = d.id;
+    rows[id] = {
+      mon: $("w_"+id+"_mon") ? $("w_"+id+"_mon").value : "",
+      tue: $("w_"+id+"_tue") ? $("w_"+id+"_tue").value : "",
+      wed: $("w_"+id+"_wed") ? $("w_"+id+"_wed").value : "",
+      thu: $("w_"+id+"_thu") ? $("w_"+id+"_thu").value : "",
+      fri: $("w_"+id+"_fri") ? $("w_"+id+"_fri").value : "",
+      sat: $("w_"+id+"_sat") ? $("w_"+id+"_sat").value : "",
+      sun: $("w_"+id+"_sun") ? $("w_"+id+"_sun").value : ""
+    };
+  });
+
+  await setDoc(doc(db,"weekly","week_main"),{
+    rows,
+    updatedAt: serverTimestamp()
+  },{merge:true});
+
+  alert("Weekly Saved ✅");
+};
+/* ==========================
+   12) INVENTORY (Firestore: inventory)
+   - add item
+   - list items
+   - delete item
+========================== */
+
+async function loadInventory(){
+  const snap = await getDocs(collection(db,"inventory"));
+  $("invList").innerHTML = "";
+
+  const items = [];
+  snap.forEach(d=>{
+    const data = d.data() || {};
+    items.push({
+      id: d.id,
+      name: data.name || "—",
+      qty: data.qty ?? "",
+      createdAt: data.createdAt || null
     });
-    $("goInventory").addEventListener("click", async ()=>{
-      showView("inventory");
+  });
+
+  // sort by name
+  items.sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+
+  for(const it of items){
+    const div = document.createElement("div");
+    div.style = "margin:6px 0;padding:10px;background:#1b3944;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;";
+    div.innerHTML = `
+      <div>
+        <div style="font-weight:800">${it.name}</div>
+        <div style="opacity:.8;font-size:12px">Qty: <b>${it.qty}</b></div>
+      </div>
+      <button data-delinv="${it.id}" style="background:#ff6b6b;color:white;border:none;padding:7px 10px;border-radius:6px;cursor:pointer">
+        Delete
+      </button>
+    `;
+    $("invList").appendChild(div);
+  }
+
+  // bind delete
+  document.querySelectorAll("[data-delinv]").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = btn.getAttribute("data-delinv");
+      await deleteDoc(doc(db,"inventory",id));
       await loadInventory();
-    });
-    $("goStaff").addEventListener("click", async ()=>{
-      showView("staff");
-      await loadStaff();
-    });
-    $("goSettings").addEventListener("click", async ()=>{
-      showView("settings");
-    });
+    };
+  });
+}
 
-    // ==========================
-    // 12) AUTH STATE
-    // ==========================
-    onAuthStateChanged(auth, async (user)=>{
-      currentUser = user;
+$("btnAddInv").onclick = async ()=>{
+  const name = $("invName").value.trim();
+  const qty  = $("invQty").value;
 
-      if(!user){
-        currentRole = "staff";
-        setSignedOutUI();
-        return;
-      }
+  if(!name) return;
 
-      try{
-        const profile = await getOrCreateUserProfile(user);
-        currentRole = profile.role || "staff";
+  await addDoc(collection(db,"inventory"),{
+    name,
+    qty: qty==="" ? "" : Number(qty),
+    createdAt: serverTimestamp()
+  });
 
-        // If superadmin uid, force role superadmin
-        if(user.uid === SUPERADMIN_UID) currentRole = "superadmin";
+  $("invName").value = "";
+  $("invQty").value = "";
 
-        setSignedInUI(user, currentRole);
-        applyLang();
+  await loadInventory();
+};
 
-        // Preload staff so weekly table is ready
-        await loadStaff();
-        showView("weekly");
-        await loadWeekly();
 
-      }catch(e){
-        showErr(e.message);
-      }
-    });
+/* ==========================
+   13) MULTI LANGUAGE (Simple)
+   - only changes visible labels
+   - keeps app stable for iPhone
+========================== */
 
-    // ==========================
-    // 13) utils
-    // ==========================
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
+const TXT = {
+  de:{
+    login:"Login",
+    logout:"Logout",
+    reset:"Passwort Reset",
+    register:"Registrieren",
+    weekly:"Wochenplan",
+    saveWeekly:"Wochenplan speichern",
+    staff:"Mitarbeiter",
+    addStaff:"Mitarbeiter hinzufügen",
+    staffName:"Name",
+    inventory:"Inventar",
+    addItem:"Artikel hinzufügen",
+    itemName:"Artikel",
+    qty:"Menge"
+  },
+  en:{
+    login:"Login",
+    logout:"Logout",
+    reset:"Reset Password",
+    register:"Register",
+    weekly:"Weekly Plan",
+    saveWeekly:"Save Weekly",
+    staff:"Staff",
+    addStaff:"Add Staff",
+    staffName:"Name",
+    inventory:"Inventory",
+    addItem:"Add Item",
+    itemName:"Item",
+    qty:"Quantity"
+  },
+  sq:{
+    login:"Login",
+    logout:"Dil",
+    reset:"Reset Password",
+    register:"Regjistro",
+    weekly:"Plani Javor",
+    saveWeekly:"Ruaj Planin",
+    staff:"Stafi",
+    addStaff:"Shto Staf",
+    staffName:"Emri",
+    inventory:"Inventari",
+    addItem:"Shto Produkt",
+    itemName:"Produkti",
+    qty:"Sasia"
+  }
+};
 
-    // initial
-    applyLang();
-    showView("welcome");
-  </script>
+let LANG="de";
+
+function applyLang(){
+  const t = TXT[LANG] || TXT.de;
+
+  // header buttons
+  $("btnOpenLogin").innerText = t.login;
+  $("btnLogout").innerText = t.logout;
+
+  // login panel buttons
+  $("btnLogin").innerText = t.login;
+  $("btnRegister").innerText = t.register;
+  $("btnReset").innerText = t.reset;
+
+  // headings (simple)
+  // (We keep your existing H3 texts, but we can overwrite them if you want.)
+  // We'll set placeholders:
+  $("staffName").placeholder = t.staffName;
+  $("invName").placeholder = t.itemName;
+  $("invQty").placeholder = t.qty;
+
+  // action buttons
+  $("btnSaveWeekly").innerText = t.saveWeekly;
+  $("btnAddStaff").innerText = t.addStaff;
+  $("btnAddInv").innerText = t.addItem;
+}
+
+$("langSel").onchange = ()=>{
+  LANG = $("langSel").value;
+  applyLang();
+};
+
+// apply once at start
+applyLang();
+/* ==========================
+   14) SAFE BOOT (avoid "null" errors)
+========================== */
+
+// When page refreshes, sometimes buttons exist but data not loaded yet.
+// We only load data after user is logged in (already in onAuthStateChanged).
+// But we also want a clean UI when app opens.
+
+function showLoggedOutUI(){
+  $("appPanel").classList.add("hidden");
+  $("loginPanel").classList.add("hidden");
+  $("btnLogout").classList.add("hidden");
+  $("btnOpenLogin").classList.remove("hidden");
+}
+
+function showLoggedInUI(){
+  $("appPanel").classList.remove("hidden");
+  $("loginPanel").classList.add("hidden");
+  $("btnLogout").classList.remove("hidden");
+  $("btnOpenLogin").classList.add("hidden");
+}
+
+// Override a bit: make sure UI always correct
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){
+    showLoggedOutUI();
+    return;
+  }
+  showLoggedInUI();
+
+  // load everything after login
+  await loadStaff();
+  await loadWeekly();
+  await loadInventory();
+});
+
+
+/* ==========================
+   15) FIRST LOAD
+========================== */
+showLoggedOutUI();
+
+// ✅ END SCRIPT
+</script>
+
 </body>
 </html>
