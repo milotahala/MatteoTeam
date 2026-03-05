@@ -504,7 +504,57 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+// ==========================
+// AUTH BUTTONS (FIX IDs)
+// ==========================
+$("btnLogin").addEventListener("click", async () => {
+  const email = $("email").value.trim();
+  const pass  = $("pass").value;
 
+  if(!email || !pass){
+    showErr("Shkruaj email dhe password.");
+    return;
+  }
+
+  try{
+    await signInWithEmailAndPassword(auth, email, pass);
+    showOk("Login OK ✅");
+  }catch(e){
+    showErr(e.message);
+  }
+});
+
+$("btnRegister").addEventListener("click", async () => {
+  const email = $("email").value.trim();
+  const pass  = $("pass").value;
+
+  if(!email || !pass){
+    showErr("Shkruaj email dhe password.");
+    return;
+  }
+
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    showOk("User u krijua ✅");
+    // këtu më vonë e ruajmë rolin në Firestore
+  }catch(e){
+    showErr(e.message);
+  }
+});
+
+$("btnReset").addEventListener("click", async () => {
+  const email = $("email").value.trim();
+  if(!email){
+    showErr("Shkruaj email për reset.");
+    return;
+  }
+  try{
+    await sendPasswordResetEmail(auth, email);
+    showOk("Reset email u dërgua ✅ (kontrollo Spam)");
+  }catch(e){
+    showErr(e.message);
+  }
+});
     // ==========================
     // 4) UI HELPERS
     // ==========================
