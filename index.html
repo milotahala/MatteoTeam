@@ -750,6 +750,17 @@ $("btnSaveWeekly").onclick = async ()=>{
 };
 
 // ✅ END SCRIPT
+alert("Weekly Plan saved");
+};
+
+function openView(view){
+  document.getElementById("viewWeekly").classList.add("hidden");
+  document.getElementById("viewStaff").classList.add("hidden");
+  document.getElementById("viewInventory").classList.add("hidden");
+
+  document.getElementById(view).classList.remove("hidden");
+}
+
 </script>
 
 </body>
