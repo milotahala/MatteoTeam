@@ -1395,7 +1395,9 @@ function renderMyHoursDemo(){
     body.appendChild(tr);
   });
 
-  totalEl.textContent = monthTotal.toFixed(2) + "h";
+    totalEl.textContent = monthTotal.toFixed(2) + "h";
+}
+
 async function loadDashboardStats(){
   const staffSnap = await getDocs(collection(db,"staff"));
   $("statStaff").textContent = staffSnap.size;
@@ -1404,8 +1406,8 @@ async function loadDashboardStats(){
   $("statInventory").textContent = invSnap.size;
 
   $("statHours").textContent = "0";
-
 }
+
 </script>
 </body>
 </html>
