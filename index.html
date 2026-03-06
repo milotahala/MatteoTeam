@@ -1033,15 +1033,15 @@
         "\"":"&quot;"
       }[m]));
     }
-        function openView(view){
-      ["viewDashboard","viewWeekly","viewStaff","viewInventory"].forEach(v=>{
-        const el=$(v);
-        if(el) el.classList.add("hidden");
-      });
+      function openView(view){
+  ["viewDashboard","viewWeekly","viewStaff","viewInventory","viewMyHours"].forEach(v=>{
+    const el = $(v);
+    if(el) el.classList.add("hidden");
+  });
 
-      const target=$(view);
-      if(target) target.classList.remove("hidden");
-    }
+  const target = $(view);
+  if(target) target.classList.remove("hidden");
+}
 window.openView = openView;
     btnOpenLogin.onclick=()=>openView("viewDashboard");
 
