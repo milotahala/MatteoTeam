@@ -722,8 +722,45 @@
           </div>
         </div>
       </div>
+</div>
+</div>
 
-      <div class="footerSpace"></div>
+<div id="viewMyHours" class="card hidden">
+
+  <div class="cardTitleRow">
+    <div>
+      <h2 class="cardTitle">Orët e Mia</h2>
+      <div class="cardSub">Orët e punës për muajin</div>
+    </div>
+  </div>
+
+  <input type="month" id="monthPicker">
+
+  <div class="weekShell">
+    <table class="weekTable">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Fillimi</th>
+          <th>Fundi</th>
+          <th>Pauza</th>
+          <th>Orë</th>
+        </tr>
+      </thead>
+
+      <tbody id="myHoursBody"></tbody>
+
+    </table>
+  </div>
+
+  <div style="margin-top:15px;font-size:18px;">
+    Total Muaji: <span id="monthTotal">0h</span>
+  </div>
+
+</div>
+
+<div class="footerSpace"></div>
+    
     </div>
   </div>
 
