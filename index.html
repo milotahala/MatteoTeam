@@ -1228,7 +1228,37 @@
     $("langSel").onchange=e=>{
       applyTranslations(e.target.value);
     };
+function updateWeekDates(){
 
-  </script>
+  const start = document.getElementById("weekStart").value;
+  if(!start) return;
+
+  const d = new Date(start);
+
+  const days = ["thMon","thTue","thWed","thThu","thFri","thSat","thSun"];
+
+  for(let i=0;i<7;i++){
+
+    const day = new Date(d);
+    day.setDate(d.getDate()+i);
+
+    const txt =
+      day.getDate().toString().padStart(2,"0") +
+      "." +
+      (day.getMonth()+1).toString().padStart(2,"0");
+
+    document.getElementById(days[i]).innerText =
+      ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][i] +
+      " " + txt;
+
+  }
+
+}
+
+document.getElementById("weekStart").onchange = updateWeekDates;
+
+updateWeekDates();
+
+</script>
 </body>
 </html>
