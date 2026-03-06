@@ -1283,8 +1283,9 @@ window.openView = openView;
       $("dashRoleLine").textContent="Role: "+currentRole;
 
       await loadStaff();
-      await loadInventory();
-      await loadWeekly();
+await loadInventory();
+await loadWeekly();
+await loadDashboardStats();
 
       openView("viewDashboard");
     });
