@@ -1396,9 +1396,7 @@ function renderMyHoursDemo(){
   });
 
   totalEl.textContent = monthTotal.toFixed(2) + "h";
-  // Pjesa 3 vendoset këtu
 async function loadDashboardStats(){
-
   const staffSnap = await getDocs(collection(db,"staff"));
   $("statStaff").textContent = staffSnap.size;
 
