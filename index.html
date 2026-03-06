@@ -1,765 +1,1234 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MatteoTeam PRO</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MatteoTeam PRO</title>
 
-<style>
+  <style>
+    :root{
+      --bg:#08141b;
+      --bg2:#0c1d26;
+      --card:#102733;
+      --card2:#133241;
+      --line:rgba(255,255,255,.08);
+      --text:#eef7fb;
+      --muted:#a9c0cb;
+      --primary:#28d7a1;
+      --primary2:#1fb986;
+      --danger:#ff5f6d;
+      --danger2:#ff3e4f;
+      --warning:#ffb347;
+      --blue:#43b0ff;
+      --shadow:0 10px 30px rgba(0,0,0,.28);
+      --radius:18px;
+    }
 
-body{
-margin:0;
-font-family:Arial;
-background:#0e1a20;
-color:white;
-}
+    *{ box-sizing:border-box; }
 
-header{
-background:#142c35;
-padding:15px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
+    html,body{
+      margin:0;
+      padding:0;
+      background:
+        radial-gradient(circle at top left, rgba(67,176,255,.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(40,215,161,.10), transparent 24%),
+        linear-gradient(180deg, #071219 0%, #08141b 100%);
+      color:var(--text);
+      font-family:Arial, Helvetica, sans-serif;
+      min-height:100%;
+    }
 
-button{
-padding:10px 14px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-}
+    body{
+      padding:16px;
+    }
 
-.primary{background:#4dabf7;color:white}
-.good{background:#20c997;color:white}
-.bad{background:#ff6b6b;color:white}
+    .appShell{
+      max-width:1200px;
+      margin:0 auto;
+    }
 
-.card{
-background:#132931;
-margin:15px;
-padding:15px;
-border-radius:10px;
-}
+    .hidden{
+      display:none !important;
+    }
 
-.hidden{display:none}
+    .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:16px 18px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(8px);
+      margin-bottom:18px;
+    }
 
-input,select{
-padding:8px;
-border:none;
-border-radius:6px;
-width:100%;
-}
+    .brandWrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
 
-table{
-width:100%;
-border-collapse:collapse;
-}
+    .logo{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      font-size:22px;
+      background:linear-gradient(135deg, var(--primary), var(--blue));
+      color:#06212a;
+      font-weight:900;
+      box-shadow:0 8px 24px rgba(40,215,161,.22);
+      flex:0 0 auto;
+    }
 
-th,td{
-border:1px solid #284b57;
-padding:8px;
-text-align:center;
-}
+    .brandText{
+      min-width:0;
+    }
 
-textarea{
-  width:70px;
-  height:40px;
-  background:#0e2b34;
-  color:white;
-  border:1px solid #2f5662;
-  border-radius:6px;
-  text-align:center;
-  font-size:14px;
-}
+    .title{
+      font-size:24px;
+      font-weight:800;
+      line-height:1.1;
+      margin:0;
+      letter-spacing:.3px;
+    }
 
-</style>
+    .subtitle{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .headerRight{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    select,
+    input,
+    button,
+    textarea{
+      font:inherit;
+    }
+
+    select,
+    input{
+      width:100%;
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      padding:12px 14px;
+      outline:none;
+      transition:.18s ease;
+    }
+
+    select:focus,
+    input:focus,
+    textarea:focus{
+      border-color:rgba(67,176,255,.45);
+      box-shadow:0 0 0 3px rgba(67,176,255,.12);
+    }
+
+    select{
+      width:auto;
+      min-width:86px;
+    }
+
+    button{
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      cursor:pointer;
+      font-weight:700;
+      transition:transform .08s ease, opacity .18s ease, background .18s ease;
+    }
+
+    button:active{
+      transform:scale(.98);
+    }
+
+    .btnPrimary{
+      background:linear-gradient(180deg, var(--primary), var(--primary2));
+      color:#06261d;
+    }
+
+    .btnSecondary{
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .btnDanger{
+      background:linear-gradient(180deg, var(--danger), var(--danger2));
+      color:white;
+    }
+
+    .btnBlue{
+      background:linear-gradient(180deg, #55beff, #2e9ef3);
+      color:#071822;
+    }
+
+    .btnGhost{
+      background:transparent;
+      color:var(--muted);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .menuGrid{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .menuCard{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:18px 16px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      transition:.18s ease;
+      min-height:106px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .menuCard:hover{
+      transform:translateY(-2px);
+      border-color:rgba(40,215,161,.24);
+      box-shadow:0 14px 34px rgba(0,0,0,.34);
+    }
+
+    .menuIcon{
+      font-size:26px;
+    }
+
+    .menuTitle{
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .menuSub{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(16,39,51,.96), rgba(12,29,38,.98));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+    }
+
+    .cardTitleRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    .cardTitle{
+      margin:0;
+      font-size:26px;
+      font-weight:800;
+    }
+
+    .cardSub{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:4px;
+    }
+
+    .formGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .stack{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .loginActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+
+    .msg{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:12px;
+      font-size:14px;
+      display:none;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .msg.ok{
+      display:block;
+      background:rgba(40,215,161,.10);
+      color:#b9ffe7;
+      border-color:rgba(40,215,161,.18);
+    }
+
+    .msg.err{
+      display:block;
+      background:rgba(255,95,109,.10);
+      color:#ffd4d8;
+      border-color:rgba(255,95,109,.18);
+    }
+
+    .sectionActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .weekShell{
+      overflow:auto;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.02);
+    }
+
+    .weekTable{
+      width:100%;
+      min-width:980px;
+      border-collapse:collapse;
+    }
+
+    .weekTable th,
+    .weekTable td{
+      border:1px solid rgba(255,255,255,.08);
+      padding:10px;
+      text-align:center;
+      vertical-align:middle;
+    }
+
+    .weekTable th{
+      background:rgba(255,255,255,.05);
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .staffNameCell{
+      min-width:170px;
+      text-align:left !important;
+      font-weight:800;
+      background:rgba(255,255,255,.03);
+    }
+
+    .weekInput{
+      width:100%;
+      min-width:92px;
+      text-align:center;
+      border-radius:12px;
+      background:rgba(10,29,39,.9);
+      border:1px solid rgba(67,176,255,.18);
+      color:var(--text);
+      padding:12px 8px;
+    }
+
+    .weekTopBar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+
+    .weekTitleWrap{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:8px 12px;
+      background:rgba(67,176,255,.10);
+      color:#cde9ff;
+      border:1px solid rgba(67,176,255,.18);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .muted{
+      color:var(--muted);
+    }
+
+    .twoCols{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .listItem{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .listItemMain{
+      min-width:0;
+    }
+
+    .listItemTitle{
+      font-size:18px;
+      font-weight:800;
+      word-break:break-word;
+    }
+
+    .listItemSub{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    .emptyState{
+      padding:18px;
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      border:1px dashed rgba(255,255,255,.12);
+      color:var(--muted);
+      text-align:center;
+    }
+
+    .adminBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,179,71,.12);
+      color:#ffdca5;
+      border:1px solid rgba(255,179,71,.22);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .footerSpace{
+      height:8px;
+    }
+
+    @media (max-width: 980px){
+      .menuGrid{
+        grid-template-columns:repeat(2, 1fr);
+      }
+
+      .twoCols,
+      .formGrid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 640px){
+      body{
+        padding:12px;
+      }
+
+      .header{
+        align-items:flex-start;
+      }
+
+      .headerRight{
+        width:100%;
+        justify-content:flex-start;
+      }
+
+      .menuGrid{
+        grid-template-columns:1fr;
+      }
+
+      .card{
+        padding:14px;
+        border-radius:18px;
+      }
+
+      .cardTitle{
+        font-size:22px;
+      }
+
+      .title{
+        font-size:22px;
+      }
+
+      .subtitle{
+        white-space:normal;
+      }
+    }
+  </style>
 </head>
-
 <body>
-
-<header>
-
-<h2>MatteoTeam PRO</h2>
-
-<div>
-
-<select id="langSel">
-<option value="de">DE</option>
-<option value="en">EN</option>
-<option value="sq">SQ</option>
-</select>
-
-<button id="btnOpenLogin" class="primary">
-Login
-</button>
-
-<button id="btnLogout" class="bad hidden">
-Logout
-</button>
-
-</div>
-
-</header>
-<div class="menuGrid">
-
-<div class="menuCard" onclick="openView('viewWeekly')">
-📅
-<span>Plan</span>
-</div>
-
-<div class="menuCard" onclick="openView('viewStaff')">
-👨‍🍳
-<span>Staff</span>
-</div>
-
-<div class="menuCard" onclick="openView('viewInventory')">
-📦
-<span>Inventory</span>
-</div>
-
-</div>
-
-<div id="loginPanel" class="card hidden">
-
-<h3>Login</h3>
-
-<input id="email" placeholder="Email">
-
-<br><br>
-
-<input id="pass" type="password" placeholder="Password">
-
-<br><br>
-
-<button id="btnLogin" class="primary">Login</button>
-
-<button id="btnRegister">Register</button>
-
-<button id="btnReset">Reset Password</button>
-
-</div>
-
-
-<div id="appPanel" class="hidden">
-
-
-<div class="card">
-
-<div class="weekTop">
-  <div class="weekTitle">Weekly Plan</div>
-  <input id="weekStart" type="date" class="weekPicker">
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Staff</th>
-<th>Mon</th>
-<th>Tue</th>
-<th>Wed</th>
-<th>Thu</th>
-<th>Fri</th>
-<th>Sat</th>
-<th>Sun</th>
-
-</tr>
-
-</thead>
-
-<tbody id="weeklyBody"></tbody>
-
-</table>
-
-<br>
-
-<button id="btnSaveWeekly" class="good">
-Save Weekly
-</button>
-
-</div>
-
-
-<div class="card">
-
-<h3>Staff</h3>
-
-<input id="staffName" placeholder="Staff name">
-
-<br><br>
-
-<button id="btnAddStaff" class="good">
-Add Staff
-</button>
-
-<div id="staffList"></div>
-
-</div>
-
-
-<div class="card">
-
-<h3>Inventory</h3>
-
-<input id="invName" placeholder="Item name">
-
-<br><br>
-
-<input id="invQty" type="number" placeholder="Quantity">
-
-<br><br>
-
-<button id="btnAddInv" class="good">
-Add Item
-</button>
-
-<div id="invList"></div>
-</div> <!-- /card Inventory -->
-
-</div> <!-- /appPane (nëse e ke) -->
-
-<script type="module">
-/* ==========================
-   1) IMPORTS
-========================== */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-
-/* ==========================
-   2) FIREBASE CONFIG (YOURS)
-========================== */
-const firebaseConfig = {
-  apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
-  authDomain: "matteoteam-test.firebaseapp.com",
-  projectId: "matteoteam-test",
-  storageBucket: "matteoteam-test.firebasestorage.app",
-  messagingSenderId: "1084486170913",
-  appId: "1:1084486170913:web:d68cf328becefe226a6660",
-  measurementId: "G-9V887087P0"
-};
-
-// ✅ SuperAdmin UID (Milot)
-const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
-
-
-/* ==========================
-   3) INIT (DATABASE IS HERE ✅)
-========================== */
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);   // ✅ DATABASE
-
-
-/* ==========================
-   4) HELPERS
-========================== */
-const $ = (id)=>document.getElementById(id);
-
-function showLoginPanel(){
-  $("loginPanel").classList.toggle("hidden");
-}
-
-/* ==========================
-   5) BUTTON: OPEN LOGIN
-========================== */
-$("btnOpenLogin").onclick = showLoginPanel;
-
-
-/* ==========================
-   6) AUTH ACTIONS
-========================== */
-$("btnLogin").onclick = async ()=>{
-  const email = $("email").value.trim();
-  const pass  = $("pass").value;
-
-alert("Trying login...");
-
-  try{
-    await signInWithEmailAndPassword(auth,email,pass);
-    alert("Login OK ✅");
-  }catch(e){
-    alert(e.message);
-  }
-};
-
-$("btnRegister").onclick = async ()=>{
-  const email = $("email").value.trim();
-  const pass  = $("pass").value;
-
-  try{
-    const cred = await createUserWithEmailAndPassword(auth,email,pass);
-
-    // create user doc (pending) in Firestore
-    await setDoc(doc(db,"users",cred.user.uid),{
-      uid: cred.user.uid,
-      email: cred.user.email,
-      role: (cred.user.uid===SUPERADMIN_UID) ? "superadmin" : "pending",
-      status: (cred.user.uid===SUPERADMIN_UID) ? "active" : "pending",
-      createdAt: serverTimestamp()
-    });
-
-    alert("User created ✅ (pending)");
-  }catch(e){
-    alert(e.message);
-  }
-};
-
-$("btnReset").onclick = async ()=>{
-  const email = $("email").value.trim();
-  try{
-    await sendPasswordResetEmail(auth,email);
-    alert("Reset email sent ✅ (check spam)");
-  }catch(e){
-    alert(e.message);
-  }
-};
-
-$("btnLogout").onclick = async ()=>{
-  await signOut(auth);
-};
-
-
-/* ==========================
-   7) AUTH STATE
-========================== */
-onAuthStateChanged(auth, async (user)=>{
-  if(!user){
-    $("btnLogout").classList.add("hidden");
-    $("btnOpenLogin").classList.remove("hidden");
-    $("appPanel").classList.add("hidden");
-    return;
-  }
-
-  $("loginPanel").classList.add("hidden");
-  $("btnLogout").classList.remove("hidden");
-  $("btnOpenLogin").classList.add("hidden");
-  $("appPanel").classList.remove("hidden");
-
-  // ensure superadmin doc always active
-  if(user.uid===SUPERADMIN_UID){
-    await setDoc(doc(db,"users",user.uid),{
-      uid:user.uid,
-      email:user.email||"",
-      role:"superadmin",
-      status:"active",
-      updatedAt: serverTimestamp()
-    },{merge:true});
-  }
-
-  // after login load modules
-  await loadStaff();
-  await loadWeekly();
-  await loadInventory();
-});
-
-/* ==========================
-   8) STAFF (Firestore: staff)
-========================== */
-
-async function loadStaff(){
-  const snap = await getDocs(collection(db,"staff"));
-
-  $("staffList").innerHTML = "";
-  $("weeklyBody").innerHTML = "";
-
-  const staffArr = [];
-
-  snap.forEach(d=>{
-    const data = d.data() || {};
-    staffArr.push({
-      id: d.id,
-      name: data.name || "—"
-    });
-  });
-
-  // sort by name
-  staffArr.sort((a,b)=> (a.name||"").localeCompare(b.name||""));
-
-  // render staff list + build weekly rows
-  for(const s of staffArr){
-
-    // staff list card
-   const row = document.createElement("div");
-row.style = "margin:6px 0;padding:10px;background:#1b3944;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;";
-
-const nameSpan = document.createElement("div");
-nameSpan.style.fontWeight = "700";
-nameSpan.textContent = s.name;
-
-const delBtn = document.createElement("button");
-delBtn.textContent = "Delete";
-delBtn.style = "background:red;color:white;border:none;padding:6px 10px;border-radius:6px";
-delBtn.onclick = async () => {
-  await deleteDoc(doc(db,"staff",s.id));
-  await loadStaff();
-};
-
-row.appendChild(nameSpan);
-row.appendChild(delBtn);
-
-$("staffList").appendChild(row);
-    // weekly table row
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td style="font-weight:700">${s.name}</td>
-      <td><textarea id="w_${s.id}_mon"></textarea></td>
-      <td><textarea id="w_${s.id}_tue"></textarea></td>
-      <td><textarea id="w_${s.id}_wed"></textarea></td>
-      <td><textarea id="w_${s.id}_thu"></textarea></td>
-      <td><textarea id="w_${s.id}_fri"></textarea></td>
-      <td><textarea id="w_${s.id}_sat"></textarea></td>
-      <td><textarea id="w_${s.id}_sun"></textarea></td>
-    `;
-    $("weeklyBody").appendChild(tr);
-  }
-
-  // bind delete buttons
-  document.querySelectorAll("[data-delstaff]").forEach(btn=>{
-    btn.onclick = async ()=>{
-      const id = btn.getAttribute("data-delstaff");
-      await deleteDoc(doc(db,"staff",id));
-      await loadStaff();
-      await loadWeekly();
-    };
-  });
-
-}
-
-
-/* ==========================
-   9) ADD STAFF
-========================== */
-
-$("btnAddStaff").onclick = async ()=>{
-  const name = $("staffName").value.trim();
-  if(!name) return;
-
-  await addDoc(collection(db,"staff"),{
-    name,
-    createdAt: serverTimestamp()
-  });
-
-  $("staffName").value = "";
-
-  await loadStaff();
-  await loadWeekly();
-};
-
-
-/* ==========================
-   10) WEEKLY (Firestore: weekly/week_main)
-   Strukturë: weekly/week_main -> { rows: { staffId: {mon,tue..} } }
-========================== */
-
-async function loadWeekly(){
-  const ref = doc(db,"weekly","week_main");
-  const snap = await getDoc(ref);
-  const data = snap.exists() ? (snap.data()||{}) : {};
-  const rows = data.rows || {};
-
-  // apply values
-  Object.keys(rows).forEach(staffId=>{
-    const r = rows[staffId] || {};
-    if($("w_"+staffId+"_mon")) $("w_"+staffId+"_mon").value = r.mon || "";
-    if($("w_"+staffId+"_tue")) $("w_"+staffId+"_tue").value = r.tue || "";
-    if($("w_"+staffId+"_wed")) $("w_"+staffId+"_wed").value = r.wed || "";
-    if($("w_"+staffId+"_thu")) $("w_"+staffId+"_thu").value = r.thu || "";
-    if($("w_"+staffId+"_fri")) $("w_"+staffId+"_fri").value = r.fri || "";
-    if($("w_"+staffId+"_sat")) $("w_"+staffId+"_sat").value = r.sat || "";
-    if($("w_"+staffId+"_sun")) $("w_"+staffId+"_sun").value = r.sun || "";
-  });
-}
-
-
-/* ==========================
-   11) SAVE WEEKLY
-========================== */
-
-$("btnSaveWeekly").onclick = async ()=>{
-
-  const snap = await getDocs(collection(db,"staff"));
-  const rows = {};
-
-  snap.forEach(d=>{
-    const id = d.id;
-    rows[id] = {
-      mon: $("w_"+id+"_mon") ? $("w_"+id+"_mon").value : "",
-      tue: $("w_"+id+"_tue") ? $("w_"+id+"_tue").value : "",
-      wed: $("w_"+id+"_wed") ? $("w_"+id+"_wed").value : "",
-      thu: $("w_"+id+"_thu") ? $("w_"+id+"_thu").value : "",
-      fri: $("w_"+id+"_fri") ? $("w_"+id+"_fri").value : "",
-      sat: $("w_"+id+"_sat") ? $("w_"+id+"_sat").value : "",
-      sun: $("w_"+id+"_sun") ? $("w_"+id+"_sun").value : ""
-    };
-  });
-
-  await setDoc(doc(db,"weekly","week_main"),{
-    rows,
-    updatedAt: serverTimestamp()
-  },{merge:true});
-
-  alert("Weekly Saved ✅");
-};
-/* ==========================
-   12) INVENTORY (Firestore: inventory)
-   - add item
-   - list items
-   - delete item
-========================== */
-
-async function loadInventory(){
-  const snap = await getDocs(collection(db,"inventory"));
-  $("invList").innerHTML = "";
-
-  const items = [];
-  snap.forEach(d=>{
-    const data = d.data() || {};
-    items.push({
-      id: d.id,
-      name: data.name || "—",
-      qty: data.qty ?? "",
-      createdAt: data.createdAt || null
-    });
-  });
-
-  // sort by name
-  items.sort((a,b)=> (a.name||"").localeCompare(b.name||""));
-
-  for(const it of items){
-    const div = document.createElement("div");
-    div.style = "margin:6px 0;padding:10px;background:#1b3944;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;";
-    div.innerHTML = `
-      <div>
-        <div style="font-weight:800">${it.name}</div>
-        <div style="opacity:.8;font-size:12px">Qty: <b>${it.qty}</b></div>
+  <div class="appShell">
+
+    <header class="header">
+      <div class="brandWrap">
+        <div class="logo">M</div>
+        <div class="brandText">
+          <div class="title" id="txtAppTitle">MatteoTeam PRO</div>
+          <div class="subtitle" id="txtAppSub">Restaurant Management Dashboard</div>
+        </div>
       </div>
-      <button data-delinv="${it.id}" style="background:#ff6b6b;color:white;border:none;padding:7px 10px;border-radius:6px;cursor:pointer">
-        Delete
-      </button>
-    `;
-    $("invList").appendChild(div);
-  }
 
-  // bind delete
-  document.querySelectorAll("[data-delinv]").forEach(btn=>{
-    btn.onclick = async ()=>{
-      const id = btn.getAttribute("data-delinv");
-      await deleteDoc(doc(db,"inventory",id));
-      await loadInventory();
+      <div class="headerRight">
+        <select id="langSel">
+          <option value="de">DE</option>
+          <option value="en">EN</option>
+          <option value="sq">SQ</option>
+        </select>
+
+        <button id="btnOpenLogin" class="btnPrimary">Login</button>
+        <button id="btnLogout" class="btnDanger hidden">Logout</button>
+      </div>
+    </header>
+
+    <div id="menuGrid" class="menuGrid hidden">
+      <div class="menuCard" onclick="openView('viewDashboard')">
+        <div class="menuIcon">🏠</div>
+        <div class="menuTitle" data-i18n="menu.dashboard">Dashboard</div>
+        <div class="menuSub" data-i18n="menu.dashboardSub">Overview & quick actions</div>
+      </div>
+
+      <div class="menuCard" onclick="openView('viewWeekly')">
+        <div class="menuIcon">📅</div>
+        <div class="menuTitle" data-i18n="menu.weekly">Weekly Plan</div>
+        <div class="menuSub" data-i18n="menu.weeklySub">Shift planning for the week</div>
+      </div>
+
+      <div class="menuCard" onclick="openView('viewStaff')">
+        <div class="menuIcon">👨‍🍳</div>
+        <div class="menuTitle" data-i18n="menu.staff">Staff</div>
+        <div class="menuSub" data-i18n="menu.staffSub">Manage employees</div>
+      </div>
+
+      <div class="menuCard" onclick="openView('viewInventory')">
+        <div class="menuIcon">📦</div>
+        <div class="menuTitle" data-i18n="menu.inventory">Inventory</div>
+        <div class="menuSub" data-i18n="menu.inventorySub">Stock and quantities</div>
+      </div>
+    </div>
+
+    <div id="loginPanel" class="card">
+      <div class="cardTitleRow">
+        <div>
+          <h2 class="cardTitle" data-i18n="login.title">Login</h2>
+          <div class="cardSub" data-i18n="login.sub">Sign in, create account or reset password</div>
+        </div>
+      </div>
+
+      <div class="formGrid">
+        <div class="stack">
+          <label data-i18n="login.emailLabel">Email</label>
+          <input id="email" type="email" placeholder="Email" />
+
+          <label data-i18n="login.passLabel">Password</label>
+          <input id="pass" type="password" placeholder="Password" />
+        </div>
+
+        <div class="stack">
+          <div class="card" style="margin:0; padding:14px;">
+            <div class="cardTitleRow" style="margin-bottom:10px;">
+              <div>
+                <div style="font-weight:800; font-size:18px;" data-i18n="login.quickInfoTitle">Quick Info</div>
+                <div class="cardSub" data-i18n="login.quickInfoSub">Use your MatteoTeam account to enter the app</div>
+              </div>
+            </div>
+
+            <div class="stack muted" style="font-size:14px;">
+              <div data-i18n="login.info1">• Login with your email and password</div>
+              <div data-i18n="login.info2">• Register a new account if needed</div>
+              <div data-i18n="login.info3">• Reset password by email</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="loginActions">
+        <button id="btnLogin" class="btnPrimary" data-i18n="login.loginBtn">Login</button>
+        <button id="btnRegister" class="btnBlue" data-i18n="login.registerBtn">Register</button>
+        <button id="btnReset" class="btnSecondary" data-i18n="login.resetBtn">Reset Password</button>
+      </div>
+
+      <div id="authMsg" class="msg"></div>
+    </div>
+
+    <div id="appPanel" class="hidden">
+
+      <div id="viewDashboard" class="card">
+        <div class="cardTitleRow">
+          <div>
+            <h2 class="cardTitle" data-i18n="dash.title">Dashboard</h2>
+            <div class="cardSub" data-i18n="dash.sub">Welcome to MatteoTeam PRO</div>
+          </div>
+          <div id="adminBadge" class="adminBadge hidden">⭐ SuperAdmin</div>
+        </div>
+
+        <div class="twoCols">
+          <div class="card" style="margin:0;">
+            <div style="font-size:18px; font-weight:800; margin-bottom:10px;" data-i18n="dash.card1Title">Quick Navigation</div>
+            <div class="stack">
+              <button class="btnSecondary" onclick="openView('viewWeekly')" data-i18n="dash.goWeekly">Open Weekly Plan</button>
+              <button class="btnSecondary" onclick="openView('viewStaff')" data-i18n="dash.goStaff">Open Staff</button>
+              <button class="btnSecondary" onclick="openView('viewInventory')" data-i18n="dash.goInventory">Open Inventory</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin:0;">
+            <div style="font-size:18px; font-weight:800; margin-bottom:10px;" data-i18n="dash.card2Title">Status</div>
+            <div class="stack muted">
+              <div id="dashUserLine">User: -</div>
+              <div id="dashRoleLine">Role: -</div>
+              <div id="dashStaffCount">Staff: 0</div>
+              <div id="dashInvCount">Inventory Items: 0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="viewWeekly" class="card hidden">
+        <div class="weekTopBar">
+          <div class="weekTitleWrap">
+            <h2 class="cardTitle" data-i18n="weekly.title">Weekly Plan</h2>
+            <div class="cardSub" data-i18n="weekly.sub">Manage staff shifts for the whole week</div>
+          </div>
+
+          <div class="sectionActions">
+            <span class="pill" data-i18n="weekly.pill">Weekly Schedule</span>
+            <input id="weekStart" type="date" style="width:auto; min-width:170px;" />
+            <button id="btnSaveWeekly" class="btnPrimary" data-i18n="weekly.save">Save Weekly Plan</button>
+          </div>
+        </div>
+
+        <div class="weekShell">
+          <table class="weekTable">
+            <thead>
+              <tr>
+                <th data-i18n="weekly.staff">Staff</th>
+                <th id="thMon">Mon</th>
+                <th id="thTue">Tue</th>
+                <th id="thWed">Wed</th>
+                <th id="thThu">Thu</th>
+                <th id="thFri">Fri</th>
+                <th id="thSat">Sat</th>
+                <th id="thSun">Sun</th>
+              </tr>
+            </thead>
+            <tbody id="weeklyBody">
+              <!-- staff rows render here -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:12px;" class="muted" data-i18n="weekly.help">
+          Example values: 9:00, 17:00, Frei, Urlaub, Off
+        </div>
+      </div>
+            <div id="viewStaff" class="card hidden">
+        <div class="cardTitleRow">
+          <div>
+            <h2 class="cardTitle" data-i18n="staff.title">Staff</h2>
+            <div class="cardSub" data-i18n="staff.sub">Add and manage your employees</div>
+          </div>
+        </div>
+
+        <div class="twoCols">
+          <div class="card" style="margin:0;">
+            <div style="font-size:18px; font-weight:800; margin-bottom:12px;" data-i18n="staff.addTitle">Add Employee</div>
+            <div class="stack">
+              <input id="staffName" type="text" placeholder="Employee name" />
+              <button id="btnAddStaff" class="btnPrimary" data-i18n="staff.addBtn">Add Employee</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin:0;">
+            <div style="font-size:18px; font-weight:800; margin-bottom:12px;" data-i18n="staff.listTitle">Staff List</div>
+            <div id="staffList" class="list">
+              <div class="emptyState" data-i18n="staff.empty">No employees yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="viewInventory" class="card hidden">
+        <div class="cardTitleRow">
+          <div>
+            <h2 class="cardTitle" data-i18n="inv.title">Inventory</h2>
+            <div class="cardSub" data-i18n="inv.sub">Manage stock, quantities and products</div>
+          </div>
+        </div>
+
+        <div class="twoCols">
+          <div class="card" style="margin:0;">
+            <div style="font-size:18px; font-weight:800; margin-bottom:12px;" data-i18n="inv.addTitle">Add Item</div>
+            <div class="stack">
+              <input id="invName" type="text" placeholder="Item name" />
+              <input id="invQty" type="number" step="0.1" placeholder="Quantity" />
+              <button id="btnAddInv" class="btnPrimary" data-i18n="inv.addBtn">Add Item</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin:0;">
+            <div style="font-size:18px; font-weight:800; margin-bottom:12px;" data-i18n="inv.listTitle">Inventory List</div>
+            <div id="invList" class="list">
+              <div class="emptyState" data-i18n="inv.empty">No items yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footerSpace"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      sendPasswordResetEmail,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      addDoc,
+      getDocs,
+      collection,
+      deleteDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
+      authDomain: "matteoteam-test.firebaseapp.com",
+      projectId: "matteoteam-test",
+      storageBucket: "matteoteam-test.firebasestorage.app",
+      messagingSenderId: "1084486170913",
+      appId: "1:1084486170913:web:d68cf328becefe226a6660",
+      measurementId: "G-9V887087P0"
     };
-  });
-}
 
-$("btnAddInv").onclick = async ()=>{
-  const name = $("invName").value.trim();
-  const qty  = $("invQty").value;
+    const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
 
-  if(!name) return;
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  await addDoc(collection(db,"inventory"),{
-    name,
-    qty: qty==="" ? "" : Number(qty),
-    createdAt: serverTimestamp()
-  });
+    const $ = (id) => document.getElementById(id);
 
-  $("invName").value = "";
-  $("invQty").value = "";
+    const loginPanel = $("loginPanel");
+    const appPanel = $("appPanel");
+    const menuGrid = $("menuGrid");
+    const btnOpenLogin = $("btnOpenLogin");
+    const btnLogout = $("btnLogout");
+    const authMsg = $("authMsg");
+    const adminBadge = $("adminBadge");
 
-  await loadInventory();
-};
+    let currentUser = null;
+    let currentRole = "staff";
 
+    const translations = {
+      de: {
+        "menu.dashboard": "Dashboard",
+        "menu.dashboardSub": "Übersicht & Schnellzugriffe",
+        "menu.weekly": "Wochenplan",
+        "menu.weeklySub": "Schichten für die Woche",
+        "menu.staff": "Mitarbeiter",
+        "menu.staffSub": "Mitarbeiter verwalten",
+        "menu.inventory": "Inventar",
+        "menu.inventorySub": "Lager und Mengen",
 
-/* ==========================
-   13) MULTI LANGUAGE (Simple)
-   - only changes visible labels
-   - keeps app stable for iPhone
-========================== */
+        "login.title": "Login",
+        "login.sub": "Anmelden, Konto erstellen oder Passwort zurücksetzen",
+        "login.emailLabel": "E-Mail",
+        "login.passLabel": "Passwort",
+        "login.quickInfoTitle": "Schnellinfo",
+        "login.quickInfoSub": "Mit deinem MatteoTeam-Konto in die App einloggen",
+        "login.info1": "• Mit E-Mail und Passwort einloggen",
+        "login.info2": "• Neues Konto registrieren",
+        "login.info3": "• Passwort per E-Mail zurücksetzen",
+        "login.loginBtn": "Login",
+        "login.registerBtn": "Registrieren",
+        "login.resetBtn": "Passwort zurücksetzen",
 
-const TXT = {
-  de:{
-    login:"Login",
-    logout:"Logout",
-    reset:"Passwort Reset",
-    register:"Registrieren",
-    weekly:"Wochenplan",
-    saveWeekly:"Wochenplan speichern",
-    staff:"Mitarbeiter",
-    addStaff:"Mitarbeiter hinzufügen",
-    staffName:"Name",
-    inventory:"Inventar",
-    addItem:"Artikel hinzufügen",
-    itemName:"Artikel",
-    qty:"Menge"
-  },
-  en:{
-    login:"Login",
-    logout:"Logout",
-    reset:"Reset Password",
-    register:"Register",
-    weekly:"Weekly Plan",
-    saveWeekly:"Save Weekly",
-    staff:"Staff",
-    addStaff:"Add Staff",
-    staffName:"Name",
-    inventory:"Inventory",
-    addItem:"Add Item",
-    itemName:"Item",
-    qty:"Quantity"
-  },
-  sq:{
-    login:"Login",
-    logout:"Dil",
-    reset:"Reset Password",
-    register:"Regjistro",
-    weekly:"Plani Javor",
-    saveWeekly:"Ruaj Planin",
-    staff:"Stafi",
-    addStaff:"Shto Staf",
-    staffName:"Emri",
-    inventory:"Inventari",
-    addItem:"Shto Produkt",
-    itemName:"Produkti",
-    qty:"Sasia"
-  }
-};
+        "dash.title": "Dashboard",
+        "dash.sub": "Willkommen bei MatteoTeam PRO",
+        "dash.card1Title": "Schnellnavigation",
+        "dash.goWeekly": "Wochenplan öffnen",
+        "dash.goStaff": "Mitarbeiter öffnen",
+        "dash.goInventory": "Inventar öffnen",
+        "dash.card2Title": "Status",
 
-let LANG="de";
+        "weekly.title": "Wochenplan",
+        "weekly.sub": "Schichten für die ganze Woche verwalten",
+        "weekly.pill": "Wochenübersicht",
+        "weekly.save": "Wochenplan speichern",
+        "weekly.staff": "Mitarbeiter",
+        "weekly.help": "Beispielwerte: 9:00, 17:00, Frei, Urlaub, Off",
 
-function applyLang(){
-  const t = TXT[LANG] || TXT.de;
+        "staff.title": "Mitarbeiter",
+        "staff.sub": "Mitarbeiter hinzufügen und verwalten",
+        "staff.addTitle": "Mitarbeiter hinzufügen",
+        "staff.addBtn": "Mitarbeiter hinzufügen",
+        "staff.listTitle": "Mitarbeiterliste",
+        "staff.empty": "Noch keine Mitarbeiter",
 
-  // header buttons
-  $("btnOpenLogin").innerText = t.login;
-  $("btnLogout").innerText = t.logout;
+        "inv.title": "Inventar",
+        "inv.sub": "Lager, Mengen und Produkte verwalten",
+        "inv.addTitle": "Artikel hinzufügen",
+        "inv.addBtn": "Artikel hinzufügen",
+        "inv.listTitle": "Inventarliste",
+        "inv.empty": "Noch keine Artikel"
+      },
 
-  // login panel buttons
-  $("btnLogin").innerText = t.login;
-  $("btnRegister").innerText = t.register;
-  $("btnReset").innerText = t.reset;
+      en: {
+        "menu.dashboard": "Dashboard",
+        "menu.dashboardSub": "Overview & quick actions",
+        "menu.weekly": "Weekly Plan",
+        "menu.weeklySub": "Shift planning for the week",
+        "menu.staff": "Staff",
+        "menu.staffSub": "Manage employees",
+        "menu.inventory": "Inventory",
+        "menu.inventorySub": "Stock and quantities",
 
-  // headings (simple)
-  // (We keep your existing H3 texts, but we can overwrite them if you want.)
-  // We'll set placeholders:
-  $("staffName").placeholder = t.staffName;
-  $("invName").placeholder = t.itemName;
-  $("invQty").placeholder = t.qty;
+        "login.title": "Login",
+        "login.sub": "Sign in, create account or reset password",
+        "login.emailLabel": "Email",
+        "login.passLabel": "Password",
+        "login.quickInfoTitle": "Quick Info",
+        "login.quickInfoSub": "Use your MatteoTeam account to enter the app",
+        "login.info1": "• Login with your email and password",
+        "login.info2": "• Register a new account if needed",
+        "login.info3": "• Reset password by email",
+        "login.loginBtn": "Login",
+        "login.registerBtn": "Register",
+        "login.resetBtn": "Reset Password",
 
-  // action buttons
-  $("btnSaveWeekly").innerText = t.saveWeekly;
-  $("btnAddStaff").innerText = t.addStaff;
-  $("btnAddInv").innerText = t.addItem;
-}
+        "dash.title": "Dashboard",
+        "dash.sub": "Welcome to MatteoTeam PRO",
+        "dash.card1Title": "Quick Navigation",
+        "dash.goWeekly": "Open Weekly Plan",
+        "dash.goStaff": "Open Staff",
+        "dash.goInventory": "Open Inventory",
+        "dash.card2Title": "Status",
 
-$("langSel").onchange = ()=>{
-  LANG = $("langSel").value;
-  applyLang();
-};
+        "weekly.title": "Weekly Plan",
+        "weekly.sub": "Manage staff shifts for the whole week",
+        "weekly.pill": "Weekly Schedule",
+        "weekly.save": "Save Weekly Plan",
+        "weekly.staff": "Staff",
+        "weekly.help": "Example values: 9:00, 17:00, Free, Vacation, Off",
 
-// apply once at start
-applyLang();
-/* ==========================
-   14) SAFE BOOT (avoid "null" errors)
-========================== */
+        "staff.title": "Staff",
+        "staff.sub": "Add and manage your employees",
+        "staff.addTitle": "Add Employee",
+        "staff.addBtn": "Add Employee",
+        "staff.listTitle": "Staff List",
+        "staff.empty": "No employees yet",
 
-// When page refreshes, sometimes buttons exist but data not loaded yet.
-// We only load data after user is logged in (already in onAuthStateChanged).
-// But we also want a clean UI when app opens.
+        "inv.title": "Inventory",
+        "inv.sub": "Manage stock, quantities and products",
+        "inv.addTitle": "Add Item",
+        "inv.addBtn": "Add Item",
+        "inv.listTitle": "Inventory List",
+        "inv.empty": "No items yet"
+      },
 
-function showLoggedOutUI(){
-  $("appPanel").classList.add("hidden");
-  $("loginPanel").classList.add("hidden");
-  $("btnLogout").classList.add("hidden");
-  $("btnOpenLogin").classList.remove("hidden");
-}
+      sq: {
+        "menu.dashboard": "Ballina",
+        "menu.dashboardSub": "Përmbledhje dhe hyrje të shpejta",
+        "menu.weekly": "Plani Javor",
+        "menu.weeklySub": "Orari i javës",
+        "menu.staff": "Stafi",
+        "menu.staffSub": "Menaxho punëtorët",
+        "menu.inventory": "Inventari",
+        "menu.inventorySub": "Stoku dhe sasia",
 
-function showLoggedInUI(){
-  $("appPanel").classList.remove("hidden");
-  $("loginPanel").classList.add("hidden");
-  $("btnLogout").classList.remove("hidden");
-  $("btnOpenLogin").classList.add("hidden");
-}
+        "login.title": "Kyçja",
+        "login.sub": "Hyr, krijo llogari ose rivendos fjalëkalimin",
+        "login.emailLabel": "Email",
+        "login.passLabel": "Fjalëkalimi",
+        "login.quickInfoTitle": "Info e Shpejtë",
+        "login.quickInfoSub": "Përdor llogarinë MatteoTeam për të hyrë në app",
+        "login.info1": "• Hyr me email dhe fjalëkalim",
+        "login.info2": "• Regjistro llogari të re",
+        "login.info3": "• Rivendos fjalëkalimin me email",
+        "login.loginBtn": "Hyr",
+        "login.registerBtn": "Regjistrohu",
+        "login.resetBtn": "Reset Password",
 
-// Override a bit: make sure UI always correct
-onAuthStateChanged(auth, async (user)=>{
-  if(!user){
-    showLoggedOutUI();
-    return;
-  }
-  showLoggedInUI();
+        "dash.title": "Ballina",
+        "dash.sub": "Mirë se erdhe në MatteoTeam PRO",
+        "dash.card1Title": "Hyrje të Shpejta",
+        "dash.goWeekly": "Hap Planin Javor",
+        "dash.goStaff": "Hap Stafin",
+        "dash.goInventory": "Hap Inventarin",
+        "dash.card2Title": "Gjendja",
 
-  // load everything after login
-  await loadStaff();
-  await loadWeekly();
-  await loadInventory();
-});
+        "weekly.title": "Plani Javor",
+        "weekly.sub": "Menaxho orarin e stafit për tërë javën",
+        "weekly.pill": "Orari Javor",
+        "weekly.save": "Ruaj Planin Javor",
+        "weekly.staff": "Stafi",
+        "weekly.help": "Shembuj: 9:00, 17:00, Pushim, Urlaub, Off",
 
+        "staff.title": "Stafi",
+        "staff.sub": "Shto dhe menaxho punëtorët",
+        "staff.addTitle": "Shto Punëtor",
+        "staff.addBtn": "Shto Punëtor",
+        "staff.listTitle": "Lista e Stafit",
+        "staff.empty": "Ende nuk ka punëtorë",
 
-/* ==========================
-   15) FIRST LOAD
-========================== */
-showLoggedOutUI();
-// =========================
-// SAVE WEEKLY PLAN
-// =========================
-$("btnSaveWeekly").onclick = async ()=>{
+        "inv.title": "Inventari",
+        "inv.sub": "Menaxho stokun, sasinë dhe produktet",
+        "inv.addTitle": "Shto Artikull",
+        "inv.addBtn": "Shto Artikull",
+        "inv.listTitle": "Lista e Inventarit",
+        "inv.empty": "Ende nuk ka artikuj"
+      }
+    };
 
-  const days = ["mon","tue","wed","thu","fri","sat","sun"];
+    function showMsg(text, type = "ok"){
+      authMsg.className = "msg " + type;
+      authMsg.textContent = text;
+    }
 
-  const snap = await getDocs(collection(db,"staff"));
+    function clearMsg(){
+      authMsg.className = "msg";
+      authMsg.textContent = "";
+    }
 
-  snap.forEach(async (docSnap)=>{
+    function setLoggedOutUI(){
+      loginPanel.classList.remove("hidden");
+      appPanel.classList.add("hidden");
+      menuGrid.classList.add("hidden");
+      btnOpenLogin.classList.remove("hidden");
+      btnLogout.classList.add("hidden");
+      adminBadge.classList.add("hidden");
+      currentUser = null;
+      currentRole = "staff";
+    }
 
-    const staffId = docSnap.id;
+    function setLoggedInUI(){
+      loginPanel.classList.add("hidden");
+      appPanel.classList.remove("hidden");
+      menuGrid.classList.remove("hidden");
+      btnOpenLogin.classList.add("hidden");
+      btnLogout.classList.remove("hidden");
+    }
 
-    const data = {};
+    function applyTranslations(lang){
+      const dict = translations[lang] || translations.de;
 
-    days.forEach(d=>{
-      const el = document.getElementById(`w_${staffId}_${d}`);
-      data[d] = el ? el.value : "";
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if(dict[key]) el.textContent = dict[key];
+      });
+
+      const titleMap = {
+        de: "Restaurant Management Dashboard",
+        en: "Restaurant Management Dashboard",
+        sq: "Paneli i Menaxhimit të Restorantit"
+      };
+
+      $("txtAppSub").textContent = titleMap[lang] || titleMap.de;
+      localStorage.setItem("matteo_lang", lang);
+    }
+
+    function escapeHtml(text){
+      return String(text).replace(/[&<>\"]/g, m => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        "\"":"&quot;"
+      }[m]));
+    }
+        function openView(view){
+      ["viewDashboard","viewWeekly","viewStaff","viewInventory"].forEach(v=>{
+        const el=$(v);
+        if(el) el.classList.add("hidden");
+      });
+
+      const target=$(view);
+      if(target) target.classList.remove("hidden");
+    }
+
+    btnOpenLogin.onclick=()=>openView("viewDashboard");
+
+    btnLogout.onclick=async()=>{
+      await signOut(auth);
+      setLoggedOutUI();
+    };
+
+    $("btnLogin").onclick=async()=>{
+      clearMsg();
+      try{
+        const res=await signInWithEmailAndPassword(
+          auth,
+          $("email").value.trim(),
+          $("pass").value.trim()
+        );
+
+        showMsg("Login OK");
+      }catch(e){
+        showMsg(e.message,"err");
+      }
+    };
+
+    $("btnRegister").onclick=async()=>{
+      clearMsg();
+      try{
+        await createUserWithEmailAndPassword(
+          auth,
+          $("email").value.trim(),
+          $("pass").value.trim()
+        );
+
+        showMsg("Account created");
+      }catch(e){
+        showMsg(e.message,"err");
+      }
+    };
+
+    $("btnReset").onclick=async()=>{
+      clearMsg();
+      try{
+        await sendPasswordResetEmail(auth,$("email").value.trim());
+        showMsg("Reset email sent");
+      }catch(e){
+        showMsg(e.message,"err");
+      }
+    };
+
+    async function loadStaff(){
+      const snap=await getDocs(collection(db,"staff"));
+      const list=$("staffList");
+
+      list.innerHTML="";
+
+      if(snap.empty){
+        list.innerHTML='<div class="emptyState">No employees</div>';
+        return;
+      }
+
+      snap.forEach(docu=>{
+        const d=docu.data();
+
+        const row=document.createElement("div");
+        row.className="listItem";
+
+        row.innerHTML=`
+        <div class="listItemMain">
+          <div class="listItemTitle">${escapeHtml(d.name)}</div>
+        </div>
+
+        <button class="btnDanger">Delete</button>
+        `;
+
+        row.querySelector("button").onclick=async()=>{
+          await deleteDoc(doc(db,"staff",docu.id));
+          loadStaff();
+          loadWeekly();
+        };
+
+        list.appendChild(row);
+      });
+
+      $("dashStaffCount").textContent="Staff: "+snap.size;
+    }
+
+    $("btnAddStaff").onclick=async()=>{
+      const name=$("staffName").value.trim();
+
+      if(!name) return;
+
+      await addDoc(collection(db,"staff"),{
+        name,
+        created:serverTimestamp()
+      });
+
+      $("staffName").value="";
+
+      loadStaff();
+      loadWeekly();
+    };
+
+    async function loadInventory(){
+      const snap=await getDocs(collection(db,"inventory"));
+
+      const list=$("invList");
+
+      list.innerHTML="";
+
+      if(snap.empty){
+        list.innerHTML='<div class="emptyState">No items</div>';
+        return;
+      }
+
+      snap.forEach(docu=>{
+        const d=docu.data();
+
+        const row=document.createElement("div");
+        row.className="listItem";
+
+        row.innerHTML=`
+        <div class="listItemMain">
+          <div class="listItemTitle">${escapeHtml(d.name)}</div>
+          <div class="listItemSub">Qty: ${escapeHtml(d.qty)}</div>
+        </div>
+
+        <button class="btnDanger">Delete</button>
+        `;
+
+        row.querySelector("button").onclick=async()=>{
+          await deleteDoc(doc(db,"inventory",docu.id));
+          loadInventory();
+        };
+
+        list.appendChild(row);
+      });
+
+      $("dashInvCount").textContent="Inventory Items: "+snap.size;
+    }
+
+    $("btnAddInv").onclick=async()=>{
+      const name=$("invName").value.trim();
+      const qty=$("invQty").value.trim();
+
+      if(!name||!qty) return;
+
+      await addDoc(collection(db,"inventory"),{
+        name,
+        qty,
+        created:serverTimestamp()
+      });
+
+      $("invName").value="";
+      $("invQty").value="";
+
+      loadInventory();
+    };
+
+    async function loadWeekly(){
+      const staffSnap=await getDocs(collection(db,"staff"));
+
+      const body=$("weeklyBody");
+
+      body.innerHTML="";
+
+      if(staffSnap.empty) return;
+
+      staffSnap.forEach(docu=>{
+        const d=docu.data();
+
+        const tr=document.createElement("tr");
+
+        tr.innerHTML=`
+        <td class="staffNameCell">${escapeHtml(d.name)}</td>
+        <td><input class="weekInput"></td>
+        <td><input class="weekInput"></td>
+        <td><input class="weekInput"></td>
+        <td><input class="weekInput"></td>
+        <td><input class="weekInput"></td>
+        <td><input class="weekInput"></td>
+        <td><input class="weekInput"></td>
+        `;
+
+        body.appendChild(tr);
+      });
+    }
+
+    $("btnSaveWeekly").onclick=()=>{
+      alert("Weekly Plan saved");
+    };
+
+    onAuthStateChanged(auth,async(user)=>{
+      if(!user){
+        setLoggedOutUI();
+        return;
+      }
+
+      currentUser=user;
+
+      setLoggedInUI();
+
+      $("dashUserLine").textContent="User: "+user.email;
+
+      if(user.uid===SUPERADMIN_UID){
+        currentRole="superadmin";
+        adminBadge.classList.remove("hidden");
+      }
+
+      $("dashRoleLine").textContent="Role: "+currentRole;
+
+      await loadStaff();
+      await loadInventory();
+      await loadWeekly();
+
+      openView("viewDashboard");
     });
 
-    await setDoc(doc(db,"weekly",staffId),data);
+    const savedLang=localStorage.getItem("matteo_lang")||"de";
+    $("langSel").value=savedLang;
+    applyTranslations(savedLang);
 
-  });
+    $("langSel").onchange=e=>{
+      applyTranslations(e.target.value);
+    };
 
-  alert("Weekly Plan saved");
-
-};
-
-// ✅ END SCRIPT
-
-function openView(view){
-  document.getElementById("viewWeekly").classList.add("hidden");
-  document.getElementById("viewStaff").classList.add("hidden");
-  document.getElementById("viewInventory").classList.add("hidden");
-
-  document.getElementById(view).classList.remove("hidden");
-}
-
-</script>
-
+  </script>
 </body>
 </html>
