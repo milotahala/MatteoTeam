@@ -530,25 +530,25 @@
     </header>
 
     <div id="menuGrid" class="menuGrid hidden">
-      <div class="menuCard" onclick="openView('viewDashboard')">
+   <div class="menuCard" id="cardDashboard">
         <div class="menuIcon">🏠</div>
         <div class="menuTitle" data-i18n="menu.dashboard">Dashboard</div>
         <div class="menuSub" data-i18n="menu.dashboardSub">Overview & quick actions</div>
       </div>
 
-      <div class="menuCard" onclick="openView('viewWeekly')">
+      <div class="menuCard" id="cardWeekly">
         <div class="menuIcon">📅</div>
         <div class="menuTitle" data-i18n="menu.weekly">Weekly Plan</div>
         <div class="menuSub" data-i18n="menu.weeklySub">Shift planning for the week</div>
       </div>
 
-      <div class="menuCard" onclick="openView('viewStaff')">
+      <div class="menuCard" id="cardStaff">
         <div class="menuIcon">👨‍🍳</div>
         <div class="menuTitle" data-i18n="menu.staff">Staff</div>
         <div class="menuSub" data-i18n="menu.staffSub">Manage employees</div>
       </div>
 
-      <div class="menuCard" onclick="openView('viewInventory')">
+     <div class="menuCard" id="cardInventory">
         <div class="menuIcon">📦</div>
         <div class="menuTitle" data-i18n="menu.inventory">Inventory</div>
         <div class="menuSub" data-i18n="menu.inventorySub">Stock and quantities</div>
@@ -1258,6 +1258,11 @@ function updateWeekDates(){
 document.getElementById("weekStart").onchange = updateWeekDates;
 
 updateWeekDates();
+
+$("cardDashboard").onclick = () => openView("viewDashboard");
+$("cardWeekly").onclick = () => openView("viewWeekly");
+$("cardStaff").onclick = () => openView("viewStaff");
+$("cardInventory").onclick = () => openView("viewInventory");
 
 </script>
 </body>
