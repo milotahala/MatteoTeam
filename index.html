@@ -397,7 +397,21 @@
       grid-template-columns:1fr 1fr;
       gap:18px;
     }
+.statCard{
+  text-align:center;
+  padding:20px;
+}
 
+.statTitle{
+  font-size:16px;
+  opacity:0.8;
+}
+
+.statNumber{
+  font-size:32px;
+  font-weight:bold;
+  margin-top:5px;
+}
     .list{
       display:flex;
       flex-direction:column;
@@ -609,7 +623,24 @@
           </div>
           <div id="adminBadge" class="adminBadge hidden">⭐ SuperAdmin</div>
         </div>
+<div class="twoCols">
 
+  <div class="card statCard">
+    <div class="statTitle">Punëtorë</div>
+    <div class="statNumber" id="statStaff">0</div>
+  </div>
+
+  <div class="card statCard">
+    <div class="statTitle">Artikuj</div>
+    <div class="statNumber" id="statInventory">0</div>
+  </div>
+
+  <div class="card statCard">
+    <div class="statTitle">Orë këtë javë</div>
+    <div class="statNumber" id="statHours">0</div>
+  </div>
+
+</div>
         <div class="twoCols">
           <div class="card" style="margin:0;">
             <div style="font-size:18px; font-weight:800; margin-bottom:10px;" data-i18n="dash.card1Title">Quick Navigation</div>
@@ -1304,6 +1335,8 @@ $("cardMyHours").onclick = () => {
   openView("viewMyHours");
   renderMyHoursDemo();
 };
+// 👇 PJESA 4 VENDOSET KËTU
+loadDashboardStats();
 function timeToMinutes(t){
   if(!t || !t.includes(":")) return 0;
   const [h,m] = t.split(":").map(Number);
@@ -1363,6 +1396,17 @@ function renderMyHoursDemo(){
   });
 
   totalEl.textContent = monthTotal.toFixed(2) + "h";
+  // Pjesa 3 vendoset këtu
+async function loadDashboardStats(){
+
+  const staffSnap = await getDocs(collection(db,"staff"));
+  $("statStaff").textContent = staffSnap.size;
+
+  const invSnap = await getDocs(collection(db,"inventory"));
+  $("statInventory").textContent = invSnap.size;
+
+  $("statHours").textContent = "0";
+
 }
 </script>
 </body>
