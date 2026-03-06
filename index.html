@@ -1230,6 +1230,7 @@ window.openView = openView;
       $("invQty").value="";
 
       loadInventory();
+      await loadDashboardStats();
     };
 
     async function loadWeekly(){
