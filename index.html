@@ -1300,7 +1300,70 @@ $("cardDashboard").onclick = () => openView("viewDashboard");
 $("cardWeekly").onclick = () => openView("viewWeekly");
 $("cardStaff").onclick = () => openView("viewStaff");
 $("cardInventory").onclick = () => openView("viewInventory");
-$("cardMyHours").onclick = () => openView("viewMyHours");
+$("cardMyHours").onclick = () => {
+  openView("viewMyHours");
+  renderMyHoursDemo();
+};
+function timeToMinutes(t){
+  if(!t || !t.includes(":")) return 0;
+  const [h,m] = t.split(":").map(Number);
+  return (h * 60) + m;
+}
+
+function calcWorkedHours(start, end, pauseMin){
+  const startMin = timeToMinutes(start);
+  const endMin = timeToMinutes(end);
+  const pause = Number(pauseMin || 0);
+
+  if(!startMin || !endMin || endMin <= startMin) return 0;
+
+  const totalMin = endMin - startMin - pause;
+  return Math.max(0, totalMin / 60);
+}
+
+function renderMyHoursDemo(){
+  const body = $("myHoursBody");
+  const totalEl = $("monthTotal");
+
+  if(!body || !totalEl) return;
+
+  const demoRows = [
+    { date:"01.03.2026", start:"10:00", end:"18:00", pause:30 },
+    { date:"02.03.2026", start:"09:00", end:"17:00", pause:30 },
+    { date:"03.03.2026", start:"12:00", end:"20:00", pause:45 },
+    { date:"04.03.2026", start:"", end:"", pause:0, off:true }
+  ];
+
+  body.innerHTML = "";
+  let monthTotal = 0;
+
+  demoRows.forEach(row => {
+    const tr = document.createElement("tr");
+
+    if(row.off){
+      tr.innerHTML = `
+        <td>${row.date}</td>
+        <td colspan="3">Pushim</td>
+        <td>0h</td>
+      `;
+    } else {
+      const hours = calcWorkedHours(row.start, row.end, row.pause);
+      monthTotal += hours;
+
+      tr.innerHTML = `
+        <td>${row.date}</td>
+        <td>${row.start}</td>
+        <td>${row.end}</td>
+        <td>${row.pause} min</td>
+        <td>${hours.toFixed(2)}h</td>
+      `;
+    }
+
+    body.appendChild(tr);
+  });
+
+  totalEl.textContent = monthTotal.toFixed(2) + "h";
+}
 </script>
 </body>
 </html>
