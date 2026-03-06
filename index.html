@@ -1146,11 +1146,12 @@ window.openView = openView;
         <button class="btnDanger">Delete</button>
         `;
 
-        row.querySelector("button").onclick=async()=>{
-          await deleteDoc(doc(db,"staff",docu.id));
-          loadStaff();
-          loadWeekly();
-        };
+       row.querySelector("button").onclick=async()=>{
+  await deleteDoc(doc(db,"staff",docu.id));
+  await loadStaff();
+  await loadWeekly();
+  await loadDashboardStats();
+};
 
         list.appendChild(row);
       });
