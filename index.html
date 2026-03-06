@@ -542,19 +542,19 @@
         <div class="menuSub" data-i18n="menu.weeklySub">Shift planning for the week</div>
       </div>
 
-      <div class="menuCard" id="cardStaff">
-        <div class="menuIcon">👨‍🍳</div>
-        <div class="menuTitle" data-i18n="menu.staff">Staff</div>
-        <div class="menuSub" data-i18n="menu.staffSub">Manage employees</div>
-      </div>
+    <div class="menuCard" id="cardInventory">
+  <div class="menuIcon">📦</div>
+  <div class="menuTitle">Inventari</div>
+  <div class="menuSub">Stoku dhe sasia</div>
+</div>
 
-     <div class="menuCard" id="cardInventory">
-        <div class="menuIcon">📦</div>
-        <div class="menuTitle" data-i18n="menu.inventory">Inventory</div>
-        <div class="menuSub" data-i18n="menu.inventorySub">Stock and quantities</div>
-      </div>
-    </div>
+<div class="menuCard" id="cardMyHours">
+  <div class="menuIcon">⏱️</div>
+  <div class="menuTitle">Orët e Mia</div>
+  <div class="menuSub">Orari dhe totali mujor</div>
+</div>
 
+</div>
     <div id="loginPanel" class="card">
       <div class="cardTitleRow">
         <div>
@@ -1263,7 +1263,7 @@ $("cardDashboard").onclick = () => openView("viewDashboard");
 $("cardWeekly").onclick = () => openView("viewWeekly");
 $("cardStaff").onclick = () => openView("viewStaff");
 $("cardInventory").onclick = () => openView("viewInventory");
-
+$("cardMyHours").onclick = () => openView("viewMyHours");
 </script>
 </body>
 </html>
