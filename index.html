@@ -1158,21 +1158,22 @@ window.openView = openView;
       $("dashStaffCount").textContent="Staff: "+snap.size;
     }
 
-    $("btnAddStaff").onclick=async()=>{
-      const name=$("staffName").value.trim();
+  $("btnAddStaff").onclick=async()=>{
+  const name=$("staffName").value.trim();
 
-      if(!name) return;
+  if(!name) return;
 
-      await addDoc(collection(db,"staff"),{
-        name,
-        created:serverTimestamp()
-      });
+  await addDoc(collection(db,"staff"),{
+    name,
+    created:serverTimestamp()
+  });
 
-      $("staffName").value="";
+  $("staffName").value="";
 
-      loadStaff();
-      loadWeekly();
-    };
+  await loadStaff();
+  await loadWeekly();
+  await loadDashboardStats();
+};
 
     async function loadInventory(){
       const snap=await getDocs(collection(db,"inventory"));
