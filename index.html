@@ -1338,9 +1338,9 @@ $("cardInventory").onclick = () => openView("viewInventory");
 $("cardMyHours").onclick = () => {
   openView("viewMyHours");
   renderMyHoursDemo();
+    $("viewMyHours").scrollIntoView({ behavior: "smooth", block: "start" });
 };
 // 👇 PJESA 4 VENDOSET KËTU
-loadDashboardStats();
 function timeToMinutes(t){
   if(!t || !t.includes(":")) return 0;
   const [h,m] = t.split(":").map(Number);
