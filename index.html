@@ -1408,8 +1408,16 @@ async function loadDashboardStats(){
 
   const invSnap = await getDocs(collection(db,"inventory"));
   $("statInventory").textContent = invSnap.size;
+let weekHours = 0;
 
-  $("statHours").textContent = "0";
+const weeklySnap = await getDocs(collection(db,"weekly"));
+
+weeklySnap.forEach(doc=>{
+  const d = doc.data();
+  if(d.hours) weekHours += Number(d.hours);
+});
+
+$("statHours").textContent = weekHours.toFixed(1);
 }
 
 </script>
