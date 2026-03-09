@@ -1358,48 +1358,39 @@ function calcWorkedHours(start, end, pauseMin){
   return Math.max(0, totalMin / 60);
 }
 
-function renderMyHoursDemo(){
+async function renderMyHours(){
+
   const body = $("myHoursBody");
   const totalEl = $("monthTotal");
-
-  if(!body || !totalEl) return;
-
-  const demoRows = [
-    { date:"01.03.2026", start:"10:00", end:"18:00", pause:30 },
-    { date:"02.03.2026", start:"09:00", end:"17:00", pause:30 },
-    { date:"03.03.2026", start:"12:00", end:"20:00", pause:45 },
-    { date:"04.03.2026", start:"", end:"", pause:0, off:true }
-  ];
 
   body.innerHTML = "";
   let monthTotal = 0;
 
-  demoRows.forEach(row => {
+  const snap = await getDocs(collection(db,"weekly"));
+
+  snap.forEach(doc=>{
+    const d = doc.data();
+
+    const hours = calcWorkedHours(d.start,d.end,d.pause);
+
+    monthTotal += hours;
+
     const tr = document.createElement("tr");
 
-    if(row.off){
-      tr.innerHTML = `
-        <td>${row.date}</td>
-        <td colspan="3">Pushim</td>
-        <td>0h</td>
-      `;
-    } else {
-      const hours = calcWorkedHours(row.start, row.end, row.pause);
-      monthTotal += hours;
-
-      tr.innerHTML = `
-        <td>${row.date}</td>
-        <td>${row.start}</td>
-        <td>${row.end}</td>
-        <td>${row.pause} min</td>
-        <td>${hours.toFixed(2)}h</td>
-      `;
-    }
+    tr.innerHTML = `
+      <td>${d.date || ""}</td>
+      <td>${d.start || ""}</td>
+      <td>${d.end || ""}</td>
+      <td>${d.pause || 0}</td>
+      <td>${hours.toFixed(2)}h</td>
+    `;
 
     body.appendChild(tr);
+
   });
 
-    totalEl.textContent = monthTotal.toFixed(2) + "h";
+  totalEl.textContent = monthTotal.toFixed(2);
+
 }
 
 async function loadDashboardStats(){
