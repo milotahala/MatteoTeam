@@ -1242,7 +1242,8 @@ let savedWeekStart = "";
 
 weeklySnap.forEach(docu=>{
   const data = docu.data();
-  weeklyMap[docu.id] = data;
+  if(!docu.id.startsWith($("weekStart").value)) return;
+weeklyMap[docu.id.split("_")[1]] = data;
 
   if(!savedWeekStart && data.weekStart){
     savedWeekStart = data.weekStart;
@@ -1298,7 +1299,7 @@ if(savedWeekStart){
       data[day] = el ? el.value.trim() : "";
     });
 
-    await setDoc(doc(db,"weekly",staffId), data);
+    await setDoc(doc(db,"weekly", weekStart + "_" + staffId), data);
 
   }
 
