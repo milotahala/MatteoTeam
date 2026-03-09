@@ -1238,9 +1238,21 @@ window.openView = openView;
   const weeklySnap = await getDocs(collection(db,"weekly"));
 
   const weeklyMap = {};
-  weeklySnap.forEach(docu=>{
-    weeklyMap[docu.id] = docu.data();
-  });
+let savedWeekStart = "";
+
+weeklySnap.forEach(docu=>{
+  const data = docu.data();
+  weeklyMap[docu.id] = data;
+
+  if(!savedWeekStart && data.weekStart){
+    savedWeekStart = data.weekStart;
+  }
+});
+
+if(savedWeekStart){
+  $("weekStart").value = savedWeekStart;
+  updateWeekDates();
+}
 
   const body = $("weeklyBody");
   body.innerHTML = "";
