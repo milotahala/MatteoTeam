@@ -1268,15 +1268,18 @@ window.openView = openView;
   });
 }
 
-    $("btnSaveWeekly").onclick = async() => {
+  $("btnSaveWeekly").onclick = async() => {
 
   const days = ["mon","tue","wed","thu","fri","sat","sun"];
   const staffSnap = await getDocs(collection(db,"staff"));
+  const weekStart = $("weekStart").value || "";
 
   for (const docu of staffSnap.docs) {
 
     const staffId = docu.id;
-    const data = {};
+    const data = {
+      weekStart
+    };
 
     days.forEach(day=>{
       const el = document.getElementById(`w_${staffId}_${day}`);
