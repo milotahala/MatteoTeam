@@ -1233,38 +1233,65 @@ window.openView = openView;
       await loadDashboardStats();
     };
 
-    async function loadWeekly(){
-      const staffSnap=await getDocs(collection(db,"staff"));
+   async function loadWeekly(){
+  const staffSnap = await getDocs(collection(db,"staff"));
+  const weeklySnap = await getDocs(collection(db,"weekly"));
 
-      const body=$("weeklyBody");
+  const weeklyMap = {};
+  weeklySnap.forEach(docu=>{
+    weeklyMap[docu.id] = docu.data();
+  });
 
-      body.innerHTML="";
+  const body = $("weeklyBody");
+  body.innerHTML = "";
 
-      if(staffSnap.empty) return;
+  if(staffSnap.empty) return;
 
-      staffSnap.forEach(docu=>{
-        const d=docu.data();
+  staffSnap.forEach(docu=>{
+    const d = docu.data();
+    const saved = weeklyMap[docu.id] || {};
 
-        const tr=document.createElement("tr");
+    const tr = document.createElement("tr");
 
-        tr.innerHTML=`
-        <td class="staffNameCell">${escapeHtml(d.name)}</td>
-        <td><input class="weekInput"></td>
-        <td><input class="weekInput"></td>
-        <td><input class="weekInput"></td>
-        <td><input class="weekInput"></td>
-        <td><input class="weekInput"></td>
-        <td><input class="weekInput"></td>
-        <td><input class="weekInput"></td>
-        `;
+    tr.innerHTML = `
+      <td class="staffNameCell">${escapeHtml(d.name)}</td>
+      <td><input class="weekInput" id="w_${docu.id}_mon" value="${saved.mon || ""}"></td>
+      <td><input class="weekInput" id="w_${docu.id}_tue" value="${saved.tue || ""}"></td>
+      <td><input class="weekInput" id="w_${docu.id}_wed" value="${saved.wed || ""}"></td>
+      <td><input class="weekInput" id="w_${docu.id}_thu" value="${saved.thu || ""}"></td>
+      <td><input class="weekInput" id="w_${docu.id}_fri" value="${saved.fri || ""}"></td>
+      <td><input class="weekInput" id="w_${docu.id}_sat" value="${saved.sat || ""}"></td>
+      <td><input class="weekInput" id="w_${docu.id}_sun" value="${saved.sun || ""}"></td>
+    `;
 
-        body.appendChild(tr);
-      });
-    }
+    body.appendChild(tr);
+  });
+}
 
-    $("btnSaveWeekly").onclick=()=>{
-      alert("Weekly Plan saved");
-    };
+    $("btnSaveWeekly").onclick = async() => {
+
+  const days = ["mon","tue","wed","thu","fri","sat","sun"];
+  const staffSnap = await getDocs(collection(db,"staff"));
+
+  for (const docu of staffSnap.docs) {
+
+    const staffId = docu.id;
+    const data = {};
+
+    days.forEach(day=>{
+      const el = document.getElementById(`w_${staffId}_${day}`);
+      data[day] = el ? el.value.trim() : "";
+    });
+
+    await setDoc(doc(db,"weekly",staffId), data);
+
+  }
+
+  alert("Weekly Plan saved");
+
+  await loadWeekly();
+
+};
 
     onAuthStateChanged(auth,async(user)=>{
       if(!user){
