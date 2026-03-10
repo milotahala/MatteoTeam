@@ -1281,32 +1281,41 @@ if(savedWeekStart){
   });
 }
 
-  $("btnSaveWeekly").onclick = async() => {
+$("btnSaveWeekly").onclick = async () => {
+  try {
+    const days = ["mon","tue","wed","thu","fri","sat","sun"];
+    const weekStart = $("weekStart").value;
 
-  const days = ["mon","tue","wed","thu","fri","sat","sun"];
-  const staffSnap = await getDocs(collection(db,"staff"));
-  const weekStart = $("weekStart").value || "";
+    if (!weekStart) {
+      alert("Zgjidh daten e javes");
+      return;
+    }
 
-  for (const docu of staffSnap.docs) {
+    const staffSnap = await getDocs(collection(db, "staff"));
 
-    const staffId = docu.id;
-    const data = {
-      weekStart
-    };
+    for (const docu of staffSnap.docs) {
+      const staffId = docu.id;
 
-    days.forEach(day=>{
-      const el = document.getElementById(`w_${staffId}_${day}`);
-      data[day] = el ? el.value.trim() : "";
-    });
+      const data = {
+        staffId: staffId,
+        weekStart: weekStart,
+        updatedAt: serverTimestamp()
+      };
 
-    await setDoc(doc(db,"weekly", weekStart + "_" + staffId), data);
+      days.forEach(day => {
+        const el = document.getElementById(`w_${staffId}_${day}`);
+        data[day] = el ? el.value.trim() : "";
+      });
 
+      await setDoc(doc(db, "weekly", `${weekStart}_${staffId}`), data);
+    }
+
+    alert("Weekly Plan saved");
+    await loadWeekly();
+  } catch (err) {
+    console.error("SAVE WEEKLY ERROR:", err);
+    alert("Gabim ne ruajtje: " + err.message);
   }
-
-  alert("Weekly Plan saved");
-
-  await loadWeekly();
-
 };
 
     onAuthStateChanged(auth,async(user)=>{
