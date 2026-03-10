@@ -682,13 +682,13 @@
             <thead>
               <tr>
                 <th data-i18n="weekly.staff">Staff</th>
-                <th id="thMon">Mon</th>
-                <th id="thTue">Tue</th>
-                <th id="thWed">Wed</th>
-                <th id="thThu">Thu</th>
-                <th id="thFri">Fri</th>
-                <th id="thSat">Sat</th>
-                <th id="thSun">Sun</th>
+         <th id="thMon">Mon<br><small id="dateMon"></small></th>
+<th id="thTue">Tue<br><small id="dateTue"></small></th>
+<th id="thWed">Wed<br><small id="dateWed"></small></th>
+<th id="thThu">Thu<br><small id="dateThu"></small></th>
+<th id="thFri">Fri<br><small id="dateFri"></small></th>
+<th id="thSat">Sat<br><small id="dateSat"></small></th>
+<th id="thSun">Sun<br><small id="dateSun"></small></th>
               </tr>
             </thead>
             <tbody id="weeklyBody">
@@ -1382,7 +1382,9 @@ function updateWeekDates(){
 }
 
 document.getElementById("weekStart").onchange = updateWeekDates;
-
+updateWeekDates();
+  loadWeekly();
+};
 $("cardDashboard").onclick = () => openView("viewDashboard");
 $("cardWeekly").onclick = () => openView("viewWeekly");
 $("cardStaff").onclick = () => openView("viewStaff");
