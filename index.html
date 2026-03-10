@@ -1306,9 +1306,11 @@ $("btnSaveWeekly").onclick = async () => {
         const el = document.getElementById(`w_${staffId}_${day}`);
         data[day] = el ? el.value.trim() : "";
       });
-
-      await setDoc(doc(db, "weekly", `${weekStart}_${staffId}`), data);
-    }
+await setDoc(
+  doc(db, "weekly", weekStart + "_" + staffId),
+  data
+);
+     
 
     alert("Weekly Plan saved");
     await loadWeekly();
