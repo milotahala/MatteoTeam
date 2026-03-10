@@ -1381,8 +1381,8 @@ function updateWeekDates(){
 
 }
 
-document.getElementById("weekStart").onchange = updateWeekDates;
-updateWeekDates();
+document.getElementById("weekStart").onchange = () => {
+  updateWeekDates();
   loadWeekly();
 };
 $("cardDashboard").onclick = () => openView("viewDashboard");
