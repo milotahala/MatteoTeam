@@ -1804,6 +1804,7 @@ function calcShiftPayDetails(value, hourlyRate){
 
     async function renderMyHours(){
   const body = $("myHoursBody");
+  const hoursTableBody = $("hoursBody");
   const monthTotalEl = $("monthTotal");
   const workDaysEl = $("workDaysTotal");
   const salaryEl = $("salaryTotal");
@@ -1823,7 +1824,7 @@ function calcShiftPayDetails(value, hourlyRate){
   normalHoursEl.textContent = "0.00";
   overtimeHoursEl.textContent = "0.00";
   nightHoursEl.textContent = "0.00";
-
+if(hoursTableBody) hoursTableBody.innerHTML = "";
   const staff = await getStaffArray();
   const weeklySnap = await getDocs(collection(db,"weekly"));
 
