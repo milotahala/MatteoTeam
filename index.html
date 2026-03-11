@@ -1748,9 +1748,10 @@ function calcShiftPayDetails(value, hourlyRate){
       await loadDashboardStats();
     };
 
-    $("monthPicker").onchange = () => {
-      renderMyHours();
-    };
+  $("monthPicker").onchange = async () => {
+  await renderMyHours();
+  await loadDashboardStats();
+};
 
     $("cardDashboard").onclick = () => openView("viewDashboard");
     $("cardWeekly").onclick = () => openView("viewWeekly");
