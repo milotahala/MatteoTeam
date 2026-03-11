@@ -1754,152 +1754,136 @@ function calcShiftPayDetails(value, hourlyRate){
     });
 
     async function renderMyHours(){
-      const body = $("myHoursBody");
-      const monthTotalEl = $("monthTotal");
-      const workDaysEl = $("workDaysTotal");
-      const salaryEl = $("salaryTotal");
-      const hourRateEl = $("hourRateShown");
-      const workerWrap = $("myHoursWorkerWrap");
-      const workerSelect = $("myHoursWorkerSelect");
-      const monthValue = $("monthPicker").value || getCurrentMonthValue();
+  const body = $("myHoursBody");
+  const monthTotalEl = $("monthTotal");
+  const workDaysEl = $("workDaysTotal");
+  const salaryEl = $("salaryTotal");
+  const hourRateEl = $("hourRateShown");
+  const workerWrap = $("myHoursWorkerWrap");
+  const workerSelect = $("myHoursWorkerSelect");
+  const normalHoursEl = $("normalHoursTotal");
+  const overtimeHoursEl = $("overtimeHoursTotal");
+  const nightHoursEl = $("nightHoursTotal");
+  const monthValue = $("monthPicker").value || getCurrentMonthValue();
 
-      body.innerHTML = "";
-      monthTotalEl.textContent = "0.00";
-      workDaysEl.textContent = "0";
-      salaryEl.textContent = "0.00";
-      hourRateEl.textContent = "0.00";
+  body.innerHTML = "";
+  monthTotalEl.textContent = "0.00";
+  workDaysEl.textContent = "0";
+  salaryEl.textContent = "0.00";
+  hourRateEl.textContent = "0.00";
+  normalHoursEl.textContent = "0.00";
+  overtimeHoursEl.textContent = "0.00";
+  nightHoursEl.textContent = "0.00";
 
-      const staff = await getStaffArray();
-      const weeklySnap = await getDocs(collection(db,"weekly"));
+  const staff = await getStaffArray();
+  const weeklySnap = await getDocs(collection(db,"weekly"));
 
-      let selectedStaff = null;
+  let selectedStaff = null;
 
-      if(canSeeAllHours()){
-        workerWrap.classList.remove("hidden");
+  if(canSeeAllHours()){
+    workerWrap.classList.remove("hidden");
 
-        workerSelect.innerHTML = staff.map(s => {
-          return `<option value="${s.id}">${escapeHtml(s.name || "")}</option>`;
-        }).join("");
+    workerSelect.innerHTML = staff.map(s =>
+      `<option value="${s.id}">${escapeHtml(s.name || "")}</option>`
+    ).join("");
 
-        if(!workerSelect.value && staff[0]){
-          workerSelect.value = staff[0].id;
-        }
-
-        selectedStaff = staff.find(s => s.id === workerSelect.value) || staff[0] || null;
-      }else{
-        workerWrap.classList.add("hidden");
-        selectedStaff = staff.find(s =>
-          String(s.email || "").toLowerCase() === String(currentUser?.email || "").toLowerCase()
-        ) || null;
-      }
-
-      if(!selectedStaff){
-        body.innerHTML = `<tr><td colspan="6" class="muted">Nuk u gjet puntori.</td></tr>`;
-        return;
-      }
-
-      const hourlyRate = Number(selectedStaff.hourlyRate || 0);
-      hourRateEl.textContent = hourlyRate.toFixed(2);
-
-      let totalHours = 0;
-      let workDays = 0;
-      const rows = [];
-
-      weeklySnap.forEach(docu => {
-        const d = docu.data();
-        if(d.staffId !== selectedStaff.id) return;
-        if(!d.weekStart) return;
-
-        DAY_KEYS.forEach((dayKey, index) => {
-          const shiftValue = d[dayKey] || "";
-          if(!shiftValue) return;
-
-          const dateObj = getDateFromWeekStart(d.weekStart, index);
-          const y = dateObj.getFullYear();
-          const m = String(dateObj.getMonth() + 1).padStart(2,"0");
-          const monthKey = `${y}-${m}`;
-
-          if(monthKey !== monthValue) return;
-
-          const parsed = parseShiftValue(shiftValue);
-
-          totalHours += parsed.hours;
-          if(parsed.hours > 0) workDays++;
-
-          rows.push({
-            date: formatDateShort(dateObj),
-            shift: parsed.label || shiftValue,
-            start: parsed.start || "",
-            end: parsed.end || "",
-            pause: parsed.pause || 0,
-            hours: parsed.hours || 0
-          });
-        });
-      });
-
-      rows.sort((a,b) => {
-        const pa = a.date.split(".").reverse().join("-");
-        const pb = b.date.split(".").reverse().join("-");
-        return pa.localeCompare(pb);
-      });
-
-      if(!rows.length){
-        body.innerHTML = `<tr><td colspan="6" class="muted">Nuk ka të dhëna për këtë muaj.</td></tr>`;
-      }else{
-        rows.forEach(r => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${r.date}</td>
-            <td>${escapeHtml(r.shift)}</td>
-            <td>${escapeHtml(r.start)}</td>
-            <td>${escapeHtml(r.end)}</td>
-            <td>${r.pause}</td>
-            <td>${r.hours.toFixed(2)}h</td>
-          `;
-          body.appendChild(tr);
-        });
-      }
-
-      const salary = totalHours * hourlyRate;
-
-      monthTotalEl.textContent = totalHours.toFixed(2);
-      workDaysEl.textContent = String(workDays);
-      salaryEl.textContent = salary.toFixed(2);
+    if(!workerSelect.value && staff[0]){
+      workerSelect.value = staff[0].id;
     }
 
-    $("myHoursWorkerSelect").onchange = () => {
-      renderMyHours();
-    };
+    selectedStaff = staff.find(s => s.id === workerSelect.value) || staff[0] || null;
+  }else{
+    workerWrap.classList.add("hidden");
+    selectedStaff = staff.find(s =>
+      String(s.email || "").toLowerCase() === String(currentUser?.email || "").toLowerCase()
+    ) || null;
+  }
 
-    $("btnPrintMyHours").onclick = () => {
-      window.print();
-    };
+  if(!selectedStaff){
+    body.innerHTML = `<tr><td colspan="6" class="muted">Nuk u gjet puntori.</td></tr>`;
+    return;
+  }
 
-    $("btnShareMyHours").onclick = async () => {
-      const workerName = canSeeAllHours()
-        ? $("myHoursWorkerSelect").selectedOptions[0]?.textContent || "Worker"
-        : currentUser?.email || "Worker";
+  const hourlyRate = Number(selectedStaff.hourlyRate || 0);
+  hourRateEl.textContent = hourlyRate.toFixed(2);
 
-      const text =
-        `MatteoTeam Hours\n` +
-        `Puntori: ${workerName}\n` +
-        `Muaji: ${$("monthPicker").value}\n` +
-        `Dite pune: ${$("workDaysTotal").textContent}\n` +
-        `Ore totale: ${$("monthTotal").textContent}\n` +
-        `€ / ore: ${$("hourRateShown").textContent}\n` +
-        `Pagesa totale: ${$("salaryTotal").textContent} €`;
+  let totalHours = 0;
+  let workDays = 0;
+  let normalHours = 0;
+  let overtimeHours = 0;
+  let nightHours = 0;
+  let totalSalary = 0;
 
-      if(navigator.share){
-        try{
-          await navigator.share({
-            title: "MatteoTeam Hours",
-            text
-          });
-        }catch(e){}
-      }else{
-        window.print();
-      }
-    };
+  const rows = [];
+
+  weeklySnap.forEach(docu => {
+    const d = docu.data();
+    if(d.staffId !== selectedStaff.id) return;
+    if(!d.weekStart) return;
+
+    DAY_KEYS.forEach((dayKey, index) => {
+      const shiftValue = d[dayKey] || "";
+      if(!shiftValue) return;
+
+      const dateObj = getDateFromWeekStart(d.weekStart, index);
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2,"0");
+      const monthKey = `${y}-${m}`;
+
+      if(monthKey !== monthValue) return;
+
+      const parsed = parseShiftValue(shiftValue);
+      const pay = calcShiftPayDetails(shiftValue, hourlyRate);
+
+      totalHours += pay.hours;
+      normalHours += pay.normalHours;
+      overtimeHours += pay.overtimeHours;
+      nightHours += pay.nightHours;
+      totalSalary += pay.totalPay;
+
+      if(pay.hours > 0) workDays++;
+
+      rows.push({
+        date: formatDateShort(dateObj),
+        shift: parsed.label || shiftValue,
+        start: parsed.start || "",
+        end: parsed.end || "",
+        pause: parsed.pause || 0,
+        hours: pay.hours
+      });
+    });
+  });
+
+  rows.sort((a,b) => {
+    const pa = a.date.split(".").reverse().join("-");
+    const pb = b.date.split(".").reverse().join("-");
+    return pa.localeCompare(pb);
+  });
+
+  if(!rows.length){
+    body.innerHTML = `<tr><td colspan="6" class="muted">Nuk ka të dhëna për këtë muaj.</td></tr>`;
+  }else{
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.date}</td>
+        <td>${escapeHtml(r.shift)}</td>
+        <td>${escapeHtml(r.start)}</td>
+        <td>${escapeHtml(r.end)}</td>
+        <td>${r.pause}</td>
+        <td>${r.hours.toFixed(2)}h</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  monthTotalEl.textContent = totalHours.toFixed(2);
+  workDaysEl.textContent = String(workDays);
+  salaryEl.textContent = totalSalary.toFixed(2);
+  normalHoursEl.textContent = normalHours.toFixed(2);
+  overtimeHoursEl.textContent = overtimeHours.toFixed(2);
+  nightHoursEl.textContent = nightHours.toFixed(2);
+}
 
     async function loadDashboardStats(){
       const staffSnap = await getDocs(collection(db,"staff"));
