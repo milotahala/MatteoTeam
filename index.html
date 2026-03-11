@@ -1242,7 +1242,73 @@
         label: raw
       };
     }
+function getNightMinutes(startMin, endMin){
+  let total = 0;
 
+  if(endMin <= startMin){
+    endMin += 24 * 60;
+  }
+
+  for(let m = startMin; m < endMin; m++){
+    const minuteOfDay = m % (24 * 60);
+    if(minuteOfDay >= 0 && minuteOfDay < 6 * 60){
+      total++;
+    }
+  }
+
+  return total;
+}
+
+function calcShiftPayDetails(value, hourlyRate){
+  const parsed = parseShiftValue(value);
+
+  if(!parsed.hours){
+    return {
+      hours: 0,
+      normalHours: 0,
+      overtimeHours: 0,
+      nightHours: 0,
+      payNormal: 0,
+      payOvertime: 0,
+      payNightBonus: 0,
+      totalPay: 0
+    };
+  }
+
+  let startMin = timeToMinutes(parsed.start);
+  let endMin = timeToMinutes(parsed.end);
+
+  if(endMin <= startMin){
+    endMin += 24 * 60;
+  }
+
+  const workedMin = Math.max(0, (endMin - startMin) - parsed.pause);
+  const workedHours = workedMin / 60;
+
+  const normalHours = Math.min(workedHours, 8);
+  const overtimeHours = Math.max(0, workedHours - 8);
+
+  const rawNightMin = getNightMinutes(startMin, endMin);
+  const workedNightMin = Math.max(0, rawNightMin);
+  const nightHours = +(workedNightMin / 60).toFixed(2);
+
+  const payNormal = normalHours * hourlyRate;
+  const payOvertime = overtimeHours * hourlyRate * 1.25;
+  const payNightBonus = nightHours * hourlyRate * 0.25;
+
+  const totalPay = payNormal + payOvertime + payNightBonus;
+
+  return {
+    hours: +workedHours.toFixed(2),
+    normalHours: +normalHours.toFixed(2),
+    overtimeHours: +overtimeHours.toFixed(2),
+    nightHours,
+    payNormal: +payNormal.toFixed(2),
+    payOvertime: +payOvertime.toFixed(2),
+    payNightBonus: +payNightBonus.toFixed(2),
+    totalPay: +totalPay.toFixed(2)
+  };
+}
     function calcWeeklyTotals(record){
       let totalHours = 0;
       let workDays = 0;
