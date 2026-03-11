@@ -188,7 +188,7 @@
 
     .menuGrid{
       display:grid;
-      grid-template-columns:repeat(4, 1fr);
+      grid-template-columns:repeat(5, 1fr);
       gap:14px;
       margin-bottom:18px;
     }
@@ -323,7 +323,7 @@
 
     .weekTable{
       width:100%;
-      min-width:980px;
+      min-width:1120px;
       border-collapse:collapse;
     }
 
@@ -343,7 +343,7 @@
     }
 
     .staffNameCell{
-      min-width:170px;
+      min-width:190px;
       text-align:left !important;
       font-weight:800;
       background:rgba(255,255,255,.03);
@@ -397,21 +397,24 @@
       grid-template-columns:1fr 1fr;
       gap:18px;
     }
-.statCard{
-  text-align:center;
-  padding:20px;
-}
 
-.statTitle{
-  font-size:16px;
-  opacity:0.8;
-}
+    .statCard{
+      text-align:center;
+      padding:20px;
+    }
 
-.statNumber{
-  font-size:32px;
-  font-weight:bold;
-  margin-top:5px;
-}
+    .statTitle{
+      font-size:16px;
+      opacity:0.8;
+    }
+
+    .statNumber{
+      font-size:32px;
+      font-weight:bold;
+      margin-top:5px;
+      word-break:break-word;
+    }
+
     .list{
       display:flex;
       flex-direction:column;
@@ -443,6 +446,7 @@
       font-size:13px;
       color:var(--muted);
       margin-top:4px;
+      word-break:break-word;
     }
 
     .emptyState{
@@ -469,6 +473,45 @@
 
     .footerSpace{
       height:8px;
+    }
+
+    @media print{
+      body{
+        background:#fff;
+        color:#000;
+        padding:0;
+      }
+
+      .header,
+      .menuGrid,
+      #loginPanel,
+      #btnLogout,
+      #btnOpenLogin,
+      #btnPrintMyHours,
+      #btnShareMyHours,
+      #myHoursWorkerWrap{
+        display:none !important;
+      }
+
+      .card,
+      .weekShell{
+        box-shadow:none;
+        border:1px solid #ccc;
+        background:#fff;
+      }
+
+      .weekTable th,
+      .weekTable td{
+        color:#000;
+        border:1px solid #ccc;
+      }
+
+      .statNumber,
+      .statTitle,
+      .cardTitle,
+      .cardSub{
+        color:#000 !important;
+      }
     }
 
     @media (max-width: 980px){
@@ -544,7 +587,7 @@
     </header>
 
     <div id="menuGrid" class="menuGrid hidden">
-   <div class="menuCard" id="cardDashboard">
+      <div class="menuCard" id="cardDashboard">
         <div class="menuIcon">🏠</div>
         <div class="menuTitle" data-i18n="menu.dashboard">Dashboard</div>
         <div class="menuSub" data-i18n="menu.dashboardSub">Overview & quick actions</div>
@@ -556,19 +599,25 @@
         <div class="menuSub" data-i18n="menu.weeklySub">Shift planning for the week</div>
       </div>
 
- <div class="menuCard" id="cardInventory">
-  <div class="menuIcon">📦</div>
-  <div class="menuTitle">Inventari</div>
-  <div class="menuSub">Stoku dhe sasia</div>
-</div>
+      <div class="menuCard" id="cardStaff">
+        <div class="menuIcon">👥</div>
+        <div class="menuTitle" data-i18n="menu.staff">Staff</div>
+        <div class="menuSub" data-i18n="menu.staffSub">Manage employees</div>
+      </div>
 
-<div class="menuCard" id="cardMyHours">
-  <div class="menuIcon">⏱️</div>
-  <div class="menuTitle">Orët e Mia</div>
-  <div class="menuSub">Orari dhe totali mujor</div>
-</div>
+      <div class="menuCard" id="cardInventory">
+        <div class="menuIcon">📦</div>
+        <div class="menuTitle" data-i18n="menu.inventory">Inventory</div>
+        <div class="menuSub" data-i18n="menu.inventorySub">Stock and quantities</div>
+      </div>
 
-</div>
+      <div class="menuCard" id="cardMyHours">
+        <div class="menuIcon">⏱️</div>
+        <div class="menuTitle">Orët e Mia</div>
+        <div class="menuSub">Orari dhe totali mujor</div>
+      </div>
+    </div>
+
     <div id="loginPanel" class="card">
       <div class="cardTitleRow">
         <div>
@@ -623,24 +672,29 @@
           </div>
           <div id="adminBadge" class="adminBadge hidden">⭐ SuperAdmin</div>
         </div>
-<div class="twoCols">
 
-  <div class="card statCard">
-    <div class="statTitle">Punëtorë</div>
-    <div class="statNumber" id="statStaff">0</div>
-  </div>
+        <div class="twoCols">
+          <div class="card statCard">
+            <div class="statTitle">Punëtorë</div>
+            <div class="statNumber" id="statStaff">0</div>
+          </div>
 
-  <div class="card statCard">
-    <div class="statTitle">Artikuj</div>
-    <div class="statNumber" id="statInventory">0</div>
-  </div>
+          <div class="card statCard">
+            <div class="statTitle">Artikuj</div>
+            <div class="statNumber" id="statInventory">0</div>
+          </div>
 
-  <div class="card statCard">
-    <div class="statTitle">Orë këtë javë</div>
-    <div class="statNumber" id="statHours">0</div>
-  </div>
+          <div class="card statCard">
+            <div class="statTitle">Orë këtë javë</div>
+            <div class="statNumber" id="statHours">0</div>
+          </div>
 
-</div>
+          <div class="card statCard">
+            <div class="statTitle">Roli</div>
+            <div class="statNumber" id="statRole">staff</div>
+          </div>
+        </div>
+
         <div class="twoCols">
           <div class="card" style="margin:0;">
             <div style="font-size:18px; font-weight:800; margin-bottom:10px;" data-i18n="dash.card1Title">Quick Navigation</div>
@@ -648,6 +702,7 @@
               <button class="btnSecondary" onclick="openView('viewWeekly')" data-i18n="dash.goWeekly">Open Weekly Plan</button>
               <button class="btnSecondary" onclick="openView('viewStaff')" data-i18n="dash.goStaff">Open Staff</button>
               <button class="btnSecondary" onclick="openView('viewInventory')" data-i18n="dash.goInventory">Open Inventory</button>
+              <button class="btnSecondary" onclick="openView('viewMyHours')">Open My Hours</button>
             </div>
           </div>
 
@@ -682,23 +737,22 @@
             <thead>
               <tr>
                 <th data-i18n="weekly.staff">Staff</th>
-         <th id="thMon">Mon<br><small id="dateMon"></small></th>
-<th id="thTue">Tue<br><small id="dateTue"></small></th>
-<th id="thWed">Wed<br><small id="dateWed"></small></th>
-<th id="thThu">Thu<br><small id="dateThu"></small></th>
-<th id="thFri">Fri<br><small id="dateFri"></small></th>
-<th id="thSat">Sat<br><small id="dateSat"></small></th>
-<th id="thSun">Sun<br><small id="dateSun"></small></th>
+                <th id="thMon">Mon<br><small id="dateMon"></small></th>
+                <th id="thTue">Tue<br><small id="dateTue"></small></th>
+                <th id="thWed">Wed<br><small id="dateWed"></small></th>
+                <th id="thThu">Thu<br><small id="dateThu"></small></th>
+                <th id="thFri">Fri<br><small id="dateFri"></small></th>
+                <th id="thSat">Sat<br><small id="dateSat"></small></th>
+                <th id="thSun">Sun<br><small id="dateSun"></small></th>
+                <th>Total</th>
               </tr>
             </thead>
-            <tbody id="weeklyBody">
-              <!-- staff rows render here -->
-            </tbody>
+            <tbody id="weeklyBody"></tbody>
           </table>
         </div>
 
         <div style="margin-top:12px;" class="muted" data-i18n="weekly.help">
-          Example values: 9:00, 17:00, Frei, Urlaub, Off
+          Example values: 09:00-17:00, 09:00-17:00/30, Frei, Urlaub, Krank
         </div>
       </div>
             <div id="viewStaff" class="card hidden">
@@ -714,6 +768,12 @@
             <div style="font-size:18px; font-weight:800; margin-bottom:12px;" data-i18n="staff.addTitle">Add Employee</div>
             <div class="stack">
               <input id="staffName" type="text" placeholder="Employee name" />
+              <input id="staffEmail" type="email" placeholder="Employee email" />
+              <input id="staffHourlyRate" type="number" step="0.01" placeholder="€ / hour" />
+              <select id="staffRole">
+                <option value="staff">staff</option>
+                <option value="admin">admin</option>
+              </select>
               <button id="btnAddStaff" class="btnPrimary" data-i18n="staff.addBtn">Add Employee</button>
             </div>
           </div>
@@ -753,45 +813,65 @@
           </div>
         </div>
       </div>
-</div>
-</div>
 
-<div id="viewMyHours" class="card hidden">
+      <div id="viewMyHours" class="card hidden">
+        <div class="cardTitleRow">
+          <div>
+            <h2 class="cardTitle">Orët e Mia</h2>
+            <div class="cardSub">Ditët e punës, orët totale dhe pagesa</div>
+          </div>
+          <div class="sectionActions">
+            <input type="month" id="monthPicker" style="width:auto;min-width:170px;">
+            <button id="btnPrintMyHours" class="btnSecondary">Print</button>
+            <button id="btnShareMyHours" class="btnBlue">Share</button>
+          </div>
+        </div>
 
-  <div class="cardTitleRow">
-    <div>
-      <h2 class="cardTitle">Orët e Mia</h2>
-      <div class="cardSub">Orët e punës për muajin</div>
-    </div>
-  </div>
+        <div id="myHoursWorkerWrap" class="card hidden" style="margin-top:0;">
+          <div style="font-size:16px;font-weight:800;margin-bottom:10px;">Zgjedh puntorin</div>
+          <select id="myHoursWorkerSelect"></select>
+        </div>
 
-  <input type="month" id="monthPicker">
+        <div class="twoCols">
+          <div class="card statCard">
+            <div class="statTitle">Ditë pune</div>
+            <div class="statNumber" id="workDaysTotal">0</div>
+          </div>
 
-  <div class="weekShell">
-    <table class="weekTable">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Fillimi</th>
-          <th>Fundi</th>
-          <th>Pauza</th>
-          <th>Orë</th>
-        </tr>
-      </thead>
+          <div class="card statCard">
+            <div class="statTitle">Orë totale</div>
+            <div class="statNumber" id="monthTotal">0.00</div>
+          </div>
 
-      <tbody id="myHoursBody"></tbody>
+          <div class="card statCard">
+            <div class="statTitle">€ / orë</div>
+            <div class="statNumber" id="hourRateShown">0.00</div>
+          </div>
 
-    </table>
-  </div>
+          <div class="card statCard">
+            <div class="statTitle">Pagesa totale</div>
+            <div class="statNumber" id="salaryTotal">0.00</div>
+          </div>
+        </div>
 
-  <div style="margin-top:15px;font-size:18px;">
-    Total Muaji: <span id="monthTotal">0h</span>
-  </div>
+        <div class="weekShell">
+          <table class="weekTable">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Shift</th>
+                <th>Fillimi</th>
+                <th>Fundi</th>
+                <th>Pauza</th>
+                <th>Orë</th>
+              </tr>
+            </thead>
+            <tbody id="myHoursBody"></tbody>
+          </table>
+        </div>
+      </div>
 
-</div>
-
-<div class="footerSpace"></div>
-    
+      <div class="footerSpace"></div>
     </div>
   </div>
 
@@ -810,7 +890,6 @@
     import {
       getFirestore,
       doc,
-      getDoc,
       setDoc,
       addDoc,
       getDocs,
@@ -847,6 +926,9 @@
 
     let currentUser = null;
     let currentRole = "staff";
+
+    const DAY_KEYS = ["mon","tue","wed","thu","fri","sat","sun"];
+    const DAY_NAMES = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
     const translations = {
       de: {
@@ -885,7 +967,7 @@
         "weekly.pill": "Wochenübersicht",
         "weekly.save": "Wochenplan speichern",
         "weekly.staff": "Mitarbeiter",
-        "weekly.help": "Beispielwerte: 9:00, 17:00, Frei, Urlaub, Off",
+        "weekly.help": "Beispielwerte: 09:00-17:00, 09:00-17:00/30, Frei, Urlaub, Krank",
 
         "staff.title": "Mitarbeiter",
         "staff.sub": "Mitarbeiter hinzufügen und verwalten",
@@ -938,7 +1020,7 @@
         "weekly.pill": "Weekly Schedule",
         "weekly.save": "Save Weekly Plan",
         "weekly.staff": "Staff",
-        "weekly.help": "Example values: 9:00, 17:00, Free, Vacation, Off",
+        "weekly.help": "Example values: 09:00-17:00, 09:00-17:00/30, Free, Vacation, Sick",
 
         "staff.title": "Staff",
         "staff.sub": "Add and manage your employees",
@@ -954,8 +1036,7 @@
         "inv.listTitle": "Inventory List",
         "inv.empty": "No items yet"
       },
-
-      sq: {
+            sq: {
         "menu.dashboard": "Ballina",
         "menu.dashboardSub": "Përmbledhje dhe hyrje të shpejta",
         "menu.weekly": "Plani Javor",
@@ -991,7 +1072,7 @@
         "weekly.pill": "Orari Javor",
         "weekly.save": "Ruaj Planin Javor",
         "weekly.staff": "Stafi",
-        "weekly.help": "Shembuj: 9:00, 17:00, Pushim, Urlaub, Off",
+        "weekly.help": "Shembuj: 09:00-17:00, 09:00-17:00/30, Pushim, Urlaub, Krank",
 
         "staff.title": "Stafi",
         "staff.sub": "Shto dhe menaxho punëtorët",
@@ -1028,6 +1109,7 @@
       adminBadge.classList.add("hidden");
       currentUser = null;
       currentRole = "staff";
+      $("statRole").textContent = "staff";
     }
 
     function setLoggedInUI(){
@@ -1057,46 +1139,176 @@
     }
 
     function escapeHtml(text){
-      return String(text).replace(/[&<>\"]/g, m => ({
+      return String(text || "").replace(/[&<>\"]/g, m => ({
         "&":"&amp;",
         "<":"&lt;",
         ">":"&gt;",
         "\"":"&quot;"
       }[m]));
     }
-      function openView(view){
-  ["viewDashboard","viewWeekly","viewStaff","viewInventory","viewMyHours"].forEach(v=>{
-    const el = $(v);
-    if(el) el.classList.add("hidden");
-  });
 
-  const target = $(view);
-  if(target) target.classList.remove("hidden");
-}
-window.openView = openView;
-    btnOpenLogin.onclick=()=>openView("viewDashboard");
+    function openView(view){
+      ["viewDashboard","viewWeekly","viewStaff","viewInventory","viewMyHours"].forEach(v => {
+        const el = $(v);
+        if(el) el.classList.add("hidden");
+      });
 
-    btnLogout.onclick=async()=>{
+      const target = $(view);
+      if(target) target.classList.remove("hidden");
+    }
+    window.openView = openView;
+
+    function getMondayISO(date = new Date()){
+      const d = new Date(date);
+      const day = (d.getDay() + 6) % 7;
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate() - day);
+      return d.toISOString().slice(0,10);
+    }
+
+    function formatDateShort(date){
+      const dd = String(date.getDate()).padStart(2,"0");
+      const mm = String(date.getMonth() + 1).padStart(2,"0");
+      const yyyy = date.getFullYear();
+      return `${dd}.${mm}.${yyyy}`;
+    }
+
+    function getDateFromWeekStart(weekStart, offset){
+      const d = new Date(weekStart + "T00:00:00");
+      d.setDate(d.getDate() + offset);
+      return d;
+    }
+
+    function getCurrentMonthValue(){
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    }
+
+    function timeToMinutes(t){
+      if(!t) return 0;
+      const parts = String(t).trim().split(":");
+      if(parts.length === 1){
+        const h = Number(parts[0]);
+        if(Number.isNaN(h)) return 0;
+        return h * 60;
+      }
+      const h = Number(parts[0]);
+      const m = Number(parts[1]);
+      if(Number.isNaN(h) || Number.isNaN(m)) return 0;
+      return (h * 60) + m;
+    }
+
+    function parseShiftValue(value){
+      const raw = String(value || "").trim();
+      if(!raw){
+        return { raw:"", isWork:false, start:"", end:"", pause:0, hours:0, label:"" };
+      }
+
+      const txt = raw.toLowerCase();
+
+      if(["frei","off","urlaub","krank","pushim","vacation","free","sick"].includes(txt)){
+        return { raw, isWork:false, start:"", end:"", pause:0, hours:0, label:raw };
+      }
+
+      const match = raw.match(/^(\d{1,2}(?::\d{2})?)\s*[-–]\s*(\d{1,2}(?::\d{2})?)(?:\s*\/\s*(\d+))?$/i);
+      if(!match){
+        return { raw, isWork:false, start:"", end:"", pause:0, hours:0, label:raw };
+      }
+
+      let start = match[1];
+      let end = match[2];
+      const pause = Number(match[3] || 0);
+
+      if(!start.includes(":")) start += ":00";
+      if(!end.includes(":")) end += ":00";
+
+      let startMin = timeToMinutes(start);
+      let endMin = timeToMinutes(end);
+
+      if(endMin <= startMin){
+        endMin += 24 * 60;
+      }
+
+      let totalMin = endMin - startMin - pause;
+      if(totalMin < 0) totalMin = 0;
+
+      return {
+        raw,
+        isWork: totalMin > 0,
+        start,
+        end,
+        pause,
+        hours: +(totalMin / 60).toFixed(2),
+        label: raw
+      };
+    }
+
+    function calcWeeklyTotals(record){
+      let totalHours = 0;
+      let workDays = 0;
+
+      DAY_KEYS.forEach(day => {
+        const parsed = parseShiftValue(record?.[day] || "");
+        totalHours += parsed.hours;
+        if(parsed.hours > 0) workDays++;
+      });
+
+      return {
+        totalHours: +totalHours.toFixed(2),
+        workDays
+      };
+    }
+
+    function canSeeAllHours(){
+      return currentRole === "superadmin" || currentRole === "admin";
+    }
+
+    async function getStaffArray(){
+      const snap = await getDocs(collection(db,"staff"));
+      return snap.docs.map(docu => ({ id: docu.id, ...docu.data() }));
+    }
+
+    async function resolveCurrentRole(){
+      if(!currentUser) return "staff";
+      if(currentUser.uid === SUPERADMIN_UID) return "superadmin";
+
+      const staff = await getStaffArray();
+      const me = staff.find(s =>
+        String(s.email || "").toLowerCase() === String(currentUser.email || "").toLowerCase()
+      );
+
+      if(me?.role === "admin") return "admin";
+      return "staff";
+    }
+
+    btnOpenLogin.onclick = () => {
+      if(currentUser){
+        openView("viewDashboard");
+      }else{
+        loginPanel.classList.remove("hidden");
+      }
+    };
+
+    btnLogout.onclick = async () => {
       await signOut(auth);
       setLoggedOutUI();
     };
 
-    $("btnLogin").onclick=async()=>{
+    $("btnLogin").onclick = async () => {
       clearMsg();
       try{
-        const res=await signInWithEmailAndPassword(
+        await signInWithEmailAndPassword(
           auth,
           $("email").value.trim(),
           $("pass").value.trim()
         );
-
         showMsg("Login OK");
       }catch(e){
         showMsg(e.message,"err");
       }
     };
 
-    $("btnRegister").onclick=async()=>{
+    $("btnRegister").onclick = async () => {
       clearMsg();
       try{
         await createUserWithEmailAndPassword(
@@ -1104,14 +1316,13 @@ window.openView = openView;
           $("email").value.trim(),
           $("pass").value.trim()
         );
-
         showMsg("Account created");
       }catch(e){
         showMsg(e.message,"err");
       }
     };
 
-    $("btnReset").onclick=async()=>{
+    $("btnReset").onclick = async () => {
       clearMsg();
       try{
         await sendPasswordResetEmail(auth,$("email").value.trim());
@@ -1122,103 +1333,117 @@ window.openView = openView;
     };
 
     async function loadStaff(){
-      const snap=await getDocs(collection(db,"staff"));
-      const list=$("staffList");
+      const snap = await getDocs(collection(db,"staff"));
+      const list = $("staffList");
 
-      list.innerHTML="";
+      list.innerHTML = "";
 
       if(snap.empty){
-        list.innerHTML='<div class="emptyState">No employees</div>';
+        list.innerHTML = '<div class="emptyState">No employees</div>';
+        $("dashStaffCount").textContent = "Staff: 0";
         return;
       }
 
-      snap.forEach(docu=>{
-        const d=docu.data();
+      snap.forEach(docu => {
+        const d = docu.data();
 
-        const row=document.createElement("div");
-        row.className="listItem";
+        const row = document.createElement("div");
+        row.className = "listItem";
 
-        row.innerHTML=`
-        <div class="listItemMain">
-          <div class="listItemTitle">${escapeHtml(d.name)}</div>
-        </div>
-
-        <button class="btnDanger">Delete</button>
+        row.innerHTML = `
+          <div class="listItemMain">
+            <div class="listItemTitle">${escapeHtml(d.name || "")}</div>
+            <div class="listItemSub">
+              ${escapeHtml(d.email || "-")} · ${escapeHtml(d.role || "staff")} · ${(Number(d.hourlyRate || 0)).toFixed(2)} €/h
+            </div>
+          </div>
+          <button class="btnDanger">Delete</button>
         `;
 
-       row.querySelector("button").onclick=async()=>{
-  await deleteDoc(doc(db,"staff",docu.id));
-  await loadStaff();
-  await loadWeekly();
-  await loadDashboardStats();
-};
-
-        list.appendChild(row);
-      });
-
-      $("dashStaffCount").textContent="Staff: "+snap.size;
-    }
-
-  $("btnAddStaff").onclick=async()=>{
-  const name=$("staffName").value.trim();
-
-  if(!name) return;
-
-  await addDoc(collection(db,"staff"),{
-    name,
-    created:serverTimestamp()
-  });
-
-  $("staffName").value="";
-
-  await loadStaff();
-  await loadWeekly();
-  await loadDashboardStats();
-};
-
-    async function loadInventory(){
-      const snap=await getDocs(collection(db,"inventory"));
-
-      const list=$("invList");
-
-      list.innerHTML="";
-
-      if(snap.empty){
-        list.innerHTML='<div class="emptyState">No items</div>';
-        return;
-      }
-
-      snap.forEach(docu=>{
-        const d=docu.data();
-
-        const row=document.createElement("div");
-        row.className="listItem";
-
-        row.innerHTML=`
-        <div class="listItemMain">
-          <div class="listItemTitle">${escapeHtml(d.name)}</div>
-          <div class="listItemSub">Qty: ${escapeHtml(d.qty)}</div>
-        </div>
-
-        <button class="btnDanger">Delete</button>
-        `;
-
-        row.querySelector("button").onclick=async()=>{
-          await deleteDoc(doc(db,"inventory",docu.id));
-          loadInventory();
+        row.querySelector("button").onclick = async () => {
+          await deleteDoc(doc(db,"staff",docu.id));
+          await loadStaff();
+          await loadWeekly();
+          await loadDashboardStats();
         };
 
         list.appendChild(row);
       });
 
-      $("dashInvCount").textContent="Inventory Items: "+snap.size;
+      $("dashStaffCount").textContent = "Staff: " + snap.size;
     }
 
-    $("btnAddInv").onclick=async()=>{
-      const name=$("invName").value.trim();
-      const qty=$("invQty").value.trim();
+    $("btnAddStaff").onclick = async () => {
+      const name = $("staffName").value.trim();
+      const email = $("staffEmail").value.trim().toLowerCase();
+      const hourlyRate = Number($("staffHourlyRate").value || 0);
+      const role = $("staffRole").value || "staff";
 
-      if(!name||!qty) return;
+      if(!name || !email){
+        alert("Shkruaj emrin dhe email-in e puntorit");
+        return;
+      }
+
+      await addDoc(collection(db,"staff"),{
+        name,
+        email,
+        hourlyRate,
+        role,
+        created: serverTimestamp()
+      });
+
+      $("staffName").value = "";
+      $("staffEmail").value = "";
+      $("staffHourlyRate").value = "";
+      $("staffRole").value = "staff";
+
+      await loadStaff();
+      await loadWeekly();
+      await loadDashboardStats();
+    };
+
+    async function loadInventory(){
+      const snap = await getDocs(collection(db,"inventory"));
+      const list = $("invList");
+
+      list.innerHTML = "";
+
+      if(snap.empty){
+        list.innerHTML = '<div class="emptyState">No items</div>';
+        return;
+      }
+
+      snap.forEach(docu => {
+        const d = docu.data();
+
+        const row = document.createElement("div");
+        row.className = "listItem";
+
+        row.innerHTML = `
+          <div class="listItemMain">
+            <div class="listItemTitle">${escapeHtml(d.name)}</div>
+            <div class="listItemSub">Qty: ${escapeHtml(d.qty)}</div>
+          </div>
+          <button class="btnDanger">Delete</button>
+        `;
+
+        row.querySelector("button").onclick = async () => {
+          await deleteDoc(doc(db,"inventory",docu.id));
+          await loadInventory();
+          await loadDashboardStats();
+        };
+
+        list.appendChild(row);
+      });
+
+      $("dashInvCount").textContent = "Inventory Items: " + snap.size;
+    }
+
+    $("btnAddInv").onclick = async () => {
+      const name = $("invName").value.trim();
+      const qty = $("invQty").value.trim();
+
+      if(!name || !qty) return;
 
       await addDoc(collection(db,"inventory"),{
         name,
@@ -1226,245 +1451,399 @@ window.openView = openView;
         created:serverTimestamp()
       });
 
-      $("invName").value="";
-      $("invQty").value="";
+      $("invName").value = "";
+      $("invQty").value = "";
 
-      loadInventory();
+      await loadInventory();
       await loadDashboardStats();
     };
+        async function loadWeekly(){
+      if(!$("weekStart").value){
+        $("weekStart").value = getMondayISO();
+      }
 
-   async function loadWeekly(){
-  const staffSnap = await getDocs(collection(db,"staff"));
-  const weeklySnap = await getDocs(collection(db,"weekly"));
+      const weekStart = $("weekStart").value;
+      updateWeekDates();
 
-  const weeklyMap = {};
-let savedWeekStart = "";
+      const staffSnap = await getDocs(collection(db,"staff"));
+      const weeklySnap = await getDocs(collection(db,"weekly"));
 
-weeklySnap.forEach(docu=>{
-  const data = docu.data();
-  if(!docu.id.startsWith($("weekStart").value)) return;
-weeklyMap[docu.id.split("_")[1]] = data;
+      const weeklyMap = {};
 
-  if(!savedWeekStart && data.weekStart){
-    savedWeekStart = data.weekStart;
-  }
-});
+      weeklySnap.forEach(docu => {
+        if(docu.id.startsWith(weekStart + "_")){
+          weeklyMap[docu.id.split("_")[1]] = docu.data();
+        }
+      });
 
-if(savedWeekStart){
-  $("weekStart").value = savedWeekStart;
-  updateWeekDates();
-}
+      const body = $("weeklyBody");
+      body.innerHTML = "";
 
-  const body = $("weeklyBody");
-  body.innerHTML = "";
+      if(staffSnap.empty) return;
 
-  if(staffSnap.empty) return;
+      staffSnap.forEach(docu => {
+        const d = docu.data();
+        const saved = weeklyMap[docu.id] || {};
+        const totals = calcWeeklyTotals(saved);
 
-  staffSnap.forEach(docu=>{
-    const d = docu.data();
-    const saved = weeklyMap[docu.id] || {};
+        const tr = document.createElement("tr");
+        tr.setAttribute("data-staff-id", docu.id);
 
-    const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="staffNameCell">
+            <div>${escapeHtml(d.name || "")}</div>
+            <div class="listItemSub">${(Number(d.hourlyRate || 0)).toFixed(2)} €/h</div>
+          </td>
+          <td><input class="weekInput" id="w_${docu.id}_mon" value="${saved.mon || ""}"></td>
+          <td><input class="weekInput" id="w_${docu.id}_tue" value="${saved.tue || ""}"></td>
+          <td><input class="weekInput" id="w_${docu.id}_wed" value="${saved.wed || ""}"></td>
+          <td><input class="weekInput" id="w_${docu.id}_thu" value="${saved.thu || ""}"></td>
+          <td><input class="weekInput" id="w_${docu.id}_fri" value="${saved.fri || ""}"></td>
+          <td><input class="weekInput" id="w_${docu.id}_sat" value="${saved.sat || ""}"></td>
+          <td><input class="weekInput" id="w_${docu.id}_sun" value="${saved.sun || ""}"></td>
+          <td class="workerWeekTotal">${totals.totalHours.toFixed(2)}h</td>
+        `;
 
-    tr.innerHTML = `
-      <td class="staffNameCell">${escapeHtml(d.name)}</td>
-      <td><input class="weekInput" id="w_${docu.id}_mon" value="${saved.mon || ""}"></td>
-      <td><input class="weekInput" id="w_${docu.id}_tue" value="${saved.tue || ""}"></td>
-      <td><input class="weekInput" id="w_${docu.id}_wed" value="${saved.wed || ""}"></td>
-      <td><input class="weekInput" id="w_${docu.id}_thu" value="${saved.thu || ""}"></td>
-      <td><input class="weekInput" id="w_${docu.id}_fri" value="${saved.fri || ""}"></td>
-      <td><input class="weekInput" id="w_${docu.id}_sat" value="${saved.sat || ""}"></td>
-      <td><input class="weekInput" id="w_${docu.id}_sun" value="${saved.sun || ""}"></td>
-    `;
+        body.appendChild(tr);
+      });
 
-    body.appendChild(tr);
-  });
-}
-
-$("btnSaveWeekly").onclick = async () => {
-  try {
-    const days = ["mon","tue","wed","thu","fri","sat","sun"];
-    const weekStart = $("weekStart").value;
-
-    if (!weekStart) {
-      alert("Zgjidh daten e javes");
-      return;
+      updateWeeklyTotalsUI();
     }
 
-    const staffSnap = await getDocs(collection(db, "staff"));
+    function updateWeeklyTotalsUI(){
+      const rows = $("weeklyBody").querySelectorAll("tr");
+      let allHours = 0;
 
-    for (const docu of staffSnap.docs) {
-      const staffId = docu.id;
+      rows.forEach(row => {
+        const staffId = row.getAttribute("data-staff-id");
 
-      const data = {
-        staffId: staffId,
-        weekStart: weekStart,
-        updatedAt: serverTimestamp()
-      };
+        const record = {};
+        DAY_KEYS.forEach(day => {
+          const el = $(`w_${staffId}_${day}`);
+          record[day] = el ? el.value.trim() : "";
+        });
 
-      days.forEach(day => {
-        const el = document.getElementById(`w_${staffId}_${day}`);
-        data[day] = el ? el.value.trim() : "";
+        const totals = calcWeeklyTotals(record);
+        const totalCell = row.querySelector(".workerWeekTotal");
+        if(totalCell){
+          totalCell.textContent = totals.totalHours.toFixed(2) + "h";
+        }
+
+        allHours += totals.totalHours;
       });
-await setDoc(
-  doc(db, "weekly", weekStart + "_" + staffId),
-  data
-);
-}
 
-    alert("Weekly Plan saved");
-    await loadWeekly();
-  } catch (err) {
-    console.error("SAVE WEEKLY ERROR:", err);
-    alert("Gabim ne ruajtje: " + err.message);
-  }
-};
+      $("statHours").textContent = allHours.toFixed(1);
+    }
 
-    onAuthStateChanged(auth,async(user)=>{
+    $("btnSaveWeekly").onclick = async () => {
+      try {
+        const weekStart = $("weekStart").value;
+
+        if(!weekStart){
+          alert("Zgjidh daten e javes");
+          return;
+        }
+
+        const staffSnap = await getDocs(collection(db,"staff"));
+
+        for (const docu of staffSnap.docs) {
+          const staffId = docu.id;
+
+          const data = {
+            staffId,
+            weekStart,
+            updatedAt: serverTimestamp()
+          };
+
+          DAY_KEYS.forEach(day => {
+            const el = $(`w_${staffId}_${day}`);
+            data[day] = el ? el.value.trim() : "";
+          });
+
+          const totals = calcWeeklyTotals(data);
+          data.totalHours = totals.totalHours;
+          data.workDays = totals.workDays;
+
+          await setDoc(
+            doc(db, "weekly", weekStart + "_" + staffId),
+            data
+          );
+        }
+
+        alert("Weekly Plan saved");
+        await loadWeekly();
+        await loadDashboardStats();
+      } catch (err) {
+        console.error("SAVE WEEKLY ERROR:", err);
+        alert("Gabim ne ruajtje: " + err.message);
+      }
+    };
+
+    onAuthStateChanged(auth, async (user) => {
       if(!user){
         setLoggedOutUI();
         return;
       }
 
-      currentUser=user;
-
+      currentUser = user;
       setLoggedInUI();
 
-      $("dashUserLine").textContent="User: "+user.email;
+      $("dashUserLine").textContent = "User: " + user.email;
 
-      if(user.uid===SUPERADMIN_UID){
-        currentRole="superadmin";
+      currentRole = await resolveCurrentRole();
+
+      if(currentRole === "superadmin"){
         adminBadge.classList.remove("hidden");
+        adminBadge.textContent = "⭐ SuperAdmin";
+      }else if(currentRole === "admin"){
+        adminBadge.classList.remove("hidden");
+        adminBadge.textContent = "⭐ Admin";
+      }else{
+        adminBadge.classList.add("hidden");
       }
 
-      $("dashRoleLine").textContent="Role: "+currentRole;
+      $("dashRoleLine").textContent = "Role: " + currentRole;
+      $("statRole").textContent = currentRole;
+
+      if(!$("weekStart").value){
+        $("weekStart").value = getMondayISO();
+      }
+      if(!$("monthPicker").value){
+        $("monthPicker").value = getCurrentMonthValue();
+      }
 
       await loadStaff();
-await loadInventory();
-await loadWeekly();
-await loadDashboardStats();
+      await loadInventory();
+      await loadWeekly();
+      await loadDashboardStats();
 
       openView("viewDashboard");
     });
 
-    const savedLang=localStorage.getItem("matteo_lang")||"de";
-    $("langSel").value=savedLang;
+    const savedLang = localStorage.getItem("matteo_lang") || "de";
+    $("langSel").value = savedLang;
     applyTranslations(savedLang);
 
-    $("langSel").onchange=e=>{
+    $("langSel").onchange = e => {
       applyTranslations(e.target.value);
     };
-function updateWeekDates(){
 
-  const start = document.getElementById("weekStart").value;
-  if(!start) return;
+    function updateWeekDates(){
+      const start = $("weekStart").value;
+      if(!start) return;
 
-  const d = new Date(start);
+      for(let i = 0; i < 7; i++){
+        const day = getDateFromWeekStart(start, i);
+        const txt = String(day.getDate()).padStart(2,"0") + "." + String(day.getMonth()+1).padStart(2,"0");
+        const head = $(["thMon","thTue","thWed","thThu","thFri","thSat","thSun"][i]);
+        if(head){
+          head.innerHTML = `${DAY_NAMES[i]}<br><small>${txt}</small>`;
+        }
+      }
+    }
 
-  const days = ["thMon","thTue","thWed","thThu","thFri","thSat","thSun"];
+    $("weekStart").onchange = async () => {
+      updateWeekDates();
+      await loadWeekly();
+      await loadDashboardStats();
+    };
 
-  for(let i=0;i<7;i++){
+    $("monthPicker").onchange = () => {
+      renderMyHours();
+    };
 
-    const day = new Date(d);
-    day.setDate(d.getDate()+i);
+    $("cardDashboard").onclick = () => openView("viewDashboard");
+    $("cardWeekly").onclick = () => openView("viewWeekly");
+    $("cardStaff").onclick = () => openView("viewStaff");
+    $("cardInventory").onclick = () => openView("viewInventory");
+    $("cardMyHours").onclick = async () => {
+      openView("viewMyHours");
+      await renderMyHours();
+      $("viewMyHours").scrollIntoView({ behavior: "smooth", block: "start" });
+    };
 
-    const txt =
-      day.getDate().toString().padStart(2,"0") +
-      "." +
-      (day.getMonth()+1).toString().padStart(2,"0");
+    $("weeklyBody").addEventListener("input", (e) => {
+      if(e.target.classList.contains("weekInput")){
+        updateWeeklyTotalsUI();
+      }
+    });
 
-    document.getElementById(days[i]).innerText =
-      ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][i] +
-      " " + txt;
+    async function renderMyHours(){
+      const body = $("myHoursBody");
+      const monthTotalEl = $("monthTotal");
+      const workDaysEl = $("workDaysTotal");
+      const salaryEl = $("salaryTotal");
+      const hourRateEl = $("hourRateShown");
+      const workerWrap = $("myHoursWorkerWrap");
+      const workerSelect = $("myHoursWorkerSelect");
+      const monthValue = $("monthPicker").value || getCurrentMonthValue();
 
-  }
+      body.innerHTML = "";
+      monthTotalEl.textContent = "0.00";
+      workDaysEl.textContent = "0";
+      salaryEl.textContent = "0.00";
+      hourRateEl.textContent = "0.00";
 
-}
+      const staff = await getStaffArray();
+      const weeklySnap = await getDocs(collection(db,"weekly"));
 
-document.getElementById("weekStart").onchange = () => {
-  updateWeekDates();
-  loadWeekly();
-};
-$("cardDashboard").onclick = () => openView("viewDashboard");
-$("cardWeekly").onclick = () => openView("viewWeekly");
-$("cardStaff").onclick = () => openView("viewStaff");
-$("cardInventory").onclick = () => openView("viewInventory");
-$("cardMyHours").onclick = () => {
-  openView("viewMyHours");
-  renderMyHours();
-    $("viewMyHours").scrollIntoView({ behavior: "smooth", block: "start" });
-};
-// 👇 PJESA 4 VENDOSET KËTU
-function timeToMinutes(t){
-  if(!t || !t.includes(":")) return 0;
-  const [h,m] = t.split(":").map(Number);
-  return (h * 60) + m;
-}
+      let selectedStaff = null;
 
-function calcWorkedHours(start, end, pauseMin){
-  const startMin = timeToMinutes(start);
-  const endMin = timeToMinutes(end);
-  const pause = Number(pauseMin || 0);
+      if(canSeeAllHours()){
+        workerWrap.classList.remove("hidden");
 
-  if(!startMin || !endMin || endMin <= startMin) return 0;
+        workerSelect.innerHTML = staff.map(s => {
+          return `<option value="${s.id}">${escapeHtml(s.name || "")}</option>`;
+        }).join("");
 
-  const totalMin = endMin - startMin - pause;
-  return Math.max(0, totalMin / 60);
-}
+        if(!workerSelect.value && staff[0]){
+          workerSelect.value = staff[0].id;
+        }
 
-async function renderMyHours(){
+        selectedStaff = staff.find(s => s.id === workerSelect.value) || staff[0] || null;
+      }else{
+        workerWrap.classList.add("hidden");
+        selectedStaff = staff.find(s =>
+          String(s.email || "").toLowerCase() === String(currentUser?.email || "").toLowerCase()
+        ) || null;
+      }
 
-  const body = $("myHoursBody");
-  const totalEl = $("monthTotal");
+      if(!selectedStaff){
+        body.innerHTML = `<tr><td colspan="6" class="muted">Nuk u gjet puntori.</td></tr>`;
+        return;
+      }
 
-  body.innerHTML = "";
-  let monthTotal = 0;
+      const hourlyRate = Number(selectedStaff.hourlyRate || 0);
+      hourRateEl.textContent = hourlyRate.toFixed(2);
 
-  const snap = await getDocs(collection(db,"weekly"));
+      let totalHours = 0;
+      let workDays = 0;
+      const rows = [];
 
-  snap.forEach(doc=>{
-    const d = doc.data();
+      weeklySnap.forEach(docu => {
+        const d = docu.data();
+        if(d.staffId !== selectedStaff.id) return;
+        if(!d.weekStart) return;
 
-    const hours = calcWorkedHours(d.start,d.end,d.pause);
+        DAY_KEYS.forEach((dayKey, index) => {
+          const shiftValue = d[dayKey] || "";
+          if(!shiftValue) return;
 
-    monthTotal += hours;
+          const dateObj = getDateFromWeekStart(d.weekStart, index);
+          const y = dateObj.getFullYear();
+          const m = String(dateObj.getMonth() + 1).padStart(2,"0");
+          const monthKey = `${y}-${m}`;
 
-    const tr = document.createElement("tr");
+          if(monthKey !== monthValue) return;
 
-    tr.innerHTML = `
-      <td>${d.date || ""}</td>
-      <td>${d.start || ""}</td>
-      <td>${d.end || ""}</td>
-      <td>${d.pause || 0}</td>
-      <td>${hours.toFixed(2)}h</td>
-    `;
+          const parsed = parseShiftValue(shiftValue);
 
-    body.appendChild(tr);
+          totalHours += parsed.hours;
+          if(parsed.hours > 0) workDays++;
 
-  });
+          rows.push({
+            date: formatDateShort(dateObj),
+            shift: parsed.label || shiftValue,
+            start: parsed.start || "",
+            end: parsed.end || "",
+            pause: parsed.pause || 0,
+            hours: parsed.hours || 0
+          });
+        });
+      });
 
-  totalEl.textContent = monthTotal.toFixed(2);
+      rows.sort((a,b) => {
+        const pa = a.date.split(".").reverse().join("-");
+        const pb = b.date.split(".").reverse().join("-");
+        return pa.localeCompare(pb);
+      });
 
-}
+      if(!rows.length){
+        body.innerHTML = `<tr><td colspan="6" class="muted">Nuk ka të dhëna për këtë muaj.</td></tr>`;
+      }else{
+        rows.forEach(r => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${r.date}</td>
+            <td>${escapeHtml(r.shift)}</td>
+            <td>${escapeHtml(r.start)}</td>
+            <td>${escapeHtml(r.end)}</td>
+            <td>${r.pause}</td>
+            <td>${r.hours.toFixed(2)}h</td>
+          `;
+          body.appendChild(tr);
+        });
+      }
 
-async function loadDashboardStats(){
-  const staffSnap = await getDocs(collection(db,"staff"));
-  $("statStaff").textContent = staffSnap.size;
+      const salary = totalHours * hourlyRate;
 
-  const invSnap = await getDocs(collection(db,"inventory"));
-  $("statInventory").textContent = invSnap.size;
-let weekHours = 0;
+      monthTotalEl.textContent = totalHours.toFixed(2);
+      workDaysEl.textContent = String(workDays);
+      salaryEl.textContent = salary.toFixed(2);
+    }
 
-const weeklySnap = await getDocs(collection(db,"weekly"));
+    $("myHoursWorkerSelect").onchange = () => {
+      renderMyHours();
+    };
 
-weeklySnap.forEach(doc=>{
-  const d = doc.data();
-  if(d.hours) weekHours += Number(d.hours);
-});
+    $("btnPrintMyHours").onclick = () => {
+      window.print();
+    };
 
-$("statHours").textContent = weekHours.toFixed(1);
-}
+    $("btnShareMyHours").onclick = async () => {
+      const workerName = canSeeAllHours()
+        ? $("myHoursWorkerSelect").selectedOptions[0]?.textContent || "Worker"
+        : currentUser?.email || "Worker";
 
-</script>
+      const text =
+        `MatteoTeam Hours\n` +
+        `Puntori: ${workerName}\n` +
+        `Muaji: ${$("monthPicker").value}\n` +
+        `Dite pune: ${$("workDaysTotal").textContent}\n` +
+        `Ore totale: ${$("monthTotal").textContent}\n` +
+        `€ / ore: ${$("hourRateShown").textContent}\n` +
+        `Pagesa totale: ${$("salaryTotal").textContent} €`;
+
+      if(navigator.share){
+        try{
+          await navigator.share({
+            title: "MatteoTeam Hours",
+            text
+          });
+        }catch(e){}
+      }else{
+        window.print();
+      }
+    };
+
+    async function loadDashboardStats(){
+      const staffSnap = await getDocs(collection(db,"staff"));
+      $("statStaff").textContent = staffSnap.size;
+
+      const invSnap = await getDocs(collection(db,"inventory"));
+      $("statInventory").textContent = invSnap.size;
+
+      let weekHours = 0;
+      const weekStart = $("weekStart").value || getMondayISO();
+      const weeklySnap = await getDocs(collection(db,"weekly"));
+
+      weeklySnap.forEach(docu => {
+        const d = docu.data();
+        if(d.weekStart === weekStart){
+          weekHours += Number(d.totalHours || 0);
+        }
+      });
+
+      $("statHours").textContent = weekHours.toFixed(1);
+    }
+
+    if(!$("weekStart").value){
+      $("weekStart").value = getMondayISO();
+    }
+    if(!$("monthPicker").value){
+      $("monthPicker").value = getCurrentMonthValue();
+    }
+    updateWeekDates();
+  </script>
 </body>
 </html>
