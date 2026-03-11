@@ -2000,6 +2000,13 @@ if(hoursTableBody) hoursTableBody.innerHTML = "";
       $("monthPicker").value = getCurrentMonthValue();
     }
     updateWeekDates();
+    const btnPrint = document.getElementById("btnPrintHours");
+
+if(btnPrint){
+  btnPrint.onclick = () => {
+    window.print();
+  };
+}
   </script>
 </body>
 </html>
