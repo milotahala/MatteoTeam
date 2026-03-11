@@ -1901,25 +1901,62 @@ function calcShiftPayDetails(value, hourlyRate){
 }
 
     async function loadDashboardStats(){
-      const staffSnap = await getDocs(collection(db,"staff"));
-      $("statStaff").textContent = staffSnap.size;
+  const staffSnap = await getDocs(collection(db,"staff"));
+  const staffDocs = staffSnap.docs.map(docu => ({ id: docu.id, ...docu.data() }));
+  $("statStaff").textContent = staffDocs.length;
 
-      const invSnap = await getDocs(collection(db,"inventory"));
-      $("statInventory").textContent = invSnap.size;
+  const invSnap = await getDocs(collection(db,"inventory"));
+  $("statInventory").textContent = invSnap.size;
 
-      let weekHours = 0;
-      const weekStart = $("weekStart").value || getMondayISO();
-      const weeklySnap = await getDocs(collection(db,"weekly"));
+  let weekHours = 0;
+  let monthHours = 0;
+  let monthPayroll = 0;
+  let totalRates = 0;
 
-      weeklySnap.forEach(docu => {
-        const d = docu.data();
-        if(d.weekStart === weekStart){
-          weekHours += Number(d.totalHours || 0);
-        }
-      });
+  const weekStart = $("weekStart").value || getMondayISO();
+  const monthValue = $("monthPicker")?.value || getCurrentMonthValue();
 
-      $("statHours").textContent = weekHours.toFixed(1);
+  const weeklySnap = await getDocs(collection(db,"weekly"));
+
+  weeklySnap.forEach(docu => {
+    const d = docu.data();
+
+    if(d.weekStart === weekStart){
+      weekHours += Number(d.totalHours || 0);
     }
+
+    const worker = staffDocs.find(s => s.id === d.staffId);
+    const hourlyRate = Number(worker?.hourlyRate || 0);
+
+    DAY_KEYS.forEach((dayKey, index) => {
+      const shiftValue = d[dayKey] || "";
+      if(!shiftValue || !d.weekStart) return;
+
+      const dateObj = getDateFromWeekStart(d.weekStart, index);
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2,"0");
+      const rowMonth = `${y}-${m}`;
+
+      if(rowMonth !== monthValue) return;
+
+      const pay = calcShiftPayDetails(shiftValue, hourlyRate);
+
+      monthHours += pay.hours;
+      monthPayroll += pay.totalPay;
+    });
+  });
+
+  staffDocs.forEach(s => {
+    totalRates += Number(s.hourlyRate || 0);
+  });
+
+  const avgRate = staffDocs.length ? (totalRates / staffDocs.length) : 0;
+
+  $("statHours").textContent = weekHours.toFixed(1);
+  $("statMonthHours").textContent = monthHours.toFixed(2);
+  $("statMonthPayroll").textContent = monthPayroll.toFixed(2) + " €";
+  $("statAvgRate").textContent = avgRate.toFixed(2);
+}
 
     if(!$("weekStart").value){
       $("weekStart").value = getMondayISO();
