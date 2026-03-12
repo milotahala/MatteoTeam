@@ -1462,12 +1462,19 @@ function calcShiftPayDetails(value, hourlyRate){
     $("btnRegister").onclick = async () => {
       clearMsg();
       try{
-        await createUserWithEmailAndPassword(
-          auth,
-          $("email").value.trim(),
-          $("pass").value.trim()
-        );
-        showMsg("Account created");
+       const cred = await createUserWithEmailAndPassword(
+  auth,
+  $("email").value.trim(),
+  $("pass").value.trim()
+);
+
+await setDoc(doc(db,"users",cred.user.uid),{
+  email: $("email").value.trim(),
+  role: "staff",
+  created: serverTimestamp()
+});
+
+showMsg("Account created");
       }catch(e){
         showMsg(e.message,"err");
       }
@@ -1755,7 +1762,14 @@ function calcShiftPayDetails(value, hourlyRate){
 
       $("dashRoleLine").textContent = "Role: " + currentRole;
       $("statRole").textContent = currentRole;
+if(currentRole === "staff"){
+  if($("viewWeekly")) $("viewWeekly").classList.add("hidden");
+  if($("viewInventory")) $("viewInventory").classList.add("hidden");
+  if($("viewStaff")) $("viewStaff").classList.add("hidden");
+  if($("viewDashboard")) $("viewDashboard").classList.add("hidden");
 
+  if($("viewMyHours")) $("viewMyHours").classList.remove("hidden");
+}
       if(!$("weekStart").value){
         $("weekStart").value = getMondayISO();
       }
