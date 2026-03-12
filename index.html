@@ -2042,6 +2042,40 @@ if(btnPrint){
     window.print();
   };
 }
+const btnShare = document.getElementById("btnShareWhatsApp");
+
+if(btnShare){
+  btnShare.onclick = () => {
+
+    let text = "📅 MatteoTeam Wochenplan\n\n";
+
+    const rows = document.querySelectorAll(".weekTable tbody tr");
+
+    rows.forEach(row => {
+
+      const nameCell = row.querySelector("td");
+      if(!nameCell) return;
+
+      const name = nameCell.innerText.trim();
+      text += name + " → ";
+
+      const inputs = row.querySelectorAll("input");
+
+      inputs.forEach(inp=>{
+        if(inp.value){
+          text += inp.value + " ";
+        }
+      });
+
+      text += "\n";
+    });
+
+    const url = "https://wa.me/?text=" + encodeURIComponent(text);
+
+    window.open(url,"_blank");
+
+  };
+}
   </script>
 </body>
 </html>
