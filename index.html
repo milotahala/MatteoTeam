@@ -2076,6 +2076,40 @@ if(btnShare){
 
   };
 }
+const btnPrintMyHours = document.getElementById("btnPrintMyHours");
+
+if(btnPrintMyHours){
+  btnPrintMyHours.onclick = () => {
+    window.print();
+  };
+}
+
+const btnShareMyHours = document.getElementById("btnShareMyHours");
+
+if(btnShareMyHours){
+  btnShareMyHours.onclick = () => {
+
+    let text = "📊 Orët e Mia\n\n";
+
+    const worker = document.getElementById("myHoursWorkerSelect").value;
+    const month = document.getElementById("monthPicker").value;
+
+    text += "Punëtori: " + worker + "\n";
+    text += "Muaji: " + month + "\n";
+
+    const days = document.getElementById("workDaysTotal").textContent;
+    const hours = document.getElementById("monthTotal").textContent;
+    const pay = document.getElementById("monthPay").textContent;
+
+    text += "Ditë pune: " + days + "\n";
+    text += "Orë totale: " + hours + "\n";
+    text += "Pagesa: " + pay + " €\n";
+
+    const url = "https://wa.me/?text=" + encodeURIComponent(text);
+
+    window.open(url,"_blank");
+  };
+}
   </script>
 </body>
 </html>
