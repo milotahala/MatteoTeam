@@ -1865,19 +1865,23 @@ if(hoursTableBody) hoursTableBody.innerHTML = "";
 
   let selectedStaff = null;
 
-  if(canSeeAllHours()){
-    workerWrap.classList.remove("hidden");
+ if(canSeeAllHours()){
+  workerWrap.classList.remove("hidden");
 
-    workerSelect.innerHTML = staff.map(s =>
-      `<option value="${s.id}">${escapeHtml(s.name || "")}</option>`
-    ).join("");
+  const selectedWorkerIdBefore = workerSelect.value;
 
-    if(!workerSelect.value && staff[0]){
-      workerSelect.value = staff[0].id;
-    }
+  workerSelect.innerHTML = staff.map(s =>
+    `<option value="${s.id}">${escapeHtml(s.name || s.email || "-")}</option>`
+  ).join("");
 
-    selectedStaff = staff.find(s => s.id === workerSelect.value) || staff[0] || null;
-  }else{
+  if(selectedWorkerIdBefore && staff.some(s => s.id === selectedWorkerIdBefore)){
+    workerSelect.value = selectedWorkerIdBefore;
+  }else if(staff[0]){
+    workerSelect.value = staff[0].id;
+  }
+
+  selectedStaff = staff.find(s => s.id === workerSelect.value) || null;
+}else{
     workerWrap.classList.add("hidden");
     selectedStaff = staff.find(s =>
       String(s.email || "").toLowerCase() === String(currentUser?.email || "").toLowerCase()
