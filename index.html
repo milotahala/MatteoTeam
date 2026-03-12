@@ -1653,7 +1653,7 @@ showMsg("Account created");
         tr.innerHTML = `
           <td class="staffNameCell">
             <div>${escapeHtml(d.name || "")}</div>
-            <div class="listItemSub">${(Number(d.hourlyRate || 0)).toFixed(2)} €/h</div>
+            ${currentRole !== "staff" ? `<div class="listItemSub">${(Number(d.hourlyRate || 0)).toFixed(2)} €/h</div>` : ""}
           </td>
           <td><input class="weekInput" id="w_${docu.id}_mon" value="${saved.mon || ""}"></td>
           <td><input class="weekInput" id="w_${docu.id}_tue" value="${saved.tue || ""}"></td>
