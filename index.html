@@ -2077,12 +2077,39 @@ if(btnShare){
   };
 }
 const btnPrintMyHours = document.getElementById("btnPrintMyHours");
-const btnShareMyHours = document.getElementById("btnShareMyHours");
 
 if(btnPrintMyHours){
   btnPrintMyHours.addEventListener("click",(e)=>{
     e.preventDefault();
-    window.print();
+
+    const printWindow = window.open("", "_blank");
+
+    const content = document.getElementById("viewMyHours").innerHTML;
+
+    printWindow.document.write(`
+      <html>
+      <head>
+        <title>Orët e Mia</title>
+        <style>
+          body{font-family:Arial;padding:20px;}
+          button{display:none;}
+        </style>
+      </head>
+      <body>
+        <h2>Orët e Mia</h2>
+        ${content}
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+
+    setTimeout(()=>{
+      printWindow.print();
+    },500);
+
+  });
+}
   });
 }
 
