@@ -2133,6 +2133,20 @@ if(btnShareMyHours){
     window.open(url,"_blank");
   });
 }
+const myHoursWorkerSelect = document.getElementById("myHoursWorkerSelect");
+const monthPickerEl = document.getElementById("monthPicker");
+
+if(myHoursWorkerSelect){
+  myHoursWorkerSelect.addEventListener("change", async () => {
+    await loadMyHours();
+  });
+}
+
+if(monthPickerEl){
+  monthPickerEl.addEventListener("change", async () => {
+    await loadMyHours();
+  });
+}
   </script>
 </body>
 </html>
