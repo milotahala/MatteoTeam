@@ -1121,9 +1121,9 @@ async function loadHaccp(){
       cls = "tempDanger";
     }
 
-    html += `
+        html += `
       <div class="card ${cls}" style="margin-top:8px">
-        <b>${d.area}</b> – ${d.temp}°C<br>
+        <b>${d.area}</b> - ${d.temp}°C<br>
         ${d.date} ${d.time}<br>
         ${d.staff}<br>
         ${d.note || ""}
