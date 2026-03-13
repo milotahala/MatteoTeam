@@ -145,6 +145,7 @@
       width:auto;
       min-width:86px;
     }
+
     button{
       border:none;
       border-radius:12px;
@@ -751,7 +752,6 @@
               <button class="btnSecondary" onclick="openView('viewStaff')" data-i18n="dash.goStaff">Open Staff</button>
               <button class="btnSecondary" onclick="openView('viewInventory')" data-i18n="dash.goInventory">Open Inventory</button>
               <button class="btnSecondary" onclick="openView('viewMyHours')">Open My Hours</button>
-                <button class="btnSecondary" onclick="openView('viewHaccp')">HACCP</button>
             </div>
           </div>
 
@@ -766,45 +766,7 @@
           </div>
         </div>
       </div>
-<!-- HACCP VIEW -->
-<div id="viewHaccp" class="card hidden">
 
-<h2 class="cardTitle">HACCP Temperaturkontrolle</h2>
-
-<div style="display:grid;gap:10px;margin-top:10px;">
-
-<select id="haccpArea">
-<option>Frigorifer 1</option>
-<option>Frigorifer 2</option>
-<option>Ngrirës</option>
-<option>Prep Table</option>
-<option>Salad Station</option>
-</select>
-
-<input id="haccpTemp" type="number" placeholder="Temperatur °C">
-
-<input id="haccpDate" type="date">
-
-<input id="haccpTime" type="time">
-
-<input id="haccpStaff" placeholder="Mitarbeiter">
-
-<input id="haccpNote" placeholder="Notiz">
-
-<button id="btnSaveHaccp" class="btnPrimary">
-Save HACCP
-</button>
-
-</div>
-
-<div style="margin-top:20px">
-<div id="haccpList"></div>
-</div>
-
-</div>
-
-<!-- WEEKLY PLAN -->
-<div id="viewWeekly" class="card hidden">
       <div id="viewWeekly" class="card hidden">
         <div class="weekTopBar">
           <div class="weekTitleWrap">
@@ -1055,11 +1017,7 @@ Save HACCP
     const btnLogout = $("btnLogout");
     const authMsg = $("authMsg");
     const adminBadge = $("adminBadge");
-// HACCP ELEMENTS
 
-if(btnSaveHaccp){
-  btnSaveHaccp.onclick = saveHaccp;
-}
     let currentUser = null;
     let currentRole = "staff";
 
