@@ -1104,7 +1104,7 @@ async function saveHaccp(){
 async function loadHaccp(){
   if(!haccpList) return;
 
-  const snap = await getDocs(collection(db,"haccpTemps"));
+  const snap = await getDocs(collection(db, "haccpTemps"));
 
   let html = "";
 
@@ -1121,7 +1121,7 @@ async function loadHaccp(){
       cls = "tempDanger";
     }
 
-           html += "<div class=\"card " + cls + "\" style=\"margin-top:8px\">" +
+    html += "<div class=\"card " + cls + "\" style=\"margin-top:8px\">" +
       "<b>" + d.area + "</b> - " + d.temp + "°C<br>" +
       d.date + " " + d.time + "<br>" +
       d.staff + "<br>" +
