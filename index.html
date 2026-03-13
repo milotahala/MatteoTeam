@@ -752,6 +752,7 @@
               <button class="btnSecondary" onclick="openView('viewStaff')" data-i18n="dash.goStaff">Open Staff</button>
               <button class="btnSecondary" onclick="openView('viewInventory')" data-i18n="dash.goInventory">Open Inventory</button>
               <button class="btnSecondary" onclick="openView('viewMyHours')">Open My Hours</button>
+              <button class="nav-btn" onclick="openView('viewHaccp')">HACCP</button>
             </div>
           </div>
 
@@ -2157,6 +2158,139 @@ if(monthPickerEl){
     await renderMyHours();
   });
 }
+<div id="viewHaccp" class="hidden">
+  <div class="card">
+    <div class="row sp" style="margin-bottom:12px;gap:10px;flex-wrap:wrap;">
+      <h2>HACCP</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn" onclick="showHaccpTab('pizza')">Pizza Kasse</button>
+        <button class="btn" onclick="showHaccpTab('kueche')">Küche</button>
+        <button class="btn" onclick="showHaccpTab('kellner')">Kellner</button>
+        <button class="btn" onclick="showHaccpTab('history')">History</button>
+      </div>
+    </div>
+
+    <div id="haccpReminder" class="card" style="margin-bottom:12px;padding:10px;"></div>
+
+    <div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      <div>
+        <label>Datum</label>
+        <input type="date" id="haccpDate" />
+      </div>
+      <div>
+        <label>Uhrzeit</label>
+        <input type="time" id="haccpTime" />
+      </div>
+      <div style="min-width:220px;flex:1;">
+        <label>Mitarbeiter</label>
+        <input type="text" id="haccpWorker" placeholder="Name" />
+      </div>
+    </div>
+
+    <!-- PIZZA KASSE -->
+    <div id="haccpTabPizza" class="haccp-tab">
+      <div class="card">
+        <h3>Pizza Kasse</h3>
+
+        <h4>Temperatur Check</h4>
+        <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+          <div><label>Pizza Kasse Kühlschrank</label><input type="number" id="pizza_temp_1" placeholder="°C" /></div>
+          <div><label>Frigorifer 1</label><input type="number" id="pizza_temp_2" placeholder="°C" /></div>
+          <div><label>Frigorifer 2</label><input type="number" id="pizza_temp_3" placeholder="°C" /></div>
+          <div><label>Frigorifer 3</label><input type="number" id="pizza_temp_4" placeholder="°C" /></div>
+          <div><label>Frigorifer 4</label><input type="number" id="pizza_temp_5" placeholder="°C" /></div>
+        </div>
+
+        <h4 style="margin-top:16px;">Pastrim Kontrollet</h4>
+        <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+          <label><input type="checkbox" id="pizza_clean_1" /> Pizza Kasse pastrim</label>
+          <label><input type="checkbox" id="pizza_clean_2" /> Arbeitsfläche pastrim</label>
+          <label><input type="checkbox" id="pizza_clean_3" /> Pizza tools pastrim</label>
+          <label><input type="checkbox" id="pizza_clean_4" /> Kühlschränke pastrim</label>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" onclick="saveHaccpSection('Pizza Kasse')">Save Pizza Kasse</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KUECHE -->
+    <div id="haccpTabKueche" class="haccp-tab hidden">
+      <div class="card">
+        <h3>Küche</h3>
+
+        <h4>Temperatur Check</h4>
+        <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+          <div><label>Küche Frigorifer 1</label><input type="number" id="kueche_temp_1" placeholder="°C" /></div>
+          <div><label>Küche Frigorifer 2</label><input type="number" id="kueche_temp_2" placeholder="°C" /></div>
+          <div><label>Küche Frigorifer 3</label><input type="number" id="kueche_temp_3" placeholder="°C" /></div>
+          <div><label>Küche Frigorifer 4</label><input type="number" id="kueche_temp_4" placeholder="°C" /></div>
+          <div><label>Podrum Frigorifer 1</label><input type="number" id="kueche_temp_5" placeholder="°C" /></div>
+          <div><label>Podrum Frigorifer 2</label><input type="number" id="kueche_temp_6" placeholder="°C" /></div>
+        </div>
+
+        <h4 style="margin-top:16px;">Pastrim Kontrollet</h4>
+        <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+          <label><input type="checkbox" id="kueche_clean_1" /> Küche Arbeitsflächen</label>
+          <label><input type="checkbox" id="kueche_clean_2" /> Boden Küche</label>
+          <label><input type="checkbox" id="kueche_clean_3" /> Kühlschränke Küche</label>
+          <label><input type="checkbox" id="kueche_clean_4" /> Podrum pastrim</label>
+          <label><input type="checkbox" id="kueche_clean_5" /> Spülbereich pastrim</label>
+          <label><input type="checkbox" id="kueche_clean_6" /> Kafe Machine pastrim</label>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" onclick="saveHaccpSection('Küche')">Save Küche</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KELLNER -->
+    <div id="haccpTabKellner" class="haccp-tab hidden">
+      <div class="card">
+        <h3>Kellner</h3>
+
+        <h4>Temperatur Check</h4>
+        <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+          <div><label>Theke Frigorifer</label><input type="number" id="kellner_temp_1" placeholder="°C" /></div>
+        </div>
+
+        <h4 style="margin-top:16px;">Pastrim Kontrollet</h4>
+        <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+          <label><input type="checkbox" id="kellner_clean_1" /> Theke pastrim</label>
+          <label><input type="checkbox" id="kellner_clean_2" /> Getränke Bereich pastrim</label>
+          <label><input type="checkbox" id="kellner_clean_3" /> Kaffeemaschine pastrim</label>
+          <label><input type="checkbox" id="kellner_clean_4" /> Servis area pastrim</label>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" onclick="saveHaccpSection('Kellner')">Save Kellner</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="haccpTabHistory" class="haccp-tab hidden">
+      <div class="card">
+        <h3>HACCP History / Monatsprint</h3>
+
+        <div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+          <div>
+            <label>Monat</label>
+            <input type="month" id="haccpMonth" />
+          </div>
+          <div style="display:flex;align-items:end;gap:8px;flex-wrap:wrap;">
+            <button class="btn" onclick="loadHaccpMonth()">Load Month</button>
+            <button class="btn" onclick="printMonthlyHaccp()">Print Monat</button>
+          </div>
+        </div>
+
+        <div id="haccpHistoryList"></div>
+      </div>
+    </div>
+  </div>
+</div>
   </script>
 </body>
 </html>
