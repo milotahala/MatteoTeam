@@ -1104,24 +1104,14 @@ async function saveHaccp(){
 async function loadHaccp(){
   if(!haccpList) return;
 
-  const snap = await getDocs(collection(db, "haccpTemps"));
+  const snap = await getDocs(collection(db,"haccpTemps"));
 
   let html = "";
 
   snap.forEach(doc => {
     const d = doc.data();
 
-    let cls = "tempOK";
-
-    if(d.temp > 4 && d.temp <= 7){
-      cls = "tempWarn";
-    }
-
-    if(d.temp > 7){
-      cls = "tempDanger";
-    }
-
-    html += "<div class=\"card " + cls + "\" style=\"margin-top:8px\">" +
+    html += "<div class=\"card\" style=\"margin-top:8px\">" +
       "<b>" + d.area + "</b> - " + d.temp + "°C<br>" +
       d.date + " " + d.time + "<br>" +
       d.staff + "<br>" +
