@@ -1056,7 +1056,69 @@ Save HACCP
     const btnLogout = $("btnLogout");
     const authMsg = $("authMsg");
     const adminBadge = $("adminBadge");
+// HACCP ELEMENTS
+const haccpArea = $("haccpArea");
+const haccpTemp = $("haccpTemp");
+const haccpDate = $("haccpDate");
+const haccpTime = $("haccpTime");
+const haccpStaff = $("haccpStaff");
+const haccpNote = $("haccpNote");
+const btnSaveHaccp = $("btnSaveHaccp");
+const haccpList = $("haccpList");
 
+async function saveHaccp(){
+  try{
+
+    const data = {
+      area: haccpArea.value,
+      temp: parseFloat(haccpTemp.value || 0),
+      date: haccpDate.value,
+      time: haccpTime.value,
+      staff: haccpStaff.value,
+      note: haccpNote.value,
+      createdAt: Date.now()
+    };
+
+    await addDoc(collection(db,"haccpTemps"), data);
+
+    alert("HACCP saved");
+
+    loadHaccp();
+
+  }catch(err){
+    console.error(err);
+    alert("Error saving HACCP");
+  }
+}
+
+async function loadHaccp(){
+
+  if(!haccpList) return;
+
+  const snap = await getDocs(collection(db,"haccpTemps"));
+
+  let html="";
+
+  snap.forEach(doc=>{
+    const d = doc.data();
+
+    html += `
+    <div class="card" style="margin-top:8px">
+      <b>${d.area}</b> – ${d.temp}°C<br>
+      ${d.date} ${d.time}<br>
+      ${d.staff}<br>
+      ${d.note || ""}
+    </div>
+    `;
+  });
+
+  haccpList.innerHTML = html;
+
+}
+
+if(btnSaveHaccp){
+  btnSaveHaccp.onclick = saveHaccp;
+}
     let currentUser = null;
     let currentRole = "staff";
 
