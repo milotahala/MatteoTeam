@@ -1044,7 +1044,32 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+function showHaccpTab(tabName){
 
+  ["haccpTabPizza","haccpTabKueche","haccpTabKellner","haccpTabHistory"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.add("hidden");
+  });
+
+  if(tabName==="pizza"){
+    document.getElementById("haccpTabPizza")?.classList.remove("hidden");
+  }
+
+  if(tabName==="kueche"){
+    document.getElementById("haccpTabKueche")?.classList.remove("hidden");
+  }
+
+  if(tabName==="kellner"){
+    document.getElementById("haccpTabKellner")?.classList.remove("hidden");
+  }
+
+  if(tabName==="history"){
+    document.getElementById("haccpTabHistory")?.classList.remove("hidden");
+  }
+
+}
+
+window.showHaccpTab = showHaccpTab;
     const $ = (id) => document.getElementById(id);
 
     const loginPanel = $("loginPanel");
