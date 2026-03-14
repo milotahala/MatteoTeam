@@ -1109,29 +1109,27 @@ function showHaccpTab(tabName){
     "haccpTabHistory"
   ];
 
-  tabs.forEach(id=>{
+  tabs.forEach(id => {
     const el = document.getElementById(id);
-    if(el) el.classList.add("hidden");
+    if (el) el.classList.add("hidden");
   });
 
-  if(tabName==="pizza"){
+  if (tabName === "pizza") {
     document.getElementById("haccpTabPizza").classList.remove("hidden");
   }
 
-  if(tabName==="kueche"){
+  if (tabName === "kueche") {
     document.getElementById("haccpTabKueche").classList.remove("hidden");
   }
 
-  if(tabName==="kellner"){
+  if (tabName === "kellner") {
     document.getElementById("haccpTabKellner").classList.remove("hidden");
   }
 
-  if(tabName==="history"){
+  if (tabName === "history") {
     document.getElementById("haccpTabHistory").classList.remove("hidden");
   }
-
 }
-
 window.showHaccpTab = showHaccpTab;
 
 window.showHaccpTab = showHaccpTab;
