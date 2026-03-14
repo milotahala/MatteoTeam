@@ -1003,8 +1003,40 @@
 <button class="btnSecondary" onclick="showHaccpTab('history')">History</button>
 <div id="haccpTabPizza" class="hidden" style="margin-top:20px;">
   <div class="card">
-    <h3>Pizza Kasse</h3>
-    <p>Kjo pjesë do të mbajë kontrollet për Pizza Kasse.</p>
+  <h3>Pizza Kasse</h3>
+
+<div class="row">
+  <div>
+    <label>Kühlhaus °C</label>
+    <input type="number" id="pizzaKuehlhaus">
+  </div>
+
+  <div>
+    <label>Saladete °C</label>
+    <input type="number" id="pizzaSaladete">
+  </div>
+</div>
+
+<div class="row">
+  <div>
+    <label>Fisch °C</label>
+    <input type="number" id="pizzaFisch">
+  </div>
+
+  <div>
+    <label>Käse °C</label>
+    <input type="number" id="pizzaKaese">
+  </div>
+</div>
+
+<div class="row">
+  <div>
+    <label>Salat °C</label>
+    <input type="number" id="pizzaSalat">
+  </div>
+</div>
+
+<button class="btnPrimary" onclick="savePizzaHaccp()">Save</button>
   </div>
 </div>
 
