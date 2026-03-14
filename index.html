@@ -996,69 +996,68 @@
       </div>
     </div>
 
-    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+<div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
   <button type="button" class="btnSecondary" onclick="showHaccpTab('pizza')">Pizza Kasse</button>
   <button type="button" class="btnSecondary" onclick="showHaccpTab('kueche')">Küche</button>
   <button type="button" class="btnSecondary" onclick="showHaccpTab('kellner')">Kellner</button>
   <button type="button" class="btnSecondary" onclick="showHaccpTab('history')">History</button>
 </div>
+
 <div id="haccpTabPizza" class="hidden" style="margin-top:20px;">
   <div class="card">
-  <h3>Pizza Kasse</h3>
+    <h3>Pizza Kasse</h3>
 
-<div class="row">
-  <div>
-    <label>Kühlhaus °C</label>
-    <input type="number" id="pizzaKuehlhaus">
-  </div>
+    <div class="row">
+      <div>
+        <label>Kühlhaus °C</label>
+        <input type="number" id="pizzaKuehlhaus">
+      </div>
+      <div>
+        <label>Saladete °C</label>
+        <input type="number" id="pizzaSaladete">
+      </div>
+    </div>
 
-  <div>
-    <label>Saladete °C</label>
-    <input type="number" id="pizzaSaladete">
-  </div>
-</div>
+    <div class="row">
+      <div>
+        <label>Fisch °C</label>
+        <input type="number" id="pizzaFisch">
+      </div>
+      <div>
+        <label>Käse °C</label>
+        <input type="number" id="pizzaKaese">
+      </div>
+    </div>
 
-<div class="row">
-  <div>
-    <label>Fisch °C</label>
-    <input type="number" id="pizzaFisch">
-  </div>
+    <div class="row">
+      <div>
+        <label>Salat °C</label>
+        <input type="number" id="pizzaSalat">
+      </div>
+    </div>
 
-  <div>
-    <label>Käse °C</label>
-    <input type="number" id="pizzaKaese">
-  </div>
-</div>
-
-<div class="row">
-  <div>
-    <label>Salat °C</label>
-    <input type="number" id="pizzaSalat">
-  </div>
-</div>
-
-<button class="btnPrimary" onclick="savePizzaHaccp()">Save</button>
+    <button class="btnPrimary" type="button" onclick="savePizzaHaccp()">Save</button>
   </div>
 </div>
 
 <div id="haccpTabKueche" class="hidden" style="margin-top:20px;">
   <div class="card">
     <h3>Küche</h3>
-    <p>Kjo pjesë do të mbajë kontrollet për Küche.</p>
+    <p>Küche Tab OK</p>
   </div>
 </div>
 
 <div id="haccpTabKellner" class="hidden" style="margin-top:20px;">
   <div class="card">
     <h3>Kellner</h3>
-    <p>Kjo pjesë do të mbajë kontrollet për Kellner.</p>
+    <p>Kellner Tab OK</p>
   </div>
 </div>
 
 <div id="haccpTabHistory" class="hidden" style="margin-top:20px;">
   <div class="card">
     <h3>History</h3>
-    <p>Këtu do të shfaqet historia HACCP.</p>
+    <p>History Tab OK</p>
   </div>
 </div>
   <div class="footerSpace"></div>
