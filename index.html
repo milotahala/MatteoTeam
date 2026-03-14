@@ -1100,36 +1100,29 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-function showHaccpTab(tabName){
+function showHaccpTab(tabName) {
+  const ids = {
+    pizza: "haccpTabPizza",
+    kueche: "haccpTabKueche",
+    kellner: "haccpTabKellner",
+    history: "haccpTabHistory"
+  };
 
-  const tabs = [
-    "haccpTabPizza",
-    "haccpTabKueche",
-    "haccpTabKellner",
-    "haccpTabHistory"
-  ];
-
-  tabs.forEach(id => {
+  Object.values(ids).forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.classList.add("hidden");
+    if (el) {
+      el.classList.add("hidden");
+      el.style.display = "none";
+    }
   });
 
-  if (tabName === "pizza") {
-    document.getElementById("haccpTabPizza").classList.remove("hidden");
-  }
-
-  if (tabName === "kueche") {
-    document.getElementById("haccpTabKueche").classList.remove("hidden");
-  }
-
-  if (tabName === "kellner") {
-    document.getElementById("haccpTabKellner").classList.remove("hidden");
-  }
-
-  if (tabName === "history") {
-    document.getElementById("haccpTabHistory").classList.remove("hidden");
+  const target = document.getElementById(ids[tabName]);
+  if (target) {
+    target.classList.remove("hidden");
+    target.style.display = "block";
   }
 }
+
 window.showHaccpTab = showHaccpTab;
 
 window.showHaccpTab = showHaccpTab;
