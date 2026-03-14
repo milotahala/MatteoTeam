@@ -1042,9 +1042,57 @@
 
 <div id="haccpTabKueche" class="hidden" style="margin-top:20px;">
   <div class="card">
-    <h3>Küche</h3>
-    <p>Küche Tab OK</p>
+   <h3>Küche</h3>
+
+<div class="row">
+  <div>
+    <label>Sauce °C</label>
+    <input type="number" id="kuecheSauce">
   </div>
+
+  <div>
+    <label>Kühlhaus °C</label>
+    <input type="number" id="kuecheKuehlhaus">
+  </div>
+</div>
+
+<div class="row">
+  <div>
+    <label>Salat °C</label>
+    <input type="number" id="kuecheSalat">
+  </div>
+
+  <div>
+    <label>Dessert °C</label>
+    <input type="number" id="kuecheDessert">
+  </div>
+</div>
+
+<div class="row">
+  <div>
+    <label>TK Fisch (-3 / 0)</label>
+    <input type="number" id="kuecheTkFisch">
+  </div>
+
+  <div>
+    <label>TK Fleisch (-3 / 0)</label>
+    <input type="number" id="kuecheTkFleisch">
+  </div>
+</div>
+
+<div class="row">
+  <div>
+    <label>TK Gemüse (-3 / 0)</label>
+    <input type="number" id="kuecheTkGemuese">
+  </div>
+
+  <div>
+    <label>Defekt</label>
+    <input type="text" id="kuecheDefekt" placeholder="z.B. Kühlschrank defekt">
+  </div>
+</div>
+
+<button class="btnPrimary" type="button" onclick="saveKuecheHaccp()">Save</button>
 </div>
 
 <div id="haccpTabKellner" class="hidden" style="margin-top:20px;">
