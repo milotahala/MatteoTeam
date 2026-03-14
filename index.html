@@ -968,7 +968,43 @@
       <div class="footerSpace"></div>
     </div>
   </div>
+<div id="viewHaccp" class="card hidden">
 
+  <div class="cardTitleRow">
+    <div>
+      <h2 class="cardTitle">HACCP</h2>
+      <div class="cardSub">Temperatur & Cleaning Kontrolle</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Datum</label>
+        <input type="date" id="haccpDate">
+      </div>
+
+      <div>
+        <label>Uhrzeit</label>
+        <input type="time" id="haccpTime">
+      </div>
+
+      <div>
+        <label>Mitarbeiter</label>
+        <input type="text" id="haccpWorker">
+      </div>
+    </div>
+
+    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btnSecondary">Pizza Kasse</button>
+      <button class="btnSecondary">Küche</button>
+      <button class="btnSecondary">Kellner</button>
+      <button class="btnSecondary">History</button>
+    </div>
+  </div>
+
+  <div class="footerSpace"></div>
+</div>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
