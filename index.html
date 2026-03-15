@@ -1531,6 +1531,36 @@ function printHaccpHistory() {
   printWindow.print();
 }
 window.printHaccpHistory = printHaccpHistory;
+async function checkTodayHaccpStatus() {
+  try {
+    const reminderEl = document.getElementById("haccpReminder");
+    if (!reminderEl) return;
+
+    const today = document.getElementById("haccpDate")?.value || new Date().toISOString().slice(0, 10);
+
+    const snap = await getDocs(collection(db, "haccpLogs"));
+
+    let hasToday = false;
+
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (data.date === today) {
+        hasToday = true;
+      }
+    });
+
+    if (hasToday) {
+      reminderEl.innerHTML = "✅ HACCP heute bereits gemacht";
+    } else {
+      reminderEl.innerHTML = "⚠ HACCP heute nicht gemacht<br>Bitte Kontrolle ausfüllen";
+    }
+
+  } catch (err) {
+    console.error("CHECK HACCP STATUS ERROR:", err);
+  }
+}
+
+window.checkTodayHaccpStatus = checkTodayHaccpStatus;
     const $ = (id) => document.getElementById(id);
 
     const loginPanel = $("loginPanel");
