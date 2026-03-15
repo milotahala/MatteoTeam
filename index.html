@@ -1227,33 +1227,37 @@ function showHaccpTab(tabName) {
 
 window.showHaccpTab = showHaccpTab;
 async function savePizzaHaccp() {
+  try {
+    const date = document.getElementById("haccpDate")?.value || "";
+    const time = document.getElementById("haccpTime")?.value || "";
+    const worker = document.getElementById("haccpWorker")?.value || "";
 
-  const date = document.getElementById("haccpDate")?.value || "";
-  const time = document.getElementById("haccpTime")?.value || "";
-  const worker = document.getElementById("haccpWorker")?.value || "";
+    const kuehlhaus = document.getElementById("pizzaKuehlhaus")?.value || "";
+    const saladete = document.getElementById("pizzaSaladete")?.value || "";
+    const fisch = document.getElementById("pizzaFisch")?.value || "";
+    const kaese = document.getElementById("pizzaKaese")?.value || "";
+    const salat = document.getElementById("pizzaSalat")?.value || "";
 
-  const kuehlhaus = document.getElementById("pizzaKuehlhaus")?.value || "";
-  const saladete = document.getElementById("pizzaSaladete")?.value || "";
-  const fisch = document.getElementById("pizzaFisch")?.value || "";
-  const kaese = document.getElementById("pizzaKaese")?.value || "";
-  const salat = document.getElementById("pizzaSalat")?.value || "";
+    await addDoc(collection(db, "haccpLogs"), {
+      date,
+      time,
+      worker,
+      section: "pizza",
+      data: {
+        kuehlhaus,
+        saladete,
+        fisch,
+        kaese,
+        salat
+      },
+      createdAt: serverTimestamp()
+    });
 
-  await addDoc(collection(db, "haccpLogs"), {
-    date,
-    time,
-    worker,
-    section: "pizza",
-    data: {
-      kuehlhaus,
-      saladete,
-      fisch,
-      kaese,
-      salat
-    },
-    createdAt: serverTimestamp()
-  });
-
-  alert("Pizza HACCP gespeichert");
+    alert("Pizza HACCP gespeichert");
+  } catch (err) {
+    console.error("SAVE PIZZA HACCP ERROR:", err);
+    alert("Gabim në ruajtjen e Pizza HACCP");
+  }
 }
 
 window.savePizzaHaccp = savePizzaHaccp;
