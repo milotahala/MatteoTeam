@@ -1802,6 +1802,9 @@ window.checkTodayHaccpStatus = checkTodayHaccpStatus;
 
       const target = $(view);
       if(target) target.classList.remove("hidden");
+      if (view === "viewHaccp") {
+  checkTodayHaccpStatus();
+}
     }
     window.openView = openView;
 
