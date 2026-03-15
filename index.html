@@ -1261,6 +1261,47 @@ async function savePizzaHaccp() {
 }
 
 window.savePizzaHaccp = savePizzaHaccp;
+
+async function saveKuecheHaccp() {
+
+  const date = document.getElementById("haccpDate")?.value || "";
+  const time = document.getElementById("haccpTime")?.value || "";
+  const worker = document.getElementById("haccpWorker")?.value || "";
+
+  const sauce = document.getElementById("kuecheSauce")?.value || "";
+  const kuehlhaus = document.getElementById("kuecheKuehlhaus")?.value || "";
+  const salat = document.getElementById("kuecheSalat")?.value || "";
+  const dessert = document.getElementById("kuecheDessert")?.value || "";
+
+  const tkFisch = document.getElementById("kuecheTkFisch")?.value || "";
+  const tkFleisch = document.getElementById("kuecheTkFleisch")?.value || "";
+  const tkGemuese = document.getElementById("kuecheTkGemuese")?.value || "";
+
+  const defekt = document.getElementById("kuecheDefekt")?.value || "";
+
+  await addDoc(collection(db, "haccpLogs"), {
+    date,
+    time,
+    worker,
+    section: "kueche",
+    data: {
+      sauce,
+      kuehlhaus,
+      salat,
+      dessert,
+      tkFisch,
+      tkFleisch,
+      tkGemuese,
+      defekt
+    },
+    createdAt: serverTimestamp()
+  });
+
+  alert("Küche HACCP gespeichert");
+}
+
+window.saveKuecheHaccp = saveKuecheHaccp;
+
 function saveKellnerHaccp() {
 
   const getraenke = document.getElementById("kellnerGetraenke")?.value || "";
