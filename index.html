@@ -1348,10 +1348,9 @@ async function loadHaccpHistory() {
 
     let items = [];
 
-    snap.forEach((docSnap) => {
+   snap.forEach((docSnap) => {
   const data = docSnap.data();
 
-  // mos shfaq entries pa date
   if (!data.date) return;
 
   if (!month || data.date.startsWith(month)) {
