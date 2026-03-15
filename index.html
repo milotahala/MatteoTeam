@@ -1540,20 +1540,32 @@ async function checkTodayHaccpStatus() {
 
     const snap = await getDocs(collection(db, "haccpLogs"));
 
-    let hasToday = false;
+    let pizzaDone = false;
+    let kuecheDone = false;
+    let kellnerDone = false;
 
     snap.forEach((docSnap) => {
       const data = docSnap.data();
-      if (data.date === today) {
-        hasToday = true;
-      }
+
+      if (data.date !== today) return;
+
+      if (data.section === "pizza") pizzaDone = true;
+      if (data.section === "kueche") kuecheDone = true;
+      if (data.section === "kellner") kellnerDone = true;
     });
 
-    if (hasToday) {
-      reminderEl.innerHTML = "✅ HACCP heute bereits gemacht";
-    } else {
-      reminderEl.innerHTML = "⚠ HACCP heute nicht gemacht<br>Bitte Kontrolle ausfüllen";
+    if (pizzaDone && kuecheDone && kellnerDone) {
+      reminderEl.innerHTML = "✅ Alle HACCP Kontrollen heute erledigt";
+      return;
     }
+
+    let html = "<b>HACCP Status heute:</b><br>";
+
+    html += pizzaDone ? "✅ Pizza Kasse gemacht<br>" : "❌ Pizza Kasse fehlt<br>";
+    html += kuecheDone ? "✅ Küche gemacht<br>" : "❌ Küche fehlt<br>";
+    html += kellnerDone ? "✅ Kellner gemacht<br>" : "❌ Kellner fehlt<br>";
+
+    reminderEl.innerHTML = html;
 
   } catch (err) {
     console.error("CHECK HACCP STATUS ERROR:", err);
