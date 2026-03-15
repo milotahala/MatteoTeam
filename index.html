@@ -1569,6 +1569,15 @@ async function checkTodayHaccpStatus() {
 
     reminderEl.innerHTML = html;
 
+if(pizza && kueche && kellner){
+  reminderEl.style.background = "#123d2d";
+  reminderEl.style.border = "1px solid #2ecc71";
+}
+else{
+  reminderEl.style.background = "#3d1a1a";
+  reminderEl.style.border = "1px solid #e74c3c";
+}
+
   } catch(e){
     console.error(e);
   }
