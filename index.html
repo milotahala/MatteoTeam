@@ -1533,42 +1533,44 @@ function printHaccpHistory() {
 window.printHaccpHistory = printHaccpHistory;
 async function checkTodayHaccpStatus() {
   try {
+
     const reminderEl = document.getElementById("haccpReminder");
     if (!reminderEl) return;
 
-    const today = document.getElementById("haccpDate")?.value || new Date().toISOString().slice(0, 10);
+    const today = new Date().toISOString().slice(0,10);
 
-    const snap = await getDocs(collection(db, "haccpLogs"));
+    const snap = await getDocs(collection(db,"haccpLogs"));
 
-    let pizzaDone = false;
-    let kuecheDone = false;
-    let kellnerDone = false;
+    let pizza = false;
+    let kueche = false;
+    let kellner = false;
 
-    snap.forEach((docSnap) => {
-      const data = docSnap.data();
+    snap.forEach(docSnap => {
 
-      if (data.date !== today) return;
+      const d = docSnap.data();
 
-      if (data.section === "pizza") pizzaDone = true;
-      if (data.section === "kueche") kuecheDone = true;
-      if (data.section === "kellner") kellnerDone = true;
+      if(d.date !== today) return;
+
+      if(d.section === "pizza") pizza = true;
+      if(d.section === "kueche") kueche = true;
+      if(d.section === "kellner") kellner = true;
+
     });
 
-    if (pizzaDone && kuecheDone && kellnerDone) {
-      reminderEl.innerHTML = "✅ Alle HACCP Kontrollen heute erledigt";
-      return;
+    let html = "<b>HACCP Status heute</b><br>";
+
+    html += pizza ? "✅ Pizza Kasse OK<br>" : "❌ Pizza Kasse fehlt<br>";
+    html += kueche ? "✅ Küche OK<br>" : "❌ Küche fehlt<br>";
+    html += kellner ? "✅ Kellner OK<br>" : "❌ Kellner fehlt<br>";
+
+    if(pizza && kueche && kellner){
+      html = "✅ Alle HACCP Kontrollen heute erledigt";
     }
-
-    let html = "<b>HACCP Status heute:</b><br>";
-
-    html += pizzaDone ? "✅ Pizza Kasse gemacht<br>" : "❌ Pizza Kasse fehlt<br>";
-    html += kuecheDone ? "✅ Küche gemacht<br>" : "❌ Küche fehlt<br>";
-    html += kellnerDone ? "✅ Kellner gemacht<br>" : "❌ Kellner fehlt<br>";
 
     reminderEl.innerHTML = html;
 
-  } catch (err) {
-    console.error("CHECK HACCP STATUS ERROR:", err);
+  } catch(e){
+    console.error(e);
   }
 }
 
