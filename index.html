@@ -1404,6 +1404,7 @@ async function loadHaccpHistory() {
 window.loadHaccpHistory = loadHaccpHistory;
 
 function printHaccpHistory() {
+
   const listEl = document.getElementById("haccpHistoryList");
   const month = document.getElementById("haccpHistoryMonth")?.value || "";
 
@@ -1413,69 +1414,120 @@ function printHaccpHistory() {
   if (!printWindow) return;
 
   printWindow.document.write(`
-    <html>
-      <head>
-        <title>HACCP Monatsbericht ${month}</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            color: #111;
-            background: #fff;
-          }
-          h1 {
-            margin: 0 0 6px 0;
-            font-size: 26px;
-          }
-          .sub {
-            margin-bottom: 20px;
-            color: #555;
-            font-size: 14px;
-          }
-          .card {
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 12px;
-            page-break-inside: avoid;
-          }
-          .row {
-            margin-bottom: 4px;
-          }
-          .label {
-            font-weight: bold;
-          }
-          .daten {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #ddd;
-          }
-          .daten div {
-            margin-bottom: 4px;
-          }
-          @media print {
-            body {
-              padding: 10px;
-            }
-            .card {
-              break-inside: avoid;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <h1>HACCP Monatsbericht</h1>
-        <div class="sub">Monat: ${month || "-"}</div>
-        ${listEl.innerHTML}
-      </body>
-    </html>
+  <html>
+  <head>
+  <title>HACCP Monatsbericht</title>
+
+  <style>
+
+  body{
+    font-family: Arial, sans-serif;
+    padding:30px;
+    color:#000;
+    background:white;
+  }
+
+  .header{
+    text-align:center;
+    margin-bottom:30px;
+  }
+
+  .restaurant{
+    font-size:20px;
+    font-weight:bold;
+  }
+
+  .address{
+    font-size:14px;
+    margin-top:4px;
+  }
+
+  .title{
+    font-size:24px;
+    margin-top:20px;
+    font-weight:bold;
+  }
+
+  .month{
+    margin-top:8px;
+    color:#444;
+  }
+
+  .card{
+    border:1px solid #ccc;
+    border-radius:8px;
+    padding:12px;
+    margin-bottom:10px;
+    page-break-inside:avoid;
+  }
+
+  .daten{
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px solid #ddd;
+  }
+
+  .footer{
+    margin-top:60px;
+    display:flex;
+    justify-content:space-between;
+  }
+
+  .sign{
+    width:200px;
+    border-top:1px solid #000;
+    text-align:center;
+    padding-top:6px;
+  }
+
+  </style>
+  </head>
+
+  <body>
+
+  <div class="header">
+
+  <div class="restaurant">
+  Pizzeria Ristorante Matteo GmbH
+  </div>
+
+  <div class="address">
+  Hunsrückenstr. 21<br>
+  40213 Düsseldorf
+  </div>
+
+  <div class="title">
+  HACCP Kontrollblatt
+  </div>
+
+  <div class="month">
+  Monat: ${month || "-"}
+  </div>
+
+  </div>
+
+  ${listEl.innerHTML}
+
+  <div class="footer">
+
+  <div class="sign">
+  Mitarbeiter Unterschrift
+  </div>
+
+  <div class="sign">
+  Kontrolle / Manager
+  </div>
+
+  </div>
+
+  </body>
+  </html>
   `);
 
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();
 }
-
 window.printHaccpHistory = printHaccpHistory;
     const $ = (id) => document.getElementById(id);
 
