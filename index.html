@@ -1335,6 +1335,117 @@ async function saveKellnerHaccp() {
 }
 
 window.saveKellnerHaccp = saveKellnerHaccp;
+async function loadHaccpHistory() {
+  try {
+    const month = document.getElementById("haccpHistoryMonth")?.value || "";
+    const listEl = document.getElementById("haccpHistoryList");
+
+    if (!listEl) return;
+
+    listEl.innerHTML = "Lade HACCP History...";
+
+    const snap = await getDocs(collection(db, "haccpLogs"));
+
+    let items = [];
+
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (!month || (data.date && data.date.startsWith(month))) {
+        items.push(data);
+      }
+    });
+
+    items.sort((a, b) => {
+      const ad = `${a.date || ""} ${a.time || ""}`;
+      const bd = `${b.date || ""} ${b.time || ""}`;
+      return bd.localeCompare(ad);
+    });
+
+    if (!items.length) {
+      listEl.innerHTML = "Keine HACCP Einträge gefunden.";
+      return;
+    }
+
+    let html = "";
+
+    items.forEach((item) => {
+      html += `
+        <div class="card" style="margin-bottom:12px;">
+          <div><b>Datum:</b> ${item.date || "-"}</div>
+          <div><b>Uhrzeit:</b> ${item.time || "-"}</div>
+          <div><b>Mitarbeiter:</b> ${item.worker || "-"}</div>
+          <div><b>Bereich:</b> ${item.section || "-"}</div>
+          <div style="margin-top:8px;">
+            <b>Daten:</b>
+            <pre style="white-space:pre-wrap;margin:6px 0 0 0;">${JSON.stringify(item.data || {}, null, 2)}</pre>
+          </div>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+  } catch (err) {
+    console.error("LOAD HACCP HISTORY ERROR:", err);
+    const listEl = document.getElementById("haccpHistoryList");
+    if (listEl) listEl.innerHTML = "Fehler beim Laden der HACCP History.";
+  }
+}
+
+window.loadHaccpHistory = loadHaccpHistory;
+
+function printHaccpHistory() {
+  const listEl = document.getElementById("haccpHistoryList");
+  const month = document.getElementById("haccpHistoryMonth")?.value || "";
+
+  if (!listEl) return;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) return;
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>HACCP History ${month}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            color: #111;
+          }
+          h1 {
+            margin-bottom: 6px;
+          }
+          .sub {
+            margin-bottom: 20px;
+            color: #555;
+          }
+          .card {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+          }
+          pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>HACCP History</h1>
+        <div class="sub">Monat: ${month || "-"}</div>
+        ${listEl.innerHTML}
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}
+
+window.printHaccpHistory = printHaccpHistory;
     const $ = (id) => document.getElementById(id);
 
     const loginPanel = $("loginPanel");
