@@ -1143,8 +1143,23 @@ Speichern
 
 <div id="haccpTabHistory" class="hidden" style="margin-top:20px;">
   <div class="card">
-    <h3>History</h3>
-    <p>History Tab OK</p>
+   <h3>History</h3>
+
+<div class="row">
+  <div>
+    <label>Monat</label>
+    <input type="month" id="haccpHistoryMonth">
+  </div>
+
+  <div style="display:flex;align-items:end;gap:10px;">
+    <button class="btnSecondary" type="button" onclick="loadHaccpHistory()">Load</button>
+    <button class="btnPrimary" type="button" onclick="printHaccpHistory()">Print</button>
+  </div>
+</div>
+
+<div id="haccpHistoryList" style="margin-top:20px;">
+  Noch keine HACCP Einträge.
+</div>
   </div>
 </div>
   <div class="footerSpace"></div>
