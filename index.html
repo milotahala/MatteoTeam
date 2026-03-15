@@ -1349,11 +1349,15 @@ async function loadHaccpHistory() {
     let items = [];
 
     snap.forEach((docSnap) => {
-      const data = docSnap.data();
-      if (!month || (data.date && data.date.startsWith(month))) {
-        items.push(data);
-      }
-    });
+  const data = docSnap.data();
+
+  // mos shfaq entries pa date
+  if (!data.date) return;
+
+  if (!month || data.date.startsWith(month)) {
+    items.push(data);
+  }
+});
 
     items.sort((a, b) => {
       const ad = `${a.date || ""} ${a.time || ""}`;
