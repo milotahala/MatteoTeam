@@ -1209,8 +1209,28 @@ function showHaccpTab(tabName) {
 }
 
 window.showHaccpTab = showHaccpTab;
+function saveKellnerHaccp() {
 
-window.showHaccpTab = showHaccpTab;
+  const getraenke = document.getElementById("kellnerGetraenke")?.value || "";
+  const dessert = document.getElementById("kellnerDessert")?.value || "";
+  const kaffee = document.getElementById("kellnerKaffee")?.value || "";
+  const theke = document.getElementById("kellnerTheke")?.value || "";
+  const tavolina = document.getElementById("kellnerTavolina")?.value || "";
+  const wc = document.getElementById("kellnerWc")?.value || "";
+
+  console.log("Kellner HACCP:", {
+    getraenke,
+    dessert,
+    kaffee,
+    theke,
+    tavolina,
+    wc
+  });
+
+  alert("Kellner HACCP gespeichert");
+}
+
+window.saveKellnerHaccp = saveKellnerHaccp;
     const $ = (id) => document.getElementById(id);
 
     const loginPanel = $("loginPanel");
