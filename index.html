@@ -1302,22 +1302,33 @@ async function saveKuecheHaccp() {
 
 window.saveKuecheHaccp = saveKuecheHaccp;
 
-function saveKellnerHaccp() {
+async function saveKellnerHaccp() {
+
+  const date = document.getElementById("haccpDate")?.value || "";
+  const time = document.getElementById("haccpTime")?.value || "";
+  const worker = document.getElementById("haccpWorker")?.value || "";
 
   const getraenke = document.getElementById("kellnerGetraenke")?.value || "";
   const dessert = document.getElementById("kellnerDessert")?.value || "";
   const kaffee = document.getElementById("kellnerKaffee")?.value || "";
   const theke = document.getElementById("kellnerTheke")?.value || "";
   const tavolina = document.getElementById("kellnerTavolina")?.value || "";
-  const wc = document.getElementById("kellnerWc")?.value || "";
+  const wc = document.getElementById("kellnerWC")?.value || "";
 
-  console.log("Kellner HACCP:", {
-    getraenke,
-    dessert,
-    kaffee,
-    theke,
-    tavolina,
-    wc
+  await addDoc(collection(db, "haccpLogs"), {
+    date,
+    time,
+    worker,
+    section: "kellner",
+    data: {
+      getraenke,
+      dessert,
+      kaffee,
+      theke,
+      tavolina,
+      wc
+    },
+    createdAt: serverTimestamp()
   });
 
   alert("Kellner HACCP gespeichert");
