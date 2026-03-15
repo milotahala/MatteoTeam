@@ -1415,35 +1415,56 @@ function printHaccpHistory() {
   printWindow.document.write(`
     <html>
       <head>
-        <title>HACCP History ${month}</title>
+        <title>HACCP Monatsbericht ${month}</title>
         <style>
           body {
             font-family: Arial, sans-serif;
             padding: 20px;
             color: #111;
+            background: #fff;
           }
           h1 {
-            margin-bottom: 6px;
+            margin: 0 0 6px 0;
+            font-size: 26px;
           }
           .sub {
             margin-bottom: 20px;
             color: #555;
+            font-size: 14px;
           }
           .card {
             border: 1px solid #ccc;
             border-radius: 10px;
             padding: 12px;
             margin-bottom: 12px;
+            page-break-inside: avoid;
           }
-          pre {
-            background: #f5f5f5;
-            padding: 10px;
-            border-radius: 8px;
+          .row {
+            margin-bottom: 4px;
+          }
+          .label {
+            font-weight: bold;
+          }
+          .daten {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+          }
+          .daten div {
+            margin-bottom: 4px;
+          }
+          @media print {
+            body {
+              padding: 10px;
+            }
+            .card {
+              break-inside: avoid;
+            }
           }
         </style>
       </head>
       <body>
-        <h1>HACCP History</h1>
+        <h1>HACCP Monatsbericht</h1>
         <div class="sub">Monat: ${month || "-"}</div>
         ${listEl.innerHTML}
       </body>
@@ -1454,6 +1475,8 @@ function printHaccpHistory() {
   printWindow.focus();
   printWindow.print();
 }
+
+window.printHaccpHistory = printHaccpHistory;
 
 window.printHaccpHistory = printHaccpHistory;
     const $ = (id) => document.getElementById(id);
