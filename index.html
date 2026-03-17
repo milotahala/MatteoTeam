@@ -1292,72 +1292,72 @@ async function saveKellnerHaccp() {
 }
 
 window.saveKellnerHaccp = saveKellnerHaccp;
-async function loadHaccpHistory() {
-  try {
-    const month = document.getElementById("haccpHistoryMonth")?.value || "";
-    const listEl = document.getElementById("haccpHistoryList");
+async function loadHaccpHistory(){
+  ["haccpTabPizza","haccpTabKitchen","haccpTabKellner"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){
+      el.classList.add("hidden");
+      el.style.display = "none";
+    }
+  });
 
-    if (!listEl) return;
+  const historyWrap = document.getElementById("haccpHistoryWrap");
+  if(historyWrap){
+    historyWrap.classList.remove("hidden");
+    historyWrap.style.display = "block";
+  }
 
+  document.querySelectorAll(".haccp-tab").forEach(btn=>{
+    btn.classList.remove("active");
+    if(btn.textContent.trim() === "History"){
+      btn.classList.add("active");
+    }
+  });
+
+  const listEl = document.getElementById("haccpHistoryList");
+  if(listEl){
     listEl.innerHTML = "Lade HACCP History...";
+  }
 
-    const snap = await getDocs(collection(db, "haccpLogs"));
+  try{
+    const snap = await getDocs(collection(db, "haccp"));
 
     let items = [];
+    snap.forEach(docSnap=>{
+      const data = docSnap.data();
+      if(data && data.date){
+        items.push(data);
+      }
+    });
 
-   snap.forEach((docSnap) => {
-  const data = docSnap.data();
-
-  if (!data.date) return;
-
-  if (!month || data.date.startsWith(month)) {
-    items.push(data);
-  }
-});
-
-    items.sort((a, b) => {
+    items.sort((a,b)=>{
       const ad = `${a.date || ""} ${a.time || ""}`;
       const bd = `${b.date || ""} ${b.time || ""}`;
       return bd.localeCompare(ad);
     });
 
-    if (!items.length) {
-      listEl.innerHTML = "Keine HACCP Einträge gefunden.";
+    if(!items.length){
+      if(listEl) listEl.innerHTML = "Keine HACCP Einträge";
       return;
     }
 
     let html = "";
-
-    items.forEach((item) => {
+    items.forEach(i=>{
       html += `
-        <div class="card" style="margin-bottom:12px;">
-          <div><b>Datum:</b> ${item.date || "-"}</div>
-          <div><b>Uhrzeit:</b> ${item.time || "-"}</div>
-          <div><b>Mitarbeiter:</b> ${item.worker || "-"}</div>
-          <div><b>Bereich:</b> ${item.section || "-"}</div>
-          <div style="margin-top:8px;">
-            <b>Daten:</b>
-            <b>Daten:</b>
-<div style="margin-top:6px;">
-  ${
-    Object.entries(item.data || {})
-      .map(([k,v]) => `<div>${k}: <b>${v}</b></div>`)
-      .join("")
-  }
-</div>
-          </div>
+        <div class="listItem">
+          <div><strong>${i.date}</strong> ${i.time || ""}</div>
+          <div>${i.worker || "-"}</div>
         </div>
       `;
     });
 
-    listEl.innerHTML = html;
-  } catch (err) {
-    console.error("LOAD HACCP HISTORY ERROR:", err);
-    const listEl = document.getElementById("haccpHistoryList");
-    if (listEl) listEl.innerHTML = "Fehler beim Laden der HACCP History.";
+    if(listEl) listEl.innerHTML = html;
+
+  }catch(err){
+    console.error(err);
+    if(listEl) listEl.innerHTML = "Fehler beim Laden";
   }
 }
-
 window.loadHaccpHistory = loadHaccpHistory;
 
 function printHaccpHistory() {
