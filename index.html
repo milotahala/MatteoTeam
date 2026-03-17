@@ -804,64 +804,113 @@
           Example values: 09:00-17:00, 09:00-17:00/30, Frei, Urlaub, Krank
         </div>
       </div>
-            <div id="viewStaff" class="card hidden">
-        <div class="cardTitleRow">
-          <div>
-            <h2 class="cardTitle" data-i18n="staff.title">Staff</h2>
-            <div class="cardSub" data-i18n="staff.sub">Add and manage your employees</div>
-          </div>
-        </div>
+         <div id="viewStaff" class="card hidden">
+  <div class="cardTitleRow">
+    <div>
+      <h2 class="cardTitle" data-i18n="staff.title">Mitarbeiter</h2>
+      <div class="cardSub" data-i18n="staff.sub">Mitarbeiter hinzufügen und verwalten</div>
+    </div>
+  </div>
 
-        <div class="twoCols">
-          <div class="card" style="margin:0;">
-            <div style="font-size:18px; font-weight:800; margin-bottom:12px;" data-i18n="staff.addTitle">Add Employee</div>
-            <div class="stack">
-              <input id="staffName" type="text" placeholder="Employee name" />
-              <input id="staffEmail" type="email" placeholder="Employee email" />
-              <input id="staffHourlyRate" type="number" step="0.01" placeholder="€ / hour" />
-              <select id="staffRole">
-                <option value="staff">staff</option>
-                <option value="admin">admin</option>
-              </select>
-              <button id="btnAddStaff" class="btnPrimary" data-i18n="staff.addBtn">Add Employee</button>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;">
-            <div style="font-size:18px; font-weight:800; margin-bottom:12px;" data-i18n="staff.listTitle">Staff List</div>
-            <div id="staffList" class="list">
-              <div class="emptyState" data-i18n="staff.empty">No employees yet</div>
-            </div>
-          </div>
+  <div class="twoCols">
+    <div class="card" style="margin:0;">
+      <div class="cardTitleRow">
+        <div>
+          <h3 class="cardTitle" style="font-size:22px;" data-i18n="staff.addTitle">Mitarbeiter hinzufügen</h3>
         </div>
       </div>
+
+      <div class="stack">
+        <div>
+          <label>Name</label>
+          <input id="staffName" type="text" placeholder="Name">
+        </div>
+
+        <div>
+          <label>E-Mail</label>
+          <input id="staffEmail" type="email" placeholder="E-Mail">
+        </div>
+
+        <div>
+          <label>Stundenlohn (€)</label>
+          <input id="staffHourlyRate" type="number" step="0.01" placeholder="15.50">
+        </div>
+
+        <div>
+          <label>Rolle</label>
+          <select id="staffRole">
+            <option value="staff">staff</option>
+            <option value="admin">admin</option>
+          </select>
+        </div>
+
+        <button id="btnAddStaff" class="btnPrimary" data-i18n="staff.addBtn">Mitarbeiter hinzufügen</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin:0;">
+      <div class="cardTitleRow">
+        <div>
+          <h3 class="cardTitle" style="font-size:22px;" data-i18n="staff.listTitle">Mitarbeiterliste</h3>
+        </div>
+      </div>
+
+      <div id="staffList" class="list">
+        <div class="emptyState" data-i18n="staff.empty">Noch keine Mitarbeiter</div>
+      </div>
+    </div>
+  </div>
+</div>
 
       <div id="viewInventory" class="card hidden">
-        <div class="cardTitleRow">
-          <div>
-            <h2 class="cardTitle" data-i18n="inv.title">Inventory</h2>
-            <div class="cardSub" data-i18n="inv.sub">Manage stock, quantities and products</div>
-          </div>
-        </div>
+  <div class="cardTitleRow">
+    <div>
+      <h2 class="cardTitle" data-i18n="inv.title">Inventar</h2>
+      <div class="cardSub" data-i18n="inv.sub">Lager, Mengen und Produkte verwalten</div>
+    </div>
+  </div>
 
-        <div class="twoCols">
-          <div class="card" style="margin:0;">
-            <div style="font-size:18px; font-weight:800; margin-bottom:12px;" data-i18n="inv.addTitle">Add Item</div>
-            <div class="stack">
-              <input id="invName" type="text" placeholder="Item name" />
-              <input id="invQty" type="number" step="0.1" placeholder="Quantity" />
-              <button id="btnAddInv" class="btnPrimary" data-i18n="inv.addBtn">Add Item</button>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;">
-            <div style="font-size:18px; font-weight:800; margin-bottom:12px;" data-i18n="inv.listTitle">Inventory List</div>
-            <div id="invList" class="list">
-              <div class="emptyState" data-i18n="inv.empty">No items yet</div>
-            </div>
-          </div>
+  <div class="twoCols">
+    <div class="card" style="margin:0;">
+      <div class="cardTitleRow">
+        <div>
+          <h3 class="cardTitle" style="font-size:22px;" data-i18n="inv.addTitle">Artikel hinzufügen</h3>
         </div>
       </div>
+
+      <div class="stack">
+        <div>
+          <label>Artikelname</label>
+          <input id="invName" type="text" placeholder="z. B. Mehl (25kg)">
+        </div>
+
+        <div>
+          <label>Menge</label>
+          <input id="invQty" type="number" step="0.01" placeholder="10">
+        </div>
+
+        <div>
+          <label>Einheit</label>
+          <input id="invUnit" type="text" placeholder="kg / Stk / Flaschen">
+        </div>
+
+        <button id="btnAddInv" class="btnPrimary" data-i18n="inv.addBtn">Artikel hinzufügen</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin:0;">
+      <div class="cardTitleRow">
+        <div>
+          <h3 class="cardTitle" style="font-size:22px;" data-i18n="inv.listTitle">Inventarliste</h3>
+        </div>
+      </div>
+
+      <div id="inventoryList" class="list">
+        <div class="emptyState">Noch keine Artikel</div>
+      </div>
+    </div>
+  </div>
+</div>
 
      <div id="viewMyHours" class="card hidden">
   <div class="cardTitleRow">
