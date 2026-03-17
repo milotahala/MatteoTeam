@@ -719,65 +719,47 @@
     </div>
 
     <div id="appPanel" class="hidden">
-
-      <div id="viewDashboard" class="card">
-        <div class="cardTitleRow">
-          <div>
-            <h2 class="cardTitle" data-i18n="dash.title">Dashboard</h2>
-            <div class="cardSub" data-i18n="dash.sub">Welcome to MatteoTeam PRO</div>
-          </div>
-          <div id="adminBadge" class="adminBadge hidden">⭐ SuperAdmin</div>
-        </div>
-
-        <div class="twoCols">
-          <div class="card statCard">
-            <div class="statTitle">Punëtorë</div>
-            <div class="statNumber" id="statStaff">0</div>
-          </div>
-
-          <div class="card statCard">
-            <div class="statTitle">Artikuj</div>
-            <div class="statNumber" id="statInventory">0</div>
-          </div>
-
-          <div class="card statCard">
-            <div class="statTitle">Orë këtë javë</div>
-            <div class="statNumber" id="statHours">0</div>
-          </div>
-
-          <div class="card statCard">
-            <div class="statTitle">Roli</div>
-            <div class="statNumber" id="statRole">staff</div>
-          </div>
-        </div>
-<div class="twoCols">
-  <div class="card statCard">
-    <div class="statTitle">Orë këtë muaj</div>
-    <div class="statNumber" id="statMonthHours">0.00</div>
+<div id="viewDashboard" class="card hidden">
+  <div class="cardTitleRow">
+    <div>
+      <h2 class="cardTitle" data-i18n="dash.title">Dashboard</h2>
+      <div class="cardSub" data-i18n="dash.sub">Willkommen bei MatteoTeam PRO</div>
+    </div>
+    <div class="badge superBadge">⭐ SuperAdmin</div>
   </div>
 
-  <div class="card statCard">
-    <div class="statTitle">Pagesa këtë muaj</div>
-    <div class="statNumber" id="statMonthPayroll">0.00 €</div>
-  </div>
+  <div class="twoCols">
+    <div class="card statCard" style="margin:0;">
+      <div class="statTitle">Punëtorë</div>
+      <div class="statNumber" id="dashStaffCount">0</div>
+    </div>
 
-  <div class="card statCard">
-    <div class="statTitle">Mesatarja € / orë</div>
-    <div class="statNumber" id="statAvgRate">0.00</div>
+    <div class="card statCard" style="margin:0;">
+      <div class="statTitle">Artikuj</div>
+      <div class="statNumber" id="dashInvCount">0</div>
+    </div>
+
+    <div class="card statCard" style="margin:0;">
+      <div class="statTitle">Orë këtë javë</div>
+      <div class="statNumber" id="dashWeekHours">0.0</div>
+    </div>
+
+    <div class="card statCard" style="margin:0;">
+      <div class="statTitle">Roli</div>
+      <div class="statNumber" id="dashRole">superadmin</div>
+    </div>
+
+    <div class="card statCard" style="margin:0;">
+      <div class="statTitle">Orë këtë muaj</div>
+      <div class="statNumber" id="dashMonthHours">0.0</div>
+    </div>
+
+    <div class="card statCard" style="margin:0;">
+      <div class="statTitle">Pagesa këtë muaj</div>
+      <div class="statNumber" id="dashMonthPay">0.00 €</div>
+    </div>
   </div>
 </div>
-
-          <div class="card" style="margin:0;">
-            <div style="font-size:18px; font-weight:800; margin-bottom:10px;" data-i18n="dash.card2Title">Status</div>
-            <div class="stack muted">
-              <div id="dashUserLine">User: -</div>
-              <div id="dashRoleLine">Role: -</div>
-              <div id="dashStaffCount">Staff: 0</div>
-              <div id="dashInvCount">Inventory Items: 0</div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div id="viewWeekly" class="card hidden">
         <div class="weekTopBar">
