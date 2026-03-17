@@ -614,60 +614,64 @@
   <div class="appShell">
 
     <header class="header">
-      <div class="brandWrap">
-        <div class="logo">M</div>
-        <div class="brandText">
-          <div class="title" id="txtAppTitle">MatteoTeam PRO</div>
-          <div class="subtitle" id="txtAppSub">Restaurant Management Dashboard</div>
-        </div>
-      </div>
+  <div class="brandWrap">
+    <div class="logo">M</div>
+    <div class="brandText">
+      <div class="title" id="txtAppTitle">MatteoTeam PRO</div>
+      <div class="subtitle" id="txtAppSub">Restaurant Management Dashboard</div>
+    </div>
+  </div>
 
-      <div class="headerRight">
-        <select id="langSel">
-          <option value="de">DE</option>
-          <option value="en">EN</option>
-          <option value="sq">SQ</option>
-        </select>
+  <div class="headerRight">
+    <select id="langSel">
+      <option value="de">DE</option>
+      <option value="en">EN</option>
+      <option value="sq">SQ</option>
+    </select>
 
-        <button id="btnOpenLogin" class="btnPrimary">Login</button>
-        <button id="btnLogout" class="btnDanger hidden">Logout</button>
-      </div>
-    </header>
+    <div class="topBtns">
+      <button id="btnOpenLogin" class="btnPrimary">Login</button>
+      <button id="btnLogout" class="btnDanger hidden">Logout</button>
+    </div>
+  </div>
+</header>
 
-    <div id="menuGrid" class="menuGrid hidden">
-      <div class="menuCard" id="cardDashboard">
-        <div class="menuIcon">🏠</div>
-        <div class="menuTitle" data-i18n="menu.dashboard">Dashboard</div>
-        <div class="menuSub" data-i18n="menu.dashboardSub">Overview & quick actions</div>
-      </div>
+<div id="menuGrid" class="menuGrid hidden">
+  <div class="menuCard" id="cardDashboard" onclick="openView('viewDashboard')">
+    <div class="menuIcon">🏠</div>
+    <div class="menuTitle" data-i18n="menu.dashboard">Dashboard</div>
+    <div class="menuSub" data-i18n="menu.dashboardSub">Übersicht & Schnellzugriffe</div>
+  </div>
 
-      <div class="menuCard" id="cardWeekly">
-        <div class="menuIcon">📅</div>
-        <div class="menuTitle" data-i18n="menu.weekly">Weekly Plan</div>
-        <div class="menuSub" data-i18n="menu.weeklySub">Shift planning for the week</div>
-      </div>
+  <div class="menuCard" id="cardWeekly" onclick="openView('viewWeekly')">
+    <div class="menuIcon">📅</div>
+    <div class="menuTitle" data-i18n="menu.weekly">Wochenplan</div>
+    <div class="menuSub" data-i18n="menu.weeklySub">Schichten für die Woche</div>
+  </div>
 
-      <div class="menuCard" id="cardStaff">
-        <div class="menuIcon">👥</div>
-        <div class="menuTitle" data-i18n="menu.staff">Staff</div>
-        <div class="menuSub" data-i18n="menu.staffSub">Manage employees</div>
-      </div>
+  <div class="menuCard" id="cardStaff" onclick="openView('viewStaff')">
+    <div class="menuIcon">👥</div>
+    <div class="menuTitle" data-i18n="menu.staff">Mitarbeiter</div>
+    <div class="menuSub" data-i18n="menu.staffSub">Mitarbeiter verwalten</div>
+  </div>
 
-      <div class="menuCard" id="cardInventory">
-        <div class="menuIcon">📦</div>
-        <div class="menuTitle" data-i18n="menu.inventory">Inventory</div>
-        <div class="menuSub" data-i18n="menu.inventorySub">Stock and quantities</div>
-      </div>
+  <div class="menuCard" id="cardInventory" onclick="openView('viewInventory')">
+    <div class="menuIcon">📦</div>
+    <div class="menuTitle" data-i18n="menu.inventory">Inventar</div>
+    <div class="menuSub" data-i18n="menu.inventorySub">Lager und Mengen</div>
+  </div>
 
-      <div class="menuCard" id="cardMyHours">
-        <div class="menuIcon">⏱️</div>
-        <div class="menuTitle">Orët e Mia</div>
-        <div class="menuSub">Orari dhe totali mujor</div>
-      </div>
-  <div class="menuCard" id="cardHaccp" onclick="showView('viewHaccp')">
-  <div class="menuIcon">🧪</div>
-  <div class="menuTitle">HACCP</div>
-  <div class="menuSub">Kontrolle dhe temperatura</div>
+  <div class="menuCard" id="cardMyHours" onclick="openView('viewMyHours')">
+    <div class="menuIcon">⏱️</div>
+    <div class="menuTitle">Orët e Mia</div>
+    <div class="menuSub">Orari dhe totali mujor</div>
+  </div>
+
+  <div class="menuCard" id="cardHaccp" onclick="openView('viewHaccp')">
+    <div class="menuIcon">🧪</div>
+    <div class="menuTitle">HACCP</div>
+    <div class="menuSub">Kontrolle dhe Temperaturen</div>
+  </div>
 </div>
 
     <div id="loginPanel" class="card">
