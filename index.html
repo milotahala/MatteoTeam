@@ -999,28 +999,31 @@
       <div class="footerSpace"></div>
     </div>
   </div>
-  <div id="viewHaccp" class="card hidden">
-  <div class="card">
-    <h2>HACCP</h2>
-    <div class="muted">Temperatur &amp; Cleaning Kontrolle</div>
-
-    <div class="grid2" style="margin-top:14px;">
-      <div>
-        <label>Datum</label>
-        <input type="date" id="haccpDate">
-      </div>
-      <div>
-        <label>Uhrzeit</label>
-        <input type="time" id="haccpTime">
-      </div>
+<div id="viewHaccp" class="card hidden">
+  <div class="cardTitleRow">
+    <div>
+      <h2 class="cardTitle">HACCP</h2>
+      <div class="cardSub">Temperatur &amp; Cleaning</div>
     </div>
+  </div>
 
-    <div style="margin-top:12px;">
-      <label>Mitarbeiter</label>
-      <input type="text" id="haccpEmployee" placeholder="Name des Mitarbeiters">
+  <div class="grid2" style="margin-top:14px;">
+    <div>
+      <label>Datum</label>
+      <input type="date" id="haccpDate">
     </div>
+    <div>
+      <label>Uhrzeit</label>
+      <input type="time" id="haccpTime">
+    </div>
+  </div>
 
-    <div class="haccp-tabs" style="margin-top:16px;">
+  <div style="margin-top:12px;">
+    <label>Mitarbeiter</label>
+    <input type="text" id="haccpEmployee" placeholder="Name des Mitarbeiters">
+  </div>
+
+  <div class="haccp-tabs" style="margin-top:14px;">
       <button class="btn haccp-tab active" onclick="selectHaccpArea('pizza')">Pizza Kasse</button>
       <button class="btn haccp-tab" onclick="selectHaccpArea('kitchen')">Küche</button>
       <button class="btn haccp-tab" onclick="selectHaccpArea('service')">Kellner</button>
