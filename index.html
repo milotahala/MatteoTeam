@@ -761,41 +761,44 @@
   </div>
 </div>
 
-      <div id="viewWeekly" class="card hidden">
-        <div class="weekTopBar">
-          <div class="weekTitleWrap">
-            <h2 class="cardTitle" data-i18n="weekly.title">Weekly Plan</h2>
-            <div class="cardSub" data-i18n="weekly.sub">Manage staff shifts for the whole week</div>
-          </div>
+     <div id="viewWeekly" class="card hidden">
+  <div class="weekTopBar">
+    <div class="weekTitleWrap">
+      <h2 class="cardTitle" data-i18n="weekly.title">Wochenplan</h2>
+      <div class="cardSub" data-i18n="weekly.sub">Schichten für die ganze Woche</div>
+    </div>
 
-          <div class="sectionActions">
-            <span class="pill" data-i18n="weekly.pill">Weekly Schedule</span>
-            <input id="weekStart" type="date" style="width:auto; min-width:170px;" />
-            <button id="btnSaveWeekly" class="btnPrimary" data-i18n="weekly.save">Save Weekly Plan</button>
-            <button id="btnShareWhatsApp" class="btnPrimary">
-📲 Send to WhatsApp
-</button>
-          </div>
-        </div>
+    <div class="sectionActions">
+      <span class="pill" data-i18n="weekly.pill">Wochenübersicht</span>
+      <input id="weekStart" type="date">
+      <button id="btnSaveWeekly" class="btnPrimary" data-i18n="weekly.save">Wochenplan speichern</button>
+      <button id="btnShareWhatsApp" class="btnSecondary">📲 Send to WhatsApp</button>
+    </div>
+  </div>
 
-        <div class="weekShell">
-          <table class="weekTable">
-            <thead>
-              <tr>
-                <th data-i18n="weekly.staff">Staff</th>
-                <th id="thMon">Mon<br><small id="dateMon"></small></th>
-                <th id="thTue">Tue<br><small id="dateTue"></small></th>
-                <th id="thWed">Wed<br><small id="dateWed"></small></th>
-                <th id="thThu">Thu<br><small id="dateThu"></small></th>
-                <th id="thFri">Fri<br><small id="dateFri"></small></th>
-                <th id="thSat">Sat<br><small id="dateSat"></small></th>
-                <th id="thSun">Sun<br><small id="dateSun"></small></th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody id="weeklyBody"></tbody>
-          </table>
-        </div>
+  <div class="card" style="margin:0 0 12px 0;">
+    <div class="cardSub" data-i18n="weekly.help">Beispielwerte: 09:00-17:00, 17:00-23:00, Frei</div>
+  </div>
+
+  <div class="weekShell">
+    <table class="weekTable">
+      <thead>
+        <tr>
+          <th data-i18n="weekly.staff">Mitarbeiter</th>
+          <th id="thMon">Mon</th>
+          <th id="thTue">Tue</th>
+          <th id="thWed">Wed</th>
+          <th id="thThu">Thu</th>
+          <th id="thFri">Fri</th>
+          <th id="thSat">Sat</th>
+          <th id="thSun">Sun</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="weeklyBody"></tbody>
+    </table>
+  </div>
+</div>
 
         <div style="margin-top:12px;" class="muted" data-i18n="weekly.help">
           Example values: 09:00-17:00, 09:00-17:00/30, Frei, Urlaub, Krank
