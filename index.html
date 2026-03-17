@@ -970,7 +970,7 @@
   <div class="cardTitleRow">
     <div>
       <h2 class="cardTitle">HACCP</h2>
-      <div class="cardSub">Temperatur &amp; Cleaning</div>
+      <div class="cardSub">Temperatur, Reinigung und Tageskontrolle</div>
     </div>
   </div>
 
@@ -991,268 +991,112 @@
   </div>
 
   <div class="haccp-tabs" style="margin-top:14px;">
-  <button class="btn haccp-tab active" onclick="setHaccpTab('pizza')">Pizza Kasse</button>
-  <button class="btn haccp-tab" onclick="setHaccpTab('kitchen')">Küche</button>
-  <button class="btn haccp-tab" onclick="setHaccpTab('kellner')">Kellner</button>
-  <button class="btn haccp-tab" onclick="loadHaccpHistory()">History</button>
-</div>
+    <button class="btn haccp-tab active" onclick="showHaccpTab('pizza')">Pizza Kasse</button>
+    <button class="btn haccp-tab" onclick="showHaccpTab('kitchen')">Küche</button>
+    <button class="btn haccp-tab" onclick="showHaccpTab('kellner')">Kellner</button>
+    <button class="btn haccp-tab" onclick="loadHaccpHistory()">History</button>
+  </div>
 
-    <!-- Pizza Kasse -->
-    <div id="haccpAreaPizza" class="haccp-area" style="margin-top:18px;">
-      <h3>Pizza Kasse</h3>
+  <div id="haccpTabPizza" class="haccp-area" style="display:block;">
+    <div class="card" style="margin-top:14px;">
+      <h3 class="cardTitle" style="font-size:22px;">Pizza Kasse</h3>
 
-      <div class="grid2">
+      <div class="grid2" style="margin-top:12px;">
         <div>
-          <label>Kühlschrank 1 Temperatur (°C)</label>
-          <input type="number" step="0.1" id="pizzaTemp1" placeholder="z.B. 4.0">
+          <label>Kühlhaus °C</label>
+          <input type="number" step="0.1" id="pizzaCool1">
         </div>
         <div>
-          <label>Kühlschrank 2 Temperatur (°C)</label>
-          <input type="number" step="0.1" id="pizzaTemp2" placeholder="z.B. 5.0">
-        </div>
-      </div>
-
-      <div class="checklist">
-        <label><input type="checkbox" id="pizzaClean1"> Arbeitsfläche gereinigt</label>
-        <label><input type="checkbox" id="pizzaClean2"> Kaffeemaschine gereinigt</label>
-        <label><input type="checkbox" id="pizzaClean3"> Boden gereinigt</label>
-      </div>
-    </div>
-
-    <!-- Küche -->
-    <div id="haccpAreaKitchen" class="haccp-area hidden" style="margin-top:18px;">
-      <h3>Küche</h3>
-
-      <div class="grid2">
-        <div>
-          <label>Kühlschrank 1 Temperatur (°C)</label>
-          <input type="number" step="0.1" id="kitchenTemp1" placeholder="z.B. 3.5">
+          <label>Saladete °C</label>
+          <input type="number" step="0.1" id="pizzaCool2">
         </div>
         <div>
-          <label>Kühlschrank 2 Temperatur (°C)</label>
-          <input type="number" step="0.1" id="kitchenTemp2" placeholder="z.B. 4.2">
+          <label>Fisch °C</label>
+          <input type="number" step="0.1" id="pizzaCool3">
         </div>
         <div>
-          <label>Kühlschrank 3 Temperatur (°C)</label>
-          <input type="number" step="0.1" id="kitchenTemp3" placeholder="z.B. 5.1">
-        </div>
-        <div>
-          <label>Tiefkühlung Temperatur (°C)</label>
-          <input type="number" step="0.1" id="kitchenTemp4" placeholder="z.B. -18">
+          <label>Käse °C</label>
+          <input type="number" step="0.1" id="pizzaCool4">
         </div>
       </div>
 
       <div class="checklist">
-        <label><input type="checkbox" id="kitchenClean1"> Arbeitsfläche gereinigt</label>
-        <label><input type="checkbox" id="kitchenClean2"> Geräte gereinigt</label>
-        <label><input type="checkbox" id="kitchenClean3"> Boden gereinigt</label>
+        <label><input type="checkbox" id="pizzaClean1"> Pizza Kasse gereinigt</label>
+        <label><input type="checkbox" id="pizzaClean2"> Arbeitsfläche sauber</label>
+        <label><input type="checkbox" id="pizzaClean3"> Geräte geprüft</label>
       </div>
+
+      <button class="btnPrimary" style="margin-top:14px;" onclick="savePizzaHaccp()">Speichern</button>
     </div>
+  </div>
 
-    <!-- Kellner -->
-    <div id="haccpAreaService" class="haccp-area hidden" style="margin-top:18px;">
-      <h3>Kellner</h3>
+  <div id="haccpTabKitchen" class="haccp-area hidden" style="display:none;">
+    <div class="card" style="margin-top:14px;">
+      <h3 class="cardTitle" style="font-size:22px;">Küche</h3>
 
-      <div class="grid2">
+      <div class="grid2" style="margin-top:12px;">
         <div>
-          <label>Theke Kühlschrank Temperatur (°C)</label>
-          <input type="number" step="0.1" id="serviceTemp1" placeholder="z.B. 4.8">
+          <label>Kühlschrank 1 °C</label>
+          <input type="number" step="0.1" id="kitchenCool1">
         </div>
         <div>
-          <label>Getränkekühlschrank Temperatur (°C)</label>
-          <input type="number" step="0.1" id="serviceTemp2" placeholder="z.B. 5.4">
+          <label>Kühlschrank 2 °C</label>
+          <input type="number" step="0.1" id="kitchenCool2">
+        </div>
+        <div>
+          <label>Kühlschrank 3 °C</label>
+          <input type="number" step="0.1" id="kitchenCool3">
+        </div>
+        <div>
+          <label>Kühlschrank 4 °C</label>
+          <input type="number" step="0.1" id="kitchenCool4">
         </div>
       </div>
 
       <div class="checklist">
-        <label><input type="checkbox" id="serviceClean1"> Theke gereinigt</label>
-        <label><input type="checkbox" id="serviceClean2"> Kaffeemaschine gereinigt</label>
-        <label><input type="checkbox" id="serviceClean3"> Boden gereinigt</label>
+        <label><input type="checkbox" id="kitchenClean1"> Küche gereinigt</label>
+        <label><input type="checkbox" id="kitchenClean2"> Geräte sauber</label>
+        <label><input type="checkbox" id="kitchenClean3"> Boden geprüft</label>
       </div>
-    </div>
 
-    <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
-      <button class="btn primary" onclick="saveHaccpRecord()">Speichern</button>
-      <button class="btn" onclick="resetHaccpForm()">Reset</button>
-      <button class="btn" onclick="printHaccpMonth()">Monatsreport drucken</button>
-    </div>
-
-    <div id="haccpWarning" class="warnBox hidden" style="margin-top:16px;"></div>
-    <div id="haccpTodayStatus" class="dangerBox" style="margin-top:16px;"></div>
-
-    <div id="haccpHistoryBox" class="card" style="margin-top:16px; display:none;">
-      <h3>HACCP History</h3>
-      <div id="haccpHistoryList" class="muted">Keine Einträge</div>
+      <button class="btnPrimary" style="margin-top:14px;" onclick="saveKitchenHaccp()">Speichern</button>
     </div>
   </div>
-</div>
 
-<div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
-  <button type="button" class="btnSecondary" onclick="showHaccpTab('pizza')">Pizza Kasse</button>
-  <button type="button" class="btnSecondary" onclick="showHaccpTab('kueche')">Küche</button>
-  <button type="button" class="btnSecondary" onclick="showHaccpTab('kellner')">Kellner</button>
-  <button type="button" class="btnSecondary" onclick="showHaccpTab('history')">History</button>
-</div>
-<div id="haccpReminder" class="card" style="margin-bottom:15px;">
-  HACCP Status wird geprüft...
-</div>
-<div id="haccpTabPizza" class="hidden" style="margin-top:20px;">
-  <div class="card">
-    <h3>Pizza Kasse</h3>
+  <div id="haccpTabKellner" class="haccp-area hidden" style="display:none;">
+    <div class="card" style="margin-top:14px;">
+      <h3 class="cardTitle" style="font-size:22px;">Kellner</h3>
 
-    <div class="row">
-      <div>
-        <label>Kühlhaus °C</label>
-        <input type="number" id="pizzaKuehlhaus">
+      <div class="grid2" style="margin-top:12px;">
+        <div>
+          <label>Getränke Kühlschrank °C</label>
+          <input type="number" step="0.1" id="serviceCool1">
+        </div>
+        <div>
+          <label>Dessert Kühlschrank °C</label>
+          <input type="number" step="0.1" id="serviceCool2">
+        </div>
       </div>
-      <div>
-        <label>Saladete °C</label>
-        <input type="number" id="pizzaSaladete">
+
+      <div class="checklist">
+        <label><input type="checkbox" id="serviceClean1"> Kaffeemaschine gereinigt</label>
+        <label><input type="checkbox" id="serviceClean2"> Theke sauber</label>
+        <label><input type="checkbox" id="serviceClean3"> Gästebereich geprüft</label>
       </div>
+
+      <button class="btnPrimary" style="margin-top:14px;" onclick="saveServiceHaccp()">Speichern</button>
     </div>
+  </div>
 
-    <div class="row">
-      <div>
-        <label>Fisch °C</label>
-        <input type="number" id="pizzaFisch">
-      </div>
-      <div>
-        <label>Käse °C</label>
-        <input type="number" id="pizzaKaese">
-      </div>
+  <div id="haccpHistoryWrap" class="card hidden" style="margin-top:14px; display:none;">
+    <h3 class="cardTitle" style="font-size:22px;">History</h3>
+    <div id="haccpHistoryList" class="list">
+      <div class="emptyState">Noch keine HACCP Einträge</div>
     </div>
-
-    <div class="row">
-      <div>
-        <label>Salat °C</label>
-        <input type="number" id="pizzaSalat">
-      </div>
-    </div>
-
-  <button class="btnPrimary" type="button" onclick="savePizzaHaccp()">
-Speichern
-</button>
-  </div>
-</div>
-
-<div id="haccpTabKueche" class="hidden" style="margin-top:20px;">
-  <div class="card">
-   <h3>Küche</h3>
-
-<div class="row">
-  <div>
-    <label>Sauce °C</label>
-    <input type="number" id="kuecheSauce">
   </div>
 
-  <div>
-    <label>Kühlhaus °C</label>
-    <input type="number" id="kuecheKuehlhaus">
-  </div>
-</div>
-
-<div class="row">
-  <div>
-    <label>Salat °C</label>
-    <input type="number" id="kuecheSalat">
-  </div>
-
-  <div>
-    <label>Dessert °C</label>
-    <input type="number" id="kuecheDessert">
-  </div>
-</div>
-
-<div class="row">
-  <div>
-    <label>TK Fisch (-3 / 0)</label>
-    <input type="number" id="kuecheTkFisch">
-  </div>
-
-  <div>
-    <label>TK Fleisch (-3 / 0)</label>
-    <input type="number" id="kuecheTkFleisch">
-  </div>
-</div>
-
-<div class="row">
-  <div>
-    <label>TK Gemüse (-3 / 0)</label>
-    <input type="number" id="kuecheTkGemuese">
-  </div>
-
-  <div>
-    <label>Defekt</label>
-    <input type="text" id="kuecheDefekt" placeholder="z.B. Kühlschrank defekt">
-  </div>
-</div>
-
-<button class="btnPrimary" type="button" onclick="saveKuecheHaccp()">Save</button>
-</div>
-</div>
-<div id="haccpTabKellner" class="hidden" style="margin-top:20px;">
-  <div class="card">
-    <h3>Kellner</h3>
-
-    <div class="row">
-      <div>
-        <label>Getränke Kühlschrank °C</label>
-        <input type="number" id="kellnerGetraenke">
-      </div>
-
-      <div>
-        <label>Dessert Kühlschrank °C</label>
-        <input type="number" id="kellnerDessert">
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>Kaffeemaschine</label>
-        <input type="text" id="kellnerKaffee" placeholder="gereinigt / ok">
-      </div>
-
-      <div>
-        <label>Theke</label>
-        <input type="text" id="kellnerTheke" placeholder="sauber / nicht sauber">
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>Tavolinat</label>
-        <input type="text" id="kellnerTavolina" placeholder="sauber / nicht sauber">
-      </div>
-
-      <div>
-        <label>WC</label>
-        <input type="text" id="kellnerWc" placeholder="sauber / nicht sauber">
-      </div>
-    </div>
-
-    <button class="btnPrimary" type="button" onclick="saveKellnerHaccp()">Save</button>
-  </div>
-</div>
-
-<div id="haccpTabHistory" class="hidden" style="margin-top:20px;">
-  <div class="card">
-   <h3>History</h3>
-
-<div class="row">
-  <div>
-    <label>Monat</label>
-    <input type="month" id="haccpHistoryMonth">
-  </div>
-
-  <div style="display:flex;align-items:end;gap:10px;">
-    <button class="btnSecondary" type="button" onclick="loadHaccpHistory()">Load</button>
-    <button class="btnPrimary" type="button" onclick="printHaccpHistory()">Print</button>
-  </div>
-</div>
-
-<div id="haccpHistoryList" style="margin-top:20px;">
-  Noch keine HACCP Einträge.
-</div>
+  <div class="card" style="margin-top:14px;">
+    <div id="haccpStatusText">HACCP Status wird geprüft...</div>
   </div>
 </div>
   <div class="footerSpace"></div>
