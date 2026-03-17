@@ -1139,29 +1139,49 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-function showHaccpTab(tabName) {
-  const ids = {
+function showHaccpTab(tabName){
+  const tabs = {
     pizza: "haccpTabPizza",
-    kueche: "haccpTabKueche",
-    kellner: "haccpTabKellner",
-    history: "haccpTabHistory"
+    kitchen: "haccpTabKitchen",
+    kellner: "haccpTabKellner"
   };
 
-  Object.values(ids).forEach(id => {
+  ["haccpTabPizza","haccpTabKitchen","haccpTabKellner"].forEach(id=>{
     const el = document.getElementById(id);
-    if (el) {
+    if(el){
       el.classList.add("hidden");
       el.style.display = "none";
     }
   });
 
-  const target = document.getElementById(ids[tabName]);
-  if (target) {
+  const historyWrap = document.getElementById("haccpHistoryWrap");
+  if(historyWrap){
+    historyWrap.classList.add("hidden");
+    historyWrap.style.display = "none";
+  }
+
+  const target = document.getElementById(tabs[tabName]);
+  if(target){
     target.classList.remove("hidden");
     target.style.display = "block";
   }
-}
 
+  document.querySelectorAll(".haccp-tab").forEach(btn=>{
+    btn.classList.remove("active");
+  });
+
+  const labels = {
+    pizza: "Pizza Kasse",
+    kitchen: "Küche",
+    kellner: "Kellner"
+  };
+
+  document.querySelectorAll(".haccp-tab").forEach(btn=>{
+    if(btn.textContent.trim() === labels[tabName]){
+      btn.classList.add("active");
+    }
+  });
+}
 window.showHaccpTab = showHaccpTab;
 async function savePizzaHaccp() {
   try {
