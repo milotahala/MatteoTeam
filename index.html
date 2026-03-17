@@ -1752,19 +1752,27 @@ window.checkTodayHaccpStatus = checkTodayHaccpStatus;
       }[m]));
     }
 
-    function openView(view){
-      ["viewDashboard","viewWeekly","viewStaff","viewInventory","viewMyHours","viewHaccp"].forEach(v => {
-        const el = $(v);
-        if(el) el.classList.add("hidden");
-      });
+   function openView(view){
+  [
+    "viewDashboard",
+    "viewWeekly",
+    "viewStaff",
+    "viewInventory",
+    "viewMyHours",
+    "viewHaccp"
+  ].forEach(v=>{
+    const el = $(v);
+    if(el) el.classList.add("hidden");
+  });
 
-      const target = $(view);
-      if(target) target.classList.remove("hidden");
-      if (view === "viewHaccp") {
-  checkTodayHaccpStatus();
+  const target = $(view);
+  if(target) target.classList.remove("hidden");
+
+  if (view === "viewHaccp" && typeof checkTodayHaccpStatus === "function") {
+    checkTodayHaccpStatus();
+  }
 }
-    }
-    window.openView = openView;
+window.openView = openView;
 
     function getMondayISO(date = new Date()){
       const d = new Date(date);
