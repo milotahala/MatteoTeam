@@ -2809,6 +2809,9 @@ if(monthPickerEl){
     await renderMyHours();
   });
 }
+document.addEventListener("click",()=>{
+  document.activeElement.blur();
+});
   </script>
 </body>
 </html>
