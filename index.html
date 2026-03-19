@@ -1512,6 +1512,19 @@ async function saveKellnerHaccp() {
 }
 
 window.saveKellnerHaccp = saveKellnerHaccp;
+// 🔔 Load notifications kur hapet app
+setTimeout(async () => {
+  try{
+    const user = auth.currentUser;
+    if(user){
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      const userData = userSnap.exists() ? userSnap.data() : {};
+      await loadUserNotifications(user, userData);
+    }
+  }catch(err){
+    console.error("Auto notifications error:", err);
+  }
+}, 1500);
 async function loadHaccpHistory(){
   ["haccpTabPizza","haccpTabKitchen","haccpTabKellner"].forEach(id=>{
     const el = document.getElementById(id);
