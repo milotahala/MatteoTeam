@@ -46,7 +46,38 @@
   .hidden{
     display:none !important;
   }
+.notification-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:10px;
+}
 
+.notification-item{
+  border-radius:12px;
+  padding:12px 14px;
+  font-size:14px;
+  line-height:1.4;
+  border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.04);
+}
+
+.notification-item.info{
+  border-left:4px solid #43b0ff;
+}
+
+.notification-item.warn{
+  border-left:4px solid #ffb347;
+}
+
+.notification-item.success{
+  border-left:4px solid #1fb986;
+}
+
+.notification-empty{
+  opacity:.7;
+  font-size:13px;
+}
   .appShell{
     width:100%;
     max-width:980px;
