@@ -2062,6 +2062,48 @@ function showNotifications(items){
 
   box.classList.remove("hidden");
 }
+async function getHaccpNotificationForUser(userData){
+  try{
+    const todayKey = getTodayKey();
+
+    const snap = await getDoc(doc(db, "haccpChecks", todayKey));
+
+    if(!snap.exists()){
+      return {
+        type: "warn",
+        text: `⚠️ HACCP për sot nuk është bërë ende.`
+      };
+    }
+
+    const data = snap.data() || {};
+    const dept = userData.department || "";
+
+    let done = false;
+
+    if(dept === "pizzaKasse") done = !!data.pizzaKasse;
+    else if(dept === "kuche") done = !!data.kuche;
+    else if(dept === "kellner") done = !!data.kellner;
+    else done = !!(data.pizzaKasse || data.kuche || data.kellner);
+
+    if(done){
+      return {
+        type: "success",
+        text: `✅ HACCP për repartin tënd është bërë sot.`
+      };
+    }
+
+    return {
+      type: "warn",
+      text: `⚠️ HACCP për repartin tënd nuk është bërë ende sot.`
+    };
+  }catch(err){
+    console.error("getHaccpNotificationForUser error:", err);
+    return {
+      type: "warn",
+      text: `⚠️ Nuk u lexua statusi i HACCP.`
+    };
+  }
+}
     function getMondayISO(date = new Date()){
       const d = new Date(date);
       const day = (d.getDay() + 6) % 7;
