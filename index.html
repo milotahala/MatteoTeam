@@ -2104,6 +2104,27 @@ async function getHaccpNotificationForUser(userData){
     };
   }
 }
+async function loadUserNotifications(user, userData){
+  try{
+    const items = [];
+
+    const haccpNote = await getHaccpNotificationForUser(userData);
+    if(haccpNote) items.push(haccpNote);
+
+    showNotifications(items);
+
+    const warnings = items.filter(x => x.type === "warn");
+    if(warnings.length){
+      const alreadyShownKey = "notifShown_" + getTodayKey();
+      if(!sessionStorage.getItem(alreadyShownKey)){
+        alert(warnings.map(x => x.text).join("\n"));
+        sessionStorage.setItem(alreadyShownKey, "1");
+      }
+    }
+  }catch(err){
+    console.error("loadUserNotifications error:", err);
+  }
+}
     function getMondayISO(date = new Date()){
       const d = new Date(date);
       const day = (d.getDay() + 6) % 7;
