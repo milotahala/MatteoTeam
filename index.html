@@ -1429,7 +1429,11 @@ async function savePizzaHaccp() {
       },
       createdAt: serverTimestamp()
     });
-
+await setDoc(doc(db, "haccpChecks", date), {
+  date: date,
+  pizzaKasse: true,
+  updatedAt: serverTimestamp()
+}, { merge: true });
     alert("Pizza HACCP gespeichert");
   } catch (err) {
     console.error("SAVE PIZZA HACCP ERROR:", err);
