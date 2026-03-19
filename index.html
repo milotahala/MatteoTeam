@@ -2013,7 +2013,42 @@ window.checkTodayHaccpStatus = checkTodayHaccpStatus;
   }
 }
 window.openView = openView;
+// 🔔 Notifications helpers
+function getTodayKey(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
+function getTodayDayName(){
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  return days[new Date().getDay()];
+}
+
+function showNotifications(items){
+  const box = document.getElementById("notificationBox");
+  const list = document.getElementById("notificationList");
+  if(!box || !list) return;
+
+  list.innerHTML = "";
+
+  if(!items || !items.length){
+    box.classList.remove("hidden");
+    list.innerHTML = `<div class="notification-empty">Sot nuk ka njoftime.</div>`;
+    return;
+  }
+
+  items.forEach(item => {
+    const div = document.createElement("div");
+    div.className = `notification-item ${item.type || "info"}`;
+    div.textContent = item.text;
+    list.appendChild(div);
+  });
+
+  box.classList.remove("hidden");
+}
     function getMondayISO(date = new Date()){
       const d = new Date(date);
       const day = (d.getDay() + 6) % 7;
