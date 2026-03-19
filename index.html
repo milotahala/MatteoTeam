@@ -1477,7 +1477,11 @@ async function saveKuecheHaccp() {
     },
     createdAt: serverTimestamp()
   });
-
+await setDoc(doc(db, "haccpChecks", date), {
+  date: date,
+  kuche: true,
+  updatedAt: serverTimestamp()
+}, { merge: true });
   alert("Küche HACCP gespeichert");
 }
 
