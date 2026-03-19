@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
@@ -1405,15 +1405,20 @@ function showHaccpTab(tabName){
 window.showHaccpTab = showHaccpTab;
 async function savePizzaHaccp() {
   try {
-    const date = document.getElementById("haccpDate")?.value || "";
-    const time = document.getElementById("haccpTime")?.value || "";
-    const worker = document.getElementById("haccpWorker")?.value || "";
+    const date = document.getElementById("haccpDate").value;
+    const time = document.getElementById("haccpTime").value;
+    const worker = document.getElementById("haccpWorker").value.trim();
 
-    const kuehlhaus = document.getElementById("pizzaKuehlhaus")?.value || "";
-    const saladete = document.getElementById("pizzaSaladete")?.value || "";
-    const fisch = document.getElementById("pizzaFisch")?.value || "";
-    const kaese = document.getElementById("pizzaKaese")?.value || "";
-    const salat = document.getElementById("pizzaSalat")?.value || "";
+    const kuehlhaus = document.getElementById("pizzaKuehlhaus").value;
+    const saladete = document.getElementById("pizzaSaladete").value;
+    const fisch = document.getElementById("pizzaFisch").value;
+    const kaese = document.getElementById("pizzaKaese").value;
+    const salat = document.getElementById("pizzaSalat").value;
+
+    if(!date || !time || !worker){
+      alert("Ju lutem plotëso Datum, Uhrzeit dhe Mitarbeiter.");
+      return;
+    }
 
     await addDoc(collection(db, "haccpLogs"), {
       date,
@@ -1429,11 +1434,13 @@ async function savePizzaHaccp() {
       },
       createdAt: serverTimestamp()
     });
-await setDoc(doc(db, "haccpChecks", date), {
-  date: date,
-  pizzaKasse: true,
-  updatedAt: serverTimestamp()
-}, { merge: true });
+
+    await setDoc(doc(db, "haccpChecks", date), {
+      date: date,
+      pizzaKasse: true,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
     alert("Pizza HACCP gespeichert");
   } catch (err) {
     console.error("SAVE PIZZA HACCP ERROR:", err);
