@@ -1515,7 +1515,11 @@ async function saveKellnerHaccp() {
     },
     createdAt: serverTimestamp()
   });
-
+await setDoc(doc(db, "haccpChecks", date), {
+  date: date,
+  kellner: true,
+  updatedAt: serverTimestamp()
+}, { merge: true });
   alert("Kellner HACCP gespeichert");
 }
 
