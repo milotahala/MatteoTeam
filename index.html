@@ -1419,7 +1419,9 @@ async function savePizzaHaccp() {
       alert("Ju lutem plotëso Datum, Uhrzeit dhe Mitarbeiter.");
       return;
     }
-
+console.log({
+  date, time, worker, kuehlhaus
+});
     await addDoc(collection(db, "haccpLogs"), {
   date: date,
   time: time,
