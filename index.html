@@ -1421,20 +1421,19 @@ async function savePizzaHaccp() {
     }
 
     await addDoc(collection(db, "haccpLogs"), {
-      date,
-      time,
-      worker,
-      section: "pizza",
-      data: {
-        kuehlhaus,
-        saladete,
-        fisch,
-        kaese,
-        salat
-      },
-      createdAt: serverTimestamp()
-    });
-
+  date: date,
+  time: time,
+  worker: worker,
+  section: "pizza",
+  data: {
+    kuehlhaus,
+    saladete,
+    fisch,
+    kaese,
+    salat
+  },
+  createdAt: serverTimestamp()
+});
     await setDoc(doc(db, "haccpChecks", date), {
       date: date,
       pizzaKasse: true,
