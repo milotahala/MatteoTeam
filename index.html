@@ -2025,7 +2025,7 @@ window.checkTodayHaccpStatus = checkTodayHaccpStatus;
       }[m]));
     }
 
-   function openView(view){
+function openView(view){
   [
     "viewDashboard",
     "viewWeekly",
@@ -2033,16 +2033,33 @@ window.checkTodayHaccpStatus = checkTodayHaccpStatus;
     "viewInventory",
     "viewMyHours",
     "viewHaccp"
-  ].forEach(v=>{
+  ].forEach(v => {
     const el = $(v);
-    if(el) el.classList.add("hidden");
+    if (el) el.classList.add("hidden");
   });
 
   const target = $(view);
-  if(target) target.classList.remove("hidden");
+  if (target) target.classList.remove("hidden");
 
-  if (view === "viewHaccp" && typeof checkTodayHaccpStatus === "function") {
-    checkTodayHaccpStatus();
+  if (view === "viewWeekly" && typeof loadWeekly === "function") {
+    loadWeekly();
+  }
+
+  if (view === "viewInventory" && typeof loadInventory === "function") {
+    loadInventory();
+  }
+
+  if (view === "viewMyHours" && typeof loadMyHours === "function") {
+    loadMyHours();
+  }
+
+  if (view === "viewHaccp") {
+    if (typeof checkTodayHaccpStatus === "function") {
+      checkTodayHaccpStatus();
+    }
+    if (typeof loadHaccpHistory === "function") {
+      loadHaccpHistory();
+    }
   }
 }
 window.openView = openView;
