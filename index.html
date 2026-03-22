@@ -1455,7 +1455,7 @@ async function saveKuecheHaccp() {
 
   const date = document.getElementById("haccpDate")?.value || "";
   const time = document.getElementById("haccpTime")?.value || "";
-  const worker = document.getElementById("haccpWorker")?.value || "";
+  const worker = document.getElementById("haccpEmployee").value.trim();
 
   const sauce = document.getElementById("kuecheSauce")?.value || "";
   const kuehlhaus = document.getElementById("kuecheKuehlhaus")?.value || "";
