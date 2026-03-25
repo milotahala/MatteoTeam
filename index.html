@@ -1417,20 +1417,21 @@ async function savePizzaHaccp() {
     const kaeseEl = document.getElementById("pizzaKaese");
     const salatEl = document.getElementById("pizzaSalat");
 
-    if (!dateEl || !timeEl || !workerEl || !kuehlhausEl || !saladeteEl || !fischEl || !kaeseEl || !salatEl) {
-      alert("Gabim: mungon një element HACCP në HTML");
-      console.error("Missing HACCP element", {
-        dateEl,
-        timeEl,
-        workerEl,
-        kuehlhausEl,
-        saladeteEl,
-        fischEl,
-        kaeseEl,
-        salatEl
-      });
-      return;
-    }
+  const missing = [];
+
+if (!dateEl) missing.push("haccpDate");
+if (!timeEl) missing.push("haccpTime");
+if (!workerEl) missing.push("haccpEmployee");
+if (!kuehlhausEl) missing.push("pizzaKuehlhaus");
+if (!saladeteEl) missing.push("pizzaSaladete");
+if (!fischEl) missing.push("pizzaFisch");
+if (!kaeseEl) missing.push("pizzaKaese");
+if (!salatEl) missing.push("pizzaSalat");
+
+if (missing.length) {
+  alert("Mungon: " + missing.join(", "));
+  return;
+}
 
     const date = dateEl.value;
     const time = timeEl.value;
