@@ -1405,37 +1405,63 @@ function showHaccpTab(tabName){
 window.showHaccpTab = showHaccpTab;
 async function savePizzaHaccp() {
   try {
-    const date = document.getElementById("haccpDate").value;
-    const time = document.getElementById("haccpTime").value;
-    const worker = document.getElementById("haccpWorker").value.trim();
+    console.log("savePizzaHaccp started");
 
-    const kuehlhaus = document.getElementById("pizzaKuehlhaus").value;
-    const saladete = document.getElementById("pizzaSaladete").value;
-    const fisch = document.getElementById("pizzaFisch").value;
-    const kaese = document.getElementById("pizzaKaese").value;
-    const salat = document.getElementById("pizzaSalat").value;
+    const dateEl = document.getElementById("haccpDate");
+    const timeEl = document.getElementById("haccpTime");
+    const workerEl = document.getElementById("haccpWorker");
 
-    if(!date || !time || !worker){
-      alert("Ju lutem plotëso Datum, Uhrzeit dhe Mitarbeiter.");
+    const kuehlhausEl = document.getElementById("pizzaKuehlhaus");
+    const saladeteEl = document.getElementById("pizzaSaladete");
+    const fischEl = document.getElementById("pizzaFisch");
+    const kaeseEl = document.getElementById("pizzaKaese");
+    const salatEl = document.getElementById("pizzaSalat");
+
+    if (!dateEl || !timeEl || !workerEl || !kuehlhausEl || !saladeteEl || !fischEl || !kaeseEl || !salatEl) {
+      alert("Gabim: mungon një element HACCP në HTML");
+      console.error("Missing HACCP element", {
+        dateEl,
+        timeEl,
+        workerEl,
+        kuehlhausEl,
+        saladeteEl,
+        fischEl,
+        kaeseEl,
+        salatEl
+      });
       return;
     }
-alert(JSON.stringify({
-  date, time, worker, kuehlhaus
-}));
+
+    const date = dateEl.value;
+    const time = timeEl.value;
+    const worker = workerEl.value.trim();
+
+    const kuehlhaus = kuehlhausEl.value;
+    const saladete = saladeteEl.value;
+    const fisch = fischEl.value;
+    const kaese = kaeseEl.value;
+    const salat = salatEl.value;
+
+    if (!date || !time || !worker) {
+      alert("Ju lutem plotëso Datum, Uhrzeit dhe Mitarbeiter");
+      return;
+    }
+
     await addDoc(collection(db, "haccpLogs"), {
-  date: date,
-  time: time,
-  worker: worker,
-  section: "pizza",
-  data: {
-    kuehlhaus,
-    saladete,
-    fisch,
-    kaese,
-    salat
-  },
-  createdAt: serverTimestamp()
-});
+      date: date,
+      time: time,
+      worker: worker,
+      section: "pizza",
+      data: {
+        kuehlhaus,
+        saladete,
+        fisch,
+        kaese,
+        salat
+      },
+      createdAt: serverTimestamp()
+    });
+
     await setDoc(doc(db, "haccpChecks", date), {
       date: date,
       pizzaKasse: true,
@@ -1445,10 +1471,9 @@ alert(JSON.stringify({
     alert("Pizza HACCP gespeichert");
   } catch (err) {
     console.error("SAVE PIZZA HACCP ERROR:", err);
-    alert("Gabim në ruajtjen e Pizza HACCP");
+    alert("Gabim në ruajtjen e Pizza HACCP: " + err.message);
   }
 }
-
 window.savePizzaHaccp = savePizzaHaccp;
 
 async function saveKuecheHaccp() {
