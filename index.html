@@ -1577,6 +1577,38 @@ setTimeout(async () => {
     console.error("Auto notifications error:", err);
   }
 }, 3000);
+async function loadHaccpStatus() {
+  const today = new Date().toISOString().split("T")[0];
+  const statusEl = document.getElementById("haccpStatus");
+
+  if (!statusEl) return;
+
+  try {
+    const snap = await getDoc(doc(db, "haccpChecks", today));
+
+    if (!snap.exists()) {
+      statusEl.textContent = "⚠️ HACCP fehlt heute";
+      return;
+    }
+
+    const data = snap.data();
+
+    const pizzaDone = !!data.pizzaKasse;
+    const kuecheDone = !!data.kueche;
+    const kellnerDone = !!data.kellner;
+
+    if (pizzaDone && kuecheDone && kellnerDone) {
+      statusEl.textContent = "✅ Alles erledigt";
+    } else if (pizzaDone || kuecheDone || kellnerDone) {
+      statusEl.textContent = "🟡 Teilweise erledigt";
+    } else {
+      statusEl.textContent = "⚠️ HACCP fehlt heute";
+    }
+  } catch (err) {
+    console.error("LOAD HACCP STATUS ERROR:", err);
+    statusEl.textContent = "Fehler beim Laden vom HACCP-Status";
+  }
+}
 async function loadHaccpHistory(){
   ["haccpTabPizza","haccpTabKitchen","haccpTabKellner"].forEach(id=>{
     const el = document.getElementById(id);
