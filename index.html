@@ -1474,6 +1474,8 @@ if (missing.length) {
     }, { merge: true });
 
     alert("Pizza HACCP gespeichert");
+    // ✅ rifresko statusin pas ruajtjes
+await loadHaccpStatus();
   } catch (err) {
     console.error("SAVE PIZZA HACCP ERROR:", err);
     alert("Gabim në ruajtjen e Pizza HACCP: " + err.message);
