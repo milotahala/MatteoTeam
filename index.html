@@ -1364,48 +1364,41 @@ input, select{
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-function showHaccpTab(tabName){
-  const tabs = {
-    pizza: "haccpTabPizza",
-    kitchen: "haccpTabKitchen",
-    kellner: "haccpTabKellner"
-  };
+function showHaccpTab(tabName) {
 
-  ["haccpTabPizza","haccpTabKitchen","haccpTabKellner","haccpHistoryWrap"].forEach(id=>{
+  // 🔒 hide gjitha tabs
+  ["haccpTabPizza", "haccpTabKitchen", "haccpTabKellner", "haccpHistoryWrap"].forEach(id => {
     const el = document.getElementById(id);
-    if(el){
+    if (el) {
       el.classList.add("hidden");
       el.style.display = "none";
     }
   });
 
-  const historyWrap = document.getElementById("haccpHistoryWrap");
-  if(historyWrap){
-    historyWrap.classList.add("hidden");
-    historyWrap.style.display = "none";
-  }
+  // 🎯 zgjedh target sipas tabName
+  let targetId = "";
 
-  const target = document.getElementById(tabs[tabName]);
-  if(target){
+  if (tabName === "pizza") targetId = "haccpTabPizza";
+  if (tabName === "kitchen") targetId = "haccpTabKitchen";
+  if (tabName === "kellner") targetId = "haccpTabKellner";
+  if (tabName === "history") targetId = "haccpHistoryWrap";
+
+  const target = document.getElementById(targetId);
+
+  if (target) {
     target.classList.remove("hidden");
     target.style.display = "block";
   }
-if (tabName === "history") {
-  loadHaccpHistory();
-}
-  document.querySelectorAll(".haccp-tab").forEach(btn=>{
+
+  // 🔥 load history kur hapet
+  if (tabName === "history") {
+    loadHaccpHistory();
+  }
+
+  // 🎨 active button
+  document.querySelectorAll(".haccp-tab").forEach(btn => {
     btn.classList.remove("active");
-  });
-
-  const labels = {
-    pizza: "Pizza Kasse",
-    kitchen: "Küche",
-    kellner: "Kellner",
-    history: "History",
-  };
-
-  document.querySelectorAll(".haccp-tab").forEach(btn=>{
-    if(btn.textContent.trim() === labels[tabName]){
+    if (btn.textContent.toLowerCase().includes(tabName)) {
       btn.classList.add("active");
     }
   });
