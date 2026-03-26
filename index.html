@@ -1396,14 +1396,6 @@ function showHaccpTab(tabName) {
     loadHaccpHistory();
   }
 }
-  // 🎨 active button
-  document.querySelectorAll(".haccp-tab").forEach(btn => {
-    btn.classList.remove("active");
-    if (btn.textContent.toLowerCase().includes(tabName)) {
-      btn.classList.add("active");
-    }
-  });
-}
 window.showHaccpTab = showHaccpTab;
 async function savePizzaHaccp() {
   try {
