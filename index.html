@@ -1365,7 +1365,6 @@ input, select{
     const auth = getAuth(app);
     const db = getFirestore(app);
 function showHaccpTab(tabName) {
-
   const map = {
     pizza: "haccpTabPizza",
     kitchen: "haccpTabKitchen",
@@ -1373,29 +1372,42 @@ function showHaccpTab(tabName) {
     history: "haccpHistoryWrap"
   };
 
-  // hide gjitha
   Object.values(map).forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = "none";
+    if (el) {
+      el.classList.add("hidden");
+      el.style.display = "none";
+    }
   });
 
-  // show vetëm target
   const target = document.getElementById(map[tabName]);
-  if (target) target.style.display = "block";
+  if (target) {
+    target.classList.remove("hidden");
+    target.style.display = "block";
+  }
 
-  // active button
   document.querySelectorAll(".haccp-tab").forEach(btn => {
     btn.classList.remove("active");
-    if (btn.textContent.toLowerCase().includes(tabName)) {
+  });
+
+  const labels = {
+    pizza: "Pizza Kasse",
+    kitchen: "Küche",
+    kellner: "Kellner",
+    history: "History"
+  };
+
+  document.querySelectorAll(".haccp-tab").forEach(btn => {
+    if (btn.textContent.trim() === labels[tabName]) {
       btn.classList.add("active");
     }
   });
 
-  // load history nëse duhet
   if (tabName === "history") {
     loadHaccpHistory();
   }
 }
+
 window.showHaccpTab = showHaccpTab;
 async function savePizzaHaccp() {
   try {
