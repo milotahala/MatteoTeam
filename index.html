@@ -1390,7 +1390,9 @@ function showHaccpTab(tabName){
     target.classList.remove("hidden");
     target.style.display = "block";
   }
-
+if (tabName === "history") {
+  loadHaccpHistory();
+}
   document.querySelectorAll(".haccp-tab").forEach(btn=>{
     btn.classList.remove("active");
   });
