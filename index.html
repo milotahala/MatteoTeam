@@ -1366,35 +1366,36 @@ input, select{
     const db = getFirestore(app);
 function showHaccpTab(tabName) {
 
-  // 🔒 hide gjitha tabs
-  ["haccpTabPizza", "haccpTabKitchen", "haccpTabKellner", "haccpHistoryWrap"].forEach(id => {
+  const map = {
+    pizza: "haccpTabPizza",
+    kitchen: "haccpTabKitchen",
+    kellner: "haccpTabKellner",
+    history: "haccpHistoryWrap"
+  };
+
+  // hide gjitha
+  Object.values(map).forEach(id => {
     const el = document.getElementById(id);
-    if (el) {
-      el.classList.add("hidden");
-      el.style.display = "none";
+    if (el) el.style.display = "none";
+  });
+
+  // show vetëm target
+  const target = document.getElementById(map[tabName]);
+  if (target) target.style.display = "block";
+
+  // active button
+  document.querySelectorAll(".haccp-tab").forEach(btn => {
+    btn.classList.remove("active");
+    if (btn.textContent.toLowerCase().includes(tabName)) {
+      btn.classList.add("active");
     }
   });
 
-  // 🎯 zgjedh target sipas tabName
-  let targetId = "";
-
-  if (tabName === "pizza") targetId = "haccpTabPizza";
-  if (tabName === "kitchen") targetId = "haccpTabKitchen";
-  if (tabName === "kellner") targetId = "haccpTabKellner";
-  if (tabName === "history") targetId = "haccpHistoryWrap";
-
-  const target = document.getElementById(targetId);
-
-  if (target) {
-    target.classList.remove("hidden");
-    target.style.display = "block";
-  }
-
-  // 🔥 load history kur hapet
+  // load history nëse duhet
   if (tabName === "history") {
     loadHaccpHistory();
   }
-
+}
   // 🎨 active button
   document.querySelectorAll(".haccp-tab").forEach(btn => {
     btn.classList.remove("active");
