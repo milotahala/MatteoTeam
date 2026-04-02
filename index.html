@@ -691,7 +691,6 @@ async function loadBruchliste() {
   }
 }
 document.getElementById("btnPrintMonthBruch").onclick = async () => {
-
   const monthInput = document.getElementById("bruchMonth").value;
 
   if (!monthInput) {
@@ -706,13 +705,13 @@ document.getElementById("btnPrintMonthBruch").onclick = async () => {
     <hr>
   `;
 
-  snap.forEach(doc => {
-    const d = doc.data();
+  snap.forEach((docSnap) => {
+    const d = docSnap.data();
 
     if (d.date && d.date.startsWith(monthInput)) {
       content += `
         <p>
-          <b>${d.date}</b> - ${d.produkt} (${d.menge}) <br>
+          <b>${d.date}</b> - ${d.produkt || ""} (${d.menge || ""})<br>
           <small>${d.grund || ""}</small>
         </p>
       `;
@@ -721,6 +720,7 @@ document.getElementById("btnPrintMonthBruch").onclick = async () => {
 
   const w = window.open("", "_blank");
   w.document.write(content);
+  w.document.close();
   w.print();
 };
     function todayStr(){
