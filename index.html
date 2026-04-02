@@ -690,6 +690,39 @@ async function loadBruchliste() {
     list.innerHTML = "Gabim në ngarkim";
   }
 }
+document.getElementById("btnPrintMonthBruch").onclick = async () => {
+
+  const monthInput = document.getElementById("bruchMonth").value;
+
+  if (!monthInput) {
+    alert("Zgjidh muajin!");
+    return;
+  }
+
+  const snap = await getDocs(collection(db, "bruchliste"));
+
+  let content = `
+    <h2>Bruchliste - ${monthInput}</h2>
+    <hr>
+  `;
+
+  snap.forEach(doc => {
+    const d = doc.data();
+
+    if (d.date && d.date.startsWith(monthInput)) {
+      content += `
+        <p>
+          <b>${d.date}</b> - ${d.produkt} (${d.menge}) <br>
+          <small>${d.grund || ""}</small>
+        </p>
+      `;
+    }
+  });
+
+  const w = window.open("", "_blank");
+  w.document.write(content);
+  w.print();
+};
     function todayStr(){
       return new Date().toISOString().slice(0,10);
     }
