@@ -625,6 +625,42 @@
 
     const $ = (id) => document.getElementById(id);
 
+// ==========================
+// BRUCH SAVE
+// ==========================
+document.getElementById("btnSaveBruch").onclick = async () => {
+
+  const date = document.getElementById("bruchDate").value;
+  const produkt = document.getElementById("bruchProdukt").value;
+  const menge = document.getElementById("bruchMenge").value;
+  const grund = document.getElementById("bruchGrund").value;
+
+  if (!date || !produkt) {
+    alert("Ju lutem plotësoni të dhënat!");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "bruchliste"), {
+      date: date,
+      produkt: produkt,
+      menge: menge,
+      grund: grund,
+      createdAt: new Date()
+    });
+
+    alert("U ruajt me sukses ✅");
+
+    document.getElementById("bruchProdukt").value = "";
+    document.getElementById("bruchMenge").value = "";
+    document.getElementById("bruchGrund").value = "";
+
+  } catch (err) {
+    console.error(err);
+    alert("Gabim: " + err.message);
+  }
+};
+
     function todayStr(){
       return new Date().toISOString().slice(0,10);
     }
