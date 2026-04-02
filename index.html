@@ -660,7 +660,36 @@ document.getElementById("btnSaveBruch").onclick = async () => {
     alert("Gabim: " + err.message);
   }
 };
+async function loadBruchliste() {
+  const list = document.getElementById("bruchList");
+  if (!list) return;
 
+  list.innerHTML = "Loading...";
+
+  try {
+    const q = query(collection(db, "bruchliste"), orderBy("date", "desc"));
+    const snap = await getDocs(q);
+
+    let html = "";
+
+    snap.forEach((docSnap) => {
+      const d = docSnap.data();
+
+      html += `
+        <div class="bruchItem">
+          <b>${d.date || ""}</b> - ${d.produkt || ""} ${d.menge ? "(" + d.menge + ")" : ""}
+          <br>
+          <small>${d.grund || ""}</small>
+        </div>
+      `;
+    });
+
+    list.innerHTML = html || "Keine Einträge";
+  } catch (err) {
+    console.error("LOAD BRUCH ERROR:", err);
+    list.innerHTML = "Gabim në ngarkim";
+  }
+}
     function todayStr(){
       return new Date().toISOString().slice(0,10);
     }
