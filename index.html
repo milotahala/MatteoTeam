@@ -743,7 +743,9 @@ async function loadBruchliste() {
       if(view) view.classList.remove("hidden");
       document.querySelectorAll(".navBtn").forEach(b => b.classList.toggle("active", b.dataset.view === id));
     }
-
+if (id === "viewBruch") {
+  loadBruchliste();
+}
     function setAuthTab(mode){
       $("loginForm").classList.toggle("hidden", mode !== "login");
       $("registerForm").classList.toggle("hidden", mode !== "register");
