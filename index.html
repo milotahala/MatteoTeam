@@ -1602,7 +1602,48 @@ async function loadBruch() {
     bruchList.innerHTML = `<div class="muted">Error loading</div>`;
   }
 }
-    $("btnSaveBruch").addEventListener("click", saveBruch);
+    $("btnSaveBruch").addEventListener("click", async () => {
+  try {
+    if (!currentUser) return alert("Login first");
+
+    const entry = {
+      date: bruchDate.value,
+      product: bruchProduct.value.trim(),
+      qty: bruchQty.value,
+      reason: bruchReason.value.trim(),
+      by: currentUser.email || currentUser.uid,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!entry.date || !entry.product || !entry.qty || !entry.reason) {
+      return alert("Plotëso të gjitha!");
+    }
+
+    const key = getMonthKey();
+    const ref = doc(db, "bruchMonate", key);
+    const snap = await getDoc(ref);
+
+    let items = [];
+    if (snap.exists()) {
+      items = snap.data().items || [];
+    }
+
+    items.push(entry);
+
+    await setDoc(ref, { items }, { merge: true });
+
+    bruchProduct.value = "";
+    bruchQty.value = "";
+    bruchReason.value = "";
+
+    await loadBruch();
+    alert("U ruajt ✔");
+
+  } catch (err) {
+    console.error("SAVE BRUCH ERROR:", err);
+    alert("Gabim: " + err.message);
+  }
+});
     $("btnPrintMonthBruch").addEventListener("click", printMonthBruch);
 
     $("btnPrint").addEventListener("click", ()=> window.print());
