@@ -1553,21 +1553,59 @@ ${lastHoursPayload.details.join("\n")}`;
     $("btnPrintMonthHaccp").addEventListener("click", printMonthHaccp);
 
     $("btnSubmitUrlaub").addEventListener("click", submitUrlaub);
-    // ==========================
-// BRUCHLISTE FUNCTIONS
-// ==========================
-
-const bruchDate = $("bruchDate");
+    const bruchDate = $("bruchDate");
 const bruchProduct = $("bruchProduct");
 const bruchQty = $("bruchQty");
 const bruchReason = $("bruchReason");
 const bruchList = $("bruchList");
 
 function getMonthKey() {
-  const d = bruchDate?.value ? new Date(bruchDate.value) : new Date();
+  const d = bruchDate && bruchDate.value ? new Date(bruchDate.value) : new Date();
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
-  return `${y}-${m}`;
+  return y + "-" + m;
+}
+
+async function loadBruch() {
+  try {
+    const key = getMonthKey();
+    const ref = doc(db, "bruchMonate", key);
+    const snap = await getDoc(ref);
+
+    if (!bruchList) return;
+
+    if (!snap.exists()) {
+      bruchList.innerHTML = '<div class="muted">Keine Einträge.</div>';
+      return;
+    }
+
+    const items = snap.data().items || [];
+
+    if (!items.length) {
+      bruchList.innerHTML = '<div class="muted">Keine Einträge.</div>';
+      return;
+    }
+
+    let html = "";
+    items.forEach((x, i) => {
+      html += `
+        <div class="card" style="margin-bottom:10px;padding:10px">
+          <strong>${i + 1}. ${x.product || ""}</strong>
+          <div class="tiny muted">Datum: ${x.date || ""}</div>
+          <div class="tiny muted">Menge: ${x.qty || ""}</div>
+          <div class="tiny muted">Grund: ${x.reason || ""}</div>
+        </div>
+      `;
+    });
+
+    bruchList.innerHTML = html;
+
+  } catch (e) {
+    console.error("LOAD BRUCH ERROR:", e);
+    if (bruchList) {
+      bruchList.innerHTML = '<div class="muted">Error loading</div>';
+    }
+  }
 }
 
 async function loadBruch() {
