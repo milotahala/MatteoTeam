@@ -1552,55 +1552,48 @@ ${lastHoursPayload.details.join("\n")}`;
     $("btnSaveHaccp").addEventListener("click", saveHaccp);
     $("btnPrintMonthHaccp").addEventListener("click", printMonthHaccp);
 
-    $("btnSubmitUrlaub").addEventListener("click", submitUrlaub);
-    $("btnSaveBruch").addEventListener("click", async () => {
+    $("btnSubmitUrlaub").addEventListener("click", 
+      $("btnSaveBruch").addEventListener("click", async () => {
   try {
     if (!currentUser) return alert("Login first");
 
-    const entry = {
-      date: bruchDate.value,
-      product: bruchProduct.value.trim(),
-      qty: bruchQty.value,
-      reason: bruchReason.value.trim(),
-      by: currentUser.email || currentUser.uid,
-      createdAt: new Date().toISOString()
-    };
+    const date = $("bruchDate").value;
+    const product = $("bruchProduct").value.trim();
+    const qty = Number($("bruchQty").value || 0);
+    const reason = $("bruchReason").value.trim();
 
-    if (!entry.date || !entry.product || !entry.qty || !entry.reason) {
+    if (!date || !product || !qty) {
       return alert("Plotëso të gjitha!");
     }
-const date = $("bruchDate").value;
-const product = $("bruchProduct").value.trim();
-const qty = Number($("bruchQty").value || 0);
-const reason = $("bruchReason").value.trim();
+
     const monthKey = getMonthKey(date);
-const entryId = Date.now().toString();
-const ref = doc(db, "bruchMonate", monthKey, "items", entryId);
-const snap = await getDoc(ref);
+    const ref = doc(db, "bruchMonate", monthKey);
+    const snap = await getDoc(ref);
 
     let items = [];
     if (snap.exists()) {
       items = snap.data().items || [];
     }
-const entry = {
-  date,
-  product,
-  qty,
-  reason,
-  user: currentProfile?.name || currentUser?.email || "Unknown",
-  createdAt: new Date().toISOString()
-};
+
+    const entry = {
+      date,
+      product,
+      qty,
+      reason,
+      user: currentProfile?.name || currentUser?.email || "Unknown",
+      createdAt: new Date().toISOString()
+    };
+
     items.push(entry);
 
     await setDoc(ref, { items }, { merge: true });
 
-    bruchProduct.value = "";
-    bruchQty.value = "";
-    bruchReason.value = "";
+    $("bruchProduct").value = "";
+    $("bruchQty").value = "";
+    $("bruchReason").value = "";
 
     await loadBruch();
-    alert("U ruajt ✔");
-
+    alert("U ruajt ✅");
   } catch (err) {
     console.error("SAVE BRUCH ERROR:", err);
     alert("Gabim: " + err.message);
