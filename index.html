@@ -1582,7 +1582,14 @@ const snap = await getDoc(ref);
     if (snap.exists()) {
       items = snap.data().items || [];
     }
-
+const entry = {
+  date,
+  product,
+  qty,
+  reason,
+  user: currentProfile?.name || currentUser?.email || "Unknown",
+  createdAt: new Date().toISOString()
+};
     items.push(entry);
 
     await setDoc(ref, { items }, { merge: true });
