@@ -1595,7 +1595,100 @@ ${lastHoursPayload.details.join("\n")}`;
     alert("Gabim: " + err.message);
   }
 });
-    $("btnPrintMonthBruch").addEventListener("click", printMonthBruch);
+   $("btnPrintMonthBruch").addEventListener("click", () => {
+  const monthInput = $("bruchMonth")?.value || "";
+  if (!monthInput) {
+    alert("Zgjidh muajin");
+    return;
+  }
+
+  const filtered = bruchEntries.filter(e => e.date?.startsWith(monthInput));
+
+  let total = 0;
+  filtered.forEach(e => {
+    total += Number(e.qty) || 0;
+  });
+
+  const html = `
+    <html>
+    <head>
+      <title>Bruchliste</title>
+      <style>
+        body { font-family: Arial; padding: 30px; }
+        h1 { margin-bottom: 5px; }
+        .sub { margin-bottom: 20px; color: #555; }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+
+        th, td {
+          border: 1px solid #ccc;
+          padding: 10px;
+          text-align: left;
+        }
+
+        th {
+          background: #f2f2f2;
+        }
+
+        .footer {
+          margin-top: 40px;
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .sign {
+          margin-top: 60px;
+        }
+      </style>
+    </head>
+
+    <body>
+      <h1>Pizzeria Ristorante Matteo GmbH</h1>
+      <div class="sub">Bruchliste – ${monthInput}</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Produkt</th>
+            <th>Menge</th>
+            <th>Grund</th>
+            <th>Von</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(e => `
+            <tr>
+              <td>${e.date}</td>
+              <td>${e.product}</td>
+              <td>${e.qty}</td>
+              <td>${e.reason}</td>
+              <td>${e.user || ""}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+
+      <div class="footer">
+        <div><strong>Total Menge:</strong> ${total}</div>
+        <div class="sign">
+          _________________________ <br>
+          Unterschrift
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const win = window.open("", "_blank");
+  win.document.write(html);
+  win.document.close();
+  win.print();
+});
 
     $("btnPrint").addEventListener("click", ()=> window.print());
 
