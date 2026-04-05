@@ -1611,7 +1611,7 @@ function getMonthKey(dateStr) {
     return;
   }
 
-  const filtered = bruchEntries.filter(e => e.date?.startsWith(monthInput));
+  const filtered = bruchEntries.filter(e => getMonthKey(e.date) === monthInput);
 
   let total = 0;
   filtered.forEach(e => {
@@ -1626,35 +1626,13 @@ function getMonthKey(dateStr) {
         body { font-family: Arial; padding: 30px; }
         h1 { margin-bottom: 5px; }
         .sub { margin-bottom: 20px; color: #555; }
-
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 10px;
-        }
-
-        th, td {
-          border: 1px solid #ccc;
-          padding: 10px;
-          text-align: left;
-        }
-
-        th {
-          background: #f2f2f2;
-        }
-
-        .footer {
-          margin-top: 40px;
-          display: flex;
-          justify-content: space-between;
-        }
-
-        .sign {
-          margin-top: 60px;
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background: #f2f2f2; }
+        .footer { margin-top: 40px; display: flex; justify-content: space-between; }
+        .sign { margin-top: 60px; }
       </style>
     </head>
-
     <body>
       <h1>Pizzeria Ristorante Matteo GmbH</h1>
       <div class="sub">Bruchliste – ${monthInput}</div>
@@ -1672,11 +1650,11 @@ function getMonthKey(dateStr) {
         <tbody>
           ${filtered.map(e => `
             <tr>
-              <td>${e.date}</td>
-              <td>${e.product}</td>
-              <td>${e.qty}</td>
-              <td>${e.reason}</td>
-              <td>${e.user || ""}</td>
+              <td>${e.date || ""}</td>
+              <td>${e.product || e.item || ""}</td>
+              <td>${e.qty || ""}</td>
+              <td>${e.reason || ""}</td>
+              <td>${e.user || e.by || ""}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -1698,77 +1676,6 @@ function getMonthKey(dateStr) {
   win.document.close();
   win.print();
 });
-
-    $("btnPrint").addEventListener("click", ()=> window.print());
-
-    onAuthStateChanged(auth, async (user)=>{
-      currentUser = user || null;
-      if(!user){
-        currentProfile = null;
-        $("authScreen").classList.remove("hidden");
-        $("appShell").classList.add("hidden");
-        return;
-      }
-
-      try{
-        currentProfile = await ensureUserProfile(user);
-        $("authScreen").classList.add("hidden");
-        $("appShell").classList.remove("hidden");
-        await bootstrapApp();
-      }catch(err){
-        console.error(err);
-        showMsg("Init Fehler: " + err.message);
-      }
-    });
-let bruchEntries = [];
-
-function renderBruchTable() {
-  const body = document.getElementById("bruchBody");
-  if (!body) return;
-
-  body.innerHTML = "";
-
-  bruchEntries.forEach((entry, index) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${entry.date || ""}</td>
-      <td>${entry.item || ""}</td>
-      <td>${entry.qty || ""}</td>
-      <td>${entry.reason || ""}</td>
-      <td><button onclick="deleteBruchEntry(${index})">X</button></td>
-    `;
-    body.appendChild(tr);
-  });
-}
-
-window.deleteBruchEntry = function(index) {
-  bruchEntries.splice(index, 1);
-  renderBruchTable();
-};
-
-function initBruch() {
-  const btn = document.getElementById("btnAddBruch");
-  if (!btn) return;
-
-  btn.addEventListener("click", () => {
-    const date = document.getElementById("bruchDate")?.value || "";
-    const item = document.getElementById("bruchItem")?.value.trim() || "";
-    const qty = document.getElementById("bruchQty")?.value || "";
-    const reason = document.getElementById("bruchReason")?.value.trim() || "";
-
-    if (!item) {
-      alert("Bitte Artikel eingeben");
-      return;
-    }
-
-    bruchEntries.push({ date, item, qty, reason });
-    renderBruchTable();
-
-    document.getElementById("bruchItem").value = "";
-    document.getElementById("bruchQty").value = "";
-    document.getElementById("bruchReason").value = "";
-  });
-}
     window.dbg = { auth, db };
   </script>
 </body>
