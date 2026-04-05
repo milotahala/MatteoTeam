@@ -1570,9 +1570,10 @@ ${lastHoursPayload.details.join("\n")}`;
       return alert("Plotëso të gjitha!");
     }
 
-    const key = getMonthKey();
-    const ref = doc(db, "bruchMonate", key);
-    const snap = await getDoc(ref);
+    const monthKey = getMonthKey(date);
+const entryId = Date.now().toString();
+const ref = doc(db, "bruchMonate", monthKey, "items", entryId);
+const snap = await getDoc(ref);
 
     let items = [];
     if (snap.exists()) {
