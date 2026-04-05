@@ -1595,6 +1595,10 @@ ${lastHoursPayload.details.join("\n")}`;
     alert("Gabim: " + err.message);
   }
 });
+function getMonthKey(dateStr) {
+  if (!dateStr) return "";
+  return String(dateStr).slice(0, 7);
+}
    $("btnPrintMonthBruch").addEventListener("click", () => {
   const monthInput = $("bruchMonth")?.value || "";
   if (!monthInput) {
