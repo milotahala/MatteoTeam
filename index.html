@@ -1618,7 +1618,55 @@ ${lastHoursPayload.details.join("\n")}`;
         showMsg("Init Fehler: " + err.message);
       }
     });
+let bruchEntries = [];
 
+function renderBruchTable() {
+  const body = document.getElementById("bruchBody");
+  if (!body) return;
+
+  body.innerHTML = "";
+
+  bruchEntries.forEach((entry, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${entry.date || ""}</td>
+      <td>${entry.item || ""}</td>
+      <td>${entry.qty || ""}</td>
+      <td>${entry.reason || ""}</td>
+      <td><button onclick="deleteBruchEntry(${index})">X</button></td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+window.deleteBruchEntry = function(index) {
+  bruchEntries.splice(index, 1);
+  renderBruchTable();
+};
+
+function initBruch() {
+  const btn = document.getElementById("btnAddBruch");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    const date = document.getElementById("bruchDate")?.value || "";
+    const item = document.getElementById("bruchItem")?.value.trim() || "";
+    const qty = document.getElementById("bruchQty")?.value || "";
+    const reason = document.getElementById("bruchReason")?.value.trim() || "";
+
+    if (!item) {
+      alert("Bitte Artikel eingeben");
+      return;
+    }
+
+    bruchEntries.push({ date, item, qty, reason });
+    renderBruchTable();
+
+    document.getElementById("bruchItem").value = "";
+    document.getElementById("bruchQty").value = "";
+    document.getElementById("bruchReason").value = "";
+  });
+}
     window.dbg = { auth, db };
   </script>
 </body>
