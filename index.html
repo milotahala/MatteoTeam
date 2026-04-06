@@ -697,11 +697,28 @@
     }
 function getMonthKey(dateStr){
   if(!dateStr) return "";
-  const parts = dateStr.split(".");
-  if(parts.length !== 3) return "";
-  const mm = parts[1].padStart(2, "0");
-  const yyyy = parts[2];
-  return `${yyyy}-${mm}`;
+
+  const clean = dateStr.trim();
+
+  // format: dd.mm.yyyy
+  if(clean.includes(".")){
+    const parts = clean.split(".");
+    if(parts.length === 3){
+      const mm = parts[1].padStart(2, "0");
+      const yyyy = parts[2];
+      return `${yyyy}-${mm}`;
+    }
+  }
+
+  // fallback nëse vjen format tjetër
+  const d = new Date(clean);
+  if(!isNaN(d)){
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const yyyy = d.getFullYear();
+    return `${yyyy}-${mm}`;
+  }
+
+  return "";
 }
     function openView(id){
       document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
