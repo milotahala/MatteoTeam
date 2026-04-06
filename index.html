@@ -1578,17 +1578,28 @@ ${lastHoursPayload.details.join("\n")}`;
     }
 
     const key = getMonthKey(entry.date);
-    const ref = doc(db, "bruchMonate", key);
-    const snap = await getDoc(ref);
 
-    let items = [];
-    if (snap.exists()) {
-      items = snap.data().items || [];
-    }
+if(!key){
+  alert("Gabim me daten!");
+  return;
+}
 
-    items.push(entry);
+const ref = doc(db, "bruchMonate", key);
 
-    await setDoc(ref, { items }, { merge: true });
+let items = [];
+
+try {
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    items = snap.data().items || [];
+  }
+} catch(e){
+  console.log("doc nuk ekziston ende");
+}
+
+items.push(entry);
+
+await setDoc(ref, { items });
 
     bruchProduct.value = "";
     bruchQty.value = "";
