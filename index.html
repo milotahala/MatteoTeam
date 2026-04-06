@@ -1409,26 +1409,43 @@ ${lastHoursPayload.details.join("\n")}`;
     }
 
     async function loadBruch(){
-      const qs = await getDocs(collection(db, "bruchliste"));
-      bruchCache = qs.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b)=> (b.date || "").localeCompare(a.date || ""));
-      const wrap = $("bruchList");
+  const qs = await getDocs(collection(db, "bruchMonate"));
+  const wrap = $("bruchList");
 
-      if(!bruchCache.length){
-        wrap.innerHTML = `<div class="tiny muted">Keine Einträge.</div>`;
-        return;
-      }
+  bruchCache = [];
 
-      wrap.innerHTML = bruchCache.map(r => `
-        <div class="item">
-          <div class="row">
-            <strong>${htmlEscape(r.product || "-")}</strong>
-            <span class="pill warn">${Number(r.qty || 0).toFixed(2)}</span>
-            <span class="right tiny muted">${htmlEscape(r.date || "")}</span>
-          </div>
-          <div class="tiny muted">Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || "-")}</div>
-        </div>
-      `).join("");
-    }
+  qs.forEach(docSnap => {
+    const data = docSnap.data() || {};
+    const items = Array.isArray(data.items) ? data.items : [];
+    items.forEach(item => {
+      bruchCache.push(item);
+    });
+  });
+
+  bruchCache.sort((a, b) => {
+    const da = new Date((a.createdAt || "").toString());
+    const dbb = new Date((b.createdAt || "").toString());
+    return dbb - da;
+  });
+
+  if(!bruchCache.length){
+    wrap.innerHTML = `<div class="tiny muted">Nuk ka të dhëna.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = bruchCache.map(r => `
+    <div class="item">
+      <div class="row">
+        <strong>${htmlEscape(r.product || "-")}</strong>
+        <span class="pill warn">${Number(r.qty || 0).toFixed(2)}</span>
+        <span class="right tiny muted">${htmlEscape(r.date || "")}</span>
+      </div>
+      <div class="tiny muted">
+        Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.by || "-")}
+      </div>
+    </div>
+  `).join("");
+}
 
     async function printMonthBruch(){
       if(!isAdmin()) return showMsg("Nur Admin.");
