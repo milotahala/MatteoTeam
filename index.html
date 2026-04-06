@@ -1552,22 +1552,26 @@ ${lastHoursPayload.details.join("\n")}`;
     $("btnSaveHaccp").addEventListener("click", saveHaccp);
     $("btnPrintMonthHaccp").addEventListener("click", printMonthHaccp);
 
-    $("btnSubmitUrlaub").addEventListener("click", 
-  $("btnSaveBruch").addEventListener("click", async () => {
+    $("btnSubmitUrlaub").addEventListener("click", submitUrlaub);
+    $("btnSaveBruch").addEventListener("click", async () => {
   try {
     if (!currentUser) return alert("Login first");
 
-    const date = $("bruchDate").value;
-    const product = $("bruchProduct").value.trim();
-    const qty = Number($("bruchQty").value || 0);
-    const reason = $("bruchReason").value.trim();
+    const entry = {
+      date: bruchDate.value,
+      product: bruchProduct.value.trim(),
+      qty: bruchQty.value,
+      reason: bruchReason.value.trim(),
+      by: currentUser.email || currentUser.uid,
+      createdAt: new Date().toISOString()
+    };
 
-    if (!date || !product || !qty) {
+    if (!entry.date || !entry.product || !entry.qty || !entry.reason) {
       return alert("Plotëso të gjitha!");
     }
 
-    const monthKey = getMonthKey(date);
-    const ref = doc(db, "bruchMonate", monthKey);
+    const key = getMonthKey();
+    const ref = doc(db, "bruchMonate", key);
     const snap = await getDoc(ref);
 
     let items = [];
@@ -1575,107 +1579,94 @@ ${lastHoursPayload.details.join("\n")}`;
       items = snap.data().items || [];
     }
 
-    const entry = {
-      date,
-      product,
-      qty,
-      reason,
-      user: currentProfile?.name || currentUser?.email || "Unknown",
-      createdAt: new Date().toISOString()
-    };
-
     items.push(entry);
 
     await setDoc(ref, { items }, { merge: true });
 
-    $("bruchProduct").value = "";
-    $("bruchQty").value = "";
-    $("bruchReason").value = "";
+    bruchProduct.value = "";
+    bruchQty.value = "";
+    bruchReason.value = "";
 
     await loadBruch();
-    alert("U ruajt ✅");
+    alert("U ruajt ✔");
+
   } catch (err) {
     console.error("SAVE BRUCH ERROR:", err);
     alert("Gabim: " + err.message);
   }
 });
+    $("btnPrintMonthBruch").addEventListener("click", printMonthBruch);
 
-function getMonthKey(dateStr) {
-  if (!dateStr) return "";
-  return String(dateStr).slice(0, 7);
-}
-   $("btnPrintMonthBruch").addEventListener("click", () => {
-  const monthInput = $("bruchMonth")?.value || "";
-  if (!monthInput) {
-    alert("Zgjidh muajin");
-    return;
-  }
+    $("btnPrint").addEventListener("click", ()=> window.print());
 
-  const filtered = bruchEntries.filter(e => getMonthKey(e.date) === monthInput);
+    onAuthStateChanged(auth, async (user)=>{
+      currentUser = user || null;
+      if(!user){
+        currentProfile = null;
+        $("authScreen").classList.remove("hidden");
+        $("appShell").classList.add("hidden");
+        return;
+      }
 
-  let total = 0;
-  filtered.forEach(e => {
-    total += Number(e.qty) || 0;
+      try{
+        currentProfile = await ensureUserProfile(user);
+        $("authScreen").classList.add("hidden");
+        $("appShell").classList.remove("hidden");
+        await bootstrapApp();
+      }catch(err){
+        console.error(err);
+        showMsg("Init Fehler: " + err.message);
+      }
+    });
+let bruchEntries = [];
+
+function renderBruchTable() {
+  const body = document.getElementById("bruchBody");
+  if (!body) return;
+
+  body.innerHTML = "";
+
+  bruchEntries.forEach((entry, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${entry.date || ""}</td>
+      <td>${entry.item || ""}</td>
+      <td>${entry.qty || ""}</td>
+      <td>${entry.reason || ""}</td>
+      <td><button onclick="deleteBruchEntry(${index})">X</button></td>
+    `;
+    body.appendChild(tr);
   });
+}
 
-  const html = `
-    <html>
-    <head>
-      <title>Bruchliste</title>
-      <style>
-        body { font-family: Arial; padding: 30px; }
-        h1 { margin-bottom: 5px; }
-        .sub { margin-bottom: 20px; color: #555; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-        th { background: #f2f2f2; }
-        .footer { margin-top: 40px; display: flex; justify-content: space-between; }
-        .sign { margin-top: 60px; }
-      </style>
-    </head>
-    <body>
-      <h1>Pizzeria Ristorante Matteo GmbH</h1>
-      <div class="sub">Bruchliste – ${monthInput}</div>
+window.deleteBruchEntry = function(index) {
+  bruchEntries.splice(index, 1);
+  renderBruchTable();
+};
 
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Produkt</th>
-            <th>Menge</th>
-            <th>Grund</th>
-            <th>Von</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${filtered.map(e => `
-            <tr>
-              <td>${e.date || ""}</td>
-              <td>${e.product || e.item || ""}</td>
-              <td>${e.qty || ""}</td>
-              <td>${e.reason || ""}</td>
-              <td>${e.user || e.by || ""}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
+function initBruch() {
+  const btn = document.getElementById("btnAddBruch");
+  if (!btn) return;
 
-      <div class="footer">
-        <div><strong>Total Menge:</strong> ${total}</div>
-        <div class="sign">
-          _________________________ <br>
-          Unterschrift
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+  btn.addEventListener("click", () => {
+    const date = document.getElementById("bruchDate")?.value || "";
+    const item = document.getElementById("bruchItem")?.value.trim() || "";
+    const qty = document.getElementById("bruchQty")?.value || "";
+    const reason = document.getElementById("bruchReason")?.value.trim() || "";
 
-  const win = window.open("", "_blank");
-  win.document.write(html);
-  win.document.close();
-  win.print();
-});
+    if (!item) {
+      alert("Bitte Artikel eingeben");
+      return;
+    }
+
+    bruchEntries.push({ date, item, qty, reason });
+    renderBruchTable();
+
+    document.getElementById("bruchItem").value = "";
+    document.getElementById("bruchQty").value = "";
+    document.getElementById("bruchReason").value = "";
+  });
+}
     window.dbg = { auth, db };
   </script>
 </body>
