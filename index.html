@@ -1599,13 +1599,13 @@ ${lastHoursPayload.details.join("\n")}`;
     if (!currentUser) return alert("Login first");
 
     const entry = {
-      date: bruchDate.value,
-      product: bruchProduct.value.trim(),
-      qty: bruchQty.value,
-      reason: bruchReason.value.trim(),
-      by: currentUser.email || currentUser.uid,
-      createdAt: new Date().toISOString()
-    };
+  date: bruchDate.value,
+  product: bruchProduct.value.trim(),
+  qty: bruchQty.value,
+  reason: bruchReason.value.trim(),
+  by: currentProfile?.name || currentProfile?.fullName || currentUser?.email || currentUser?.uid || "-",
+  createdAt: new Date().toISOString()
+};
 
     if (!entry.date || !entry.product || !entry.qty || !entry.reason) {
       return alert("Plotëso të gjitha!");
