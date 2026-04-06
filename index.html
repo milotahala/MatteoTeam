@@ -695,7 +695,14 @@
     function showMsg(msg){
       alert(msg);
     }
-
+function getMonthKey(dateStr){
+  if(!dateStr) return "";
+  const parts = dateStr.split(".");
+  if(parts.length !== 3) return "";
+  const mm = parts[1].padStart(2, "0");
+  const yyyy = parts[2];
+  return `${yyyy}-${mm}`;
+}
     function openView(id){
       document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
       const view = document.getElementById(id);
