@@ -1603,7 +1603,7 @@ ${lastHoursPayload.details.join("\n")}`;
   product: bruchProduct.value.trim(),
   qty: bruchQty.value,
   reason: bruchReason.value.trim(),
-  by: currentProfile?.name || currentProfile?.fullName || currentUser?.email || currentUser?.uid || "-",
+  by: currentProfile?.displayName || currentProfile?.username || currentProfile?.email || currentUser?.email || "Unbekannt",
   createdAt: new Date().toISOString()
 };
 
