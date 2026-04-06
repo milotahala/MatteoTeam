@@ -1417,15 +1417,15 @@ ${lastHoursPayload.details.join("\n")}`;
   qs.forEach(docSnap => {
     const data = docSnap.data() || {};
     const items = Array.isArray(data.items) ? data.items : [];
+
     items.forEach(item => {
       bruchCache.push(item);
     });
   });
 
+  // sort newest first
   bruchCache.sort((a, b) => {
-    const da = new Date((a.createdAt || "").toString());
-    const dbb = new Date((b.createdAt || "").toString());
-    return dbb - da;
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
   });
 
   if(!bruchCache.length){
