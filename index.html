@@ -1597,7 +1597,8 @@ ${lastHoursPayload.details.join("\n")}`;
     $("btnSaveBruch").addEventListener("click", async () => {
   try {
     if (!currentUser) return alert("Login first");
-
+console.log("currentProfile =", currentProfile);
+console.log("currentUser =", currentUser);
     const entry = {
   date: bruchDate.value,
   product: bruchProduct.value.trim(),
