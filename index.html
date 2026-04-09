@@ -1391,30 +1391,20 @@ ${lastHoursPayload.details.join("\n")}`;
       if(!product) return showMsg("Produkt fehlt.");
       if(qty <= 0) return showMsg("Menge fehlt.");
 
-     const user = auth.currentUser;
-let byName = "Pa emer";
+    let byName =
+  currentProfile?.name ||
+  currentProfile?.fullName ||
+  currentProfile?.displayName ||
+  currentUser?.email?.split("@")[0] ||
+  "Pa emer";
 
-if (user?.uid) {
-  try {
-    const userSnap = await getDoc(doc(db, "staff", user.uid));
-    if (userSnap.exists()) {
-      const u = userSnap.data() || {};
-      byName = u.name || u.fullName || u.displayName || "Pa emer";
-    }
-  } catch (e) {
-    console.error("Bruch user load error:", e);
-  }
-}
-if (!byName || byName === "Pa emer") {
-  byName = user?.email?.split("@")[0] || "Pa emer";
-}
 await addDoc(collection(db, "bruchliste"), {
   date,
   product,
   qty,
   reason,
-  byUid: user?.uid || "",
-  byName,
+  byUid: currentUser?.uid || "",
+  byName: byName,
   createdAt: serverTimestamp()
 });
 
