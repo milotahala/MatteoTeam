@@ -1392,7 +1392,7 @@ ${lastHoursPayload.details.join("\n")}`;
       if(qty <= 0) return showMsg("Menge fehlt.");
 
     let byName =
-  currentProfile?.name ||
+  currentProfile?.name ||"Milot-Test";
   currentProfile?.fullName ||
   currentProfile?.displayName ||
   currentUser?.email?.split("@")[0] ||
