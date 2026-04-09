@@ -1425,7 +1425,7 @@ await addDoc(collection(db, "bruchliste"), {
     }
 
     async function loadBruch(){
-  const qs = await getDocs(collection(db, "bruchMonate"));
+  const qs = await getDocs(collection(db, "bruchliste"));
   const wrap = $("bruchList");
 
   bruchCache = [];
@@ -1433,23 +1433,37 @@ await addDoc(collection(db, "bruchliste"), {
   qs.forEach(docSnap => {
     const data = docSnap.data() || {};
 
-bruchCache.push({
-  date: data.date || "",
-  product: data.product || "",
-  qty: Number(data.qty || 0),
-  reason: data.reason || "",
-  byName: data.byName || "-",
-  createdAt: data.createdAt || null
-});
+    // 🟢 nëse është format i ri
+    if (data.product) {
+      bruchCache.push({
+        date: data.date || "",
+        product: data.product || "",
+        qty: Number(data.qty || 0),
+        reason: data.reason || "",
+        byName: data.byName || "-",
+        createdAt: data.createdAt || null
+      });
+    }
+
+    // 🟡 nëse është format i vjetër (items[])
+    if (Array.isArray(data.items)) {
+      data.items.forEach(item => {
+        bruchCache.push({
+          date: item.date || "",
+          product: item.product || "",
+          qty: Number(item.qty || 0),
+          reason: item.reason || "",
+          byName: item.byName || "-",
+          createdAt: item.createdAt || null
+        });
+      });
+    }
   });
 
-  // sort newest first
-  bruchCache.sort((a, b) => {
-    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-  });
+  bruchCache.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
   if(!bruchCache.length){
-    wrap.innerHTML = `<div class="tiny muted">Nuk ka të dhëna.</div>`;
+    wrap.innerHTML = `<div class="tiny muted">Keine Einträge</div>`;
     return;
   }
 
@@ -1461,7 +1475,7 @@ bruchCache.push({
         <span class="right tiny muted">${htmlEscape(r.date || "")}</span>
       </div>
       <div class="tiny muted">
-        Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.by || "-")}
+        Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || "-")}
       </div>
     </div>
   `).join("");
