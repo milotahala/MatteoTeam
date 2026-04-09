@@ -1542,28 +1542,29 @@ await addDoc(collection(db, "bruchliste"), {
   `;
 
   rows.forEach(r => {
-    html += `
-      <tr>
-        <td>${r.date}</td>
-        <td>${r.product}</td>
-        <td>${r.qty.toFixed(2)}</td>
-        <td>${r.reason}</td>
-        <td>${r.byName}</td>
-      </tr>
-    `;
-  });
-
   html += `
-        </tbody>
-      </table>
-    </body>
-    </html>
+    <tr>
+      <td>${r.date}</td>
+      <td>${r.product}</td>
+      <td>${Number(r.qty || 0).toFixed(2)}</td>
+      <td>${r.reason}</td>
+      <td>${r.byName}</td>
+    </tr>
   `;
+});
 
-  const w = window.open("", "_blank");
-  w.document.write(html);
-  w.document.close();
-  w.print();
+html += `
+  </tbody>
+</table>
+</body>
+</html>
+`;
+
+const w = window.open("", "_blank");
+if (!w) return;
+w.document.write(html);
+w.document.close();
+w.print();
 }
 
     async function loadDashboard(){
