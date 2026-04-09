@@ -1397,7 +1397,7 @@ ${lastHoursPayload.details.join("\n")}`;
         qty,
         reason,
         byUid: currentUser.uid,
-        byName: currentProfile.name,
+        byName: currentProfile?.name || currentUser?.email?.split("@")[0] || "Pa emer",
         createdAt: serverTimestamp()
       });
 
