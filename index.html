@@ -1483,13 +1483,11 @@ await addDoc(collection(db, "bruchliste"), {
 
     async function printBruchMonth(){
   const qs = await getDocs(collection(db, "bruchliste"));
-
   let rows = [];
 
   qs.forEach(docSnap => {
     const data = docSnap.data() || {};
 
-    // format i ri
     if (data.product) {
       rows.push({
         date: data.date || "",
@@ -1500,7 +1498,6 @@ await addDoc(collection(db, "bruchliste"), {
       });
     }
 
-    // format i vjetër
     if (Array.isArray(data.items)) {
       data.items.forEach(item => {
         rows.push({
@@ -1514,57 +1511,36 @@ await addDoc(collection(db, "bruchliste"), {
     }
   });
 
-  // sort
-  rows.sort((a,b) => (a.date || "").localeCompare(b.date || ""));
+  rows.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 
-  let html = `
-    <html>
-    <head>
-      <style>
-        table { width:100%; border-collapse:collapse; }
-        th, td { border:1px solid #ccc; padding:8px; text-align:left; }
-        th { background:#f4f4f4; }
-      </style>
-    </head>
-    <body>
-      <h2>Pizzeria Ristorante Matteo GmbH – Bruchliste</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Produkt</th>
-            <th>Menge</th>
-            <th>Grund</th>
-            <th>Von</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
+  let html = '<html><head><style>' +
+    'body{font-family:Arial,sans-serif;padding:24px;}' +
+    'table{width:100%;border-collapse:collapse;}' +
+    'th,td{border:1px solid #ccc;padding:8px;text-align:left;}' +
+    'th{background:#f4f4f4;}' +
+    '</style></head><body>' +
+    '<h2>Pizzeria Ristorante Matteo GmbH – Bruchliste</h2>' +
+    '<table><thead><tr>' +
+    '<th>Date</th><th>Produkt</th><th>Menge</th><th>Grund</th><th>Von</th>' +
+    '</tr></thead><tbody>';
 
   rows.forEach(r => {
-  html += `
-    <tr>
-      <td>${r.date}</td>
-      <td>${r.product}</td>
-      <td>${Number(r.qty || 0).toFixed(2)}</td>
-      <td>${r.reason}</td>
-      <td>${r.byName}</td>
-    </tr>
-  `;
-});
+    html += '<tr>' +
+      '<td>' + htmlEscape(r.date || "") + '</td>' +
+      '<td>' + htmlEscape(r.product || "") + '</td>' +
+      '<td>' + Number(r.qty || 0).toFixed(2) + '</td>' +
+      '<td>' + htmlEscape(r.reason || "") + '</td>' +
+      '<td>' + htmlEscape(r.byName || "-") + '</td>' +
+      '</tr>';
+  });
 
-html += `
-  </tbody>
-</table>
-</body>
-</html>
-`;
+  html += '</tbody></table></body></html>';
 
-const w = window.open("", "_blank");
-if (!w) return;
-w.document.write(html);
-w.document.close();
-w.print();
+  const w = window.open("", "_blank");
+  if (!w) return;
+  w.document.write(html);
+  w.document.close();
+  w.print();
 }
 
     async function loadDashboard(){
