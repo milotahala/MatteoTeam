@@ -1396,7 +1396,7 @@ let byName = "Pa emer";
 
 if (user?.uid) {
   try {
-    const userSnap = await getDoc(doc(db, "users", user.uid));
+    const userSnap = await getDoc(doc(db, "staff", user.uid));
     if (userSnap.exists()) {
       const u = userSnap.data() || {};
       byName = u.name || u.fullName || u.displayName || "Pa emer";
