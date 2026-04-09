@@ -1432,11 +1432,14 @@ await addDoc(collection(db, "bruchliste"), {
 
   qs.forEach(docSnap => {
     const data = docSnap.data() || {};
-    const items = Array.isArray(data.items) ? data.items : [];
 
-    items.forEach(item => {
-      bruchCache.push(item);
-    });
+bruchCache.push({
+  date: data.date || "",
+  product: data.product || "",
+  qty: Number(data.qty || 0),
+  reason: data.reason || "",
+  byName: data.byName || "-"
+});
   });
 
   // sort newest first
