@@ -1391,12 +1391,21 @@ ${lastHoursPayload.details.join("\n")}`;
       if(!product) return showMsg("Produkt fehlt.");
       if(qty <= 0) return showMsg("Menge fehlt.");
 
-    let byName =
-  currentProfile?.name ||"Milot-Test";
-  currentProfile?.fullName ||
-  currentProfile?.displayName ||
-  currentUser?.email?.split("@")[0] ||
-  "Pa emer";
+   let byName = "Pa emer";
+
+try {
+  const snap = await getDoc(doc(db, "users", currentUser.uid));
+  if (snap.exists()) {
+    const u = snap.data() || {};
+    byName = u.name || u.fullName || u.displayName || byName;
+  }
+} catch (e) {
+  console.error("User load error:", e);
+}
+
+if (!byName || byName === "Pa emer") {
+  byName = currentUser?.email?.split("@")[0] || "Pa emer";
+}
 
 await addDoc(collection(db, "bruchliste"), {
   date,
