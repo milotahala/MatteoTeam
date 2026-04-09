@@ -1481,36 +1481,90 @@ await addDoc(collection(db, "bruchliste"), {
   `).join("");
 }
 
-    async function printMonthBruch(){
-      if(!isAdmin()) return showMsg("Nur Admin.");
-      const month = $("bruchMonth").value || monthStr();
-      const rows = bruchCache.filter(x => (x.date || "").startsWith(month)).sort((a,b)=> (a.date || "").localeCompare(b.date || ""));
+    async function printBruchMonth(){
+  const qs = await getDocs(collection(db, "bruchliste"));
 
-      let html = `<html><head><title>Bruchliste ${month}</title><style>
-        body{font-family:Arial,sans-serif;padding:20px}
-        table{width:100%;border-collapse:collapse}
-        th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:12px}
-        th{background:#f4f4f4}
-      </style></head><body>
-      <h2>Pizzeria Ristorante Matteo GmbH – Bruchliste ${month}</h2>
-      <table><thead><tr><th>Date</th><th>Produkt</th><th>Menge</th><th>Grund</th><th>Von</th></tr></thead><tbody>`;
+  let rows = [];
 
-      rows.forEach(r => {
-        html += `<tr>
-          <td>${htmlEscape(r.date || "")}</td>
-          <td>${htmlEscape(r.product || "")}</td>
-          <td>${Number(r.qty || 0).toFixed(2)}</td>
-          <td>${htmlEscape(r.reason || "")}</td>
-       <td>${htmlEscape(r.byName || r.von || r.byUid || "Pa emer")}</td>
-        </tr>`;
+  qs.forEach(docSnap => {
+    const data = docSnap.data() || {};
+
+    // format i ri
+    if (data.product) {
+      rows.push({
+        date: data.date || "",
+        product: data.product || "",
+        qty: Number(data.qty || 0),
+        reason: data.reason || "",
+        byName: data.byName || "-"
       });
-
-      html += `</tbody></table></body></html>`;
-      const w = window.open("", "_blank");
-      w.document.write(html);
-      w.document.close();
-      w.print();
     }
+
+    // format i vjetër
+    if (Array.isArray(data.items)) {
+      data.items.forEach(item => {
+        rows.push({
+          date: item.date || "",
+          product: item.product || "",
+          qty: Number(item.qty || 0),
+          reason: item.reason || "",
+          byName: item.byName || "-"
+        });
+      });
+    }
+  });
+
+  // sort
+  rows.sort((a,b) => (a.date || "").localeCompare(b.date || ""));
+
+  let html = `
+    <html>
+    <head>
+      <style>
+        table { width:100%; border-collapse:collapse; }
+        th, td { border:1px solid #ccc; padding:8px; text-align:left; }
+        th { background:#f4f4f4; }
+      </style>
+    </head>
+    <body>
+      <h2>Pizzeria Ristorante Matteo GmbH – Bruchliste</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Produkt</th>
+            <th>Menge</th>
+            <th>Grund</th>
+            <th>Von</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  rows.forEach(r => {
+    html += `
+      <tr>
+        <td>${r.date}</td>
+        <td>${r.product}</td>
+        <td>${r.qty.toFixed(2)}</td>
+        <td>${r.reason}</td>
+        <td>${r.byName}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+
+  const w = window.open("", "_blank");
+  w.document.write(html);
+  w.document.close();
+  w.print();
+}
 
     async function loadDashboard(){
       $("statStaff").textContent = String(staffCache.length);
