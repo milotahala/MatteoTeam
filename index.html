@@ -1413,7 +1413,7 @@ await addDoc(collection(db, "bruchliste"), {
   qty,
   reason,
   byUid: currentUser?.uid || "",
-  byName: byName,
+  byName: "MILOT-TEST",
   createdAt: serverTimestamp()
 });
 
