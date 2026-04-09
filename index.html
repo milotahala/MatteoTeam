@@ -1433,7 +1433,6 @@ await addDoc(collection(db, "bruchliste"), {
   qs.forEach(docSnap => {
     const data = docSnap.data() || {};
 
-    // 🟢 nëse është format i ri
     if (data.product) {
       bruchCache.push({
         date: data.date || "",
@@ -1445,7 +1444,6 @@ await addDoc(collection(db, "bruchliste"), {
       });
     }
 
-    // 🟡 nëse është format i vjetër (items[])
     if (Array.isArray(data.items)) {
       data.items.forEach(item => {
         bruchCache.push({
@@ -1460,10 +1458,14 @@ await addDoc(collection(db, "bruchliste"), {
     }
   });
 
-  bruchCache.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  bruchCache.sort((a, b) => {
+    const ad = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+    const bd = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+    return bd - ad;
+  });
 
-  if(!bruchCache.length){
-    wrap.innerHTML = `<div class="tiny muted">Keine Einträge</div>`;
+  if (!bruchCache.length) {
+    wrap.innerHTML = '<div class="tiny muted">Keine Einträge</div>';
     return;
   }
 
@@ -1481,7 +1483,7 @@ await addDoc(collection(db, "bruchliste"), {
   `).join("");
 }
 
-    async function printBruchMonth(){
+async function printBruchMonth(){
   const qs = await getDocs(collection(db, "bruchliste"));
   let rows = [];
 
