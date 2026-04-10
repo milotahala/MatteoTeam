@@ -4,9 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MatteoTeam PRO</title>
+  <title>MatteoTeam PRO - Test statik</title>
   <style>
-    /* (Përmbledhje CSS të ngjashme me origjinalin, pa ndryshime të mëdha vizuale) */
     :root{
       --bg:#0f172a;
       --panel:#111827;
@@ -15,40 +14,80 @@
       --text:#e5e7eb;
       --muted:#94a3b8;
       --green:#22c55e;
-      --blue:#38bdf8;
-      --red:#ef4444;
-      --orange:#f59e0b;
       --radius:18px;
-      --shadow:0 12px 28px rgba(0,0,0,.25);
     }
     *{box-sizing:border-box}
-    html,body{
-      margin:0;padding:0;
-      background:linear-gradient(180deg,#0b1220,#0f172a 35%,#111827);
-      color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    }
-    button,input,select,textarea{font:inherit}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#0b1220,#0f172a 35%,#111827);color:var(--text);font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif}
     .hidden{display:none!important}
-    .app{max-width:1500px;margin:0 auto;padding:14px}
-    .card{ background:rgba(17,24,39,.92); border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow); padding:16px; }
-    /* Shtesa elemente të thjeshta UI */
-    .authWrap{ max-width:980px; margin:30px auto; display:grid; grid-template-columns:1.1fr .9fr; gap:16px; }
-    .hero{ padding:26px }
-    .hero h1{ margin:0 0 8px;font-size:34px }
-    .hero p{ color:var(--muted); line-height:1.6 }
-    .heroGrid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:18px; }
-    .mini{ padding:14px; border-radius:18px; background:#132033; border:1px solid var(--line); }
-    .authCard{ padding:22px }
-    .tabs{ display:flex; gap:8px; margin-bottom:14px }
-    .tabBtn,.navBtn,.btn,.btnDanger,.btnWarn,.ghost,.langBtn{ border:none; cursor:pointer; border-radius:14px; padding:10px 14px; font:inherit }
-    .tabBtn,.navBtn,.ghost,.langBtn{ background:#182536; color:var(--text); border:1px solid #324359 }
-    .tabBtn.active,.navBtn.active,.langBtn.active{ background:linear-gradient(135deg,#166534,#16a34a); border-color:transparent; }
-    .btn{ background:linear-gradient(135deg,#15803d,#22c55e); color:#05131f; font-weight:800; }
-    .btnDanger{ background:linear-gradient(135deg,#b91c1c,#ef4444); color:#fff; font-weight:800; }
-    .btnWarn{ background:linear-gradient(135deg,#b45309,#f59e0b); color:#fff; font-weight:800; }
-    .input,.select,.textarea{ width:100%; padding:12px 13px; border-radius:14px; border:1px solid #314159; background:#0f1a2b; color:var(--text); }
-    .textarea{ min-height:90px; resize:vertical }
-    .field{ margin-bottom:12px }
-    .label{ display:block; margin-bottom:7px; font-size:13px; color:var(--muted); }
-    .muted{ color:var(--muted) }
+    .app{max-width:1200px;margin:0 auto;padding:14px}
+    .card{background:rgba(17,24,39,.92);border:1px solid var(--line);border-radius:22px; padding:16px; margin:12px 0}
+    h1{margin:0 0 8px}
+    .btn{background:linear-gradient(135deg,#15803d,#22c55e);color:#05131f;border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
+    .input, .select, .textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #324359;background:#0f1a2b;color:#e5e7eb}
+    .field{margin-bottom:12px}
+    .muted{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="card" id="authScreen">
+      <h1>MatteoTeam PRO (Test statik)</h1>
+      <p class="muted">Ky version është një demonstrim statik për t’u testuar shfaqja e faqes. Nuk kërkon Firebase për të funksionuar.</p>
+
+      <div class="field">
+  
+      <label>Email</label>
+        <input class="input" type="email" placeholder="example@domain.com" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input class="input" type="password" placeholder="*****" />
+      </div>
+      <div class="row" style="display:flex;gap:10px">
+        <button class="btn" id="btnLogin" type="button">Login</button>
+        <button class="btn" id="btnRegister" type="button">Register</button>
+      </div>
+
+      <div class="tiny muted" style="margin-top:12px">
+        Për momentin, ky version është statik. Për të filluar me funksionalitetin e autentifikimit me Firebase, më tregoni dhe do të jap një version me Firebase.
+      </div>
+    </section>
+
+    <section class="card" id="appShell" style="display:none">
+      <div class="topbar">
+        <strong>MatteoTeam PRO</strong>
+        <button class="btn" id="btnLogout" type="button">Logout</button>
+      </div>
+      <div class="layout" style="display:grid;grid-template-columns:280px 1fr;gap:14px;margin-top:12px">
+        <aside class="card" aria-label="sidebar" style="min-height:200px">
+          <div class="navTitle" style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;color:#94a3b8">Navigation</div>
+          <button class="btn" style="width:100%;margin-bottom:6px" disabled>Dashboard</button>
+          <button class="btn" style="width:100%;margin-bottom:6px" disabled>Weekly Plan</button>
+          <button class="btn" style="width:100%;margin-bottom:6px" disabled>Staff</button>
+        </aside>
+        <main class="card" style="min-height:200px">
+          <h2 class="sectionTitle" style="margin:0 0 8px 0">Dashboard</h2>
+          <div class="sectionSub muted" style="margin-bottom:8px">Ky është një version demonstrues pa backend.</div>
+          <div class="grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <div class="card" style="padding:12px;border-radius:12px">Staff: 0</div>
+            <div class="card" style="padding:12px;border-radius:12px">Inventory: 0</div>
+            <div class="card" style="padding:12px;border-radius:12px">Urlaub: 0</div>
+            <div class="card" style="padding:12px;border-radius:12px">HACCP Today: 0/3</div>
+          </div>
+        </main>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Version statike: inicializimi minimal dhe hapja e app-it
+    document.getElementById("btnLogin").onclick = () => alert("Login butoni aktiv në versionin statik.");
+    document.getElementById("btnRegister").onclick = () => alert("Register butoni aktiv në versionin statik.");
+    document.getElementById("btnLogout").onclick = () => {
+      document.getElementById("authScreen").style.display = "";
+      document.getElementById("appShell").style.display = "none";
+      alert("Disa aplikacione të menaxhimit dëshirojnë autentifikim real. Përdor një vazhdim të vërtetë për të parë ndryshimet.");
+    };
+
+    // Lehtësohet shembulli: mund të ng
+
