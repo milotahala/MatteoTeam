@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
-<html lang="sq">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MatteoTeam PRO - Test statik</title>
+  <title>MatteoTeam PRO</title>
   <style>
     :root{
       --bg:#0f172a;
@@ -14,71 +13,1781 @@
       --text:#e5e7eb;
       --muted:#94a3b8;
       --green:#22c55e;
+      --blue:#38bdf8;
+      --red:#ef4444;
+      --orange:#f59e0b;
       --radius:18px;
+      --shadow:0 12px 28px rgba(0,0,0,.25);
     }
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:linear-gradient(180deg,#0b1220,#0f172a 35%,#111827);color:var(--text);font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif}
+    html,body{
+      margin:0;padding:0;
+      background:linear-gradient(180deg,#0b1220,#0f172a 35%,#111827);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+    button,input,select,textarea{font:inherit}
     .hidden{display:none!important}
-    .app{max-width:1200px;margin:0 auto;padding:14px}
-    .card{background:rgba(17,24,39,.92);border:1px solid var(--line);border-radius:22px; padding:16px; margin:12px 0}
-    h1{margin:0 0 8px}
-    .btn{background:linear-gradient(135deg,#15803d,#22c55e);color:#05131f;border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
-    .input, .select, .textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #324359;background:#0f1a2b;color:#e5e7eb}
+    .app{max-width:1500px;margin:0 auto;padding:14px}
+    .card{
+      background:rgba(17,24,39,.92);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+    }
+    .authWrap{
+      max-width:980px;
+      margin:30px auto;
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:16px;
+    }
+    .hero{padding:26px}
+    .hero h1{margin:0 0 8px;font-size:34px}
+    .hero p{color:var(--muted);line-height:1.6}
+    .heroGrid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-top:18px;
+    }
+    .mini{
+      padding:14px;
+      border-radius:18px;
+      background:#132033;
+      border:1px solid var(--line);
+    }
+    .authCard{padding:22px}
+    .tabs{display:flex;gap:8px;margin-bottom:14px}
+    .tabBtn,.navBtn,.btn,.btnDanger,.btnWarn,.ghost,.langBtn{
+      border:none;cursor:pointer;border-radius:14px;padding:10px 14px;font:inherit
+    }
+    .tabBtn,.navBtn,.ghost,.langBtn{
+      background:#182536;color:var(--text);border:1px solid #324359
+    }
+    .tabBtn.active,.navBtn.active,.langBtn.active{
+      background:linear-gradient(135deg,#166534,#16a34a);
+      border-color:transparent;
+    }
+    .btn{
+      background:linear-gradient(135deg,#15803d,#22c55e);
+      color:#05131f;
+      font-weight:800;
+    }
+    .btnDanger{
+      background:linear-gradient(135deg,#b91c1c,#ef4444);
+      color:#fff;
+      font-weight:800;
+    }
+    .btnWarn{
+      background:linear-gradient(135deg,#b45309,#f59e0b);
+      color:#fff;
+      font-weight:800;
+    }
+    .input,.select,.textarea{
+      width:100%;
+      padding:12px 13px;
+      border-radius:14px;
+      border:1px solid #314159;
+      background:#0f1a2b;
+      color:var(--text);
+    }
+    .textarea{min-height:90px;resize:vertical}
     .field{margin-bottom:12px}
+    .label{
+      display:block;
+      margin-bottom:7px;
+      font-size:13px;
+      color:var(--muted);
+    }
     .muted{color:var(--muted)}
+    .tiny{font-size:12px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .right{margin-left:auto}
+    .topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:14px 16px;
+  position:relative;
+  z-index:1;
+}
+    .brandWrap{display:flex;gap:12px;align-items:center}
+    .brand{
+      width:46px;height:46px;border-radius:15px;
+      background:linear-gradient(135deg,var(--green),var(--blue));
+      display:grid;place-items:center;color:#04111f;font-weight:900
+    }
+    .title{font-size:21px;font-weight:900}
+    .subtitle{font-size:12px;color:var(--muted)}
+    .layout{display:grid;grid-template-columns:280px 1fr;gap:14px;margin-top:14px}
+    .sidebar{padding:14px;height:fit-content}
+    .navTitle{
+      font-size:12px;color:var(--muted);margin-bottom:8px;
+      text-transform:uppercase;letter-spacing:.08em
+    }
+    .navBtn{display:block;width:100%;text-align:left;margin-bottom:9px;font-weight:700}
+    .content{min-width:0}
+    .view{padding:16px}
+    .sectionTitle{font-size:22px;font-weight:900;margin:0 0 6px}
+    .sectionSub{font-size:13px;color:var(--muted);margin-bottom:16px}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .stat{
+      padding:16px;border-radius:18px;background:#122033;border:1px solid var(--line)
+    }
+    .stat h3{margin:0 0 6px;font-size:13px;color:var(--muted)}
+    .stat .num{font-size:28px;font-weight:900}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:18px}
+    table{width:100%;border-collapse:collapse;min-width:930px}
+    th,td{
+      padding:10px 9px;
+      border-bottom:1px solid #263549;
+      text-align:left;
+      font-size:14px;
+      vertical-align:top;
+    }
+    th{background:#122033;position:sticky;top:0}
+    .weekTable input{
+      width:100%;
+      padding:8px 9px;
+      border-radius:10px;
+      border:1px solid #324359;
+      background:#0d1627;
+      color:var(--text)
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:6px;padding:6px 10px;
+      border-radius:999px;font-size:12px;font-weight:800
+    }
+    .pill.ok{background:rgba(16,185,129,.18);color:#86efac}
+    .pill.warn{background:rgba(245,158,11,.18);color:#fcd34d}
+    .pill.danger{background:rgba(239,68,68,.18);color:#fca5a5}
+    .item{
+      padding:14px;border-radius:18px;background:#122033;border:1px solid var(--line);margin-bottom:10px
+    }
+    .divider{height:1px;background:#243447;margin:14px 0}
+    .kpi{font-size:32px;font-weight:900}
+    .smallBtn{
+      padding:7px 10px;border-radius:10px;border:none;cursor:pointer;margin-right:6px
+    }
+    .smallGreen{background:#14532d;color:#dcfce7}
+    .smallRed{background:#7f1d1d;color:#fee2e2}
+    .smallBlue{background:#1e3a8a;color:#dbeafe}
+    .adminOnly.hiddenByRole{display:none!important}
+    @media (max-width:1100px){
+      .layout,.authWrap,.grid2,.grid3{grid-template-columns:1fr}
+      .stats{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:720px){
+      .stats{grid-template-columns:1fr}
+      .heroGrid{grid-template-columns:1fr}
+      .app{padding:10px}
+      .topbar{padding:12px}
+    }
+    @media print{
+      body{background:#fff;color:#000}
+      .noPrint{display:none!important}
+      .card,.item,.stat{background:#fff;color:#000;box-shadow:none;border:1px solid #ddd}
+      th{background:#f4f4f4;color:#000}
+    }
+    .topbarCard{
+  position: relative;
+  z-index: 2;
+  margin-bottom: 18px;
+}
+
+.menuCard{
+  position: relative;
+  z-index: 1;
+  margin-bottom: 22px;
+}
+
+.view{
+  margin-top: 0;
+}
+
+#viewBruch{
+  position: relative;
+  z-index: 0;
+  margin-top: 0;
+}
   </style>
 </head>
 <body>
   <div class="app">
-    <section class="card" id="authScreen">
-      <h1>MatteoTeam PRO (Test statik)</h1>
-      <p class="muted">Ky version është një demonstrim statik për t’u testuar shfaqja e faqes. Nuk kërkon Firebase për të funksionuar.</p>
-
-      <div class="field">
-  
-      <label>Email</label>
-        <input class="input" type="email" placeholder="example@domain.com" />
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input class="input" type="password" placeholder="*****" />
-      </div>
-      <div class="row" style="display:flex;gap:10px">
-        <button class="btn" id="btnLogin" type="button">Login</button>
-        <button class="btn" id="btnRegister" type="button">Register</button>
+    <section id="authScreen" class="authWrap">
+      <div class="card hero">
+        <h1>MatteoTeam PRO</h1>
+        <p>
+          Restaurant Management Dashboard për Weekly Plan, Staff, Inventory, My Hours,
+          HACCP, Urlaub Antrag, Bruchliste dhe raporte mujore.
+        </p>
+        <div class="heroGrid">
+          <div class="mini"><strong>Weekly Plan</strong><div class="muted tiny">Emrat vertikalisht, ditët horizontal, save/load.</div></div>
+          <div class="mini"><strong>My Hours</strong><div class="muted tiny">Pause -30 min mbi 4 orë, premium nate, WhatsApp share.</div></div>
+          <div class="mini"><strong>HACCP</strong><div class="muted tiny">Pizza Kasse, Küche, Kellner, save ditor, print mujor.</div></div>
+          <div class="mini"><strong>Urlaub & Bruchliste</strong><div class="muted tiny">Urlaub approval + Bruchliste me print mujor.</div></div>
+        </div>
       </div>
 
-      <div class="tiny muted" style="margin-top:12px">
-        Për momentin, ky version është statik. Për të filluar me funksionalitetin e autentifikimit me Firebase, më tregoni dhe do të jap një version me Firebase.
+      <div class="card authCard">
+        <div class="tabs">
+          <button id="btnTabLogin" class="tabBtn active" type="button">Login</button>
+          <button id="btnTabRegister" class="tabBtn" type="button">Register</button>
+        </div>
+
+        <form id="loginForm">
+          <div class="field">
+            <label class="label">Email</label>
+            <input id="loginEmail" class="input" type="email" autocomplete="email" required />
+          </div>
+          <div class="field">
+            <label class="label">Password</label>
+            <input id="loginPassword" class="input" type="password" autocomplete="current-password" required />
+          </div>
+          <button class="btn" type="submit">Login</button>
+        </form>
+
+        <form id="registerForm" class="hidden">
+          <div class="field">
+            <label class="label">Name</label>
+            <input id="regName" class="input" type="text" required />
+          </div>
+          <div class="field">
+            <label class="label">Email</label>
+            <input id="regEmail" class="input" type="email" required />
+          </div>
+          <div class="field">
+            <label class="label">Password</label>
+            <input id="regPassword" class="input" type="password" required />
+          </div>
+          <div class="field">
+            <label class="label">Department</label>
+            <select id="regDepartment" class="select">
+              <option>Service</option>
+              <option>Küche</option>
+              <option>Pizza</option>
+              <option>Kasse</option>
+            </select>
+          </div>
+          <button class="btn" type="submit">Register</button>
+        </form>
+
+        <div class="tiny muted">
+          Staff mund të regjistrohet. SuperAdmin/Admin menaxhon rolet, Urlaub dhe Bruchliste.
+        </div>
       </div>
     </section>
 
-    <section class="card" id="appShell" style="display:none">
-      <div class="topbar">
-        <strong>MatteoTeam PRO</strong>
-        <button class="btn" id="btnLogout" type="button">Logout</button>
-      </div>
-      <div class="layout" style="display:grid;grid-template-columns:280px 1fr;gap:14px;margin-top:12px">
-        <aside class="card" aria-label="sidebar" style="min-height:200px">
-          <div class="navTitle" style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;color:#94a3b8">Navigation</div>
-          <button class="btn" style="width:100%;margin-bottom:6px" disabled>Dashboard</button>
-          <button class="btn" style="width:100%;margin-bottom:6px" disabled>Weekly Plan</button>
-          <button class="btn" style="width:100%;margin-bottom:6px" disabled>Staff</button>
-        </aside>
-        <main class="card" style="min-height:200px">
-          <h2 class="sectionTitle" style="margin:0 0 8px 0">Dashboard</h2>
-          <div class="sectionSub muted" style="margin-bottom:8px">Ky është një version demonstrues pa backend.</div>
-          <div class="grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-            <div class="card" style="padding:12px;border-radius:12px">Staff: 0</div>
-            <div class="card" style="padding:12px;border-radius:12px">Inventory: 0</div>
-            <div class="card" style="padding:12px;border-radius:12px">Urlaub: 0</div>
-            <div class="card" style="padding:12px;border-radius:12px">HACCP Today: 0/3</div>
+    <section id="appShell" class="hidden">
+      <div class="topbar card">
+        <div class="brandWrap">
+          <div class="brand">MT</div>
+          <div>
+            <div class="title">MatteoTeam PRO</div>
+            <div class="subtitle" id="userInfoTop">...</div>
           </div>
+        </div>
+
+        <div class="row">
+          <button id="btnPrint" class="ghost noPrint" type="button">Print</button>
+          <button id="btnLogout" class="btnDanger noPrint" type="button">Logout</button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <aside class="sidebar card noPrint">
+          <div class="navTitle">Navigation</div>
+          <button class="navBtn active" data-view="viewDashboard" type="button">Dashboard</button>
+          <button class="navBtn" data-view="viewWeekly" type="button">Weekly Plan</button>
+          <button class="navBtn" data-view="viewStaff" type="button">Staff</button>
+          <button class="navBtn" data-view="viewInventory" type="button">Inventory</button>
+          <button class="navBtn" data-view="viewMyHours" type="button">My Hours</button>
+          <button class="navBtn" data-view="viewHaccp" type="button">HACCP</button>
+          <button class="navBtn" data-view="viewUrlaub" type="button">Urlaub</button>
+          <button class="navBtn" data-view="viewBruch" type="button">Bruchliste</button>
+        </aside>
+
+        <main class="content">
+          <section id="viewDashboard" class="view card">
+            <h2 class="sectionTitle">Dashboard</h2>
+            <div class="sectionSub">Statistikat kryesore të app-it.</div>
+
+            <div class="stats">
+              <div class="stat"><h3>Staff</h3><div id="statStaff" class="num">0</div></div>
+              <div class="stat"><h3>Inventory</h3><div id="statInventory" class="num">0</div></div>
+              <div class="stat"><h3>Open Urlaub</h3><div id="statUrlaub" class="num">0</div></div>
+              <div class="stat"><h3>HACCP Today</h3><div id="statHaccp" class="num">0/3</div></div>
+            </div>
+
+            <div class="grid2" style="margin-top:12px">
+              <div class="item">
+                <div class="row">
+                  <strong>HACCP Heute</strong>
+                  <span id="haccpTodayBadge" class="pill warn">Offen</span>
+                </div>
+                <div class="divider"></div>
+                <div id="dashHaccpList"></div>
+              </div>
+
+              <div class="item">
+                <div class="row">
+                  <strong>Open Urlaub</strong>
+                  <span class="pill warn">Pending</span>
+                </div>
+                <div class="divider"></div>
+                <div id="dashUrlaubList"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="viewWeekly" class="view card hidden">
+            <div class="row">
+              <div>
+                <h2 class="sectionTitle">Weekly Plan</h2>
+                <div class="sectionSub">12-17, Frei, U. Save + Load nga Firebase.</div>
+              </div>
+              <div class="right row">
+                <input id="weekPicker" class="input" type="date" style="max-width:190px" />
+                <button id="btnLoadWeekly" class="ghost" type="button">Load</button>
+                <button id="btnSaveWeekly" class="btn" type="button">Save Weekly</button>
+              </div>
+            </div>
+
+            <div class="tableWrap">
+              <table class="weekTable">
+                <thead>
+                  <tr id="weekHeadRow">
+                    <th style="min-width:200px">Mitarbeiter</th>
+                  </tr>
+                </thead>
+                <tbody id="weekBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="viewStaff" class="view card hidden">
+            <h2 class="sectionTitle">Staff</h2>
+            <div class="sectionSub">Shto, përditëso ose fshi puntorë. Admin only.</div>
+
+            <div class="grid2">
+              <div class="item adminOnly">
+                <strong>Add / Edit Staff</strong>
+                <div class="divider"></div>
+                <input id="staffEditId" type="hidden" />
+                <div class="field">
+                  <label class="label">Name</label>
+                  <input id="staffName" class="input" />
+                </div>
+                <div class="field">
+                  <label class="label">Email</label>
+                  <input id="staffEmail" class="input" type="email" />
+                </div>
+                <div class="field">
+                  <label class="label">Department</label>
+                  <select id="staffDepartment" class="select">
+                    <option>Service</option>
+                    <option>Küche</option>
+                    <option>Pizza</option>
+                    <option>Kasse</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="label">Role</label>
+                  <select id="staffRole" class="select">
+                    <option value="staff">Staff</option>
+                    <option value="admin">Admin</option>
+                    <option value="superadmin">SuperAdmin</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="label">Hourly Rate (€)</label>
+                  <input id="staffRate" class="input" type="number" step="0.01" />
+                </div>
+                <div class="row">
+                  <button id="btnSaveStaff" class="btn" type="button">Save Staff</button>
+                  <button id="btnClearStaff" class="ghost" type="button">Clear</button>
+                </div>
+              </div>
+
+              <div class="item">
+                <strong>Staff List</strong>
+                <div class="divider"></div>
+                <div id="staffList"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="viewInventory" class="view card hidden">
+            <h2 class="sectionTitle">Inventory</h2>
+            <div class="sectionSub">Produkte, pack sizes, stock dhe deduction ditor.</div>
+
+            <div class="grid2">
+              <div class="item adminOnly">
+                <strong>New Product</strong>
+                <div class="divider"></div>
+                <input id="invEditId" type="hidden" />
+                <div class="field"><label class="label">Item</label><input id="invName" class="input" /></div>
+                <div class="grid3">
+                  <div class="field">
+                    <label class="label">Unit</label>
+                    <select id="invUnit" class="select">
+                      <option>kg</option>
+                      <option>L</option>
+                      <option>Stk</option>
+                    </select>
+                  </div>
+                  <div class="field"><label class="label">Pack Size</label><input id="invPack" class="input" type="number" step="0.01" /></div>
+                  <div class="field"><label class="label">Current Stock</label><input id="invStock" class="input" type="number" step="0.01" /></div>
+                </div>
+                <div class="field"><label class="label">Min Stock</label><input id="invMin" class="input" type="number" step="0.01" /></div>
+                <div class="row">
+                  <button id="btnSaveInventory" class="btn" type="button">Save Item</button>
+                  <button id="btnClearInventory" class="ghost" type="button">Clear</button>
+                </div>
+              </div>
+
+              <div class="item adminOnly">
+                <strong>Daily Usage</strong>
+                <div class="divider"></div>
+                <div class="field"><label class="label">Date</label><input id="usageDate" class="input" type="date" /></div>
+                <div class="field"><label class="label">Item</label><select id="usageItem" class="select"></select></div>
+                <div class="field"><label class="label">Used Quantity</label><input id="usageQty" class="input" type="number" step="0.01" /></div>
+                <button id="btnApplyUsage" class="btnWarn" type="button">Apply Usage</button>
+              </div>
+            </div>
+
+            <div class="item" style="margin-top:12px">
+              <strong>Inventory List</strong>
+              <div class="divider"></div>
+              <div id="inventoryList"></div>
+            </div>
+          </section>
+                    <section id="viewMyHours" class="view card hidden">
+            <h2 class="sectionTitle">My Hours</h2>
+            <div class="sectionSub">Llogaritje nga Weekly Plan. Pause -30 min nëse shift ≥ 4h. Night bonus pas 00:00.</div>
+
+            <div class="grid2">
+              <div class="item">
+                <div class="field">
+                  <label class="label">Week Start</label>
+                  <input id="hoursWeekPicker" class="input" type="date" />
+                </div>
+                <div class="field adminOnly">
+                  <label class="label">Worker</label>
+                  <select id="hoursStaffSelect" class="select"></select>
+                </div>
+                <div class="row">
+                  <button id="btnLoadHours" class="btn" type="button">Load Hours</button>
+                  <button id="btnShareWhatsApp" class="btnWarn" type="button">Share WhatsApp</button>
+                </div>
+              </div>
+
+              <div class="item">
+                <div class="kpi" id="hoursTotal">0.00 h</div>
+                <div class="muted">Gesamtstunden</div>
+                <div class="divider"></div>
+                <div class="kpi" id="hoursNight">0.00 h</div>
+                <div class="muted">Nachtschichtstunden</div>
+                <div class="divider"></div>
+                <div class="kpi" id="hoursWage">0.00 €</div>
+                <div class="muted">Geschätzter Lohn</div>
+              </div>
+            </div>
+
+            <div class="item" style="margin-top:12px">
+              <strong>Details</strong>
+              <div class="divider"></div>
+              <div id="hoursDetails"></div>
+            </div>
+          </section>
+
+          <section id="viewHaccp" class="view card hidden">
+            <div class="row">
+              <div>
+                <h2 class="sectionTitle">HACCP</h2>
+                <div class="sectionSub">Pizza Kasse, Küche, Kellner. Save daily + print mujor.</div>
+              </div>
+              <div class="right row">
+                <input id="haccpDate" class="input" type="date" style="max-width:180px" />
+                <button id="btnLoadHaccp" class="ghost" type="button">Load</button>
+                <button id="btnSaveHaccp" class="btn" type="button">Save HACCP</button>
+                <button id="btnPrintMonthHaccp" class="btnWarn" type="button">Print Month</button>
+              </div>
+            </div>
+
+            <div class="grid3">
+              <div class="item">
+                <strong>Pizza Kasse</strong>
+                <div class="divider"></div>
+                <div class="field"><label class="label">Temperatur 1</label><input id="pizzaTemp1" class="input" /></div>
+                <div class="field"><label class="label">Temperatur 2</label><input id="pizzaTemp2" class="input" /></div>
+                <div class="field"><label class="label">Temperatur 3</label><input id="pizzaTemp3" class="input" /></div>
+                <div class="field"><label class="label">Temperatur 4</label><input id="pizzaTemp4" class="input" /></div>
+                <div class="field"><label class="label">Reinigung / Kontrolle</label><input id="pizzaClean" class="input" /></div>
+              </div>
+
+              <div class="item">
+                <strong>Küche</strong>
+                <div class="divider"></div>
+                <div class="field"><label class="label">Temperatur 1</label><input id="kitchenTemp1" class="input" /></div>
+                <div class="field"><label class="label">Temperatur 2</label><input id="kitchenTemp2" class="input" /></div>
+                <div class="field"><label class="label">Temperatur 3</label><input id="kitchenTemp3" class="input" /></div>
+                <div class="field"><label class="label">Temperatur 4</label><input id="kitchenTemp4" class="input" /></div>
+                <div class="field"><label class="label">Reinigung / Kontrolle</label><input id="kitchenClean" class="input" /></div>
+              </div>
+
+              <div class="item">
+                <strong>Kellner / Service</strong>
+                <div class="divider"></div>
+                <div class="field"><label class="label">Temperatur 1</label><input id="serviceTemp1" class="input" /></div>
+                <div class="field"><label class="label">Temperatur 2</label><input id="serviceTemp2" class="input" /></div>
+                <div class="field"><label class="label">Temperatur 3</label><input id="serviceTemp3" class="input" /></div>
+                <div class="field"><label class="label">Temperatur 4</label><input id="serviceTemp4" class="input" /></div>
+                <div class="field"><label class="label">Reinigung / Kontrolle</label><input id="serviceClean" class="input" /></div>
+              </div>
+            </div>
+
+            <div class="item" style="margin-top:12px">
+              <strong>History</strong>
+              <div class="divider"></div>
+              <div id="haccpHistory"></div>
+            </div>
+          </section>
+
+          <section id="viewUrlaub" class="view card hidden">
+            <h2 class="sectionTitle">Urlaub Antrag</h2>
+            <div class="sectionSub">Staff bën kërkesë. Admin / SuperAdmin aprovon ose refuzon.</div>
+
+            <div class="grid2">
+              <div class="item">
+                <strong>Neuer Antrag</strong>
+                <div class="divider"></div>
+                <div class="field"><label class="label">Von</label><input id="urlaubFrom" class="input" type="date" /></div>
+                <div class="field"><label class="label">Bis</label><input id="urlaubTo" class="input" type="date" /></div>
+                <div class="field"><label class="label">Grund (optional)</label><textarea id="urlaubReason" class="textarea"></textarea></div>
+                <button id="btnSubmitUrlaub" class="btn" type="button">Urlaub beantragen</button>
+              </div>
+
+              <div class="item">
+                <strong>Requests</strong>
+                <div class="divider"></div>
+                <div id="urlaubList"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="viewBruch" class="view card hidden">
+            <div class="row">
+              <div>
+                <h2 class="sectionTitle">Bruchliste</h2>
+                <div class="sectionSub">Staff mund të shtojë. Admin / SuperAdmin mund të printojë raport mujor.</div>
+              </div>
+              <div class="right row adminOnly">
+                <input id="bruchMonth" class="input" type="month" style="max-width:180px" />
+                <button id="btnPrintMonthBruch" class="btnWarn" type="button">Print Month</button>
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div class="item">
+                <strong>New Bruch</strong>
+                <div class="divider"></div>
+                <div class="field"><label class="label">Date</label><input id="bruchDate" class="input" type="date" /></div>
+                <div class="field"><label class="label">Produkt</label><input id="bruchProduct" class="input" /></div>
+                <div class="field"><label class="label">Menge</label><input id="bruchQty" class="input" type="number" step="0.01" /></div>
+                <div class="field"><label class="label">Grund</label><textarea id="bruchReason" class="textarea"></textarea></div>
+                <button id="btnSaveBruch" class="btn" type="button">Save Bruch</button>
+              </div>
+
+              <div class="item">
+                <strong>Bruchliste History</strong>
+                <div class="divider"></div>
+                <div id="bruchList"></div>
+              </div>
+            </div>
+          </section>
         </main>
       </div>
     </section>
   </div>
 
-  <script>
- 
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
+      authDomain: "matteoteam-test.firebaseapp.com",
+      projectId: "matteoteam-test",
+      storageBucket: "matteoteam-test.firebasestorage.app",
+      messagingSenderId: "1084486170913",
+      appId: "1:1084486170913:web:d68cf328becefe226a6660",
+      measurementId: "G-9V887087P0"
+    };
+
+    const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let currentProfile = null;
+    let staffCache = [];
+    let inventoryCache = [];
+    let urlaubCache = [];
+    let bruchCache = [];
+
+    const $ = (id) => document.getElementById(id);
+
+    function todayStr(){
+      return new Date().toISOString().slice(0,10);
+    }
+
+    function monthStr(){
+      return new Date().toISOString().slice(0,7);
+    }
+
+    function mondayOf(dateStr){
+      const d = new Date(dateStr + "T12:00:00");
+      const day = d.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      d.setDate(d.getDate() + diff);
+      return d.toISOString().slice(0,10);
+    }
+
+    function addDays(dateStr, days){
+      const d = new Date(dateStr + "T12:00:00");
+      d.setDate(d.getDate() + days);
+      return d.toISOString().slice(0,10);
+    }
+
+    function formatDayHeader(dateStr){
+      const d = new Date(dateStr + "T12:00:00");
+      return d.toLocaleDateString("de-DE",{ weekday:"short", day:"2-digit", month:"2-digit" });
+    }
+
+    function weekKeyFrom(dateStr){
+      return mondayOf(dateStr);
+    }
+
+    function safe(v){
+      return (v ?? "").toString().trim();
+    }
+
+    function isAdmin(){
+      return currentProfile && (currentProfile.role === "admin" || currentProfile.role === "superadmin");
+    }
+
+    function isSuperAdmin(){
+      return currentProfile && currentProfile.role === "superadmin";
+    }
+
+    function showMsg(msg){
+      alert(msg);
+    }
+function getMonthKey(dateStr){
+  if(!dateStr) return "";
+
+  const clean = dateStr.trim();
+
+  // format: dd.mm.yyyy
+  if(clean.includes(".")){
+    const parts = clean.split(".");
+    if(parts.length === 3){
+      const mm = parts[1].padStart(2, "0");
+      const yyyy = parts[2];
+      return `${yyyy}-${mm}`;
+    }
+  }
+
+  // fallback nëse vjen format tjetër
+  const d = new Date(clean);
+  if(!isNaN(d)){
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const yyyy = d.getFullYear();
+    return `${yyyy}-${mm}`;
+  }
+
+  return "";
+}
+    function openView(id){
+      document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+      const view = document.getElementById(id);
+      if(view) view.classList.remove("hidden");
+      document.querySelectorAll(".navBtn").forEach(b => b.classList.toggle("active", b.dataset.view === id));
+    }
+
+    function setAuthTab(mode){
+      $("loginForm").classList.toggle("hidden", mode !== "login");
+      $("registerForm").classList.toggle("hidden", mode !== "register");
+      $("btnTabLogin").classList.toggle("active", mode === "login");
+      $("btnTabRegister").classList.toggle("active", mode === "register");
+    }
+
+    function roleLabel(role){
+      if(role === "superadmin") return "SuperAdmin";
+      if(role === "admin") return "Admin";
+      return "Staff";
+    }
+
+    function htmlEscape(text){
+      return String(text ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;");
+    }
+
+    function renderAdminVisibility(){
+      document.querySelectorAll(".adminOnly").forEach(el => {
+        el.classList.toggle("hiddenByRole", !isAdmin());
+      });
+      const staffNav = document.querySelector('[data-view="viewStaff"]');
+      if(staffNav) staffNav.classList.toggle("hiddenByRole", !isAdmin());
+    }
+
+    async function ensureUserProfile(user, fallbackName=""){
+      const ref = doc(db, "users", user.uid);
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
+        const profile = {
+          uid: user.uid,
+          name: fallbackName || user.displayName || user.email.split("@")[0],
+          email: user.email,
+          department: "Service",
+          role: user.uid === SUPERADMIN_UID ? "superadmin" : "staff",
+          status: "active",
+          hourlyRate: 12.5,
+          createdAt: serverTimestamp()
+        };
+        await setDoc(ref, profile);
+        return profile;
+      }
+      const profile = snap.data();
+      if(user.uid === SUPERADMIN_UID && profile.role !== "superadmin"){
+        await updateDoc(ref, { role: "superadmin" });
+        profile.role = "superadmin";
+      }
+      return profile;
+    }
+        async function loadStaff(){
+      const qs = await getDocs(collection(db, "users"));
+      staffCache = qs.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+      $("statStaff").textContent = String(staffCache.length);
+
+      const staffList = $("staffList");
+      const staffSelect = $("hoursStaffSelect");
+      staffList.innerHTML = "";
+      staffSelect.innerHTML = "";
+
+      staffCache.forEach(s => {
+        const option = document.createElement("option");
+        option.value = s.id;
+        option.textContent = `${s.name || "-"} (${s.department || "-"})`;
+        staffSelect.appendChild(option);
+
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="row">
+            <strong>${htmlEscape(s.name || "-")}</strong>
+            <span class="pill ${s.role === "superadmin" ? "ok" : s.role === "admin" ? "warn" : ""}">${htmlEscape(roleLabel(s.role))}</span>
+            <span class="right tiny muted">${htmlEscape(s.email || "")}</span>
+          </div>
+          <div class="tiny muted">Abteilung: ${htmlEscape(s.department || "-")} · Stundenlohn: ${(Number(s.hourlyRate||0)).toFixed(2)} €</div>
+          ${isAdmin() ? `<div class="row" style="margin-top:10px">
+            <button class="smallBtn smallBlue" type="button" onclick="window.editStaff('${s.id}')">Edit</button>
+            ${s.id !== currentUser.uid ? `<button class="smallBtn smallRed" type="button" onclick="window.removeStaff('${s.id}')">Delete</button>` : ``}
+          </div>` : ``}
+        `;
+        staffList.appendChild(div);
+      });
+
+      if(!staffCache.length){
+        staffList.innerHTML = `<div class="tiny muted">Keine Mitarbeiter.</div>`;
+      }
+    }
+
+    window.editStaff = async (id) => {
+      const s = staffCache.find(x => x.id === id);
+      if(!s) return;
+      $("staffEditId").value = id;
+      $("staffName").value = s.name || "";
+      $("staffEmail").value = s.email || "";
+      $("staffDepartment").value = s.department || "Service";
+      $("staffRole").value = s.role || "staff";
+      $("staffRate").value = s.hourlyRate || "";
+      openView("viewStaff");
+    };
+
+    window.removeStaff = async (id) => {
+      if(!isAdmin()) return;
+      if(!confirm("Wirklich löschen?")) return;
+      await deleteDoc(doc(db, "users", id));
+      await loadStaff();
+      await buildWeeklyTable();
+      await loadDashboard();
+      showMsg("Mitarbeiter gelöscht.");
+    };
+
+    async function saveStaff(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const id = $("staffEditId").value.trim();
+      const data = {
+        name: safe($("staffName").value),
+        email: safe($("staffEmail").value),
+        department: $("staffDepartment").value,
+        role: $("staffRole").value,
+        hourlyRate: Number($("staffRate").value || 0),
+        status: "active"
+      };
+      if(!data.name || !data.email) return showMsg("Name und Email fehlen.");
+      if(data.role === "superadmin" && !isSuperAdmin()) return showMsg("Nur SuperAdmin kann SuperAdmin setzen.");
+
+      if(id){
+        await updateDoc(doc(db, "users", id), data);
+      } else {
+        const newRef = doc(collection(db, "users"));
+        await setDoc(newRef, { ...data, uid:newRef.id, createdAt: serverTimestamp() });
+      }
+      clearStaffForm();
+      await loadStaff();
+      await buildWeeklyTable();
+      showMsg("Staff gespeichert.");
+    }
+
+    function clearStaffForm(){
+      $("staffEditId").value = "";
+      $("staffName").value = "";
+      $("staffEmail").value = "";
+      $("staffDepartment").value = "Service";
+      $("staffRole").value = "staff";
+      $("staffRate").value = "";
+    }
+
+    async function loadInventory(){
+      const qs = await getDocs(collection(db, "inventory"));
+      inventoryCache = qs.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+      $("statInventory").textContent = String(inventoryCache.length);
+
+      const wrap = $("inventoryList");
+      const usageSel = $("usageItem");
+      wrap.innerHTML = "";
+      usageSel.innerHTML = "";
+
+      inventoryCache.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = `${item.name} (${Number(item.stock||0)} ${item.unit})`;
+        usageSel.appendChild(option);
+
+        const low = Number(item.stock || 0) <= Number(item.minStock || 0);
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="row">
+            <strong>${htmlEscape(item.name)}</strong>
+            <span class="pill ${low ? "danger" : "ok"}">${low ? "Low Stock" : "OK"}</span>
+            <span class="right tiny muted">${Number(item.stock||0).toFixed(2)} ${htmlEscape(item.unit || "")}</span>
+          </div>
+          <div class="tiny muted">Pack: ${Number(item.packSize||0).toFixed(2)} ${htmlEscape(item.unit || "")} · Min: ${Number(item.minStock||0).toFixed(2)}</div>
+          ${isAdmin() ? `<div class="row" style="margin-top:10px">
+            <button class="smallBtn smallBlue" type="button" onclick="window.editInventory('${item.id}')">Edit</button>
+            <button class="smallBtn smallRed" type="button" onclick="window.removeInventory('${item.id}')">Delete</button>
+          </div>` : ``}
+        `;
+        wrap.appendChild(div);
+      });
+
+      if(!inventoryCache.length){
+        wrap.innerHTML = `<div class="tiny muted">Keine Produkte.</div>`;
+      }
+    }
+
+    window.editInventory = async (id) => {
+      const item = inventoryCache.find(x => x.id === id);
+      if(!item) return;
+      $("invEditId").value = id;
+      $("invName").value = item.name || "";
+      $("invUnit").value = item.unit || "kg";
+      $("invPack").value = item.packSize || "";
+      $("invStock").value = item.stock || "";
+      $("invMin").value = item.minStock || "";
+      openView("viewInventory");
+    };
+
+    window.removeInventory = async (id) => {
+      if(!isAdmin()) return;
+      if(!confirm("Item löschen?")) return;
+      await deleteDoc(doc(db, "inventory", id));
+      await loadInventory();
+      await loadDashboard();
+    };
+
+    async function saveInventory(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const id = $("invEditId").value.trim();
+      const data = {
+        name: safe($("invName").value),
+        unit: $("invUnit").value,
+        packSize: Number($("invPack").value || 0),
+        stock: Number($("invStock").value || 0),
+        minStock: Number($("invMin").value || 0),
+        updatedAt: serverTimestamp()
+      };
+      if(!data.name) return showMsg("Item fehlt.");
+      if(id){
+        await updateDoc(doc(db, "inventory", id), data);
+      } else {
+        await addDoc(collection(db, "inventory"), data);
+      }
+      clearInventoryForm();
+      await loadInventory();
+      await loadDashboard();
+      showMsg("Inventory gespeichert.");
+    }
+
+    function clearInventoryForm(){
+      $("invEditId").value = "";
+      $("invName").value = "";
+      $("invUnit").value = "kg";
+      $("invPack").value = "";
+      $("invStock").value = "";
+      $("invMin").value = "";
+    }
+
+    async function applyInventoryUsage(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const itemId = $("usageItem").value;
+      const qty = Number($("usageQty").value || 0);
+      const date = $("usageDate").value || todayStr();
+      if(!itemId || qty <= 0) return showMsg("Item oder Menge fehlt.");
+      const item = inventoryCache.find(x => x.id === itemId);
+      if(!item) return showMsg("Item nicht gefunden.");
+      const newStock = Number(item.stock || 0) - qty;
+      await updateDoc(doc(db, "inventory", itemId), {
+        stock: newStock,
+        lastUsageDate: date,
+        updatedAt: serverTimestamp()
+      });
+      await addDoc(collection(db, "inventoryUsage"), {
+        itemId,
+        itemName: item.name,
+        qty,
+        unit: item.unit,
+        date,
+        createdBy: currentUser.uid,
+        createdAt: serverTimestamp()
+      });
+      $("usageQty").value = "";
+      await loadInventory();
+      await loadDashboard();
+      showMsg("Usage übernommen.");
+    }
+
+    async function buildWeeklyTable(){
+      const head = $("weekHeadRow");
+      const body = $("weekBody");
+      const weekStart = weekKeyFrom($("weekPicker").value || todayStr());
+      $("weekPicker").value = weekStart;
+
+      head.innerHTML = `<th style="min-width:200px">Mitarbeiter</th>`;
+      for(let i=0;i<7;i++){
+        const date = addDays(weekStart, i);
+        const th = document.createElement("th");
+        th.textContent = formatDayHeader(date);
+        head.appendChild(th);
+      }
+
+      body.innerHTML = "";
+      staffCache.forEach(s => {
+        const tr = document.createElement("tr");
+        const nameTd = document.createElement("td");
+        nameTd.innerHTML = `<strong>${htmlEscape(s.name || "-")}</strong><div class="tiny muted">${htmlEscape(s.department || "")}</div>`;
+        tr.appendChild(nameTd);
+
+        for(let i=0;i<7;i++){
+          const td = document.createElement("td");
+          td.innerHTML = `<input data-staff="${s.id}" data-day="${i}" placeholder="12-17 / Frei / U" />`;
+          tr.appendChild(td);
+        }
+        body.appendChild(tr);
+      });
+
+      if(!staffCache.length){
+        body.innerHTML = `<tr><td colspan="8" class="muted">Keine Mitarbeiter.</td></tr>`;
+      }
+
+      await loadWeekly();
+    }
+
+    async function loadWeekly(){
+      const weekStart = weekKeyFrom($("weekPicker").value || todayStr());
+      $("weekPicker").value = weekStart;
+      $("hoursWeekPicker").value = weekStart;
+
+      const snap = await getDoc(doc(db, "weeklyPlans", weekStart));
+      const data = snap.exists() ? (snap.data().entries || {}) : {};
+
+      document.querySelectorAll("#weekBody input").forEach(inp => {
+        const sid = inp.dataset.staff;
+        const day = inp.dataset.day;
+        inp.value = data[sid]?.[day] || "";
+      });
+    }
+
+    async function saveWeekly(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const weekStart = weekKeyFrom($("weekPicker").value || todayStr());
+      const entries = {};
+      document.querySelectorAll("#weekBody input").forEach(inp => {
+        const sid = inp.dataset.staff;
+        const day = inp.dataset.day;
+        entries[sid] = entries[sid] || {};
+        entries[sid][day] = safe(inp.value);
+      });
+      await setDoc(doc(db, "weeklyPlans", weekStart), {
+        weekStart,
+        entries,
+        updatedBy: currentUser.uid,
+        updatedAt: serverTimestamp()
+      });
+      showMsg("Weekly Plan gespeichert.");
+    }
+
+    function parseShiftHours(value){
+      const raw = safe(value).toLowerCase().replace(/\s/g,"");
+      if(!raw || raw === "frei" || raw === "u") return { total:0, night:0, label: raw.toUpperCase() || "-" };
+
+      const match = raw.match(/^(\d{1,2})(?::?(\d{2}))?-(\d{1,2})(?::?(\d{2}))?$/);
+      if(!match) return { total:0, night:0, label:value || "-" };
+
+      let sh = Number(match[1]), sm = Number(match[2] || 0);
+      let eh = Number(match[3]), em = Number(match[4] || 0);
+
+      let start = sh*60 + sm;
+      let end = eh*60 + em;
+      if(end <= start) end += 24*60;
+
+      let totalMin = end - start;
+      let breakMin = 0;
+      if(totalMin >= 240){
+        totalMin -= 30;
+        breakMin = 30;
+      }
+
+      let nightMin = 0;
+      for(let t = start; t < end; t += 15){
+        const mod = ((t % (24*60)) + (24*60)) % (24*60);
+        if(mod < 60) nightMin += 15;
+      }
+
+      return {
+        total: Math.max(0, totalMin / 60),
+        night: Math.max(0, nightMin / 60),
+        breakHours: breakMin / 60,
+        label: value
+      };
+    }
+
+    let lastHoursPayload = null;
+
+    async function loadHours(){
+      const weekStart = weekKeyFrom($("hoursWeekPicker").value || todayStr());
+      $("hoursWeekPicker").value = weekStart;
+      const staffId = isAdmin() ? $("hoursStaffSelect").value : currentUser.uid;
+      if(!staffId) return showMsg("Worker fehlt.");
+
+      const snap = await getDoc(doc(db, "weeklyPlans", weekStart));
+      const entries = snap.exists() ? (snap.data().entries || {}) : {};
+      const days = entries[staffId] || {};
+      const profile = staffCache.find(x => x.id === staffId) || currentProfile;
+
+      let total = 0, night = 0, breakHours = 0;
+      const details = [];
+      for(let i=0;i<7;i++){
+        const date = addDays(weekStart, i);
+        const val = days[i] || "";
+        const parsed = parseShiftHours(val);
+        total += parsed.total;
+        night += parsed.night;
+        breakHours += parsed.breakHours || 0;
+        details.push(`<div class="item"><strong>${formatDayHeader(date)}</strong><div class="tiny muted">${htmlEscape(parsed.label)} · ${parsed.total.toFixed(2)} h · Nacht ${parsed.night.toFixed(2)} h</div></div>`);
+      }
+
+      const rate = Number(profile?.hourlyRate || 0);
+      const wage = (total * rate) + (night * rate * 0.25);
+
+      $("hoursTotal").textContent = `${total.toFixed(2)} h`;
+      $("hoursNight").textContent = `${night.toFixed(2)} h`;
+      $("hoursWage").textContent = `${wage.toFixed(2)} €`;
+      $("hoursDetails").innerHTML = details.join("") || `<div class="tiny muted">Keine Daten.</div>`;
+
+      lastHoursPayload = {
+        name: profile?.name || "-",
+        weekStart,
+        total,
+        night,
+        wage,
+        details: details.map((_,i)=>{
+          const date = addDays(weekStart, i);
+          const val = days[i] || "";
+          return `${formatDayHeader(date)}: ${val || "-"}`;
+        })
+      };
+    }
+
+    function shareHoursWhatsApp(){
+      if(!lastHoursPayload) return showMsg("Lade zuerst My Hours.");
+      const text =
+`MatteoTeam PRO
+Mitarbeiter: ${lastHoursPayload.name}
+Woche: ${lastHoursPayload.weekStart}
+Gesamtstunden: ${lastHoursPayload.total.toFixed(2)} h
+Nachtstunden: ${lastHoursPayload.night.toFixed(2)} h
+Geschätzter Lohn: ${lastHoursPayload.wage.toFixed(2)} €
+
+Details:
+${lastHoursPayload.details.join("\n")}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    }
+
+    function getHaccpPayload(date){
+      return {
+        date,
+        pizza: {
+          t1: safe($("pizzaTemp1").value),
+          t2: safe($("pizzaTemp2").value),
+          t3: safe($("pizzaTemp3").value),
+          t4: safe($("pizzaTemp4").value),
+          clean: safe($("pizzaClean").value)
+        },
+        kitchen: {
+          t1: safe($("kitchenTemp1").value),
+          t2: safe($("kitchenTemp2").value),
+          t3: safe($("kitchenTemp3").value),
+          t4: safe($("kitchenTemp4").value),
+          clean: safe($("kitchenClean").value)
+        },
+        service: {
+          t1: safe($("serviceTemp1").value),
+          t2: safe($("serviceTemp2").value),
+          t3: safe($("serviceTemp3").value),
+          t4: safe($("serviceTemp4").value),
+          clean: safe($("serviceClean").value)
+        },
+        updatedBy: currentUser.uid,
+        updatedAt: serverTimestamp()
+      };
+    }
+
+    function haccpSectionDone(obj){
+      if(!obj) return false;
+      const vals = [obj.t1,obj.t2,obj.t3,obj.t4,obj.clean].map(v => safe(v));
+      return vals.some(Boolean);
+    }
+
+    async function saveHaccp(){
+      const date = $("haccpDate").value || todayStr();
+      await setDoc(doc(db, "haccpDaily", date), getHaccpPayload(date));
+      await loadHaccp();
+      await loadDashboard();
+      showMsg("HACCP gespeichert.");
+    }
+
+    async function loadHaccp(){
+      const date = $("haccpDate").value || todayStr();
+      $("haccpDate").value = date;
+      const snap = await getDoc(doc(db, "haccpDaily", date));
+      const d = snap.exists() ? snap.data() : {};
+      const pizza = d.pizza || {}, kitchen = d.kitchen || {}, service = d.service || {};
+
+      $("pizzaTemp1").value = pizza.t1 || "";
+      $("pizzaTemp2").value = pizza.t2 || "";
+      $("pizzaTemp3").value = pizza.t3 || "";
+      $("pizzaTemp4").value = pizza.t4 || "";
+      $("pizzaClean").value = pizza.clean || "";
+
+      $("kitchenTemp1").value = kitchen.t1 || "";
+      $("kitchenTemp2").value = kitchen.t2 || "";
+      $("kitchenTemp3").value = kitchen.t3 || "";
+      $("kitchenTemp4").value = kitchen.t4 || "";
+      $("kitchenClean").value = kitchen.clean || "";
+
+      $("serviceTemp1").value = service.t1 || "";
+      $("serviceTemp2").value = service.t2 || "";
+      $("serviceTemp3").value = service.t3 || "";
+      $("serviceTemp4").value = service.t4 || "";
+      $("serviceClean").value = service.clean || "";
+
+      await loadHaccpHistory();
+    }
+
+    async function loadHaccpHistory(){
+      const qs = await getDocs(collection(db, "haccpDaily"));
+      const rows = qs.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b)=> b.id.localeCompare(a.id)).slice(0, 31);
+      const wrap = $("haccpHistory");
+      if(!rows.length){
+        wrap.innerHTML = `<div class="tiny muted">Noch keine Einträge.</div>`;
+        return;
+      }
+      wrap.innerHTML = rows.map(r => {
+        const p = haccpSectionDone(r.pizza);
+        const k = haccpSectionDone(r.kitchen);
+        const s = haccpSectionDone(r.service);
+        return `<div class="item">
+          <div class="row"><strong>${htmlEscape(r.id)}</strong>
+          <span class="pill ${p ? "ok":"warn"}">Pizza ${p ? "OK":"Offen"}</span>
+          <span class="pill ${k ? "ok":"warn"}">Küche ${k ? "OK":"Offen"}</span>
+          <span class="pill ${s ? "ok":"warn"}">Service ${s ? "OK":"Offen"}</span></div>
+        </div>`;
+      }).join("");
+    }
+
+    async function printMonthHaccp(){
+      const date = $("haccpDate").value || todayStr();
+      const month = date.slice(0,7);
+      const qs = await getDocs(collection(db, "haccpDaily"));
+      const rows = qs.docs.map(d => ({ id:d.id, ...d.data() }))
+        .filter(x => x.id.startsWith(month))
+        .sort((a,b)=> a.id.localeCompare(b.id));
+
+      let html = `<html><head><title>HACCP ${month}</title><style>
+        body{font-family:Arial,sans-serif;padding:20px}
+        table{width:100%;border-collapse:collapse}
+        th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:12px}
+        th{background:#f4f4f4}
+      </style></head><body>
+      <h2>Pizzeria Ristorante Matteo GmbH – HACCP ${month}</h2>
+      <table><thead><tr><th>Date</th><th>Pizza</th><th>Küche</th><th>Service</th></tr></thead><tbody>`;
+
+      rows.forEach(r => {
+        html += `<tr>
+          <td>${r.id}</td>
+          <td>${haccpSectionDone(r.pizza) ? "OK" : "Offen"}</td>
+          <td>${haccpSectionDone(r.kitchen) ? "OK" : "Offen"}</td>
+          <td>${haccpSectionDone(r.service) ? "OK" : "Offen"}</td>
+        </tr>`;
+      });
+
+      html += `</tbody></table></body></html>`;
+      const w = window.open("", "_blank");
+      w.document.write(html);
+      w.document.close();
+      w.print();
+    }
+
+    async function submitUrlaub(){
+      const from = $("urlaubFrom").value;
+      const to = $("urlaubTo").value;
+      const reason = safe($("urlaubReason").value);
+      if(!from || !to) return showMsg("Datum fehlt.");
+      if(to < from) return showMsg("Bis darf nicht vor Von sein.");
+
+      await addDoc(collection(db, "vacationRequests"), {
+        staffId: currentUser.uid,
+        staffName: currentProfile.name,
+        from,
+        to,
+        reason,
+        status: "pending",
+        createdAt: serverTimestamp()
+      });
+      $("urlaubReason").value = "";
+      await loadUrlaub();
+      await loadDashboard();
+      showMsg("Urlaub Antrag gesendet.");
+    }
+
+    async function loadUrlaub(){
+      const qs = await getDocs(collection(db, "vacationRequests"));
+      urlaubCache = qs.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b)=>{
+        const aa = a.from || "";
+        const bb = b.from || "";
+        return bb.localeCompare(aa);
+      });
+
+      $("statUrlaub").textContent = String(urlaubCache.filter(x => x.status === "pending").length);
+
+      const list = isAdmin() ? urlaubCache : urlaubCache.filter(x => x.staffId === currentUser.uid);
+      const wrap = $("urlaubList");
+      if(!list.length){
+        wrap.innerHTML = `<div class="tiny muted">Keine Urlaubsanträge.</div>`;
+        return;
+      }
+
+      wrap.innerHTML = list.map(r => {
+        const badge = r.status === "approved" ? "ok" : r.status === "rejected" ? "danger" : "warn";
+        return `<div class="item">
+          <div class="row">
+            <strong>${htmlEscape(r.staffName || "-")}</strong>
+            <span class="pill ${badge}">${htmlEscape((r.status || "").toUpperCase())}</span>
+            <span class="right tiny muted">${htmlEscape(r.from || "")} → ${htmlEscape(r.to || "")}</span>
+          </div>
+          <div class="tiny muted">${htmlEscape(r.reason || "-")}</div>
+          ${isAdmin() && r.status === "pending" ? `<div class="row" style="margin-top:10px">
+            <button class="smallBtn smallGreen" type="button" onclick="window.handleUrlaub('${r.id}','approved')">Approve</button>
+            <button class="smallBtn smallRed" type="button" onclick="window.handleUrlaub('${r.id}','rejected')">Reject</button>
+          </div>` : ``}
+        </div>`;
+      }).join("");
+    }
+
+    async function applyUrlaubToWeekly(req){
+      let cur = req.from;
+      while(cur <= req.to){
+        const weekStart = weekKeyFrom(cur);
+        const dayIndex = Math.floor((new Date(cur+"T12:00:00") - new Date(weekStart+"T12:00:00")) / (1000*60*60*24));
+        const ref = doc(db, "weeklyPlans", weekStart);
+        const snap = await getDoc(ref);
+        const data = snap.exists() ? snap.data() : { weekStart, entries:{} };
+        data.entries = data.entries || {};
+        data.entries[req.staffId] = data.entries[req.staffId] || {};
+        data.entries[req.staffId][String(dayIndex)] = "U";
+        await setDoc(ref, {
+          weekStart,
+          entries: data.entries,
+          updatedBy: currentUser.uid,
+          updatedAt: serverTimestamp()
+        });
+        cur = addDays(cur, 1);
+      }
+    }
+
+    window.handleUrlaub = async (id, status) => {
+      if(!isAdmin()) return;
+      const req = urlaubCache.find(x => x.id === id);
+      if(!req) return;
+      await updateDoc(doc(db, "vacationRequests", id), {
+        status,
+        decidedBy: currentUser.uid,
+        decidedAt: serverTimestamp()
+      });
+      if(status === "approved"){
+        await applyUrlaubToWeekly(req);
+        await loadWeekly();
+      }
+      await loadUrlaub();
+      await loadDashboard();
+      showMsg(`Urlaub ${status}.`);
+    };
+
+    async function saveBruch(){
+      const date = $("bruchDate").value || todayStr();
+      const product = safe($("bruchProduct").value);
+      const qty = Number($("bruchQty").value || 0);
+      const reason = safe($("bruchReason").value);
+
+      if(!product) return showMsg("Produkt fehlt.");
+      if(qty <= 0) return showMsg("Menge fehlt.");
+
+   let byName = "Pa emer";
+
+try {
+  const snap = await getDoc(doc(db, "users", currentUser.uid));
+  if (snap.exists()) {
+    const u = snap.data() || {};
+    byName = u.name || u.fullName || u.displayName || byName;
+  }
+} catch (e) {
+  console.error("User load error:", e);
+}
+
+if (!byName || byName === "Pa emer") {
+  byName = currentUser?.email?.split("@")[0] || "Pa emer";
+}
+
+await addDoc(collection(db, "bruchliste"), {
+  date,
+  product,
+  qty,
+  reason,
+  byUid: currentUser?.uid || "",
+  byName: "MILOT-TEST",
+  createdAt: serverTimestamp()
+});
+
+      $("bruchProduct").value = "";
+      $("bruchQty").value = "";
+      $("bruchReason").value = "";
+      await loadBruch();
+      showMsg("Bruch gespeichert.");
+    }
+
+    async function loadBruch(){
+  const qs = await getDocs(collection(db, "bruchliste"));
+  const wrap = $("bruchList");
+
+  bruchCache = [];
+
+  qs.forEach(docSnap => {
+    const data = docSnap.data() || {};
+
+    if (data.product) {
+      bruchCache.push({
+        date: data.date || "",
+        product: data.product || "",
+        qty: Number(data.qty || 0),
+        reason: data.reason || "",
+        byName: data.byName || "-",
+        createdAt: data.createdAt || null
+      });
+    }
+
+    if (Array.isArray(data.items)) {
+      data.items.forEach(item => {
+        bruchCache.push({
+          date: item.date || "",
+          product: item.product || "",
+          qty: Number(item.qty || 0),
+          reason: item.reason || "",
+          byName: item.byName || "-",
+          createdAt: item.createdAt || null
+        });
+      });
+    }
+  });
+
+  bruchCache.sort((a, b) => {
+    const ad = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+    const bd = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+    return bd - ad;
+  });
+
+  if (!bruchCache.length) {
+    wrap.innerHTML = '<div class="tiny muted">Keine Einträge</div>';
+    return;
+  }
+
+  wrap.innerHTML = bruchCache.map(r => `
+    <div class="item">
+      <div class="row">
+        <strong>${htmlEscape(r.product || "-")}</strong>
+        <span class="pill warn">${Number(r.qty || 0).toFixed(2)}</span>
+        <span class="right tiny muted">${htmlEscape(r.date || "")}</span>
+      </div>
+      <div class="tiny muted">
+        Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || "-")}
+      </div>
+    </div>
+  `).join("");
+}
+
+async function printBruchMonth(){
+  const qs = await getDocs(collection(db, "bruchliste"));
+  let rows = [];
+
+  qs.forEach(docSnap => {
+    const data = docSnap.data() || {};
+
+    if (data.product) {
+      rows.push({
+        date: data.date || "",
+        product: data.product || "",
+        qty: Number(data.qty || 0),
+        reason: data.reason || "",
+        byName: data.byName || "-"
+      });
+    }
+
+    if (Array.isArray(data.items)) {
+      data.items.forEach(item => {
+        rows.push({
+          date: item.date || "",
+          product: item.product || "",
+          qty: Number(item.qty || 0),
+          reason: item.reason || "",
+          byName: item.byName || "-"
+        });
+      });
+    }
+  });
+
+  rows.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+
+  let html = '<html><head><style>' +
+    'body{font-family:Arial,sans-serif;padding:24px;}' +
+    'table{width:100%;border-collapse:collapse;}' +
+    'th,td{border:1px solid #ccc;padding:8px;text-align:left;}' +
+    'th{background:#f4f4f4;}' +
+    '</style></head><body>' +
+    '<h2>Pizzeria Ristorante Matteo GmbH – Bruchliste</h2>' +
+    '<table><thead><tr>' +
+    '<th>Date</th><th>Produkt</th><th>Menge</th><th>Grund</th><th>Von</th>' +
+    '</tr></thead><tbody>';
+
+  rows.forEach(r => {
+    html += '<tr>' +
+      '<td>' + htmlEscape(r.date || "") + '</td>' +
+      '<td>' + htmlEscape(r.product || "") + '</td>' +
+      '<td>' + Number(r.qty || 0).toFixed(2) + '</td>' +
+      '<td>' + htmlEscape(r.reason || "") + '</td>' +
+      '<td>' + htmlEscape(r.byName || "-") + '</td>' +
+      '</tr>';
+  });
+
+  html += '</tbody></table></body></html>';
+
+  const w = window.open("", "_blank");
+  if (!w) return;
+  w.document.write(html);
+  w.document.close();
+  w.print();
+}
+
+    async function loadDashboard(){
+      $("statStaff").textContent = String(staffCache.length);
+      $("statInventory").textContent = String(inventoryCache.length);
+      $("statUrlaub").textContent = String(urlaubCache.filter(x => x.status === "pending").length);
+
+      const today = todayStr();
+      const snap = await getDoc(doc(db, "haccpDaily", today));
+      let p = false, k = false, s = false;
+      if(snap.exists()){
+        const d = snap.data();
+        p = haccpSectionDone(d.pizza);
+        k = haccpSectionDone(d.kitchen);
+        s = haccpSectionDone(d.service);
+      }
+
+      const totalDone = [p,k,s].filter(Boolean).length;
+      $("statHaccp").textContent = `${totalDone}/3`;
+      $("haccpTodayBadge").className = `pill ${totalDone === 3 ? "ok" : "warn"}`;
+      $("haccpTodayBadge").textContent = totalDone === 3 ? "Komplett" : "Offen";
+
+      $("dashHaccpList").innerHTML = `
+        <div class="item">Pizza Kasse: <strong>${p ? "OK" : "Offen"}</strong></div>
+        <div class="item">Küche: <strong>${k ? "OK" : "Offen"}</strong></div>
+        <div class="item">Kellner / Service: <strong>${s ? "OK" : "Offen"}</strong></div>
+      `;
+
+      const pending = urlaubCache.filter(x => x.status === "pending").slice(0,5);
+      $("dashUrlaubList").innerHTML = pending.length
+        ? pending.map(r => `<div class="item">${htmlEscape(r.staffName || "-")} · ${htmlEscape(r.from || "")} → ${htmlEscape(r.to || "")}</div>`).join("")
+        : `<div class="item">Keine offenen Anträge.</div>`;
+    }
+
+    async function bootstrapApp(){
+      $("userInfoTop").textContent = `${currentProfile.name} · ${roleLabel(currentProfile.role)} · ${currentProfile.department || "-"}`;
+      renderAdminVisibility();
+
+      $("weekPicker").value = mondayOf(todayStr());
+      $("hoursWeekPicker").value = mondayOf(todayStr());
+      $("haccpDate").value = todayStr();
+      $("usageDate").value = todayStr();
+      $("urlaubFrom").value = todayStr();
+      $("urlaubTo").value = todayStr();
+      $("bruchDate").value = todayStr();
+      $("bruchMonth").value = monthStr();
+
+      await loadStaff();
+      await loadInventory();
+      await buildWeeklyTable();
+      await loadWeekly();
+      await loadHaccp();
+      await loadUrlaub();
+      await loadBruch();
+      await loadDashboard();
+      await loadHours();
+    }
+
+    $("btnTabLogin").addEventListener("click", ()=> setAuthTab("login"));
+    $("btnTabRegister").addEventListener("click", ()=> setAuthTab("register"));
+
+    $("loginForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      try{
+        await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value);
+      }catch(err){
+        console.error(err);
+        showMsg("Login Fehler: " + err.message);
+      }
+    });
+
+    $("registerForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      try{
+        const cred = await createUserWithEmailAndPassword(auth, $("regEmail").value.trim(), $("regPassword").value);
+        await setDoc(doc(db, "users", cred.user.uid), {
+          uid: cred.user.uid,
+          name: safe($("regName").value),
+          email: $("regEmail").value.trim(),
+          department: $("regDepartment").value,
+          role: cred.user.uid === SUPERADMIN_UID ? "superadmin" : "staff",
+          status: "active",
+          hourlyRate: 12.5,
+          createdAt: serverTimestamp()
+        });
+      }catch(err){
+        console.error(err);
+        showMsg("Register Fehler: " + err.message);
+      }
+    });
+
+    $("btnLogout").addEventListener("click", async ()=>{
+      await signOut(auth);
+    });
+
+    document.querySelectorAll(".navBtn").forEach(btn=>{
+      btn.addEventListener("click", ()=> openView(btn.dataset.view));
+    });
+
+    $("btnSaveStaff").addEventListener("click", saveStaff);
+    $("btnClearStaff").addEventListener("click", clearStaffForm);
+
+    $("btnSaveInventory").addEventListener("click", saveInventory);
+    $("btnClearInventory").addEventListener("click", clearInventoryForm);
+    $("btnApplyUsage").addEventListener("click", applyInventoryUsage);
+
+    $("btnLoadWeekly").addEventListener("click", buildWeeklyTable);
+    $("btnSaveWeekly").addEventListener("click", saveWeekly);
+
+    $("btnLoadHours").addEventListener("click", loadHours);
+    $("btnShareWhatsApp").addEventListener("click", shareHoursWhatsApp);
+    $("hoursStaffSelect").addEventListener("change", loadHours);
+
+    $("btnLoadHaccp").addEventListener("click", loadHaccp);
+    $("btnSaveHaccp").addEventListener("click", saveHaccp);
+    $("btnPrintMonthHaccp").addEventListener("click", printMonthHaccp);
+
+    $("btnSubmitUrlaub").addEventListener("click", submitUrlaub);
+    $("btnSaveBruch").addEventListener("click", async () => {
+  try {
+    if (!currentUser) return alert("Login first");
+console.log("currentProfile =", currentProfile);
+console.log("currentUser =", currentUser);
+    const entry = {
+  date: bruchDate.value,
+  product: bruchProduct.value.trim(),
+  qty: bruchQty.value,
+  reason: bruchReason.value.trim(),
+  by: currentProfile?.displayName || currentProfile?.username || currentProfile?.email || currentUser?.email || "Unbekannt",
+  createdAt: new Date().toISOString()
+};
+
+    if (!entry.date || !entry.product || !entry.qty || !entry.reason) {
+      return alert("Plotëso të gjitha!");
+    }
+
+    const key = getMonthKey(entry.date);
+
+if(!key){
+  alert("Gabim me daten!");
+  return;
+}
+
+const ref = doc(db, "bruchMonate", key);
+
+let items = [];
+
+try {
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    items = snap.data().items || [];
+  }
+} catch(e){
+  console.log("doc nuk ekziston ende");
+}
+
+items.push(entry);
+
+await setDoc(ref, { items });
+
+    bruchProduct.value = "";
+    bruchQty.value = "";
+    bruchReason.value = "";
+
+    await loadBruch();
+    alert("U ruajt ✔");
+
+  } catch (err) {
+    console.error("SAVE BRUCH ERROR:", err);
+    alert("Gabim: " + err.message);
+  }
+});
+    $("btnPrintMonthBruch").addEventListener("click", printMonthBruch);
+
+    $("btnPrint").addEventListener("click", ()=> window.print());
+
+    onAuthStateChanged(auth, async (user)=>{
+      currentUser = user || null;
+      if(!user){
+        currentProfile = null;
+        $("authScreen").classList.remove("hidden");
+        $("appShell").classList.add("hidden");
+        return;
+      }
+
+      try{
+        currentProfile = await ensureUserProfile(user);
+        $("authScreen").classList.add("hidden");
+        $("appShell").classList.remove("hidden");
+        await bootstrapApp();
+      }catch(err){
+        console.error(err);
+        showMsg("Init Fehler: " + err.message);
+      }
+    });
+let bruchEntries = [];
+
+function renderBruchTable() {
+  const body = document.getElementById("bruchBody");
+  if (!body) return;
+
+  body.innerHTML = "";
+
+  bruchEntries.forEach((entry, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${entry.date || ""}</td>
+      <td>${entry.item || ""}</td>
+      <td>${entry.qty || ""}</td>
+      <td>${entry.reason || ""}</td>
+      <td><button onclick="deleteBruchEntry(${index})">X</button></td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+window.deleteBruchEntry = function(index) {
+  bruchEntries.splice(index, 1);
+  renderBruchTable();
+};
+
+function initBruch() {
+  const btn = document.getElementById("btnAddBruch");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    const date = document.getElementById("bruchDate")?.value || "";
+    const item = document.getElementById("bruchItem")?.value.trim() || "";
+    const qty = document.getElementById("bruchQty")?.value || "";
+    const reason = document.getElementById("bruchReason")?.value.trim() || "";
+
+    if (!item) {
+      alert("Bitte Artikel eingeben");
+      return;
+    }
+
+    bruchEntries.push({ date, item, qty, reason });
+    renderBruchTable();
+
+    document.getElementById("bruchItem").value = "";
+    document.getElementById("bruchQty").value = "";
+    document.getElementById("bruchReason").value = "";
+  });
+}
+    window.dbg = { auth, db };
+  </script>
+</body>
+</html>
