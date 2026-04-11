@@ -105,14 +105,9 @@
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .right{margin-left:auto}
     .topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:14px 16px;
-  position:relative;
-  z-index:1;
-}
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      padding:14px 16px;position:sticky;top:10px;z-index:40
+    }
     .brandWrap{display:flex;gap:12px;align-items:center}
     .brand{
       width:46px;height:46px;border-radius:15px;
@@ -193,27 +188,6 @@
       .card,.item,.stat{background:#fff;color:#000;box-shadow:none;border:1px solid #ddd}
       th{background:#f4f4f4;color:#000}
     }
-    .topbarCard{
-  position: relative;
-  z-index: 2;
-  margin-bottom: 18px;
-}
-
-.menuCard{
-  position: relative;
-  z-index: 1;
-  margin-bottom: 22px;
-}
-
-.view{
-  margin-top: 0;
-}
-
-#viewBruch{
-  position: relative;
-  z-index: 0;
-  margin-top: 0;
-}
   </style>
 </head>
 <body>
@@ -695,31 +669,7 @@
     function showMsg(msg){
       alert(msg);
     }
-function getMonthKey(dateStr){
-  if(!dateStr) return "";
 
-  const clean = dateStr.trim();
-
-  // format: dd.mm.yyyy
-  if(clean.includes(".")){
-    const parts = clean.split(".");
-    if(parts.length === 3){
-      const mm = parts[1].padStart(2, "0");
-      const yyyy = parts[2];
-      return `${yyyy}-${mm}`;
-    }
-  }
-
-  // fallback nëse vjen format tjetër
-  const d = new Date(clean);
-  if(!isNaN(d)){
-    const mm = String(d.getMonth()+1).padStart(2,"0");
-    const yyyy = d.getFullYear();
-    return `${yyyy}-${mm}`;
-  }
-
-  return "";
-}
     function openView(id){
       document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
       const view = document.getElementById(id);
@@ -1391,31 +1341,15 @@ ${lastHoursPayload.details.join("\n")}`;
       if(!product) return showMsg("Produkt fehlt.");
       if(qty <= 0) return showMsg("Menge fehlt.");
 
-   let byName = "Pa emer";
-
-try {
-  const snap = await getDoc(doc(db, "users", currentUser.uid));
-  if (snap.exists()) {
-    const u = snap.data() || {};
-    byName = u.name || u.fullName || u.displayName || byName;
-  }
-} catch (e) {
-  console.error("User load error:", e);
-}
-
-if (!byName || byName === "Pa emer") {
-  byName = currentUser?.email?.split("@")[0] || "Pa emer";
-}
-
-await addDoc(collection(db, "bruchliste"), {
-  date,
-  product,
-  qty,
-  reason,
-  byUid: currentUser?.uid || "",
-  byName: "MILOT-TEST",
-  createdAt: serverTimestamp()
-});
+      await addDoc(collection(db, "bruchliste"), {
+        date,
+        product,
+        qty,
+        reason,
+        byUid: currentUser.uid,
+        byName: currentProfile.name,
+        createdAt: serverTimestamp()
+      });
 
       $("bruchProduct").value = "";
       $("bruchQty").value = "";
@@ -1425,125 +1359,57 @@ await addDoc(collection(db, "bruchliste"), {
     }
 
     async function loadBruch(){
-  const qs = await getDocs(collection(db, "bruchliste"));
-  const wrap = $("bruchList");
+      const qs = await getDocs(collection(db, "bruchliste"));
+      bruchCache = qs.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b)=> (b.date || "").localeCompare(a.date || ""));
+      const wrap = $("bruchList");
 
-  bruchCache = [];
+      if(!bruchCache.length){
+        wrap.innerHTML = `<div class="tiny muted">Keine Einträge.</div>`;
+        return;
+      }
 
-  qs.forEach(docSnap => {
-    const data = docSnap.data() || {};
-
-    if (data.product) {
-      bruchCache.push({
-        date: data.date || "",
-        product: data.product || "",
-        qty: Number(data.qty || 0),
-        reason: data.reason || "",
-        byName: data.byName || "-",
-        createdAt: data.createdAt || null
-      });
+      wrap.innerHTML = bruchCache.map(r => `
+        <div class="item">
+          <div class="row">
+            <strong>${htmlEscape(r.product || "-")}</strong>
+            <span class="pill warn">${Number(r.qty || 0).toFixed(2)}</span>
+            <span class="right tiny muted">${htmlEscape(r.date || "")}</span>
+          </div>
+          <div class="tiny muted">Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || "-")}</div>
+        </div>
+      `).join("");
     }
 
-    if (Array.isArray(data.items)) {
-      data.items.forEach(item => {
-        bruchCache.push({
-          date: item.date || "",
-          product: item.product || "",
-          qty: Number(item.qty || 0),
-          reason: item.reason || "",
-          byName: item.byName || "-",
-          createdAt: item.createdAt || null
-        });
+    async function printMonthBruch(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const month = $("bruchMonth").value || monthStr();
+      const rows = bruchCache.filter(x => (x.date || "").startsWith(month)).sort((a,b)=> (a.date || "").localeCompare(b.date || ""));
+
+      let html = `<html><head><title>Bruchliste ${month}</title><style>
+        body{font-family:Arial,sans-serif;padding:20px}
+        table{width:100%;border-collapse:collapse}
+        th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:12px}
+        th{background:#f4f4f4}
+      </style></head><body>
+      <h2>Pizzeria Ristorante Matteo GmbH – Bruchliste ${month}</h2>
+      <table><thead><tr><th>Date</th><th>Produkt</th><th>Menge</th><th>Grund</th><th>Von</th></tr></thead><tbody>`;
+
+      rows.forEach(r => {
+        html += `<tr>
+          <td>${htmlEscape(r.date || "")}</td>
+          <td>${htmlEscape(r.product || "")}</td>
+          <td>${Number(r.qty || 0).toFixed(2)}</td>
+          <td>${htmlEscape(r.reason || "")}</td>
+          <td>${htmlEscape(r.byName || "")}</td>
+        </tr>`;
       });
+
+      html += `</tbody></table></body></html>`;
+      const w = window.open("", "_blank");
+      w.document.write(html);
+      w.document.close();
+      w.print();
     }
-  });
-
-  bruchCache.sort((a, b) => {
-    const ad = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
-    const bd = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
-    return bd - ad;
-  });
-
-  if (!bruchCache.length) {
-    wrap.innerHTML = '<div class="tiny muted">Keine Einträge</div>';
-    return;
-  }
-
-  wrap.innerHTML = bruchCache.map(r => `
-    <div class="item">
-      <div class="row">
-        <strong>${htmlEscape(r.product || "-")}</strong>
-        <span class="pill warn">${Number(r.qty || 0).toFixed(2)}</span>
-        <span class="right tiny muted">${htmlEscape(r.date || "")}</span>
-      </div>
-      <div class="tiny muted">
-        Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || "-")}
-      </div>
-    </div>
-  `).join("");
-}
-
-async function printBruchMonth(){
-  const qs = await getDocs(collection(db, "bruchliste"));
-  let rows = [];
-
-  qs.forEach(docSnap => {
-    const data = docSnap.data() || {};
-
-    if (data.product) {
-      rows.push({
-        date: data.date || "",
-        product: data.product || "",
-        qty: Number(data.qty || 0),
-        reason: data.reason || "",
-        byName: data.byName || "-"
-      });
-    }
-
-    if (Array.isArray(data.items)) {
-      data.items.forEach(item => {
-        rows.push({
-          date: item.date || "",
-          product: item.product || "",
-          qty: Number(item.qty || 0),
-          reason: item.reason || "",
-          byName: item.byName || "-"
-        });
-      });
-    }
-  });
-
-  rows.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
-
-  let html = '<html><head><style>' +
-    'body{font-family:Arial,sans-serif;padding:24px;}' +
-    'table{width:100%;border-collapse:collapse;}' +
-    'th,td{border:1px solid #ccc;padding:8px;text-align:left;}' +
-    'th{background:#f4f4f4;}' +
-    '</style></head><body>' +
-    '<h2>Pizzeria Ristorante Matteo GmbH – Bruchliste</h2>' +
-    '<table><thead><tr>' +
-    '<th>Date</th><th>Produkt</th><th>Menge</th><th>Grund</th><th>Von</th>' +
-    '</tr></thead><tbody>';
-
-  rows.forEach(r => {
-    html += '<tr>' +
-      '<td>' + htmlEscape(r.date || "") + '</td>' +
-      '<td>' + htmlEscape(r.product || "") + '</td>' +
-      '<td>' + Number(r.qty || 0).toFixed(2) + '</td>' +
-      '<td>' + htmlEscape(r.reason || "") + '</td>' +
-      '<td>' + htmlEscape(r.byName || "-") + '</td>' +
-      '</tr>';
-  });
-
-  html += '</tbody></table></body></html>';
-
-  const w = window.open("", "_blank");
-  if (!w) return;
-  w.document.write(html);
-  w.document.close();
-  w.print();
-}
 
     async function loadDashboard(){
       $("statStaff").textContent = String(staffCache.length);
@@ -1661,60 +1527,8 @@ async function printBruchMonth(){
     $("btnPrintMonthHaccp").addEventListener("click", printMonthHaccp);
 
     $("btnSubmitUrlaub").addEventListener("click", submitUrlaub);
-    $("btnSaveBruch").addEventListener("click", async () => {
-  try {
-    if (!currentUser) return alert("Login first");
-console.log("currentProfile =", currentProfile);
-console.log("currentUser =", currentUser);
-    const entry = {
-  date: bruchDate.value,
-  product: bruchProduct.value.trim(),
-  qty: bruchQty.value,
-  reason: bruchReason.value.trim(),
-  by: currentProfile?.displayName || currentProfile?.username || currentProfile?.email || currentUser?.email || "Unbekannt",
-  createdAt: new Date().toISOString()
-};
 
-    if (!entry.date || !entry.product || !entry.qty || !entry.reason) {
-      return alert("Plotëso të gjitha!");
-    }
-
-    const key = getMonthKey(entry.date);
-
-if(!key){
-  alert("Gabim me daten!");
-  return;
-}
-
-const ref = doc(db, "bruchMonate", key);
-
-let items = [];
-
-try {
-  const snap = await getDoc(ref);
-  if (snap.exists()) {
-    items = snap.data().items || [];
-  }
-} catch(e){
-  console.log("doc nuk ekziston ende");
-}
-
-items.push(entry);
-
-await setDoc(ref, { items });
-
-    bruchProduct.value = "";
-    bruchQty.value = "";
-    bruchReason.value = "";
-
-    await loadBruch();
-    alert("U ruajt ✔");
-
-  } catch (err) {
-    console.error("SAVE BRUCH ERROR:", err);
-    alert("Gabim: " + err.message);
-  }
-});
+    $("btnSaveBruch").addEventListener("click", saveBruch);
     $("btnPrintMonthBruch").addEventListener("click", printMonthBruch);
 
     $("btnPrint").addEventListener("click", ()=> window.print());
@@ -1738,55 +1552,7 @@ await setDoc(ref, { items });
         showMsg("Init Fehler: " + err.message);
       }
     });
-let bruchEntries = [];
 
-function renderBruchTable() {
-  const body = document.getElementById("bruchBody");
-  if (!body) return;
-
-  body.innerHTML = "";
-
-  bruchEntries.forEach((entry, index) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${entry.date || ""}</td>
-      <td>${entry.item || ""}</td>
-      <td>${entry.qty || ""}</td>
-      <td>${entry.reason || ""}</td>
-      <td><button onclick="deleteBruchEntry(${index})">X</button></td>
-    `;
-    body.appendChild(tr);
-  });
-}
-
-window.deleteBruchEntry = function(index) {
-  bruchEntries.splice(index, 1);
-  renderBruchTable();
-};
-
-function initBruch() {
-  const btn = document.getElementById("btnAddBruch");
-  if (!btn) return;
-
-  btn.addEventListener("click", () => {
-    const date = document.getElementById("bruchDate")?.value || "";
-    const item = document.getElementById("bruchItem")?.value.trim() || "";
-    const qty = document.getElementById("bruchQty")?.value || "";
-    const reason = document.getElementById("bruchReason")?.value.trim() || "";
-
-    if (!item) {
-      alert("Bitte Artikel eingeben");
-      return;
-    }
-
-    bruchEntries.push({ date, item, qty, reason });
-    renderBruchTable();
-
-    document.getElementById("bruchItem").value = "";
-    document.getElementById("bruchQty").value = "";
-    document.getElementById("bruchReason").value = "";
-  });
-}
     window.dbg = { auth, db };
   </script>
 </body>
