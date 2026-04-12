@@ -567,16 +567,44 @@
             </div>
 
             <div class="grid2">
-              <div class="item">
-                <strong>New Bruch</strong>
-                <div class="divider"></div>
-                <div class="field"><label class="label">Date</label><input id="bruchDate" class="input" type="date" /></div>
-                <div class="field"><label class="label">Produkt</label><input id="bruchProduct" class="input" /></div>
-                <div class="field"><label class="label">Menge</label><input id="bruchQty" class="input" type="number" step="0.01" /></div>
-                <div class="field"><label class="label">Grund</label><textarea id="bruchReason" class="textarea"></textarea></div>
-                <button id="btnSaveBruch" class="btn" type="button">Save Bruch</button>
-              </div>
+                <div class="item">
+  <strong>New Bruch</strong>
+  <div class="divider"></div>
 
+  <div class="field">
+    <label class="label">Date</label>
+    <input id="bruchDate" type="text" />
+  </div>
+
+  <div class="field">
+    <label class="label">Produkt</label>
+    <select id="bruchProdukt">
+      <option value="">-- Produkt auswählen --</option>
+      <option value="Margarita">Margarita</option>
+      <option value="Salami">Salami</option>
+      <option value="Schinken">Schinken</option>
+      <option value="Funghi">Funghi</option>
+      <option value="Tonno">Tonno</option>
+      <option value="Pasta">Pasta</option>
+      <option value="Salat">Salat</option>
+      <option value="Getränk">Getränk</option>
+      <option value="Dessert">Dessert</option>
+      <option value="Sonstiges">Sonstiges</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label class="label">Menge</label>
+    <input id="bruchMenge" type="number" />
+  </div>
+
+  <div class="field">
+    <label class="label">Grund</label>
+    <textarea id="bruchGrund"></textarea>
+  </div>
+
+  <button id="btnSaveBruch" class="btn">Save Bruch</button>
+</div>
               <div class="item">
                 <strong>Bruchliste History</strong>
                 <div class="divider"></div>
