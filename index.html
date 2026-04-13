@@ -1369,15 +1369,15 @@ ${lastHoursPayload.details.join("\n")}`;
       if(!product) return showMsg("Produkt fehlt.");
       if(qty <= 0) return showMsg("Menge fehlt.");
 
-      await addDoc(collection(db, "bruchliste"), {
-        date,
-        product,
-        qty,
-        reason,
-        byUid: currentUser.uid,
-        byName: currentProfile.name,
-        createdAt: serverTimestamp()
-      });
+    await addDoc(collection(db, "bruchliste"), {
+  date: date,
+  product: product,
+  qty: qty,
+  reason: reason,
+  byUid: currentUser.uid,
+  byName: currentProfile.name,
+  createdAt: serverTimestamp()
+});
 
       $("bruchProduct").value = "";
       $("bruchQty").value = "";
