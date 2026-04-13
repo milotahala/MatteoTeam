@@ -1377,7 +1377,7 @@ ${lastHoursPayload.details.join("\n")}`;
       return showMsg("User nicht eingeloggt.");
     }
 
-    await addDoc(collection(db, "bruchliste", {
+    await addDoc(collection(db, "bruchliste"), {
       date: date,
       product: product,
       qty: qty,
