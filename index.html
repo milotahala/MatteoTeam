@@ -1397,7 +1397,7 @@ ${lastHoursPayload.details.join("\n")}`;
     console.error("SAVE BRUCH ERROR:", err);
     alert("Gabim ne ruajtje: " + err.message);
   }
-
+}
 
     async function loadBruch(){
       const qs = await getDocs(collection(db, "bruchliste"));
