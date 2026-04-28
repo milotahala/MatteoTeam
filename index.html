@@ -1608,7 +1608,46 @@ ${lastHoursPayload.details.join("\n")}`;
         showMsg("Init Fehler: " + err.message);
       }
     });
+// ===== FIX BRUCH SAVE =====
+const btn = document.getElementById("btnSaveBruch");
 
+if (btn) {
+  btn.addEventListener("click", async () => {
+    const date = document.getElementById("bruchDate")?.value;
+    const produkt = document.getElementById("bruchProdukt")?.value;
+    const menge = document.getElementById("bruchQty")?.value;
+    const grund = document.getElementById("bruchReason")?.value;
+
+    if (!date || !produkt || !menge) {
+      alert("Plotëso të gjitha fushat!");
+      return;
+    }
+
+    try {
+      const user = auth.currentUser;
+
+      await addDoc(collection(db, "bruchliste"), {
+        date,
+        produkt,
+        menge,
+        grund,
+        user: user?.email || "unknown",
+        createdAt: new Date()
+      });
+
+      alert("U ruajt ✔");
+
+      // reset
+      document.getElementById("bruchProdukt").value = "";
+      document.getElementById("bruchQty").value = "";
+      document.getElementById("bruchReason").value = "";
+
+    } catch (err) {
+      console.error(err);
+      alert("Gabim: " + err.message);
+    }
+  });
+}
     window.dbg = { auth, db };
   </script>
 </body>
