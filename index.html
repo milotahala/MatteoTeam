@@ -1647,7 +1647,9 @@ if (btnBruchSave) {
       document.getElementById("bruchQty").value = "";
       document.getElementById("bruchReason").value = "";
 
-      await loadBruchList?.();
+      if (typeof loadBruchList === "function") {
+  await loadBruchList();
+}
 
     } catch (err) {
       console.error("BRUCH SAVE ERROR:", err);
