@@ -589,8 +589,8 @@
   </div>
 
   <div class="field">
-    <label class="label">Produkt</label>
-    <input type="text" id="bruchProdukt" placeholder="Produkt manual eingeben">
+    <label class="label">Product</label>
+    <input type="text" id="bruchProduct" placeholder="Product manual eingeben">
   </div>
 
   <div class="field">
@@ -1617,12 +1617,12 @@ if (btnBruchSave) {
     e.stopImmediatePropagation();
 
     const date = document.getElementById("bruchDate")?.value || "";
-    const produkt = document.getElementById("bruchProdukt")?.value.trim() || "";
+    const product = document.getElementById("bruchProduct")?.value.trim() || "";
     const mengeRaw = document.getElementById("bruchQty")?.value || "";
     const grund = document.getElementById("bruchReason")?.value.trim() || "";
 
-    if (!date || !produkt || !mengeRaw) {
-      alert("Plotëso Date, Produkt dhe Menge!");
+    if (!date || !product || !mengeRaw) {
+      alert("Plotëso Date, Product dhe Menge!");
       return;
     }
 
@@ -1633,7 +1633,7 @@ if (btnBruchSave) {
 
       await addDoc(collection(db, "bruchliste"), {
         date: date,
-        produkt: produkt,
+        produkt: product,
         menge: menge,
         grund: grund || "-",
         userName: currentProfile?.name || user?.email || "Milot",
@@ -1643,7 +1643,7 @@ if (btnBruchSave) {
 
       alert("U ruajt ✔");
 
-      document.getElementById("bruchProdukt").value = "";
+      document.getElementById("bruchProduct").value = "";
       document.getElementById("bruchQty").value = "";
       document.getElementById("bruchReason").value = "";
 
