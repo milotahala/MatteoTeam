@@ -1608,45 +1608,52 @@ ${lastHoursPayload.details.join("\n")}`;
         showMsg("Init Fehler: " + err.message);
       }
     });
-// ===== FIX BRUCH SAVE =====
-const btn = document.getElementById("btnSaveBruch");
+// ===== FIX BRUCH SAVE FINAL =====
+const btnBruchSave = document.getElementById("btnSaveBruch");
 
-if (btn) {
-  btn.addEventListener("click", async () => {
-    const date = document.getElementById("bruchDate")?.value;
-    const produkt = document.getElementById("bruchProdukt")?.value;
-    const menge = document.getElementById("bruchQty")?.value;
-    const grund = document.getElementById("bruchReason")?.value;
+if (btnBruchSave) {
+  btnBruchSave.addEventListener("click", async (e) => {
+    e.preventDefault();
+    e.stopImmediatePropagation();
 
-    if (!date || !produkt || !menge) {
-      alert("Plotëso të gjitha fushat!");
+    const date = document.getElementById("bruchDate")?.value || "";
+    const produkt = document.getElementById("bruchProdukt")?.value.trim() || "";
+    const mengeRaw = document.getElementById("bruchQty")?.value || "";
+    const grund = document.getElementById("bruchReason")?.value.trim() || "";
+
+    if (!date || !produkt || !mengeRaw) {
+      alert("Plotëso Date, Produkt dhe Menge!");
       return;
     }
+
+    const menge = Number(mengeRaw);
 
     try {
       const user = auth.currentUser;
 
       await addDoc(collection(db, "bruchliste"), {
-        date,
-        produkt,
-        menge,
-        grund,
-        user: user?.email || "unknown",
+        date: date,
+        produkt: produkt,
+        menge: menge,
+        grund: grund || "-",
+        userName: currentProfile?.name || user?.email || "Milot",
+        role: currentProfile?.role || "SuperAdmin",
         createdAt: new Date()
       });
 
       alert("U ruajt ✔");
 
-      // reset
       document.getElementById("bruchProdukt").value = "";
       document.getElementById("bruchQty").value = "";
       document.getElementById("bruchReason").value = "";
 
+      await loadBruchList?.();
+
     } catch (err) {
-      console.error(err);
+      console.error("BRUCH SAVE ERROR:", err);
       alert("Gabim: " + err.message);
     }
-  });
+  }, true);
 }
     window.dbg = { auth, db };
   </script>
