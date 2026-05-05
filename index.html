@@ -1424,16 +1424,18 @@ ${lastHoursPayload.details.join("\n")}`;
         return;
       }
 
-      wrap.innerHTML = bruchCache.map(r => `
-        <div class="item">
-          <div class="row">
-            <strong>${htmlEscape(r.product || "-")}</strong>
-            <span class="pill warn">${Number(r.qty || 0).toFixed(2)}</span>
-            <span class="right tiny muted">${htmlEscape(r.date || "")}</span>
-          </div>
-          <div class="tiny muted">Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || "-")}</div>
-        </div>
-      `).join("");
+     wrap.innerHTML = bruchCache.map(r => `
+  <div class="item">
+    <div class="row">
+      <strong>${htmlEscape(r.product || "-")}</strong>
+      <span class="pill warn">${Number(r.qty || 0).toFixed(2)}</span>
+      <span class="right tiny muted">${htmlEscape(r.date || "-")}</span>
+    </div>
+    <div class="tiny muted">
+      Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || "-")}
+    </div>
+  </div>
+`).join("");
     }
 
     async function printMonthBruch(){
