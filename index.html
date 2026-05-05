@@ -1441,6 +1441,11 @@ user: user.email || "Milot",
     byName: x.byName || x.user || x.email || "-"
   };
 });
+bruchCache.sort((a, b) => {
+  const da = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.date || 0);
+  const dbb = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.date || 0);
+  return dbb - da;
+});
       const wrap = $("bruchList");
 
       if(!bruchCache.length){
