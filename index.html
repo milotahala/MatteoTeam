@@ -1429,7 +1429,17 @@ await addDoc(collection(db, "bruchliste"), {
 
     async function loadBruch(){
       const qs = await getDocs(collection(db, "bruchliste"));
-      bruchCache = qs.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b)=> (b.date || "").localeCompare(a.date || ""));
+      bruchCache = qs.docs.map(d => {
+  const x = d.data();
+  return {
+    id: d.id,
+    ...x,
+    product: x.product || x.produkt || "-",
+    qty: x.qty || x.menge || "0",
+    reason: x.reason || x.grund || "-",
+    byName: x.byName || x.user || x.email || "-"
+  };
+});
       const wrap = $("bruchList");
 
       if(!bruchCache.length){
