@@ -1412,7 +1412,8 @@ await addDoc(collection(db, "bruchliste"), {
   qty: qty || "0",
   reason: reason || "-",
   byUid: user.uid,
-  byName: userName,
+  byName: userName || user.email || "Milot",
+user: user.email || "Milot",
   createdAt: serverTimestamp()
 });
     elProduct.value = "";
