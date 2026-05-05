@@ -1445,7 +1445,7 @@ await addDoc(collection(db, "bruchliste"), {
       <span class="right tiny muted">${htmlEscape(r.date || "-")}</span>
     </div>
     <div class="tiny muted">
-      Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || "-")}
+      Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || r.user || "-")}
     </div>
   </div>
 `).join("");
