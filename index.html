@@ -1438,7 +1438,7 @@ await addDoc(collection(db, "bruchliste"), {
     product: x.product || x.produkt || "-",
     qty: x.qty || x.menge || "0",
     reason: x.reason || x.grund || "-",
-    byName: x.byName || x.user || x.email || "-"
+    byName: x.byName || x.user || x.email || auth.currentUser?.email || "Milot"
   };
 });
 bruchCache.sort((a, b) => {
