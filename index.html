@@ -1461,7 +1461,7 @@ bruchCache.sort((a, b) => {
       <span class="right tiny muted">${htmlEscape(r.date || "-")}</span>
     </div>
     <div class="tiny muted">
-      Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || r.user || "-")}
+     Grund: ${htmlEscape(r.reason || "-")} · Von: ${htmlEscape(r.byName || r.user || auth.currentUser?.email || "Milot")}
     </div>
   </div>
 `).join("");
