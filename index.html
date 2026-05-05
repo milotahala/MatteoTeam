@@ -1392,15 +1392,27 @@ ${lastHoursPayload.details.join("\n")}`;
       return showMsg("User nicht eingeloggt.");
     }
 
-   await addDoc(collection(db, "bruchliste"), {
+   const user = auth.currentUser;
+
+// 👉 merr user nga Firestore (staff/users)
+let userName = user.email;
+
+try {
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+  if (userDoc.exists()) {
+    userName = userDoc.data().name || user.email;
+  }
+} catch(e) {
+  console.error("User fetch error:", e);
+}
+
+await addDoc(collection(db, "bruchliste"), {
   date: date,
   product: product || "-",
   qty: qty || "0",
   reason: reason || "-",
-  byUid: uid || "",
-  byName: (name && name !== "-")
-    ? name
-    : (auth.currentUser?.displayName || auth.currentUser?.email || "Milot"),
+  byUid: user.uid,
+  byName: userName,
   createdAt: serverTimestamp()
 });
     elProduct.value = "";
