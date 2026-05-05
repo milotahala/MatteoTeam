@@ -1392,16 +1392,17 @@ ${lastHoursPayload.details.join("\n")}`;
       return showMsg("User nicht eingeloggt.");
     }
 
-    await addDoc(collection(db, "bruchliste"), {
+   await addDoc(collection(db, "bruchliste"), {
   date: date,
   product: product || "-",
   qty: qty || "0",
   reason: reason || "-",
   byUid: uid || "",
-  byName: name || auth.currentUser?.displayName || auth.currentUser?.email || "Unbekannt",
+  byName: (name && name !== "-")
+    ? name
+    : (auth.currentUser?.displayName || auth.currentUser?.email || "Milot"),
   createdAt: serverTimestamp()
 });
-
     elProduct.value = "";
     elQty.value = "";
     elReason.value = "";
