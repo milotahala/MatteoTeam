@@ -1393,14 +1393,14 @@ ${lastHoursPayload.details.join("\n")}`;
     }
 
     await addDoc(collection(db, "bruchliste"), {
-      date: date,
-      product: product,
-      qty: qty,
-      reason: reason,
-      byUid: uid,
-      byName: name,
-      createdAt: serverTimestamp()
-    });
+  date: date,
+  product: product || "-",
+  qty: qty || "0",
+  reason: reason || "-",
+  byUid: uid || "",
+  byName: name || auth.currentUser?.displayName || auth.currentUser?.email || "Unbekannt",
+  createdAt: serverTimestamp()
+});
 
     elProduct.value = "";
     elQty.value = "";
