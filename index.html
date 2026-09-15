@@ -6,25 +6,31 @@
   <title>MatteoTeam PRO</title>
   <style>
     :root{
-      --bg:#0f172a;
-      --panel:#111827;
-      --panel2:#1f2937;
-      --line:#334155;
-      --text:#e5e7eb;
-      --muted:#94a3b8;
-      --green:#22c55e;
-      --blue:#38bdf8;
+      --bg:#07111f;
+      --panel:#0d1b2d;
+      --panel2:#12243a;
+      --line:#233a54;
+      --text:#f3f7fb;
+      --muted:#9db0c7;
+      --green:#2dd486;
+      --green-dark:#14965b;
+      --blue:#42bff5;
       --red:#ef4444;
       --orange:#f59e0b;
       --radius:18px;
-      --shadow:0 12px 28px rgba(0,0,0,.25);
+      --shadow:0 18px 50px rgba(0,0,0,.28);
     }
     *{box-sizing:border-box}
     html,body{
       margin:0;padding:0;
-      background:linear-gradient(180deg,#0b1220,#0f172a 35%,#111827);
+      min-height:100%;
+      background:
+        radial-gradient(circle at 10% 0%,rgba(45,212,134,.09),transparent 30%),
+        radial-gradient(circle at 100% 20%,rgba(66,191,245,.08),transparent 28%),
+        linear-gradient(180deg,#07111f,#0a1626 45%,#0b1727);
       color:var(--text);
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
     }
     button,input,select,textarea{font:inherit}
     #viewBruch select {
@@ -40,12 +46,14 @@
   appearance: none;
 }
     .hidden{display:none!important}
-    .app{max-width:1500px;margin:0 auto;padding:14px}
+    .app{max-width:1480px;margin:0 auto;padding:18px}
     .card{
-      background:rgba(17,24,39,.92);
+      background:rgba(13,27,45,.94);
       border:1px solid var(--line);
-      border-radius:22px;
+      border-radius:20px;
       box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
     }
     .authWrap{
       max-width:980px;
@@ -72,18 +80,20 @@
     .authCard{padding:22px}
     .tabs{display:flex;gap:8px;margin-bottom:14px}
     .tabBtn,.navBtn,.btn,.btnDanger,.btnWarn,.ghost,.langBtn{
-      border:none;cursor:pointer;border-radius:14px;padding:10px 14px;font:inherit
+      min-height:44px;border:none;cursor:pointer;border-radius:12px;padding:10px 15px;font:inherit;
+      transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease
     }
     .tabBtn,.navBtn,.ghost,.langBtn{
-      background:#182536;color:var(--text);border:1px solid #324359
+      background:#12243a;color:var(--text);border:1px solid #2a435f
     }
     .tabBtn.active,.navBtn.active,.langBtn.active{
-      background:linear-gradient(135deg,#166534,#16a34a);
+      background:linear-gradient(135deg,#138452,#22b873);
       border-color:transparent;
+      box-shadow:0 8px 22px rgba(34,184,115,.2);
     }
     .btn{
-      background:linear-gradient(135deg,#15803d,#22c55e);
-      color:#05131f;
+      background:linear-gradient(135deg,var(--green-dark),var(--green));
+      color:#04150e;
       font-weight:800;
     }
     .btnDanger{
@@ -98,12 +108,23 @@
     }
     .input,.select,.textarea{
       width:100%;
-      padding:12px 13px;
-      border-radius:14px;
-      border:1px solid #314159;
-      background:#0f1a2b;
+      min-height:48px;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid #2b4563;
+      background:#09182a;
       color:var(--text);
+      outline:none;
+      transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;
     }
+    .input:focus,.select:focus,.textarea:focus,
+    #viewBruch input:focus,#viewBruch textarea:focus,#viewBruch select:focus{
+      border-color:var(--green);
+      box-shadow:0 0 0 3px rgba(45,212,134,.14);
+      background:#0b1c30;
+    }
+    button:hover{transform:translateY(-1px)}
+    button:active{transform:translateY(0)}
     .textarea{min-height:90px;resize:vertical}
     .field{margin-bottom:12px}
     .label{
@@ -118,31 +139,41 @@
     .right{margin-left:auto}
     .topbar{
       display:flex;justify-content:space-between;align-items:center;gap:12px;
-      padding:14px 16px;position:sticky;top:10px;z-index:40
+      padding:14px 16px;position:sticky;top:12px;z-index:40
     }
     .brandWrap{display:flex;gap:12px;align-items:center}
     .brand{
-      width:46px;height:46px;border-radius:15px;
+      width:48px;height:48px;border-radius:14px;
       background:linear-gradient(135deg,var(--green),var(--blue));
-      display:grid;place-items:center;color:#04111f;font-weight:900
+      display:grid;place-items:center;color:#04111f;font-weight:950;
+      box-shadow:0 10px 24px rgba(45,212,134,.2)
     }
     .title{font-size:21px;font-weight:900}
     .subtitle{font-size:12px;color:var(--muted)}
-    .layout{display:grid;grid-template-columns:280px 1fr;gap:14px;margin-top:14px}
-    .sidebar{padding:14px;height:fit-content}
+    .layout{display:grid;grid-template-columns:248px 1fr;gap:16px;margin-top:16px}
+    .sidebar{padding:12px;height:fit-content;position:sticky;top:98px}
     .navTitle{
       font-size:12px;color:var(--muted);margin-bottom:8px;
       text-transform:uppercase;letter-spacing:.08em
     }
-    .navBtn{display:block;width:100%;text-align:left;margin-bottom:9px;font-weight:700}
+    .navBtn{display:block;width:100%;text-align:left;margin-bottom:7px;font-weight:700;color:#b7c6d8}
+    .navBtn{display:flex;align-items:center;gap:10px}
+    .navBtn svg{width:18px;height:18px;flex:0 0 18px}
+    .navBtn:hover{background:#172d47;border-color:#365574;color:#fff}
+    .navBtn.active{color:#fff}
     .content{min-width:0}
-    .view{padding:16px}
-    .sectionTitle{font-size:22px;font-weight:900;margin:0 0 6px}
-    .sectionSub{font-size:13px;color:var(--muted);margin-bottom:16px}
+    .view{padding:22px;min-height:360px}
+    .sectionTitle{font-size:24px;line-height:1.2;font-weight:900;margin:0 0 7px;letter-spacing:-.02em}
+    .sectionSub{font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.5}
     .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
     .stat{
-      padding:16px;border-radius:18px;background:#122033;border:1px solid var(--line)
+      padding:17px;border-radius:16px;background:#102239;border:1px solid var(--line)
     }
+    .statHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .statIcon{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:rgba(45,212,134,.12);color:var(--green)}
+    .statIcon svg{width:17px;height:17px}
+    .dashboardHead{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
+    .dashboardDate{margin-left:auto;color:var(--muted);font-size:13px}
     .stat h3{margin:0 0 6px;font-size:13px;color:var(--muted)}
     .stat .num{font-size:28px;font-weight:900}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -173,7 +204,7 @@
     .pill.warn{background:rgba(245,158,11,.18);color:#fcd34d}
     .pill.danger{background:rgba(239,68,68,.18);color:#fca5a5}
     .item{
-      padding:14px;border-radius:18px;background:#122033;border:1px solid var(--line);margin-bottom:10px
+      padding:16px;border-radius:16px;background:#102239;border:1px solid var(--line);margin-bottom:10px
     }
     .divider{height:1px;background:#243447;margin:14px 0}
     .kpi{font-size:32px;font-weight:900}
@@ -184,15 +215,62 @@
     .smallRed{background:#7f1d1d;color:#fee2e2}
     .smallBlue{background:#1e3a8a;color:#dbeafe}
     .adminOnly.hiddenByRole{display:none!important}
+    #viewBruch input,#viewBruch textarea{
+      width:100%;min-height:48px;padding:12px 14px;border-radius:12px;
+      border:1px solid #2b4563;background:#09182a;color:var(--text);outline:none
+    }
+    #viewBruch textarea{min-height:96px;resize:vertical}
     @media (max-width:1100px){
-      .layout,.authWrap,.grid2,.grid3{grid-template-columns:1fr}
+      .authWrap,.grid2,.grid3{grid-template-columns:1fr}
       .stats{grid-template-columns:repeat(2,1fr)}
     }
-    @media (max-width:720px){
-      .stats{grid-template-columns:1fr}
-      .heroGrid{grid-template-columns:1fr}
+    @media (max-width:800px){
+      body{padding-bottom:92px}
       .app{padding:10px}
-      .topbar{padding:12px}
+      .topbar{position:static;padding:12px;border-radius:17px}
+      .topbar>.row{gap:7px;flex-wrap:nowrap}
+      .topbar .ghost,.topbar .btnDanger{min-height:40px;padding:8px 11px;font-size:13px}
+      .brandWrap{min-width:0;gap:9px}
+      .brand{width:42px;height:42px;flex:0 0 42px;border-radius:12px}
+      .title{font-size:17px;white-space:nowrap}
+      .subtitle{max-width:155px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .layout{display:block;margin-top:10px}
+      .sidebar{
+        position:fixed;z-index:100;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));top:auto;
+        display:flex;gap:6px;overflow-x:auto;padding:8px;border-radius:17px;
+        scrollbar-width:none;background:rgba(9,24,42,.96)
+      }
+      .sidebar::-webkit-scrollbar{display:none}
+      .navTitle{display:none}
+      .navBtn{width:auto;min-width:max-content;margin:0;padding:9px 13px;font-size:13px;min-height:42px;text-align:center}
+      .navBtn{flex-direction:column;gap:3px;padding:7px 12px;font-size:10px}
+      .navBtn svg{width:17px;height:17px}
+      .view{padding:16px;border-radius:17px;min-height:calc(100vh - 190px)}
+      .sectionTitle{font-size:22px}
+      .dashboardDate{display:none}
+      .sectionSub{margin-bottom:16px}
+      .grid2,.grid3{grid-template-columns:1fr}
+      .item{padding:14px}
+      .row .right{margin-left:0;width:100%}
+      .row .right.row{display:grid;grid-template-columns:1fr auto}
+      .row .right.row .input{max-width:none!important}
+      .tableWrap{margin-left:-2px;margin-right:-2px}
+      .authWrap{margin:10px auto}
+      .hero{padding:20px}
+      .hero h1{font-size:28px}
+    }
+    @media (max-width:520px){
+      .stats{grid-template-columns:1fr 1fr;gap:8px}
+      .stat{padding:13px}
+      .stat .num{font-size:24px}
+      .heroGrid{grid-template-columns:1fr}
+      .topbar #btnPrint{display:none}
+      .title{font-size:16px}
+      .subtitle{max-width:145px}
+      .view{padding:14px}
+      #viewUrlaub .btn{width:100%}
+      #urlaubList .item>.row{align-items:flex-start}
+      #urlaubList .item>.row .right{width:100%;margin:2px 0 0}
     }
     @media print{
       body{background:#fff;color:#000}
@@ -287,26 +365,31 @@
       <div class="layout">
         <aside class="sidebar card noPrint">
           <div class="navTitle">Navigation</div>
-          <button class="navBtn active" data-view="viewDashboard" type="button">Dashboard</button>
-          <button class="navBtn" data-view="viewWeekly" type="button">Weekly Plan</button>
-          <button class="navBtn" data-view="viewStaff" type="button">Staff</button>
-          <button class="navBtn" data-view="viewInventory" type="button">Inventory</button>
-          <button class="navBtn" data-view="viewMyHours" type="button">My Hours</button>
-          <button class="navBtn" data-view="viewHaccp" type="button">HACCP</button>
-          <button class="navBtn" data-view="viewUrlaub" type="button">Urlaub</button>
-          <button class="navBtn" data-view="viewBruch" type="button">Bruchliste</button>
+          <button class="navBtn active" data-view="viewDashboard" type="button"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span>Dashboard</span></button>
+          <button class="navBtn" data-view="viewWeekly" type="button"><i data-lucide="calendar-days" aria-hidden="true"></i><span>Wochenplan</span></button>
+          <button class="navBtn" data-view="viewStaff" type="button"><i data-lucide="users" aria-hidden="true"></i><span>Mitarbeiter</span></button>
+          <button class="navBtn" data-view="viewInventory" type="button"><i data-lucide="package" aria-hidden="true"></i><span>Inventar</span></button>
+          <button class="navBtn" data-view="viewMyHours" type="button"><i data-lucide="clock-3" aria-hidden="true"></i><span>Stunden</span></button>
+          <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP</span></button>
+          <button class="navBtn" data-view="viewUrlaub" type="button"><i data-lucide="palmtree" aria-hidden="true"></i><span>Urlaub</span></button>
+          <button class="navBtn" data-view="viewBruch" type="button"><i data-lucide="clipboard-list" aria-hidden="true"></i><span>Bruchliste</span></button>
         </aside>
 
         <main class="content">
           <section id="viewDashboard" class="view card">
-            <h2 class="sectionTitle">Dashboard</h2>
-            <div class="sectionSub">Statistikat kryesore të app-it.</div>
+            <div class="dashboardHead">
+              <div>
+                <h2 id="dashboardGreeting" class="sectionTitle">Guten Tag</h2>
+                <div class="sectionSub" style="margin-bottom:0">Alles Wichtige für dein Restaurant auf einen Blick.</div>
+              </div>
+              <div id="dashboardDate" class="dashboardDate"></div>
+            </div>
 
             <div class="stats">
-              <div class="stat"><h3>Staff</h3><div id="statStaff" class="num">0</div></div>
-              <div class="stat"><h3>Inventory</h3><div id="statInventory" class="num">0</div></div>
-              <div class="stat"><h3>Open Urlaub</h3><div id="statUrlaub" class="num">0</div></div>
-              <div class="stat"><h3>HACCP Today</h3><div id="statHaccp" class="num">0/3</div></div>
+              <div class="stat"><div class="statHead"><h3>Mitarbeiter</h3><span class="statIcon"><i data-lucide="users" aria-hidden="true"></i></span></div><div id="statStaff" class="num">0</div><div class="tiny muted">Aktives Team</div></div>
+              <div class="stat"><div class="statHead"><h3>Inventar</h3><span class="statIcon"><i data-lucide="package" aria-hidden="true"></i></span></div><div id="statInventory" class="num">0</div><div class="tiny muted">Produkte erfasst</div></div>
+              <div class="stat"><div class="statHead"><h3>Urlaub offen</h3><span class="statIcon"><i data-lucide="palmtree" aria-hidden="true"></i></span></div><div id="statUrlaub" class="num">0</div><div class="tiny muted">Zu prüfen</div></div>
+              <div class="stat"><div class="statHead"><h3>HACCP heute</h3><span class="statIcon"><i data-lucide="clipboard-check" aria-hidden="true"></i></span></div><div id="statHaccp" class="num">0/3</div><div class="tiny muted">Tageskontrollen</div></div>
             </div>
 
             <div class="grid2" style="margin-top:12px">
@@ -585,22 +668,22 @@
 
   <div class="field">
     <label class="label">Date</label>
-    <input id="bruchDate" type="text" />
+    <input id="bruchDate" class="input" type="date" />
   </div>
 
   <div class="field">
     <label class="label">Product</label>
-    <input type="text" id="bruchProduct" placeholder="Product manual eingeben">
+    <input type="text" id="bruchProduct" class="input" placeholder="Produkt eingeben">
   </div>
 
   <div class="field">
     <label class="label">Menge</label>
-    <input id="bruchQty" type="number" />
+    <input id="bruchQty" class="input" type="number" min="0" step="0.01" inputmode="decimal" />
   </div>
 
   <div class="field">
     <label class="label">Grund</label>
-    <textarea id="bruchReason"></textarea>
+    <textarea id="bruchReason" class="textarea"></textarea>
   </div>
 
  <button id="btnSaveBruch" type="button" class="btn">Save Bruch</button>
@@ -617,6 +700,7 @@
     </section>
   </div>
 
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
@@ -1532,6 +1616,12 @@ bruchCache.sort((a, b) => {
 
     async function bootstrapApp(){
       $("userInfoTop").textContent = `${currentProfile.name} · ${roleLabel(currentProfile.role)} · ${currentProfile.department || "-"}`;
+      const hour = new Date().getHours();
+      const greeting = hour < 11 ? "Guten Morgen" : hour < 18 ? "Guten Tag" : "Guten Abend";
+      $("dashboardGreeting").textContent = `${greeting}, ${currentProfile.name || "Team"}`;
+      $("dashboardDate").textContent = new Intl.DateTimeFormat("de-DE", {
+        weekday:"long", day:"2-digit", month:"2-digit", year:"numeric"
+      }).format(new Date());
       renderAdminVisibility();
 
       $("weekPicker").value = mondayOf(todayStr());
@@ -1552,6 +1642,7 @@ bruchCache.sort((a, b) => {
       await loadBruch();
       await loadDashboard();
       await loadHours();
+      window.lucide?.createIcons();
     }
 
     $("btnTabLogin").addEventListener("click", ()=> setAuthTab("login"));
@@ -1639,55 +1730,6 @@ bruchCache.sort((a, b) => {
         showMsg("Init Fehler: " + err.message);
       }
     });
-// ===== FIX BRUCH SAVE FINAL =====
-const btnBruchSave = document.getElementById("btnSaveBruch");
-
-if (btnBruchSave) {
-  btnBruchSave.addEventListener("click", async (e) => {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-
-    const date = document.getElementById("bruchDate")?.value || "";
-    const product = document.getElementById("bruchProduct")?.value.trim() || "";
-    const mengeRaw = document.getElementById("bruchQty")?.value || "";
-    const grund = document.getElementById("bruchReason")?.value.trim() || "";
-
-    if (!date || !product || !mengeRaw) {
-      alert("Plotëso Date, Product dhe Menge!");
-      return;
-    }
-
-    const menge = Number(mengeRaw);
-
-    try {
-      const user = auth.currentUser;
-
-      await addDoc(collection(db, "bruchliste"), {
-        date: date,
-        produkt: product,
-        menge: menge,
-        grund: grund || "-",
-        userName: currentProfile?.name || user?.email || "Milot",
-        role: currentProfile?.role || "SuperAdmin",
-        createdAt: new Date()
-      });
-
-      alert("U ruajt ✔");
-
-      document.getElementById("bruchProduct").value = "";
-      document.getElementById("bruchQty").value = "";
-      document.getElementById("bruchReason").value = "";
-
-      if (typeof loadBruchList === "function") {
-  await loadBruchList();
-}
-
-    } catch (err) {
-      console.error("BRUCH SAVE ERROR:", err);
-      alert("Gabim: " + err.message);
-    }
-  }, true);
-}
     window.dbg = { auth, db };
   </script>
 </body>
