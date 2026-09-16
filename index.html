@@ -186,7 +186,7 @@
     .clockIn{background:linear-gradient(135deg,#15803d,#2dd486);color:#04150e}
     .clockOut{background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff}
     .clockAction:disabled{opacity:.35;cursor:not-allowed;transform:none}
-    .clockSummary{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:620px;margin:16px auto}
+    .clockSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:620px;margin:16px auto}
     .clockSummary .item{text-align:center;margin:0}
     .stat h3{margin:0 0 6px;font-size:13px;color:var(--muted)}
     .stat .num{font-size:28px;font-weight:900}
@@ -335,6 +335,8 @@
       .dashboardApp{min-height:105px;padding:12px 6px;font-size:13px;border-radius:15px}
       .dashboardAppIcon{width:46px;height:46px;border-radius:14px}
       .dashboardAppIcon svg{width:24px;height:24px}
+      .clockSummary{grid-template-columns:1fr 1fr}
+      .clockSummary .item:first-child{grid-column:1/-1}
       #viewUrlaub .btn{width:100%}
       .menuToolbar{grid-template-columns:1fr}
       .menuGrid{grid-template-columns:1fr}
@@ -505,7 +507,7 @@
 
           <section id="viewTimeClock" class="view card hidden">
             <h2 class="sectionTitle">Stempeluhr</h2>
-            <div class="sectionSub">Arbeitszeit mit Kommen und Gehen erfassen.</div>
+            <div class="sectionSub">Arbeitszeit für <strong id="timeClockEmployee">–</strong> mit Kommen und Gehen erfassen.</div>
             <div id="timeClockNow" class="clockNow">--:--:--</div>
             <div id="timeClockDate" class="clockDate">--</div>
             <div class="clockActions">
@@ -515,6 +517,7 @@
             <div class="clockSummary">
               <div class="item"><div class="tiny muted">Status</div><div id="timeClockStatus" class="kpi" style="font-size:22px">Nicht eingestempelt</div></div>
               <div class="item"><div class="tiny muted">Heute gearbeitet</div><div id="timeClockTotal" class="kpi" style="font-size:22px">0:00 Std.</div></div>
+              <div class="item"><div class="tiny muted">Pause abgezogen</div><div id="timeClockBreak" class="kpi" style="font-size:22px">0 Min.</div></div>
             </div>
             <div class="item" style="max-width:620px;margin:0 auto">
               <strong>Heutige Buchungen</strong>
@@ -2475,6 +2478,17 @@ bruchCache.sort((a, b) => {
       return sessionsMinutes(timeClockRecord.sessions || []);
     }
 
+    function automaticBreakMinutes(grossMinutes){
+      if(grossMinutes > 360) return 30;
+      if(grossMinutes > 240) return 15;
+      return 0;
+    }
+
+    function netWorkMinutes(sessions = []){
+      const gross = sessionsMinutes(sessions);
+      return Math.max(0, gross - automaticBreakMinutes(gross));
+    }
+
     function formatMinutes(minutes){
       return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2,"0")} Std.`;
     }
@@ -2485,11 +2499,14 @@ bruchCache.sort((a, b) => {
       $("timeClockDate").textContent = now.toLocaleDateString("de-DE", {weekday:"long", day:"2-digit", month:"long", year:"numeric"});
       const sessions = timeClockRecord.sessions || [];
       const openSession = sessions.find(session => session.in && !session.out);
+      $("timeClockEmployee").textContent = timeClockRecord.userName || currentProfile.name || currentUser.email;
       $("timeClockStatus").textContent = openSession ? `Seit ${formatClockTime(openSession.in)}` : "Nicht eingestempelt";
       $("btnClockIn").disabled = Boolean(openSession);
       $("btnClockOut").disabled = !openSession;
-      const minutes = timeClockMinutes();
-      $("timeClockTotal").textContent = formatMinutes(minutes);
+      const grossMinutes = timeClockMinutes();
+      const breakMinutes = automaticBreakMinutes(grossMinutes);
+      $("timeClockTotal").textContent = formatMinutes(Math.max(0, grossMinutes - breakMinutes));
+      $("timeClockBreak").textContent = `${breakMinutes} Min.`;
       $("timeClockHistory").innerHTML = sessions.length ? sessions.map((session, index) => `
         <div class="orderLine">
           <div><strong>Arbeitszeit ${index + 1}</strong><div class="tiny muted">${session.out ? "Abgeschlossen" : "Läuft"}</div></div>
@@ -2517,13 +2534,15 @@ bruchCache.sort((a, b) => {
         const rows = qs.docs.map(d => ({id:d.id, ...d.data()}))
           .filter(row => row.userId === currentUser.uid && safe(row.date).startsWith(month))
           .sort((a,b) => safe(b.date).localeCompare(safe(a.date)));
-        const total = rows.reduce((sum, row) => sum + sessionsMinutes(row.sessions || []), 0);
+        const total = rows.reduce((sum, row) => sum + netWorkMinutes(row.sessions || []), 0);
         $("timeClockMonthTotal").textContent = formatMinutes(total);
         $("timeClockMonthHistory").innerHTML = rows.length ? rows.map(row => {
-          const minutes = sessionsMinutes(row.sessions || []);
+          const grossMinutes = sessionsMinutes(row.sessions || []);
+          const breakMinutes = automaticBreakMinutes(grossMinutes);
+          const minutes = Math.max(0, grossMinutes - breakMinutes);
           const times = (row.sessions || []).map(session => `${formatClockTime(session.in)}–${session.out ? formatClockTime(session.out) : "…"}`).join(" · ");
           const dateLabel = new Date(`${row.date}T12:00:00`).toLocaleDateString("de-DE", {weekday:"short", day:"2-digit", month:"2-digit"});
-          return `<div class="orderLine"><div><strong>${htmlEscape(dateLabel)}</strong><div class="tiny muted">${htmlEscape(times || "Keine Zeiten")}</div></div><strong>${formatMinutes(minutes)}</strong></div>`;
+          return `<div class="orderLine"><div><strong>${htmlEscape(dateLabel)}</strong><div class="tiny muted">${htmlEscape(times || "Keine Zeiten")}${breakMinutes ? ` · Pause −${breakMinutes} Min.` : ""}</div></div><strong>${formatMinutes(minutes)}</strong></div>`;
         }).join("") : `<div class="muted">Keine Buchungen in diesem Monat.</div>`;
       }catch(err){
         console.error(err);
