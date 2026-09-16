@@ -220,6 +220,29 @@
       border:1px solid #2b4563;background:#09182a;color:var(--text);outline:none
     }
     #viewBruch textarea{min-height:96px;resize:vertical}
+    .menuHero{
+      padding:20px;border-radius:20px;margin-bottom:14px;
+      background:linear-gradient(135deg,rgba(127,29,29,.28),rgba(13,27,45,.88) 58%,rgba(45,212,134,.08));
+      border:1px solid rgba(248,113,113,.25)
+    }
+    .menuToolbar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(180px,260px) auto;gap:10px;align-items:center}
+    .menuCategories{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
+    .menuCategories::-webkit-scrollbar{display:none}
+    .menuCatBtn{white-space:nowrap;border:1px solid #2a435f;background:#12243a;color:#cbd5e1;border-radius:999px;padding:9px 13px;cursor:pointer}
+    .menuCatBtn.active{background:#7f1d1d;border-color:#ef4444;color:#fff}
+    .menuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .menuItem{padding:15px;border:1px solid var(--line);border-radius:16px;background:#102239;display:flex;flex-direction:column;gap:8px}
+    .menuItemHead{display:flex;align-items:flex-start;gap:10px}
+    .menuItemName{font-weight:900;font-size:16px;line-height:1.25}
+    .menuPrice{margin-left:auto;color:#86efac;font-size:17px;font-weight:950;white-space:nowrap}
+    .menuDescription{color:#b6c5d8;font-size:13px;line-height:1.45}
+    .menuMeta{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:auto}
+    .vegBadge,.allergenBadge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800}
+    .vegBadge{background:rgba(34,197,94,.15);color:#86efac}
+    .allergenBadge{background:rgba(148,163,184,.12);color:#cbd5e1}
+    .menuEmpty{grid-column:1/-1;text-align:center;padding:34px;color:var(--muted)}
+    .menuFormGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .menuLegend{columns:2;column-gap:24px;font-size:12px;color:var(--muted);line-height:1.7}
     @media (max-width:1100px){
       .authWrap,.grid2,.grid3{grid-template-columns:1fr}
       .stats{grid-template-columns:repeat(2,1fr)}
@@ -269,6 +292,10 @@
       .subtitle{max-width:145px}
       .view{padding:14px}
       #viewUrlaub .btn{width:100%}
+      .menuToolbar{grid-template-columns:1fr}
+      .menuGrid{grid-template-columns:1fr}
+      .menuFormGrid{grid-template-columns:1fr}
+      .menuLegend{columns:1}
       #urlaubList .item>.row{align-items:flex-start}
       #urlaubList .item>.row .right{width:100%;margin:2px 0 0}
     }
@@ -372,6 +399,7 @@
           <button class="navBtn" data-view="viewInventory" type="button"><i data-lucide="package" aria-hidden="true"></i><span>Inventar</span></button>
           <button class="navBtn" data-view="viewMyHours" type="button"><i data-lucide="clock-3" aria-hidden="true"></i><span>Stunden</span></button>
           <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP</span></button>
+          <button class="navBtn" data-view="viewRestaurantMenu" type="button"><i data-lucide="utensils" aria-hidden="true"></i><span>Speisekarte</span></button>
           <button class="navBtn" data-view="viewUrlaub" type="button"><i data-lucide="palmtree" aria-hidden="true"></i><span>Urlaub</span></button>
           <button class="navBtn" data-view="viewBruch" type="button"><i data-lucide="clipboard-list" aria-hidden="true"></i><span>Bruchliste</span></button>
         </aside>
@@ -696,6 +724,69 @@
               </div>
             </div>
           </section>
+
+          <section id="viewRestaurantMenu" class="view card hidden">
+            <div class="menuHero">
+              <div class="row">
+                <div>
+                  <div class="tiny" style="color:#fca5a5;font-weight:900;letter-spacing:.12em;text-transform:uppercase">Matteo · Pizzeria · Ristorante</div>
+                  <h2 class="sectionTitle" style="margin-top:5px">Speisekarte Restaurant</h2>
+                  <div class="sectionSub" style="margin-bottom:0">Gerichte, Getränke, Preise und Allergene schnell finden.</div>
+                </div>
+                <span id="menuCount" class="pill ok right">0 Positionen</span>
+              </div>
+            </div>
+
+            <div class="menuToolbar noPrint">
+              <input id="menuSearch" class="input" type="search" placeholder="Gericht oder Zutat suchen …" />
+              <select id="menuCategoryFilter" class="select" aria-label="Kategorie"></select>
+              <button id="btnToggleMenuEditor" class="btn adminOnly" type="button">+ Neuer Eintrag</button>
+            </div>
+            <div id="menuCategoryChips" class="menuCategories noPrint"></div>
+
+            <div id="menuEditor" class="item adminOnly hidden" style="margin-bottom:14px">
+              <strong id="menuEditorTitle">Neuer Menüeintrag</strong>
+              <div class="divider"></div>
+              <input id="menuEditId" type="hidden" />
+              <div class="menuFormGrid">
+                <div class="field"><label class="label">Name</label><input id="menuName" class="input" /></div>
+                <div class="field"><label class="label">Kategorie</label><select id="menuCategory" class="select"></select></div>
+                <div class="field"><label class="label">Preis (€)</label><input id="menuPrice" class="input" type="number" min="0" step="0.10" inputmode="decimal" /></div>
+                <div class="field"><label class="label">Menge, z. B. 0,4 L</label><input id="menuSize" class="input" /></div>
+              </div>
+              <div class="field"><label class="label">Beschreibung</label><textarea id="menuDescription" class="textarea"></textarea></div>
+              <div class="menuFormGrid">
+                <div class="field"><label class="label">Allergene / Zusatzstoffe</label><input id="menuAllergens" class="input" placeholder="z. B. A, D, E, 1, 2" /></div>
+                <label class="row" style="align-self:center"><input id="menuVegetarian" type="checkbox" /> Vegetarisch</label>
+              </div>
+              <div class="row">
+                <button id="btnSaveMenuItem" class="btn" type="button">Speichern</button>
+                <button id="btnCancelMenuEdit" class="ghost" type="button">Abbrechen</button>
+              </div>
+            </div>
+
+            <div id="restaurantMenuList" class="menuGrid"></div>
+
+            <details class="item" style="margin-top:14px">
+              <summary style="cursor:pointer;font-weight:900">Allergene & Zusatzstoffe</summary>
+              <div class="divider"></div>
+              <div class="menuLegend">
+                <div><strong>A</strong> Eier</div><div><strong>B</strong> Fisch</div><div><strong>C</strong> Krebstiere</div>
+                <div><strong>D</strong> Milch</div><div><strong>E</strong> Sellerie</div><div><strong>F</strong> Sesamsamen</div>
+                <div><strong>G</strong> Schwefeldioxid & Sulphite</div><div><strong>H</strong> Erdnüsse</div>
+                <div><strong>I</strong> Glutenhaltiges Getreide (Weizen)</div><div><strong>J</strong> Lupine</div>
+                <div><strong>K</strong> Schalenfrüchte</div><div><strong>L</strong> Senf</div><div><strong>M</strong> Sojabohnen</div>
+                <div><strong>N</strong> Weichtiere</div><div><strong>1</strong> Konservierungsstoffe</div>
+                <div><strong>2</strong> Farbstoff</div><div><strong>3</strong> Antioxidationsmittel</div>
+                <div><strong>4–7</strong> Süßungsmittel</div><div><strong>8</strong> Phosphat</div>
+                <div><strong>9</strong> Geschwefelt</div><div><strong>10</strong> Chininhaltig</div>
+                <div><strong>11</strong> Koffeinhaltig</div><div><strong>12</strong> Geschmacksverstärker</div>
+                <div><strong>13</strong> Geschwärzt</div><div><strong>14</strong> Gewachst</div>
+                <div><strong>15</strong> Gentechnisch verändert</div><div><strong>16</strong> Gerstenmalz</div>
+              </div>
+              <p class="tiny muted" style="margin-bottom:0">Keines unserer Gerichte enthält Schweinefleisch oder Alkohol. Bei Allergien bitte das Team ansprechen.</p>
+            </details>
+          </section>
         </main>
       </div>
     </section>
@@ -733,6 +824,134 @@
     let inventoryCache = [];
     let urlaubCache = [];
     let bruchCache = [];
+    let restaurantMenuCache = [];
+    let activeMenuCategory = "Alle";
+
+    const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
+    const DEFAULT_RESTAURANT_MENU = [
+      {id:"vorspeisen-bruschetta",category:"Vorspeisen",name:"Bruschetta",description:"Geröstete Brotscheiben, belegt mit Tomate, Knoblauch und Zwiebeln",price:8.5,allergens:"I",vegetarian:true},
+      {id:"vorspeisen-tomaten-mozzarella",category:"Vorspeisen",name:"Tomaten Mozzarella",description:"Frischer Blattsalat mit Tomaten und Mozzarella",price:8.5,allergens:"D",vegetarian:true},
+      {id:"vorspeisen-zuppa-gulasch",category:"Vorspeisen",name:"Zuppa di Gulasch",description:"Hausgemachte Suppe mit Rindfleisch",price:10},
+      {id:"vorspeisen-antipasti",category:"Vorspeisen",name:"Antipasti Misto",description:"Gemischte Vorspeisen nach Art des Hauses",price:10.5,vegetarian:true},
+      {id:"vorspeisen-gamberoni",category:"Vorspeisen",name:"Gamberoni",description:"Riesengarnelen in Olivenöl gebraten, mit Dip und Gemüsegarnitur",price:11,allergens:"C"},
+      {id:"vorspeisen-carpaccio",category:"Vorspeisen",name:"Carpaccio di Manzo Affumicato",description:"Fein geschnittenes Rauchfleisch vom Rind mit Rucola-Salatgarnitur",price:15},
+      {id:"vorspeisen-carpaccio-mozzarella",category:"Vorspeisen",name:"Carpaccio di Manzo Affumicato & Mozzarella",description:"Rauchfleisch vom Rind, Mozzarella und Rucola-Salatgarnitur",price:16.5,allergens:"D"},
+
+      {id:"salate-mista",category:"Salate",name:"Mista",description:"Blattsalat der Saison mit Tomaten, Karotten und Salatgurke",price:11.5,vegetarian:true},
+      {id:"salate-matteo",category:"Salate",name:"Matteo",description:"Blattsalat, Schafskäse, Paprika, Tomaten, Karotten, Salatgurke, schwarze Oliven und rote Zwiebeln",price:13.5,allergens:"D, 13",vegetarian:true},
+      {id:"salate-pollo",category:"Salate",name:"Pollo",description:"Blattsalat mit Hähnchenbruststücken, Tomaten, Karotten, Salatgurke und roten Zwiebeln",price:15},
+      {id:"salate-capricciosa",category:"Salate",name:"Capricciosa",description:"Blattsalat mit gekochtem Ei, Tomate, Karotten, Thunfisch, Artischocken, roten Zwiebeln, Gouda und schwarzen Oliven",price:15.5,allergens:"A, B, D, 1, 2, 3, 13"},
+      {id:"salate-salmone",category:"Salate",name:"Salmone",description:"In Olivenöl gebratenes Lachsfilet auf Blattsalat mit Tomaten, Karotten, roten Zwiebeln und Salatgurke",price:16,allergens:"B"},
+      {id:"salate-manzo",category:"Salate",name:"Manzo Affumicato",description:"Fein geschnittenes Rauchfleisch auf Blattsalat mit Tomaten, Karotten, roten Zwiebeln und Salatgurke",price:17},
+      {id:"salate-gamberoni",category:"Salate",name:"Gamberoni",description:"In Olivenöl gebratene Riesengarnelen auf Blattsalat mit Tomaten, Karotten, roten Zwiebeln und Salatgurke",price:18,allergens:"C"},
+
+      {id:"pasta-pomodoro",category:"Pasta",name:"Sugo di Pomodori",description:"Hausgemachte Tomatensauce · Pasta nach Wahl",price:10.5,allergens:"A, E, I, 2",vegetarian:true},
+      {id:"pasta-aglio-olio",category:"Pasta",name:"Aglio e Olio",description:"Knoblauch, Peperoni, Chili und schwarze Oliven",price:11.5,allergens:"A, E, I, 12",vegetarian:true},
+      {id:"pasta-arrabbiata",category:"Pasta",name:"All’ Arrabbiata",description:"Tomatensauce, Zwiebeln, Knoblauch und Chili",price:11.5,allergens:"A, E, I, 2, 12",vegetarian:true},
+      {id:"pasta-gorgonzola",category:"Pasta",name:"Gorgonzola",description:"Gorgonzola-Sahnesauce",price:14,allergens:"A, D, E, I, 2",vegetarian:true},
+      {id:"pasta-bolognese",category:"Pasta",name:"Ragù alla Bolognese",description:"Rinderhackfleisch in Tomatensauce",price:14.5,allergens:"A, E, I, 2, 12"},
+      {id:"pasta-carbonara",category:"Pasta",name:"Carbonara",description:"Truthahnschinken, Knoblauch und Sahne",price:14.5,allergens:"A, D, E, I, 1, 2, 3, 12"},
+      {id:"pasta-matteo",category:"Pasta",name:"Matteo",description:"Tomaten, Schafskäse und schwarze Oliven",price:14.5,allergens:"A, E, I, 1, 2, 3, 12, 13",vegetarian:true},
+      {id:"pasta-pollo-curry",category:"Pasta",name:"Pollo Curry / Pollo Funghi",description:"Hähnchenstücke mit Curry- oder Champignon-Sahnesauce",price:15.5,allergens:"A, D, E, M, I, 2"},
+      {id:"pasta-quattro-formaggi",category:"Pasta",name:"Quattro Formaggi",description:"Vier Käsesorten in Sahnesauce",price:15.5,allergens:"A, D, E, I, 2, 12",vegetarian:true},
+      {id:"pasta-salmone",category:"Pasta",name:"Salmone",description:"Gebratener Lachs mit Brokkoli oder Spinat in Tomaten-Sahnesauce",price:16.5,allergens:"A, B, D, E, I, 2, 12"},
+      {id:"pasta-ragu-gulasch",category:"Pasta",name:"Ragù di Gulasch",description:"Hausgemachtes Gulasch",price:19,allergens:"A, E, I, 2, 12"},
+      {id:"pasta-manzo",category:"Pasta",name:"Manzo Affumicati",description:"Fein geschnittenes Rauchfleisch, Tomatensauce oder Aglio e Olio",price:19,allergens:"A, E, I, 2, 12"},
+      {id:"pasta-gamberoni",category:"Pasta",name:"Gamberoni",description:"Gebratene Riesengarnelen, Tomatensauce oder Aglio e Olio",price:19,allergens:"A, B, E, I, 2, 12"},
+
+      {id:"forno-cannelloni",category:"Al Forno",name:"Cannelloni",description:"Spinat, Schafskäse, Tomatensauce und Gouda",price:13.5,allergens:"A, D, E, I, 2, 12",vegetarian:true},
+      {id:"forno-lasagne",category:"Al Forno",name:"Lasagne",description:"Rinder-Bolognese, Mozzarella, Tomatensauce und Gouda",price:14.5,allergens:"A, D, E, I, 2, 12"},
+      {id:"forno-salmone",category:"Al Forno",name:"Trance di Salmone",description:"Lachsfilet vom Grill mit Kartoffel und Beilagensalat",price:16.5,allergens:"B, 2, 12"},
+
+      {id:"pizza-margherita",category:"Pizza",name:"Margherita",description:"Tomatensauce und Gouda",price:11.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"pizza-spinaci",category:"Pizza",name:"Spinaci",description:"Mit Spinat",price:13.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"pizza-cipolla",category:"Pizza",name:"Cipolla",description:"Mit Zwiebeln",price:13.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"pizza-mais",category:"Pizza",name:"Mais",description:"Mit Mais",price:13.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"pizza-broccoli",category:"Pizza",name:"Broccoli",description:"Mit Brokkoli",price:13.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"pizza-funghi",category:"Pizza",name:"Funghi",description:"Mit Champignons",price:13.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"pizza-mozzarella",category:"Pizza",name:"Mozzarella",description:"Tomatensauce und Mozzarella",price:13.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"pizza-prosciutto",category:"Pizza",name:"Prosciutto di Tacchino",description:"Mit Truthahnschinken",price:14,allergens:"D, I, 1, 2",vegetarian:false},
+      {id:"pizza-salami",category:"Pizza",name:"Salami",description:"Mit Rindersalami",price:14.5,allergens:"D, E, I, 1, 2, 3"},
+      {id:"pizza-pirata",category:"Pizza",name:"Pirata",description:"Mit Rinderbolognese",price:14.5,allergens:"A, D, E, I, 1, 2, 12"},
+      {id:"pizza-tonno",category:"Pizza",name:"Tonno",description:"Mit Thunfisch",price:14.5,allergens:"B, D, I, 2"},
+      {id:"pizza-margherita-rucola",category:"Pizza",name:"Margherita Rucola",description:"Mit Gouda und Rucola",price:14.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"pizza-hawaii",category:"Pizza",name:"Hawaii",description:"Mit Truthahnschinken und Ananas",price:14.5,allergens:"D, I, 1, 2, 3"},
+      {id:"pizza-vesuvio",category:"Pizza",name:"Vesuvio",description:"Mit Paprika und Zwiebeln",price:14.5,allergens:"D, I, 2, 4",vegetarian:true},
+      {id:"pizza-diavolo",category:"Pizza",name:"Diavolo",description:"Mit Rindersalami und Peperoni",price:14.5,allergens:"D, E, I, 1, 2, 3"},
+      {id:"pizza-matteo",category:"Pizza",name:"Matteo",description:"Mit Schafskäse und schwarzen Oliven",price:14.5,allergens:"D, I, 1, 2, 3, 13",vegetarian:true},
+      {id:"pizza-marcello",category:"Pizza",name:"Marcello",description:"Mit Paprika und Rindersalami",price:14.5,allergens:"D, E, I, 1, 2, 3, 4"},
+      {id:"pizza-napoli",category:"Pizza",name:"Napoli",description:"Mit Sardellenfilets, Kapern und schwarzen Oliven",price:15,allergens:"B, D, G, I, 1, 2, 3, 13"},
+      {id:"pizza-mozzarella-rucola",category:"Pizza",name:"Mozzarella Rucola",description:"Mit Mozzarella und Rucola",price:15.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"pizza-tricolori",category:"Pizza",name:"Tricolori",description:"Mit Spinat, Paprika und Zwiebeln",price:15.5,allergens:"D, E, I, 2, 4",vegetarian:true},
+      {id:"pizza-pesto-verde",category:"Pizza",name:"Pesto Verde",description:"Mit Blattspinat und frischen Tomaten in Pesto-Sahnesauce",price:15.5,allergens:"D, E, I, K, 1, 12",vegetarian:true},
+      {id:"pizza-vegetariana",category:"Pizza",name:"Vegetariana",description:"Mit Spinat, Mais, Zwiebeln und Paprika",price:15.5,allergens:"D, E, I, 2, 4",vegetarian:true},
+      {id:"pizza-quattro-formaggi",category:"Pizza",name:"Quattro Formaggi",description:"Mit verschiedenen Käsesorten",price:17,allergens:"D, I, 1, 2",vegetarian:true},
+      {id:"pizza-mista",category:"Pizza",name:"Mista",description:"Mit Thunfisch, Truthahnschinken, Champignons und Spinat",price:17,allergens:"B, D, I, 1, 2, 3"},
+      {id:"pizza-rita",category:"Pizza",name:"Rita",description:"Mit Paprika, Schafskäse und Rindersalami",price:17.5,allergens:"D, E, I, 1, 2, 3, 4"},
+      {id:"pizza-frutti-mare",category:"Pizza",name:"Frutti di Mare",description:"Mit Meeresfrüchten",price:17.5,allergens:"B, C, D, I, 2"},
+      {id:"pizza-gambaretti",category:"Pizza",name:"Gambaretti",description:"Mit Black Tiger Garnelen",price:17.5,allergens:"B, C, D, I, 2"},
+
+      {id:"extra-pasta-standard",category:"Extras",name:"Pasta & Salat Extras",description:"Ananas, Artischocken, Brokkoli, Champignons, Gouda, Kapern, Mais, Paprika, Peperoni, Rindersalami, Sardellen, schwarze Oliven, Rucola, Schafskäse, Spinat, Tomaten, Truthahnschinken oder Zwiebeln",price:3},
+      {id:"extra-pasta-premium",category:"Extras",name:"Pasta & Salat Premium-Extras",description:"Black Tiger Garnelen, Gorgonzola, Grana Padano, Hähnchenbrust, Lachs, Mozzarella, Meeresfrüchte, Pesto Genovese, Rauchfleisch, Riesengarnelen, Rinderbolognese oder Thunfisch",price:5},
+      {id:"extra-pizza-standard",category:"Extras",name:"Pizza Extras",description:"Ananas, Artischocken, Brokkoli, Champignons, Gouda, Paprika, schwarze Oliven, Peperoni, Kapern, Tomaten, Zwiebeln, Mais, Rucola, Salat, Rindersalami, Sardellen, Schafskäse, Spinat oder Truthahnschinken",price:3},
+      {id:"extra-pizza-premium",category:"Extras",name:"Pizza Premium-Extras",description:"Black Tiger Garnelen, Gorgonzola, Grana Padano, Hähnchenbrust, Mozzarella, Rinderbolognese, Thunfisch, Meeresfrüchte, Rauchfleisch, Riesengarnelen oder Pesto Genovese",price:5},
+
+      {id:"dessert-trileche",category:"Dessert",name:"Trileche",description:"Milchkuchen mit Karamellsauce",price:8,allergens:"A, D, I, 2"},
+      {id:"dessert-tiramisu",category:"Dessert",name:"Tiramisu",description:"Alkoholfreier Kaffeekuchen mit Schlagsahne",price:8,allergens:"I, M, D"},
+      {id:"dessert-souffle",category:"Dessert",name:"Soufflé al Cioccolato",description:"Warmes Schokoladensoufflé mit Schlagsahne",price:8,allergens:"A, D, I"},
+
+      {id:"soft-pepsi",category:"Softdrinks",name:"Pepsi / Pepsi Max",size:"0,3 L",price:3.5,allergens:"2, 6, 8, 11"},
+      {id:"soft-7up",category:"Softdrinks",name:"7 Up / Schwip Schwap Orange / Spezi",size:"0,3 L",price:3.5,allergens:"2, 3, 6"},
+      {id:"soft-apfelsaft",category:"Softdrinks",name:"Apfelsaft",size:"0,3 L",price:3.5},
+      {id:"soft-bitter-lemon",category:"Softdrinks",name:"Schweppes Bitter Lemon",size:"0,2 L",price:3.5,allergens:"3, 5, 10"},
+      {id:"soft-apfelschorle",category:"Softdrinks",name:"Apfelsaftschorle",size:"0,3 L",price:3.5},
+      {id:"wasser-klein",category:"Softdrinks",name:"Matteo Tafelwasser",description:"Mit oder ohne Sprudel",size:"0,3 L",price:3},
+      {id:"wasser-gross",category:"Softdrinks",name:"Matteo Tafelwasser",description:"Mit oder ohne Sprudel",size:"0,75 L",price:7},
+
+      {id:"heiss-crema",category:"Heiße Getränke",name:"Caffè Crema",price:3.5,allergens:"11"},
+      {id:"heiss-cappuccino",category:"Heiße Getränke",name:"Cappuccino",price:4,allergens:"D, 11"},
+      {id:"heiss-macchiato",category:"Heiße Getränke",name:"Espresso Macchiato",price:3,allergens:"D, 11"},
+      {id:"heiss-espresso",category:"Heiße Getränke",name:"Espresso",price:3,allergens:"11"},
+      {id:"heiss-doppelter",category:"Heiße Getränke",name:"Doppelter Espresso",price:4.5,allergens:"11"},
+      {id:"heiss-latte",category:"Heiße Getränke",name:"Caffè Latte Macchiato",price:4.5,allergens:"D, 11"},
+      {id:"heiss-tee",category:"Heiße Getränke",name:"Tee",description:"Schwarz, Grün, Früchte, Pfefferminze, Kamille, Rooibos oder Kräutertee",price:3.5},
+      {id:"heiss-zitrone",category:"Heiße Getränke",name:"Heiße Zitrone",price:3.5},
+      {id:"heiss-milch-honig",category:"Heiße Getränke",name:"Heiße Milch mit Honig",price:5,allergens:"D"},
+
+      {id:"bier-brinkhoffs",category:"Bier",name:"Brinkhoff’s No. 1 vom Fass",size:"0,4 L",price:6,allergens:"16"},
+      {id:"bier-schloesser",category:"Bier",name:"Schlösser Alt vom Fass",size:"0,4 L",price:6,allergens:"2, 16"},
+      {id:"bier-weizen",category:"Bier",name:"Schöfferhofer Weizenbier Naturtrüb",size:"0,5 L",price:6,allergens:"I, 16"},
+      {id:"bier-clausthaler",category:"Bier",name:"Clausthaler Alkoholfrei",size:"0,33 L",price:4,allergens:"16"},
+      {id:"bier-weizen-alkoholfrei",category:"Bier",name:"Schöfferhofer Weizen 0,0 % Alkoholfrei",size:"0,5 L",price:6,allergens:"I, 16"},
+      {id:"bier-vitamalz",category:"Bier",name:"Vitamalz Alkoholfrei",size:"0,33 L",price:4.5,allergens:"16"},
+      {id:"bier-mix",category:"Bier",name:"Radler / Krefelder / Altster",size:"0,4 L",price:6,allergens:"2, 16"},
+
+      {id:"longdrink-aperol",category:"Longdrinks",name:"Aperol Spritz",description:"Prosecco, Aperol und Sodawasser",size:"0,2 L",price:12.5,allergens:"10, 2"},
+      {id:"digestif-jaegermeister",category:"Digestif",name:"Jägermeister",size:"0,2 cl",price:4.5},
+      {id:"digestif-ramazotti",category:"Digestif",name:"Ramazotti",size:"0,2 cl",price:4.5},
+      {id:"digestif-killepitsch",category:"Digestif",name:"Killepitsch",size:"0,2 cl",price:4.5,allergens:"D, 9"},
+      {id:"digestif-averna",category:"Digestif",name:"Averna",size:"0,2 cl",price:4.5},
+      {id:"digestif-grappa",category:"Digestif",name:"Grappa",size:"0,2 cl",price:4.5},
+      {id:"digestif-grappa-nardini",category:"Digestif",name:"Grappa Nardini",size:"0,2 cl",price:8.5},
+      {id:"digestif-sambuca",category:"Digestif",name:"Sambuca",size:"0,2 cl",price:4.5},
+      {id:"digestif-amaretto",category:"Digestif",name:"Amaretto",size:"0,2 cl",price:4.5},
+      {id:"digestif-limoncello",category:"Digestif",name:"Limoncello",size:"0,2 cl",price:4.5},
+      {id:"digestif-vodka",category:"Digestif",name:"Vodka",size:"0,2 cl",price:4.5},
+
+      {id:"wein-pinot-offen",category:"Offene Weine",name:"Pinot Grigio",description:"Weißwein, trocken und fruchtig",size:"0,2 L",price:6,allergens:"G"},
+      {id:"wein-chiaretto",category:"Offene Weine",name:"Chiaretto, Riva d’Oro",description:"Rosé, trocken",size:"0,2 L",price:7,allergens:"G"},
+      {id:"wein-merlot-offen",category:"Offene Weine",name:"Merlot",description:"Rot, trocken",size:"0,2 L",price:6,allergens:"G"},
+      {id:"wein-lambrusco",category:"Offene Weine",name:"Reggiano Lambrusco",description:"Vino Frizzante Rosso Dolce DOC, lieblich",size:"0,2 L",price:7,allergens:"G"},
+      {id:"wein-schorle",category:"Offene Weine",name:"Weißweinschorle",description:"Pinot Grigio mit Sodawasser",size:"0,2 L",price:6,allergens:"G"},
+      {id:"weisswein-regali",category:"Weißwein",name:"Regali Bianco IGT",description:"Tasca Malmerita · Sicilia, Italien",size:"0,75 L",price:30,allergens:"G"},
+      {id:"weisswein-sauvignon",category:"Weißwein",name:"Sauvignon DOC Friuli",description:"Permanì · Friuli, Italien",size:"0,75 L",price:30,allergens:"G"},
+      {id:"weisswein-lugana",category:"Weißwein",name:"Lugana DOC",description:"Otella · Veneto, Italien",size:"0,75 L",price:31,allergens:"G"},
+      {id:"rotwein-nero",category:"Rotwein",name:"Nero Tavola IGT „Roceno“",description:"Cantina Sibilano · Italien",size:"0,75 L",price:24,allergens:"G"},
+      {id:"rotwein-merlot",category:"Rotwein",name:"Merlot DOC „Il Scuri“",description:"Borgo Molino · Veneto, Italien",size:"0,75 L",price:29.5,allergens:"G"},
+      {id:"rotwein-primitivo",category:"Rotwein",name:"Primitivo di Mandaría",description:"Casaletti · Puglia, Italien",size:"0,75 L",price:38,allergens:"G"},
+      {id:"prosecco-piccolo",category:"Prosecco",name:"Prosecco Piccolo DOC",description:"Trocken",size:"0,2 L",price:7.5,allergens:"G"},
+      {id:"prosecco-frizzante",category:"Prosecco",name:"Prosecco Frizzante DOC",description:"Trocken",size:"0,75 L",price:28.5,allergens:"G"}
+    ];
 
     const $ = (id) => document.getElementById(id);
 
@@ -809,6 +1028,147 @@
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;");
+    }
+
+    function menuSearchText(value){
+      return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+
+    function euro(value){
+      return new Intl.NumberFormat("de-DE", {style:"currency", currency:"EUR"}).format(Number(value || 0));
+    }
+
+    function setupMenuControls(){
+      const options = ["Alle", ...MENU_CATEGORIES];
+      $("menuCategoryFilter").innerHTML = options.map(c => `<option value="${htmlEscape(c)}">${htmlEscape(c)}</option>`).join("");
+      $("menuCategory").innerHTML = MENU_CATEGORIES.map(c => `<option value="${htmlEscape(c)}">${htmlEscape(c)}</option>`).join("");
+      $("menuCategoryChips").innerHTML = options.map(c => `<button class="menuCatBtn${c === activeMenuCategory ? " active" : ""}" type="button" data-menu-category="${htmlEscape(c)}">${htmlEscape(c)}</button>`).join("");
+    }
+
+    async function loadRestaurantMenu(){
+      let overrides = [];
+      try{
+        const qs = await getDocs(collection(db, "restaurantMenu"));
+        overrides = qs.docs.map(d => ({id:d.id, ...d.data()}));
+      }catch(err){
+        console.warn("Restaurant menu overrides could not be loaded", err);
+      }
+      const overrideMap = new Map(overrides.map(item => [item.id, item]));
+      const defaults = DEFAULT_RESTAURANT_MENU.map(item => ({active:true, ...item, ...(overrideMap.get(item.id) || {})}));
+      const defaultIds = new Set(DEFAULT_RESTAURANT_MENU.map(item => item.id));
+      const custom = overrides.filter(item => !defaultIds.has(item.id));
+      restaurantMenuCache = [...defaults, ...custom]
+        .filter(item => item.active !== false)
+        .sort((a,b) => {
+          const categoryDiff = MENU_CATEGORIES.indexOf(a.category) - MENU_CATEGORIES.indexOf(b.category);
+          return categoryDiff || String(a.name || "").localeCompare(String(b.name || ""), "de");
+        });
+      setupMenuControls();
+      renderRestaurantMenu();
+    }
+
+    function renderRestaurantMenu(){
+      const search = menuSearchText($("menuSearch").value);
+      const rows = restaurantMenuCache.filter(item => {
+        const categoryMatch = activeMenuCategory === "Alle" || item.category === activeMenuCategory;
+        const haystack = menuSearchText([item.name,item.description,item.category,item.allergens,item.size].join(" "));
+        return categoryMatch && (!search || haystack.includes(search));
+      });
+      $("menuCount").textContent = `${rows.length} Position${rows.length === 1 ? "" : "en"}`;
+      document.querySelectorAll("[data-menu-category]").forEach(btn => btn.classList.toggle("active", btn.dataset.menuCategory === activeMenuCategory));
+      $("menuCategoryFilter").value = activeMenuCategory;
+      $("restaurantMenuList").innerHTML = rows.length ? rows.map(item => `
+        <article class="menuItem">
+          <div class="menuItemHead">
+            <div>
+              <div class="tiny muted">${htmlEscape(item.category || "")}${item.size ? ` · ${htmlEscape(item.size)}` : ""}</div>
+              <div class="menuItemName">${htmlEscape(item.name || "-")}</div>
+            </div>
+            <div class="menuPrice">${euro(item.price)}</div>
+          </div>
+          ${item.description ? `<div class="menuDescription">${htmlEscape(item.description)}</div>` : ""}
+          <div class="menuMeta">
+            ${item.vegetarian ? `<span class="vegBadge">🌿 Vegetarisch</span>` : ""}
+            ${item.allergens ? `<span class="allergenBadge">Allergene: ${htmlEscape(item.allergens)}</span>` : ""}
+            ${isAdmin() ? `<span class="right noPrint"><button class="smallBtn smallBlue" type="button" data-menu-edit="${htmlEscape(item.id)}">Edit</button><button class="smallBtn smallRed" type="button" data-menu-delete="${htmlEscape(item.id)}">Löschen</button></span>` : ""}
+          </div>
+        </article>`).join("") : `<div class="menuEmpty">Keine passenden Einträge gefunden.</div>`;
+    }
+
+    function clearMenuForm(){
+      $("menuEditId").value = "";
+      $("menuName").value = "";
+      $("menuCategory").value = activeMenuCategory !== "Alle" ? activeMenuCategory : "Vorspeisen";
+      $("menuPrice").value = "";
+      $("menuSize").value = "";
+      $("menuDescription").value = "";
+      $("menuAllergens").value = "";
+      $("menuVegetarian").checked = false;
+      $("menuEditorTitle").textContent = "Neuer Menüeintrag";
+    }
+
+    function openMenuEditor(id=""){
+      if(!isAdmin()) return;
+      clearMenuForm();
+      if(id){
+        const item = restaurantMenuCache.find(row => row.id === id);
+        if(!item) return;
+        $("menuEditId").value = item.id;
+        $("menuName").value = item.name || "";
+        $("menuCategory").value = item.category || "Vorspeisen";
+        $("menuPrice").value = Number(item.price || 0).toFixed(2);
+        $("menuSize").value = item.size || "";
+        $("menuDescription").value = item.description || "";
+        $("menuAllergens").value = item.allergens || "";
+        $("menuVegetarian").checked = Boolean(item.vegetarian);
+        $("menuEditorTitle").textContent = "Menüeintrag bearbeiten";
+      }
+      $("menuEditor").classList.remove("hidden");
+      $("menuEditor").scrollIntoView({behavior:"smooth", block:"nearest"});
+    }
+
+    async function saveMenuItem(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const existingId = safe($("menuEditId").value);
+      const data = {
+        name:safe($("menuName").value),
+        category:$("menuCategory").value,
+        price:Number($("menuPrice").value || 0),
+        size:safe($("menuSize").value),
+        description:safe($("menuDescription").value),
+        allergens:safe($("menuAllergens").value),
+        vegetarian:$("menuVegetarian").checked,
+        active:true,
+        updatedAt:serverTimestamp(),
+        updatedBy:currentUser.uid
+      };
+      if(!data.name || !data.category || data.price < 0) return showMsg("Name, Kategorie und Preis prüfen.");
+      try{
+        if(existingId){
+          await setDoc(doc(db, "restaurantMenu", existingId), data, {merge:true});
+        }else{
+          await addDoc(collection(db, "restaurantMenu"), {...data, createdAt:serverTimestamp()});
+        }
+        $("menuEditor").classList.add("hidden");
+        clearMenuForm();
+        await loadRestaurantMenu();
+        showMsg("Menüeintrag gespeichert.");
+      }catch(err){
+        console.error(err);
+        showMsg("Speichern nicht möglich: " + err.message);
+      }
+    }
+
+    async function removeMenuItem(id){
+      if(!isAdmin() || !confirm("Menüeintrag wirklich löschen?")) return;
+      try{
+        await setDoc(doc(db, "restaurantMenu", id), {active:false, updatedAt:serverTimestamp(), updatedBy:currentUser.uid}, {merge:true});
+        await loadRestaurantMenu();
+        showMsg("Menüeintrag gelöscht.");
+      }catch(err){
+        console.error(err);
+        showMsg("Löschen nicht möglich: " + err.message);
+      }
     }
 
     function renderAdminVisibility(){
@@ -1641,6 +2001,7 @@ bruchCache.sort((a, b) => {
       await loadHaccp();
       await loadUrlaub();
       await loadBruch();
+      await loadRestaurantMenu();
       await loadDashboard();
       await loadHours();
       window.lucide?.createIcons();
@@ -1709,6 +2070,30 @@ bruchCache.sort((a, b) => {
 
     $("btnSaveBruch").addEventListener("click", saveBruch);
     $("btnPrintMonthBruch").addEventListener("click", printMonthBruch);
+
+    $("menuSearch").addEventListener("input", renderRestaurantMenu);
+    $("menuCategoryFilter").addEventListener("change", (event)=>{
+      activeMenuCategory = event.target.value;
+      renderRestaurantMenu();
+    });
+    $("menuCategoryChips").addEventListener("click", (event)=>{
+      const button = event.target.closest("[data-menu-category]");
+      if(!button) return;
+      activeMenuCategory = button.dataset.menuCategory;
+      renderRestaurantMenu();
+    });
+    $("restaurantMenuList").addEventListener("click", (event)=>{
+      const editButton = event.target.closest("[data-menu-edit]");
+      const deleteButton = event.target.closest("[data-menu-delete]");
+      if(editButton) openMenuEditor(editButton.dataset.menuEdit);
+      if(deleteButton) removeMenuItem(deleteButton.dataset.menuDelete);
+    });
+    $("btnToggleMenuEditor").addEventListener("click", ()=> openMenuEditor());
+    $("btnSaveMenuItem").addEventListener("click", saveMenuItem);
+    $("btnCancelMenuEdit").addEventListener("click", ()=>{
+      clearMenuForm();
+      $("menuEditor").classList.add("hidden");
+    });
 
     $("btnPrint").addEventListener("click", ()=> window.print());
 
