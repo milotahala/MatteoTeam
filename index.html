@@ -174,6 +174,11 @@
     .statIcon svg{width:17px;height:17px}
     .dashboardHead{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
     .dashboardDate{margin-left:auto;color:var(--muted);font-size:13px}
+    .dashboardApps{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px}
+    .dashboardApp{min-height:132px;border:1px solid #29435f;border-radius:18px;background:linear-gradient(145deg,#122740,#0e1f34);color:#fff;cursor:pointer;padding:16px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;text-align:center;font-weight:900}
+    .dashboardApp:hover{border-color:#2dd486;background:linear-gradient(145deg,#15334b,#123a31)}
+    .dashboardAppIcon{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;background:rgba(45,212,134,.14);color:#42e39b}
+    .dashboardAppIcon svg{width:28px;height:28px}
     .stat h3{margin:0 0 6px;font-size:13px;color:var(--muted)}
     .stat .num{font-size:28px;font-weight:900}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -269,6 +274,7 @@
     @media (max-width:1100px){
       .authWrap,.grid2,.grid3{grid-template-columns:1fr}
       .stats{grid-template-columns:repeat(2,1fr)}
+      .dashboardApps{grid-template-columns:repeat(4,minmax(100px,1fr))}
       .orderLayout{grid-template-columns:1fr}
       .orderPanel{position:static}
     }
@@ -316,6 +322,10 @@
       .title{font-size:16px}
       .subtitle{max-width:145px}
       .view{padding:14px}
+      .dashboardApps{grid-template-columns:repeat(3,minmax(82px,1fr));gap:9px}
+      .dashboardApp{min-height:105px;padding:12px 6px;font-size:13px;border-radius:15px}
+      .dashboardAppIcon{width:46px;height:46px;border-radius:14px}
+      .dashboardAppIcon svg{width:24px;height:24px}
       #viewUrlaub .btn{width:100%}
       .menuToolbar{grid-template-columns:1fr}
       .menuGrid{grid-template-columns:1fr}
@@ -438,37 +448,23 @@
             <div class="dashboardHead">
               <div>
                 <h2 id="dashboardGreeting" class="sectionTitle">Guten Tag</h2>
-                <div class="sectionSub" style="margin-bottom:0">Alles Wichtige für dein Restaurant auf einen Blick.</div>
+                <div class="sectionSub" style="margin-bottom:0">Wähle einen Bereich.</div>
               </div>
               <div id="dashboardDate" class="dashboardDate"></div>
             </div>
-
-            <div class="stats">
-              <div class="stat"><div class="statHead"><h3>Mitarbeiter</h3><span class="statIcon"><i data-lucide="users" aria-hidden="true"></i></span></div><div id="statStaff" class="num">0</div><div class="tiny muted">Aktives Team</div></div>
-              <div class="stat"><div class="statHead"><h3>Inventar</h3><span class="statIcon"><i data-lucide="package" aria-hidden="true"></i></span></div><div id="statInventory" class="num">0</div><div class="tiny muted">Produkte erfasst</div></div>
-              <div class="stat"><div class="statHead"><h3>Urlaub offen</h3><span class="statIcon"><i data-lucide="palmtree" aria-hidden="true"></i></span></div><div id="statUrlaub" class="num">0</div><div class="tiny muted">Zu prüfen</div></div>
-              <div class="stat"><div class="statHead"><h3>HACCP heute</h3><span class="statIcon"><i data-lucide="clipboard-check" aria-hidden="true"></i></span></div><div id="statHaccp" class="num">0/3</div><div class="tiny muted">Tageskontrollen</div></div>
+            <div class="dashboardApps">
+              <button class="dashboardApp" data-dashboard-view="viewWeekly" type="button"><span class="dashboardAppIcon"><i data-lucide="calendar-days"></i></span><span>Wochenplan</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewStaff" type="button"><span class="dashboardAppIcon"><i data-lucide="users"></i></span><span>Mitarbeiter</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewInventory" type="button"><span class="dashboardAppIcon"><i data-lucide="package"></i></span><span>Inventar</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewMyHours" type="button"><span class="dashboardAppIcon"><i data-lucide="clock-3"></i></span><span>Stunden</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewHaccp" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-check"></i></span><span>HACCP</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="notebook-tabs"></i></span><span>Bestellung</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewRestaurantMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="utensils"></i></span><span>Speisekarte</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewToGoMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="pizza"></i></span><span>To Go</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewUrlaub" type="button"><span class="dashboardAppIcon"><i data-lucide="palmtree"></i></span><span>Urlaub Antrag</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewBruch" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-list"></i></span><span>Bruchliste</span></button>
             </div>
-
-            <div class="grid2" style="margin-top:12px">
-              <div class="item">
-                <div class="row">
-                  <strong>HACCP Heute</strong>
-                  <span id="haccpTodayBadge" class="pill warn">Offen</span>
-                </div>
-                <div class="divider"></div>
-                <div id="dashHaccpList"></div>
-              </div>
-
-              <div class="item">
-                <div class="row">
-                  <strong>Open Urlaub</strong>
-                  <span class="pill warn">Pending</span>
-                </div>
-                <div class="divider"></div>
-                <div id="dashUrlaubList"></div>
-              </div>
-            </div>
+            <div class="hidden" aria-hidden="true"><span id="statStaff">0</span><span id="statInventory">0</span><span id="statUrlaub">0</span><span id="statHaccp">0/3</span><span id="haccpTodayBadge"></span><span id="dashHaccpList"></span><span id="dashUrlaubList"></span></div>
           </section>
 
           <section id="viewWeekly" class="view card hidden">
@@ -2515,6 +2511,9 @@ bruchCache.sort((a, b) => {
 
     document.querySelectorAll(".navBtn").forEach(btn=>{
       btn.addEventListener("click", ()=> openView(btn.dataset.view));
+    });
+    document.querySelectorAll("[data-dashboard-view]").forEach(button => {
+      button.addEventListener("click", () => openView(button.dataset.dashboardView));
     });
 
     $("btnSaveStaff").addEventListener("click", saveStaff);
