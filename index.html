@@ -521,6 +521,18 @@
               <div class="divider"></div>
               <div id="timeClockHistory" class="muted">Noch keine Buchungen.</div>
             </div>
+            <div class="item" style="max-width:620px;margin:14px auto 0">
+              <div class="row">
+                <div><strong>Monatsübersicht</strong><div class="tiny muted">Alle Arbeitstage und Stunden im Monat</div></div>
+                <div class="right row">
+                  <input id="timeClockMonth" class="input" type="month" style="max-width:180px" />
+                  <button id="btnLoadTimeClockMonth" class="ghost" type="button">Anzeigen</button>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="row" style="margin-bottom:10px"><strong>Gesamt</strong><span id="timeClockMonthTotal" class="pill ok right">0:00 Std.</span></div>
+              <div id="timeClockMonthHistory" class="muted">Noch keine Buchungen.</div>
+            </div>
           </section>
 
           <section id="viewStaff" class="view card hidden">
@@ -947,7 +959,7 @@
       getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
-      getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp
+      getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp, query, where
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -2450,13 +2462,21 @@ bruchCache.sort((a, b) => {
       return new Date(value).toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"});
     }
 
-    function timeClockMinutes(){
-      return (timeClockRecord.sessions || []).reduce((total, session) => {
+    function sessionsMinutes(sessions = []){
+      return sessions.reduce((total, session) => {
         if(!session.in) return total;
         const start = new Date(session.in).getTime();
         const end = session.out ? new Date(session.out).getTime() : Date.now();
         return total + Math.max(0, Math.floor((end - start) / 60000));
       }, 0);
+    }
+
+    function timeClockMinutes(){
+      return sessionsMinutes(timeClockRecord.sessions || []);
+    }
+
+    function formatMinutes(minutes){
+      return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2,"0")} Std.`;
     }
 
     function renderTimeClock(){
@@ -2469,7 +2489,7 @@ bruchCache.sort((a, b) => {
       $("btnClockIn").disabled = Boolean(openSession);
       $("btnClockOut").disabled = !openSession;
       const minutes = timeClockMinutes();
-      $("timeClockTotal").textContent = `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2,"0")} Std.`;
+      $("timeClockTotal").textContent = formatMinutes(minutes);
       $("timeClockHistory").innerHTML = sessions.length ? sessions.map((session, index) => `
         <div class="orderLine">
           <div><strong>Arbeitszeit ${index + 1}</strong><div class="tiny muted">${session.out ? "Abgeschlossen" : "Läuft"}</div></div>
@@ -2490,6 +2510,27 @@ bruchCache.sort((a, b) => {
       }
     }
 
+    async function loadTimeClockMonth(){
+      const month = $("timeClockMonth").value || localDateKey().slice(0,7);
+      try{
+        const qs = await getDocs(query(collection(db, "timeClock"), where("userId", "==", currentUser.uid)));
+        const rows = qs.docs.map(d => ({id:d.id, ...d.data()}))
+          .filter(row => row.userId === currentUser.uid && safe(row.date).startsWith(month))
+          .sort((a,b) => safe(b.date).localeCompare(safe(a.date)));
+        const total = rows.reduce((sum, row) => sum + sessionsMinutes(row.sessions || []), 0);
+        $("timeClockMonthTotal").textContent = formatMinutes(total);
+        $("timeClockMonthHistory").innerHTML = rows.length ? rows.map(row => {
+          const minutes = sessionsMinutes(row.sessions || []);
+          const times = (row.sessions || []).map(session => `${formatClockTime(session.in)}–${session.out ? formatClockTime(session.out) : "…"}`).join(" · ");
+          const dateLabel = new Date(`${row.date}T12:00:00`).toLocaleDateString("de-DE", {weekday:"short", day:"2-digit", month:"2-digit"});
+          return `<div class="orderLine"><div><strong>${htmlEscape(dateLabel)}</strong><div class="tiny muted">${htmlEscape(times || "Keine Zeiten")}</div></div><strong>${formatMinutes(minutes)}</strong></div>`;
+        }).join("") : `<div class="muted">Keine Buchungen in diesem Monat.</div>`;
+      }catch(err){
+        console.error(err);
+        showMsg("Monatsübersicht konnte nicht geladen werden: " + err.message);
+      }
+    }
+
     async function clockIn(){
       const sessions = [...(timeClockRecord.sessions || [])];
       if(sessions.some(session => session.in && !session.out)) return;
@@ -2501,6 +2542,7 @@ bruchCache.sort((a, b) => {
         });
         timeClockRecord.sessions = sessions;
         renderTimeClock();
+        await loadTimeClockMonth();
         showMsg("Kommen wurde gespeichert.");
       }catch(err){
         console.error(err);
@@ -2520,6 +2562,7 @@ bruchCache.sort((a, b) => {
         });
         timeClockRecord.sessions = sessions;
         renderTimeClock();
+        await loadTimeClockMonth();
         showMsg("Gehen wurde gespeichert.");
       }catch(err){
         console.error(err);
@@ -2577,6 +2620,7 @@ bruchCache.sort((a, b) => {
       $("urlaubTo").value = todayStr();
       $("bruchDate").value = todayStr();
       $("bruchMonth").value = monthStr();
+      $("timeClockMonth").value = monthStr();
 
       await loadStaff();
       await loadInventory();
@@ -2590,6 +2634,7 @@ bruchCache.sort((a, b) => {
       $("orderMenuCategory").innerHTML = ["Alle", ...MENU_CATEGORIES].map(category => `<option value="${htmlEscape(category)}">${htmlEscape(category)}</option>`).join("");
       await loadOrders();
       await loadTimeClock();
+      await loadTimeClockMonth();
       await loadDashboard();
       await loadHours();
       window.lucide?.createIcons();
@@ -2748,6 +2793,8 @@ bruchCache.sort((a, b) => {
     $("btnReloadOrders").addEventListener("click", loadOrders);
     $("btnClockIn").addEventListener("click", clockIn);
     $("btnClockOut").addEventListener("click", clockOut);
+    $("btnLoadTimeClockMonth").addEventListener("click", loadTimeClockMonth);
+    $("timeClockMonth").addEventListener("change", loadTimeClockMonth);
 
     $("btnPrint").addEventListener("click", ()=> window.print());
 
