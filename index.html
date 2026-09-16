@@ -255,8 +255,10 @@
     .orderPanel{position:sticky;top:98px;padding:17px;border:1px solid var(--line);border-radius:18px;background:#0a192b}
     .orderMenuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:520px;overflow:auto;padding-right:3px}
     .orderMenuItem{border:1px solid #29435f;background:#102239;color:#fff;border-radius:13px;padding:12px;text-align:left;cursor:pointer}
+    .orderMenuItem.added{border-color:#2dd486;background:#14532d;transform:scale(.98)}
     .orderMenuItem strong{display:block;line-height:1.25}
     .orderMenuItem span{display:block;color:#86efac;margin-top:5px;font-weight:900}
+    .orderCartJump{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;background:linear-gradient(135deg,#14532d,#16a05f);color:#fff;border:0;border-radius:13px;padding:13px 15px;cursor:pointer;font-weight:900}
     .orderLine{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px 0;border-bottom:1px solid var(--line)}
     .orderQty{display:flex;gap:5px;align-items:center}
     .orderQty button{width:30px;height:30px;border:0;border-radius:9px;background:#1e3a56;color:#fff;cursor:pointer;font-weight:900}
@@ -877,6 +879,7 @@
                   <div id="tableGrid" class="tableGrid"></div>
                 </div>
                 <div id="orderProductPicker" class="item hidden">
+                  <button id="btnShowCurrentOrder" class="orderCartJump" type="button"><span>Bestellung ansehen</span><span id="orderCartSummary">0 Produkte · 0,00 €</span></button>
                   <div class="menuToolbar" style="margin-bottom:10px">
                     <input id="orderMenuSearch" class="input" type="search" placeholder="Gericht oder Getränk suchen …" />
                     <select id="orderMenuCategory" class="select" aria-label="Kategorie"></select>
@@ -2303,6 +2306,8 @@ bruchCache.sort((a, b) => {
           </div>
         </div>`).join("") : `<div class="muted">Noch keine Produkte hinzugefügt.</div>`;
       $("currentOrderTotal").textContent = euro(orderTotal());
+      const productCount = currentOrderItems.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+      $("orderCartSummary").textContent = `${productCount} ${productCount === 1 ? "Produkt" : "Produkte"} · ${euro(orderTotal())}`;
       document.querySelectorAll("[data-order-status]").forEach(button => button.classList.toggle("active", button.dataset.orderStatus === currentOrderState));
     }
 
@@ -2330,13 +2335,23 @@ bruchCache.sort((a, b) => {
       renderCurrentOrder();
     }
 
-    function addOrderItem(menuId){
+    function addOrderItem(menuId, sourceButton){
       const menuItem = restaurantMenuCache.find(item => item.id === menuId);
       if(!menuItem) return;
       const existing = currentOrderItems.find(item => item.menuId === menuId);
       if(existing) existing.qty += 1;
       else currentOrderItems.push({menuId:menuItem.id, name:menuItem.name, category:menuItem.category || "", price:Number(menuItem.price || 0), qty:1});
       renderCurrentOrder();
+      if(sourceButton){
+        sourceButton.classList.add("added");
+        const original = sourceButton.querySelector("strong")?.textContent || menuItem.name;
+        const title = sourceButton.querySelector("strong");
+        if(title) title.textContent = `✓ ${original.replace(/^✓\s*/, "")} hinzugefügt`;
+        setTimeout(() => {
+          sourceButton.classList.remove("added");
+          if(title) title.textContent = original.replace(/^✓\s*/, "");
+        }, 700);
+      }
     }
 
     function changeOrderQty(index, change){
@@ -2591,7 +2606,10 @@ bruchCache.sort((a, b) => {
     $("orderMenuCategory").addEventListener("change", renderOrderMenu);
     $("orderMenuList").addEventListener("click", event => {
       const button = event.target.closest("[data-order-add]");
-      if(button) addOrderItem(button.dataset.orderAdd);
+      if(button) addOrderItem(button.dataset.orderAdd, button);
+    });
+    $("btnShowCurrentOrder").addEventListener("click", () => {
+      document.querySelector(".orderPanel")?.scrollIntoView({behavior:"smooth", block:"start"});
     });
     $("currentOrderLines").addEventListener("click", event => {
       const minus = event.target.closest("[data-order-minus]");
