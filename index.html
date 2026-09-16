@@ -257,6 +257,16 @@
     .weekToolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .weekDateNav{display:grid;grid-template-columns:auto minmax(160px,1fr) auto;gap:7px;align-items:center}
     .weekArrow{width:44px;min-height:48px;border:1px solid #2b4563;border-radius:12px;background:#12243a;color:#fff;cursor:pointer;font-size:20px}
+    .inventoryStats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+    .inventoryStat{padding:14px;border-radius:16px;background:#102239;border:1px solid var(--line)}
+    .inventoryStat .value{font-size:24px;font-weight:950;margin-top:5px}
+    .inventoryToolbar{display:grid;grid-template-columns:1fr 220px;gap:10px;margin:14px 0}
+    .inventoryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .inventoryCard{padding:16px;border-radius:18px;background:linear-gradient(145deg,#10243b,#0c1c30);border:1px solid #29435f}
+    .inventoryCard.low{border-color:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,.07)}
+    .stockBar{height:8px;border-radius:999px;background:#1d334d;overflow:hidden;margin:12px 0}
+    .stockBar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#15945c,#2dd486)}
+    .inventoryCard.low .stockBar span{background:linear-gradient(90deg,#b91c1c,#ef4444)}
     .pill{
       display:inline-flex;align-items:center;gap:6px;padding:6px 10px;
       border-radius:999px;font-size:12px;font-weight:800
@@ -375,6 +385,9 @@
       .weekToolbar .btn,.weekToolbar .ghost{width:100%}
       .weekTable{min-width:850px}
       .weekTable th:first-child,.weekTable td:first-child{width:145px;min-width:145px}
+      .inventoryStats{grid-template-columns:1fr 1fr}
+      .inventoryToolbar{grid-template-columns:1fr}
+      .inventoryGrid{grid-template-columns:1fr}
       .authWrap{margin:10px auto}
       .hero{padding:20px}
       .hero h1{font-size:28px}
@@ -739,15 +752,26 @@
           </section>
 
           <section id="viewInventory" class="view card hidden">
-            <h2 class="sectionTitle">Inventory</h2>
-            <div class="sectionSub">Produkte, pack sizes, stock dhe deduction ditor.</div>
+            <h2 class="sectionTitle">Inventar & Warenwirtschaft</h2>
+            <div class="sectionSub">Bestände, Wareneingänge, Verbrauch und Mindestbestand verwalten.</div>
+
+            <div class="inventoryStats">
+              <div class="inventoryStat"><div class="tiny muted">Produkte</div><div id="inventoryStatProducts" class="value">0</div></div>
+              <div class="inventoryStat"><div class="tiny muted">Niedriger Bestand</div><div id="inventoryStatLow" class="value" style="color:#fca5a5">0</div></div>
+              <div class="inventoryStat"><div class="tiny muted">Nicht auf Lager</div><div id="inventoryStatEmpty" class="value" style="color:#f87171">0</div></div>
+              <div class="inventoryStat"><div class="tiny muted">Lagerwert</div><div id="inventoryStatValue" class="value">0,00 €</div></div>
+            </div>
 
             <div class="grid2">
               <div class="item adminOnly">
-                <strong>New Product</strong>
+                <strong>Produkt anlegen / bearbeiten</strong>
                 <div class="divider"></div>
                 <input id="invEditId" type="hidden" />
-                <div class="field"><label class="label">Item</label><input id="invName" class="input" /></div>
+                <div class="field"><label class="label">Produktname</label><input id="invName" class="input" /></div>
+                <div class="menuFormGrid">
+                  <div class="field"><label class="label">Kategorie</label><select id="invCategory" class="select"><option>Küche</option><option>Pizza</option><option>Getränke</option><option>Verpackung</option><option>Reinigung</option><option>Sonstige</option></select></div>
+                  <div class="field"><label class="label">Lieferant</label><input id="invSupplier" class="input" placeholder="z. B. Arasco" /></div>
+                </div>
                 <div class="grid3">
                   <div class="field">
                     <label class="label">Unit</label>
@@ -760,28 +784,32 @@
                   <div class="field"><label class="label">Pack Size</label><input id="invPack" class="input" type="number" step="0.01" /></div>
                   <div class="field"><label class="label">Current Stock</label><input id="invStock" class="input" type="number" step="0.01" /></div>
                 </div>
-                <div class="field"><label class="label">Min Stock</label><input id="invMin" class="input" type="number" step="0.01" /></div>
+                <div class="menuFormGrid">
+                  <div class="field"><label class="label">Mindestbestand</label><input id="invMin" class="input" type="number" step="0.01" /></div>
+                  <div class="field"><label class="label">Letzter Preis (€ / Einheit)</label><input id="invPrice" class="input" type="number" min="0" step="0.01" /></div>
+                </div>
                 <div class="row">
-                  <button id="btnSaveInventory" class="btn" type="button">Save Item</button>
-                  <button id="btnClearInventory" class="ghost" type="button">Clear</button>
+                  <button id="btnSaveInventory" class="btn" type="button">Produkt speichern</button>
+                  <button id="btnClearInventory" class="ghost" type="button">Leeren</button>
                 </div>
               </div>
 
               <div class="item adminOnly">
-                <strong>Daily Usage</strong>
+                <strong>Lagerbewegung</strong>
                 <div class="divider"></div>
                 <div class="field"><label class="label">Date</label><input id="usageDate" class="input" type="date" /></div>
                 <div class="field"><label class="label">Item</label><select id="usageItem" class="select"></select></div>
-                <div class="field"><label class="label">Used Quantity</label><input id="usageQty" class="input" type="number" step="0.01" /></div>
-                <button id="btnApplyUsage" class="btnWarn" type="button">Apply Usage</button>
+                <div class="field"><label class="label">Bewegung</label><select id="usageType" class="select"><option value="out">Verbrauch / Ausgang</option><option value="in">Wareneingang</option></select></div>
+                <div class="field"><label class="label">Menge</label><input id="usageQty" class="input" type="number" step="0.01" /></div>
+                <button id="btnApplyUsage" class="btnWarn" type="button">Bestand buchen</button>
               </div>
             </div>
 
-            <div class="item" style="margin-top:12px">
-              <strong>Inventory List</strong>
-              <div class="divider"></div>
-              <div id="inventoryList"></div>
+            <div class="inventoryToolbar">
+              <input id="inventorySearch" class="input" type="search" placeholder="Produkt oder Lieferant suchen …" />
+              <select id="inventoryCategoryFilter" class="select"><option>Alle</option><option>Küche</option><option>Pizza</option><option>Getränke</option><option>Verpackung</option><option>Reinigung</option><option>Sonstige</option></select>
             </div>
+            <div id="inventoryList" class="inventoryGrid"></div>
           </section>
                     <section id="viewMyHours" class="view card hidden">
             <h2 class="sectionTitle">My Hours</h2>
@@ -1867,9 +1895,7 @@
       inventoryCache = qs.docs.map(d => ({ id:d.id, ...d.data() })).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
       $("statInventory").textContent = String(inventoryCache.length);
 
-      const wrap = $("inventoryList");
       const usageSel = $("usageItem");
-      wrap.innerHTML = "";
       usageSel.innerHTML = "";
 
       inventoryCache.forEach(item => {
@@ -1877,28 +1903,43 @@
         option.value = item.id;
         option.textContent = `${item.name} (${Number(item.stock||0)} ${item.unit})`;
         usageSel.appendChild(option);
-
-        const low = Number(item.stock || 0) <= Number(item.minStock || 0);
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerHTML = `
-          <div class="row">
-            <strong>${htmlEscape(item.name)}</strong>
-            <span class="pill ${low ? "danger" : "ok"}">${low ? "Low Stock" : "OK"}</span>
-            <span class="right tiny muted">${Number(item.stock||0).toFixed(2)} ${htmlEscape(item.unit || "")}</span>
-          </div>
-          <div class="tiny muted">Pack: ${Number(item.packSize||0).toFixed(2)} ${htmlEscape(item.unit || "")} · Min: ${Number(item.minStock||0).toFixed(2)}</div>
-          ${isAdmin() ? `<div class="row" style="margin-top:10px">
-            <button class="smallBtn smallBlue" type="button" onclick="window.editInventory('${item.id}')">Edit</button>
-            <button class="smallBtn smallRed" type="button" onclick="window.removeInventory('${item.id}')">Delete</button>
-          </div>` : ``}
-        `;
-        wrap.appendChild(div);
       });
 
-      if(!inventoryCache.length){
-        wrap.innerHTML = `<div class="tiny muted">Keine Produkte.</div>`;
-      }
+      renderInventory();
+    }
+
+    function renderInventory(){
+      const wrap = $("inventoryList");
+      const search = menuSearchText($("inventorySearch").value);
+      const category = $("inventoryCategoryFilter").value || "Alle";
+      const lowCount = inventoryCache.filter(item => Number(item.stock || 0) <= Number(item.minStock || 0)).length;
+      const emptyCount = inventoryCache.filter(item => Number(item.stock || 0) <= 0).length;
+      const totalValue = inventoryCache.reduce((sum, item) => sum + Number(item.stock || 0) * Number(item.lastPrice || 0), 0);
+      $("inventoryStatProducts").textContent = String(inventoryCache.length);
+      $("inventoryStatLow").textContent = String(lowCount);
+      $("inventoryStatEmpty").textContent = String(emptyCount);
+      $("inventoryStatValue").textContent = euro(totalValue);
+
+      const rows = inventoryCache.filter(item => {
+        const itemCategory = item.category || "Sonstige";
+        const categoryMatch = category === "Alle" || itemCategory === category;
+        const textMatch = !search || menuSearchText([item.name,item.supplier,itemCategory].join(" ")).includes(search);
+        return categoryMatch && textMatch;
+      });
+
+      wrap.innerHTML = rows.length ? rows.map(item => {
+        const stock = Number(item.stock || 0);
+        const minimum = Number(item.minStock || 0);
+        const low = stock <= minimum;
+        const percent = minimum > 0 ? Math.min(100, Math.max(4, stock / minimum * 50)) : 100;
+        return `<article class="inventoryCard${low ? " low" : ""}">
+          <div class="row"><div><div class="tiny muted">${htmlEscape(item.category || "Sonstige")}</div><strong>${htmlEscape(item.name || "-")}</strong></div><span class="pill ${low ? "danger" : "ok"} right">${stock <= 0 ? "Leer" : low ? "Nachbestellen" : "OK"}</span></div>
+          <div class="stockBar"><span style="width:${percent}%"></span></div>
+          <div class="row"><strong>${stock.toFixed(2)} ${htmlEscape(item.unit || "")}</strong><span class="right tiny muted">Min. ${minimum.toFixed(2)} · Pack ${Number(item.packSize || 0).toFixed(2)}</span></div>
+          <div class="tiny muted" style="margin-top:9px">Lieferant: ${htmlEscape(item.supplier || "-")} · Preis: ${euro(item.lastPrice || 0)} · Wert: ${euro(stock * Number(item.lastPrice || 0))}</div>
+          ${isAdmin() ? `<div class="row" style="margin-top:12px"><button class="smallBtn smallBlue" type="button" onclick="window.editInventory('${item.id}')">Bearbeiten</button><button class="smallBtn smallRed" type="button" onclick="window.removeInventory('${item.id}')">Löschen</button></div>` : ""}
+        </article>`;
+      }).join("") : `<div class="item muted">Keine passenden Produkte.</div>`;
     }
 
     window.editInventory = async (id) => {
@@ -1907,9 +1948,12 @@
       $("invEditId").value = id;
       $("invName").value = item.name || "";
       $("invUnit").value = item.unit || "kg";
+      $("invCategory").value = item.category || "Sonstige";
+      $("invSupplier").value = item.supplier || "";
       $("invPack").value = item.packSize || "";
       $("invStock").value = item.stock || "";
       $("invMin").value = item.minStock || "";
+      $("invPrice").value = item.lastPrice || "";
       openView("viewInventory");
     };
 
@@ -1926,10 +1970,13 @@
       const id = $("invEditId").value.trim();
       const data = {
         name: safe($("invName").value),
+        category: $("invCategory").value,
+        supplier: safe($("invSupplier").value),
         unit: $("invUnit").value,
         packSize: Number($("invPack").value || 0),
         stock: Number($("invStock").value || 0),
         minStock: Number($("invMin").value || 0),
+        lastPrice: Number($("invPrice").value || 0),
         updatedAt: serverTimestamp()
       };
       if(!data.name) return showMsg("Item fehlt.");
@@ -1947,21 +1994,26 @@
     function clearInventoryForm(){
       $("invEditId").value = "";
       $("invName").value = "";
+      $("invCategory").value = "Küche";
+      $("invSupplier").value = "";
       $("invUnit").value = "kg";
       $("invPack").value = "";
       $("invStock").value = "";
       $("invMin").value = "";
+      $("invPrice").value = "";
     }
 
     async function applyInventoryUsage(){
       if(!isAdmin()) return showMsg("Nur Admin.");
       const itemId = $("usageItem").value;
       const qty = Number($("usageQty").value || 0);
+      const type = $("usageType").value;
       const date = $("usageDate").value || todayStr();
       if(!itemId || qty <= 0) return showMsg("Item oder Menge fehlt.");
       const item = inventoryCache.find(x => x.id === itemId);
       if(!item) return showMsg("Item nicht gefunden.");
-      const newStock = Number(item.stock || 0) - qty;
+      if(type === "out" && qty > Number(item.stock || 0)) return showMsg("Nicht genügend Bestand für diesen Verbrauch.");
+      const newStock = Number(item.stock || 0) + (type === "in" ? qty : -qty);
       await updateDoc(doc(db, "inventory", itemId), {
         stock: newStock,
         lastUsageDate: date,
@@ -1971,6 +2023,7 @@
         itemId,
         itemName: item.name,
         qty,
+        type,
         unit: item.unit,
         date,
         createdBy: currentUser.uid,
@@ -1979,7 +2032,7 @@
       $("usageQty").value = "";
       await loadInventory();
       await loadDashboard();
-      showMsg("Usage übernommen.");
+      showMsg(type === "in" ? "Wareneingang gebucht." : "Verbrauch gebucht.");
     }
 
     async function buildWeeklyTable(){
@@ -3330,6 +3383,8 @@ bruchCache.sort((a, b) => {
     $("btnSaveInventory").addEventListener("click", saveInventory);
     $("btnClearInventory").addEventListener("click", clearInventoryForm);
     $("btnApplyUsage").addEventListener("click", applyInventoryUsage);
+    $("inventorySearch").addEventListener("input", renderInventory);
+    $("inventoryCategoryFilter").addEventListener("change", renderInventory);
 
     $("btnLoadWeekly").addEventListener("click", buildWeeklyTable);
     $("btnSaveWeekly").addEventListener("click", saveWeekly);
