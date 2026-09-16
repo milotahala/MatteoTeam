@@ -211,6 +211,8 @@
     .uploadProgress{height:8px;border-radius:999px;background:#182d46;overflow:hidden;margin-top:10px}
     .uploadProgress span{display:block;height:100%;width:0;background:#2dd486;transition:width .2s ease}
     .urgentBadge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:950;background:#b91c1c;color:#fff;box-shadow:0 4px 12px rgba(239,68,68,.3)}
+    .appModal{position:fixed;inset:0;z-index:500;display:grid;place-items:center;padding:18px;background:rgba(2,8,18,.78);backdrop-filter:blur(8px)}
+    .appModalCard{width:min(520px,100%);max-height:85vh;overflow:auto;padding:22px;border-radius:22px;background:#0d1b2d;border:1px solid #365574;box-shadow:0 24px 70px rgba(0,0,0,.55)}
     .stat h3{margin:0 0 6px;font-size:13px;color:var(--muted)}
     .stat .num{font-size:28px;font-weight:900}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -1062,6 +1064,15 @@
     </section>
   </div>
 
+  <div id="vacationNotificationModal" class="appModal hidden" role="dialog" aria-modal="true" aria-labelledby="vacationNotificationTitle">
+    <div class="appModalCard">
+      <div class="row"><span class="urgentBadge">Wichtig</span><button id="btnCloseVacationNotification" class="ghost right" type="button">Später</button></div>
+      <h2 id="vacationNotificationTitle" class="sectionTitle" style="margin-top:15px">Neue Urlaub-Anfrage</h2>
+      <div id="vacationNotificationContent"></div>
+      <button id="btnOpenVacationFromNotification" class="btn" type="button" style="width:100%;margin-top:12px">Urlaub öffnen</button>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
@@ -1115,6 +1126,7 @@
     let sickLeaveCache = [];
     let vacationNotificationUnsubscribe = null;
     let vacationNotificationReady = false;
+    let vacationPopupShown = false;
 
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
     const DEFAULT_RESTAURANT_MENU = [
@@ -2278,9 +2290,9 @@ ${lastHoursPayload.details.join("\n")}`;
             <span class="right tiny muted">${htmlEscape(r.from || "")} → ${htmlEscape(r.to || "")}</span>
           </div>
           <div class="tiny muted">${htmlEscape(r.reason || "-")}</div>
-          ${isAdmin() && r.status === "pending" ? `<div class="row" style="margin-top:10px">
-            <button class="smallBtn smallGreen" type="button" onclick="window.handleUrlaub('${r.id}','approved')">Approve</button>
-            <button class="smallBtn smallRed" type="button" onclick="window.handleUrlaub('${r.id}','rejected')">Reject</button>
+          ${isAdmin() ? `<div class="row" style="margin-top:10px">
+            ${r.status !== "approved" ? `<button class="smallBtn smallGreen" type="button" onclick="window.handleUrlaub('${r.id}','approved')">Genehmigen</button>` : ``}
+            ${r.status !== "rejected" ? `<button class="smallBtn smallRed" type="button" onclick="window.handleUrlaub('${r.id}','rejected')">Ablehnen</button>` : ``}
           </div>` : ``}
         </div>`;
       }).join("");
@@ -2297,13 +2309,33 @@ ${lastHoursPayload.details.join("\n")}`;
         const oldPendingIds = new Set(urlaubCache.filter(item => item.status === "pending").map(item => item.id));
         urlaubCache = snapshot.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => safe(b.from).localeCompare(safe(a.from)));
         const newPending = urlaubCache.filter(item => item.status === "pending" && !oldPendingIds.has(item.id));
+        const allPending = urlaubCache.filter(item => item.status === "pending");
         renderUrlaubList();
-        if(vacationNotificationReady && newPending.length){
-          const names = newPending.map(item => item.staffName || "Mitarbeiter").join(", ");
-          showMsg(`Wichtige Urlaub-Anfrage von: ${names}`);
+        if(!vacationNotificationReady && allPending.length){
+          showVacationNotification(allPending);
+        }else if(vacationNotificationReady && newPending.length){
+          showVacationNotification(newPending);
         }
         vacationNotificationReady = true;
       }, err => console.error("Urlaub notification error", err));
+    }
+
+    function showVacationNotification(requests){
+      if(!isAdmin() || !requests.length) return;
+      $("vacationNotificationContent").innerHTML = requests.map(item => `
+        <div class="noticeCard unread">
+          <div class="row"><strong>${htmlEscape(item.staffName || "Mitarbeiter")}</strong><span class="urgentBadge">Neu</span></div>
+          <div style="margin-top:9px">${htmlEscape(item.from || "")} → ${htmlEscape(item.to || "")}</div>
+          ${item.reason ? `<div class="tiny muted" style="margin-top:5px">${htmlEscape(item.reason)}</div>` : ""}
+        </div>`).join("");
+      $("vacationNotificationTitle").textContent = requests.length === 1 ? "Neue Urlaub-Anfrage" : `${requests.length} neue Urlaub-Anfragen`;
+      $("vacationNotificationModal").classList.remove("hidden");
+      vacationPopupShown = true;
+    }
+
+    function closeVacationNotification(){
+      $("vacationNotificationModal").classList.add("hidden");
+      vacationPopupShown = false;
     }
 
     async function applyUrlaubToWeekly(req){
@@ -2327,6 +2359,31 @@ ${lastHoursPayload.details.join("\n")}`;
       }
     }
 
+    async function removeUrlaubFromWeekly(req){
+      let cur = req.from;
+      while(cur <= req.to){
+        const weekStart = weekKeyFrom(cur);
+        const dayIndex = Math.floor((new Date(cur+"T12:00:00") - new Date(weekStart+"T12:00:00")) / (1000*60*60*24));
+        const ref = doc(db, "weeklyPlans", weekStart);
+        const snap = await getDoc(ref);
+        if(snap.exists()){
+          const data = snap.data();
+          data.entries = data.entries || {};
+          data.entries[req.staffId] = data.entries[req.staffId] || {};
+          if(data.entries[req.staffId][String(dayIndex)] === "U"){
+            data.entries[req.staffId][String(dayIndex)] = "";
+            await setDoc(ref, {
+              weekStart,
+              entries:data.entries,
+              updatedBy:currentUser.uid,
+              updatedAt:serverTimestamp()
+            });
+          }
+        }
+        cur = addDays(cur, 1);
+      }
+    }
+
     window.handleUrlaub = async (id, status) => {
       if(!isAdmin()) return;
       const req = urlaubCache.find(x => x.id === id);
@@ -2338,6 +2395,9 @@ ${lastHoursPayload.details.join("\n")}`;
       });
       if(status === "approved"){
         await applyUrlaubToWeekly(req);
+        await loadWeekly();
+      }else if(status === "rejected" && req.status === "approved"){
+        await removeUrlaubFromWeekly(req);
         await loadWeekly();
       }
       await loadUrlaub();
@@ -3176,6 +3236,11 @@ bruchCache.sort((a, b) => {
       await signOut(auth);
     });
     $("btnChangePassword").addEventListener("click", changeOwnPassword);
+    $("btnCloseVacationNotification").addEventListener("click", closeVacationNotification);
+    $("btnOpenVacationFromNotification").addEventListener("click", () => {
+      closeVacationNotification();
+      openView("viewUrlaub");
+    });
 
     document.querySelectorAll(".navBtn").forEach(btn=>{
       btn.addEventListener("click", ()=> openView(btn.dataset.view));
@@ -3336,6 +3401,9 @@ bruchCache.sort((a, b) => {
           vacationNotificationUnsubscribe();
           vacationNotificationUnsubscribe = null;
         }
+        closeVacationNotification();
+        vacationNotificationReady = false;
+        vacationPopupShown = false;
         currentProfile = null;
         $("authScreen").classList.remove("hidden");
         $("appShell").classList.add("hidden");
