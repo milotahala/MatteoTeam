@@ -400,6 +400,7 @@
           <button class="navBtn" data-view="viewMyHours" type="button"><i data-lucide="clock-3" aria-hidden="true"></i><span>Stunden</span></button>
           <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP</span></button>
           <button class="navBtn" data-view="viewRestaurantMenu" type="button"><i data-lucide="utensils" aria-hidden="true"></i><span>Speisekarte</span></button>
+          <button class="navBtn" data-view="viewToGoMenu" type="button"><i data-lucide="pizza" aria-hidden="true"></i><span>To Go</span></button>
           <button class="navBtn" data-view="viewUrlaub" type="button"><i data-lucide="palmtree" aria-hidden="true"></i><span>Urlaub</span></button>
           <button class="navBtn" data-view="viewBruch" type="button"><i data-lucide="clipboard-list" aria-hidden="true"></i><span>Bruchliste</span></button>
         </aside>
@@ -787,6 +788,47 @@
               <p class="tiny muted" style="margin-bottom:0">Keines unserer Gerichte enthält Schweinefleisch oder Alkohol. Bei Allergien bitte das Team ansprechen.</p>
             </details>
           </section>
+
+          <section id="viewToGoMenu" class="view card hidden">
+            <div class="menuHero">
+              <div class="row">
+                <div>
+                  <div class="tiny" style="color:#fca5a5;font-weight:900;letter-spacing:.12em;text-transform:uppercase">Matteo · Pizzeria · Ristorante</div>
+                  <h2 class="sectionTitle" style="margin-top:5px">Speisekarte To Go</h2>
+                  <div class="sectionSub" style="margin-bottom:0">Mini-Pizza, hausgemachte Pasta und Salate zum Mitnehmen.</div>
+                </div>
+                <span id="toGoMenuCount" class="pill ok right">0 Positionen</span>
+              </div>
+            </div>
+
+            <div class="menuToolbar noPrint">
+              <input id="toGoMenuSearch" class="input" type="search" placeholder="Produkt oder Zutat suchen …" />
+              <select id="toGoMenuCategoryFilter" class="select" aria-label="Kategorie"></select>
+              <button id="btnToggleToGoMenuEditor" class="btn adminOnly" type="button">+ Neuer Eintrag</button>
+            </div>
+            <div id="toGoMenuCategoryChips" class="menuCategories noPrint"></div>
+
+            <div id="toGoMenuEditor" class="item adminOnly hidden" style="margin-bottom:14px">
+              <strong id="toGoMenuEditorTitle">Neuer To-Go-Eintrag</strong>
+              <div class="divider"></div>
+              <input id="toGoMenuEditId" type="hidden" />
+              <div class="menuFormGrid">
+                <div class="field"><label class="label">Name</label><input id="toGoMenuName" class="input" /></div>
+                <div class="field"><label class="label">Kategorie</label><select id="toGoMenuCategory" class="select"></select></div>
+                <div class="field"><label class="label">Preis (€)</label><input id="toGoMenuPrice" class="input" type="number" min="0" step="0.10" inputmode="decimal" /></div>
+                <div class="field"><label class="label">Allergene / Zusatzstoffe</label><input id="toGoMenuAllergens" class="input" /></div>
+              </div>
+              <div class="field"><label class="label">Beschreibung</label><textarea id="toGoMenuDescription" class="textarea"></textarea></div>
+              <label class="row" style="margin-bottom:12px"><input id="toGoMenuVegetarian" type="checkbox" /> Vegetarisch</label>
+              <div class="row">
+                <button id="btnSaveToGoMenuItem" class="btn" type="button">Speichern</button>
+                <button id="btnCancelToGoMenuEdit" class="ghost" type="button">Abbrechen</button>
+              </div>
+            </div>
+
+            <div id="toGoMenuList" class="menuGrid"></div>
+            <div class="item tiny muted" style="margin-top:14px">Alle Preisangaben in €. Allergene und Zusatzstoffe entsprechen der aktuellen To-Go-Karte.</div>
+          </section>
         </main>
       </div>
     </section>
@@ -951,6 +993,72 @@
       {id:"rotwein-primitivo",category:"Rotwein",name:"Primitivo di Mandaría",description:"Casaletti · Puglia, Italien",size:"0,75 L",price:38,allergens:"G"},
       {id:"prosecco-piccolo",category:"Prosecco",name:"Prosecco Piccolo DOC",description:"Trocken",size:"0,2 L",price:7.5,allergens:"G"},
       {id:"prosecco-frizzante",category:"Prosecco",name:"Prosecco Frizzante DOC",description:"Trocken",size:"0,75 L",price:28.5,allergens:"G"}
+    ];
+
+    let toGoMenuCache = [];
+    let activeToGoMenuCategory = "Alle";
+    const TO_GO_CATEGORIES = ["Mini-Pizza","Pasta","Al Forno","Salate","Dressings","Pizza Extras","Pasta & Salat Extras"];
+    const DEFAULT_TO_GO_MENU = [
+      {id:"togo-pizza-margherita",category:"Mini-Pizza",name:"Margherita",description:"Mit Käse und Tomatensauce",price:8,allergens:"D, I, 2",vegetarian:true},
+      {id:"togo-pizza-cipolla",category:"Mini-Pizza",name:"Cipolla",description:"Mit Zwiebeln",price:9.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"togo-pizza-spinaci",category:"Mini-Pizza",name:"Spinaci",description:"Mit Spinat",price:9.5,allergens:"D, E, I, 2",vegetarian:true},
+      {id:"togo-pizza-mais",category:"Mini-Pizza",name:"Mais",description:"Mit Mais",price:9.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"togo-pizza-broccoli",category:"Mini-Pizza",name:"Broccoli",description:"Mit Broccoli",price:9.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"togo-pizza-funghi",category:"Mini-Pizza",name:"Funghi",description:"Mit Champignons",price:9.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"togo-pizza-salami",category:"Mini-Pizza",name:"Salami",description:"Mit Rindersalami",price:10.5,allergens:"D, E, I, L, 1, 2, 3"},
+      {id:"togo-pizza-napoli",category:"Mini-Pizza",name:"Napoli",description:"Mit Sardellenfilet",price:10.5,allergens:"D, B, I, 2"},
+      {id:"togo-pizza-artischocke",category:"Mini-Pizza",name:"Artischocke",description:"Mit Artischocken",price:10.5,allergens:"D, I, 2, 4",vegetarian:true},
+      {id:"togo-pizza-margherita-rucola",category:"Mini-Pizza",name:"Margherita Rucola",description:"Mit Käse, Tomatensauce und Rucola",price:10.5,allergens:"D, I, 1, 2, 4",vegetarian:true},
+      {id:"togo-pizza-truthahn",category:"Mini-Pizza",name:"Truthahnschinken",description:"Mit Truthahnschinken",price:10.5,allergens:"D, I, L, 1, 2, 3"},
+      {id:"togo-pizza-vesuvio",category:"Mini-Pizza",name:"Vesuvio",description:"Mit Paprika und Zwiebeln",price:11,allergens:"D, I, 2, 4",vegetarian:true},
+      {id:"togo-pizza-tricolori",category:"Mini-Pizza",name:"Tricolori",description:"Mit Spinat, Paprika und Zwiebeln",price:11.5,allergens:"D, I, 1, 2, 4",vegetarian:true},
+      {id:"togo-pizza-tonno",category:"Mini-Pizza",name:"Tonno",description:"Mit Thunfisch",price:11.5,allergens:"B, D, I, 2"},
+      {id:"togo-pizza-mozzarella",category:"Mini-Pizza",name:"Mozzarella",description:"Mit Mozzarella und frischen Tomaten",price:13,allergens:"D, I, L, 2",vegetarian:true},
+      {id:"togo-pizza-pirata",category:"Mini-Pizza",name:"Pirata",description:"Mit Rinderbolognese",price:11.5,allergens:"D, I, 1, 2, 12"},
+      {id:"togo-pizza-matteo",category:"Mini-Pizza",name:"Matteo",description:"Mit Schafskäse und schwarzen Oliven",price:12,allergens:"D, I, 1, 2, 3, 13",vegetarian:true},
+      {id:"togo-pizza-hawaii",category:"Mini-Pizza",name:"Hawaii",description:"Mit Truthahnschinken und Ananas",price:12,allergens:"D, I, L, 1, 2, 3"},
+      {id:"togo-pizza-marcello",category:"Mini-Pizza",name:"Marcello",description:"Mit Paprika und Rindersalami",price:12,allergens:"D, I, L, 2, 12"},
+      {id:"togo-pizza-diavolo",category:"Mini-Pizza",name:"Diavolo",description:"Mit Peperoni und Rindersalami",price:12,allergens:"D, E, I, L, 1, 2, 3"},
+      {id:"togo-pizza-prociutto-funghi",category:"Mini-Pizza",name:"Prociutto Funghi",description:"Mit Truthahnschinken und Champignons",price:12,allergens:"D, I, 1, 2, 3"},
+      {id:"togo-pizza-veggie",category:"Mini-Pizza",name:"Veggie",description:"Mit verschiedenen Gemüsesorten",price:12.5,allergens:"D, E, I, 2, 4",vegetarian:true},
+      {id:"togo-pizza-meeresfruechte",category:"Mini-Pizza",name:"Meeresfrüchte",description:"Mit Meeresfrüchten",price:12.5,allergens:"B, C, D, N, I, 2"},
+      {id:"togo-pizza-krabben",category:"Mini-Pizza",name:"Krabben",description:"Mit Krewetten",price:12.5,allergens:"C, D, I, 2"},
+      {id:"togo-pizza-mista",category:"Mini-Pizza",name:"Mista",description:"Mit Thunfisch, Truthahnschinken, Champignons und Spinat",price:13.5,allergens:"B, D, G, 8, 12, 2"},
+      {id:"togo-pizza-vier-kaese",category:"Mini-Pizza",name:"4 Käse",description:"Mit verschiedenen Käsesorten",price:13.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"togo-pizza-tonno-cipolla",category:"Mini-Pizza",name:"Tonno e Cipolla",description:"Mit Thunfisch und Zwiebeln",price:13,allergens:"B, D, I, 2"},
+      {id:"togo-pizza-mozzarella-rucola",category:"Mini-Pizza",name:"Mozzarella Rucola",description:"Mit Mozzarella und Rucola",price:14.5,allergens:"D, I",vegetarian:true},
+      {id:"togo-pizza-pesto",category:"Mini-Pizza",name:"Pesto",description:"Mit Spinat, Tomaten und Pestosauce",price:14.5,allergens:"D, I, 2",vegetarian:true},
+      {id:"togo-pizza-ana",category:"Mini-Pizza",name:"Ana",description:"Mit Truthahnschinken, Rucola und Grana Padano",price:15,allergens:"D, I, 1, 2, 3"},
+      {id:"togo-pizza-rita",category:"Mini-Pizza",name:"Rita",description:"Mit Paprika, Schafskäse und Rindersalami",price:14.5,allergens:"D, I, 1, 2"},
+
+      {id:"togo-pasta-pomodoro",category:"Pasta",name:"Sugo di Pomodori",description:"Mit hausgemachter Tomatensauce",price:8,allergens:"I, A, 2, 13",vegetarian:true},
+      {id:"togo-pasta-arrabbiata",category:"Pasta",name:"All Arrabiata",description:"Mit Tomatensauce, Zwiebeln, Knoblauch und Chili",price:8.5,allergens:"I, A, 2, 12",vegetarian:true},
+      {id:"togo-pasta-bolognese",category:"Pasta",name:"Ragù alla Bolognese",description:"Mit Rinderhackfleisch in Tomatensauce",price:9,allergens:"I, A, E, 2, 13"},
+      {id:"togo-pasta-aglio",category:"Pasta",name:"Aglio e Olio",description:"Mit Knoblauch, Peperoni und Olivenöl",price:9.5,allergens:"I, A, 2, 13",vegetarian:true},
+      {id:"togo-pasta-gorgonzola",category:"Pasta",name:"Gorgonzola",description:"Mit Gorgonzola-Sahnesauce",price:11,allergens:"I, A, D",vegetarian:true},
+      {id:"togo-pasta-carbonara",category:"Pasta",name:"Carbonara",description:"Mit Truthahnschinken und Sahnesauce",price:11,allergens:"I, A, K, D, 1, 2, 8, 12"},
+      {id:"togo-pasta-matteo",category:"Pasta",name:"Matteo",description:"Mit Schafskäse, Oliven und frischen Tomaten",price:12,allergens:"I, A, D, 13",vegetarian:true},
+      {id:"togo-pasta-quattro",category:"Pasta",name:"Quattro Formaggi",description:"Mit verschiedenen Käsesorten in Sahnesauce",price:12.5,allergens:"A, D, E, 2, 3, 12",vegetarian:true},
+      {id:"togo-pasta-pollo-funghi",category:"Pasta",name:"Pollo Funghi",description:"Mit Hähnchenbruststücken und Champignon-Sahnesauce",price:13.5,allergens:"A, D, E, N, I, 12"},
+      {id:"togo-pasta-pollo-curry",category:"Pasta",name:"Pollo Curry",description:"Mit Hähnchenbruststücken und Curry-Sahnesauce",price:14,allergens:"A, D, E, 2, 3, 12"},
+      {id:"togo-forno-cannelloni",category:"Al Forno",name:"Cannelloni",description:"Mit Schafskäse und Spinat",price:10.5,allergens:"A, D, E, I, 2, 12"},
+      {id:"togo-forno-lasagne",category:"Al Forno",name:"Lasagne",description:"Mit Rinderbolognese, Tomatensauce und Gouda",price:11.5,allergens:"A, D, E, I, 2, 12"},
+
+      {id:"togo-salat-mista",category:"Salate",name:"Mista",description:"Blattsalat der Saison mit Tomaten, Karotten und Gurke",price:8,vegetarian:true},
+      {id:"togo-salat-capricciosa",category:"Salate",name:"Capricciosa",description:"Blattsalat mit Ei, Tomaten, Karotten, Thunfisch, Artischocken, roten Zwiebeln, Käse und Oliven",price:11.5,allergens:"A, B, D, I, 1, 2, 3, 13"},
+      {id:"togo-salat-matteo",category:"Salate",name:"Matteo",description:"Blattsalat mit Schafskäse, Paprika, Tomaten, Karotten, Gurke, schwarzen Oliven und roten Zwiebeln",price:11.5,allergens:"D, 13",vegetarian:true},
+      {id:"togo-salat-pollo",category:"Salate",name:"Pollo",description:"Blattsalat mit Hähnchenbruststücken, Tomaten, Karotten, Gurke und roten Zwiebeln",price:12.5,allergens:"M"},
+      {id:"togo-dressing-vinaigrette",category:"Dressings",name:"Vinaigrette Aceto Balsamico",description:"Aceto Balsamico, Rapsöl, Olivenöl, Knoblauch, Honig, Apfelsaft und Zitronensaft",price:0,priceLabel:"inklusive",allergens:"2",vegetarian:true},
+      {id:"togo-dressing-joghurt",category:"Dressings",name:"Joghurt Dressing",description:"Mit Naturjoghurt und Zitronensaft",price:0,priceLabel:"inklusive",allergens:"M",vegetarian:true},
+
+      {id:"togo-pizza-extra-1",category:"Pizza Extras",name:"Extras 1",description:"Paprika, Oliven, Ananas, Peperoni, Kapern, Tomaten, Zwiebeln, Spinat, Mais, Käse, Broccoli oder Champignons",price:1.5},
+      {id:"togo-pizza-extra-2",category:"Pizza Extras",name:"Extras 2",description:"Artischocken, Schafskäse, Sardellen, Rucola, Truthahnschinken oder Rindersalami",price:2.5},
+      {id:"togo-pizza-extra-3",category:"Pizza Extras",name:"Extras 3",description:"Bolognese, Gorgonzola, Mozzarella, Pesto, Thunfisch oder Grana Padano",price:3.5},
+      {id:"togo-pizza-extra-4",category:"Pizza Extras",name:"Extras 4",description:"Meeresfrüchte, Krewetten oder Hähnchenbrust",price:4.5},
+      {id:"togo-pasta-extra-1",category:"Pasta & Salat Extras",name:"Extras 1",description:"Broccoli, Paprika, Oliven, Ananas, Peperoni, Tomaten, Zwiebeln, Spinat, Mais, Ei, Käse oder Champignons",price:1.5},
+      {id:"togo-pasta-extra-2",category:"Pasta & Salat Extras",name:"Extras 2",description:"Schafskäse, Artischocken, Truthahnschinken, Sardellen oder Rucola",price:2.5},
+      {id:"togo-pasta-extra-3",category:"Pasta & Salat Extras",name:"Extras 3",description:"Salami, Pesto, Mozzarella, Rinderhackfleisch, Grana Padano, Gorgonzola oder Thunfisch",price:3.5},
+      {id:"togo-pasta-extra-4",category:"Pasta & Salat Extras",name:"Extras 4",description:"Krabben, Meeresfrüchte, luftgetrockneter Schinken oder Hähnchenbruststücke",price:4.5}
     ];
 
     const $ = (id) => document.getElementById(id);
@@ -1169,6 +1277,114 @@
         console.error(err);
         showMsg("Löschen nicht möglich: " + err.message);
       }
+    }
+
+    function setupToGoMenuControls(){
+      const options = ["Alle", ...TO_GO_CATEGORIES];
+      $("toGoMenuCategoryFilter").innerHTML = options.map(c => `<option value="${htmlEscape(c)}">${htmlEscape(c)}</option>`).join("");
+      $("toGoMenuCategory").innerHTML = TO_GO_CATEGORIES.map(c => `<option value="${htmlEscape(c)}">${htmlEscape(c)}</option>`).join("");
+      $("toGoMenuCategoryChips").innerHTML = options.map(c => `<button class="menuCatBtn${c === activeToGoMenuCategory ? " active" : ""}" type="button" data-togo-category="${htmlEscape(c)}">${htmlEscape(c)}</button>`).join("");
+    }
+
+    async function loadToGoMenu(){
+      let overrides = [];
+      try{
+        const qs = await getDocs(collection(db, "toGoMenu"));
+        overrides = qs.docs.map(d => ({id:d.id, ...d.data()}));
+      }catch(err){
+        console.warn("To-Go menu overrides could not be loaded", err);
+      }
+      const overrideMap = new Map(overrides.map(item => [item.id, item]));
+      const defaults = DEFAULT_TO_GO_MENU.map(item => ({active:true, ...item, ...(overrideMap.get(item.id) || {})}));
+      const defaultIds = new Set(DEFAULT_TO_GO_MENU.map(item => item.id));
+      toGoMenuCache = [...defaults, ...overrides.filter(item => !defaultIds.has(item.id))]
+        .filter(item => item.active !== false)
+        .sort((a,b) => (TO_GO_CATEGORIES.indexOf(a.category) - TO_GO_CATEGORIES.indexOf(b.category)) || String(a.name || "").localeCompare(String(b.name || ""), "de"));
+      setupToGoMenuControls();
+      renderToGoMenu();
+    }
+
+    function renderToGoMenu(){
+      const search = menuSearchText($("toGoMenuSearch").value);
+      const rows = toGoMenuCache.filter(item => {
+        const categoryMatch = activeToGoMenuCategory === "Alle" || item.category === activeToGoMenuCategory;
+        return categoryMatch && (!search || menuSearchText([item.name,item.description,item.category,item.allergens].join(" ")).includes(search));
+      });
+      $("toGoMenuCount").textContent = `${rows.length} Position${rows.length === 1 ? "" : "en"}`;
+      $("toGoMenuCategoryFilter").value = activeToGoMenuCategory;
+      document.querySelectorAll("[data-togo-category]").forEach(btn => btn.classList.toggle("active", btn.dataset.togoCategory === activeToGoMenuCategory));
+      $("toGoMenuList").innerHTML = rows.length ? rows.map(item => `
+        <article class="menuItem">
+          <div class="menuItemHead">
+            <div><div class="tiny muted">${htmlEscape(item.category || "")}</div><div class="menuItemName">${htmlEscape(item.name || "-")}</div></div>
+            <div class="menuPrice">${item.priceLabel ? htmlEscape(item.priceLabel) : euro(item.price)}</div>
+          </div>
+          ${item.description ? `<div class="menuDescription">${htmlEscape(item.description)}</div>` : ""}
+          <div class="menuMeta">
+            ${item.vegetarian ? `<span class="vegBadge">🌿 Vegetarisch</span>` : ""}
+            ${item.allergens ? `<span class="allergenBadge">Allergene: ${htmlEscape(item.allergens)}</span>` : ""}
+            ${isAdmin() ? `<span class="right noPrint"><button class="smallBtn smallBlue" type="button" data-togo-edit="${htmlEscape(item.id)}">Edit</button><button class="smallBtn smallRed" type="button" data-togo-delete="${htmlEscape(item.id)}">Löschen</button></span>` : ""}
+          </div>
+        </article>`).join("") : `<div class="menuEmpty">Keine passenden Einträge gefunden.</div>`;
+    }
+
+    function clearToGoMenuForm(){
+      $("toGoMenuEditId").value = "";
+      $("toGoMenuName").value = "";
+      $("toGoMenuCategory").value = activeToGoMenuCategory !== "Alle" ? activeToGoMenuCategory : "Mini-Pizza";
+      $("toGoMenuPrice").value = "";
+      $("toGoMenuDescription").value = "";
+      $("toGoMenuAllergens").value = "";
+      $("toGoMenuVegetarian").checked = false;
+      $("toGoMenuEditorTitle").textContent = "Neuer To-Go-Eintrag";
+    }
+
+    function openToGoMenuEditor(id=""){
+      if(!isAdmin()) return;
+      clearToGoMenuForm();
+      if(id){
+        const item = toGoMenuCache.find(row => row.id === id);
+        if(!item) return;
+        $("toGoMenuEditId").value = item.id;
+        $("toGoMenuName").value = item.name || "";
+        $("toGoMenuCategory").value = item.category || "Mini-Pizza";
+        $("toGoMenuPrice").value = Number(item.price || 0).toFixed(2);
+        $("toGoMenuDescription").value = item.description || "";
+        $("toGoMenuAllergens").value = item.allergens || "";
+        $("toGoMenuVegetarian").checked = Boolean(item.vegetarian);
+        $("toGoMenuEditorTitle").textContent = "To-Go-Eintrag bearbeiten";
+      }
+      $("toGoMenuEditor").classList.remove("hidden");
+      $("toGoMenuEditor").scrollIntoView({behavior:"smooth", block:"nearest"});
+    }
+
+    async function saveToGoMenuItem(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const existingId = safe($("toGoMenuEditId").value);
+      const data = {
+        name:safe($("toGoMenuName").value), category:$("toGoMenuCategory").value,
+        price:Number($("toGoMenuPrice").value || 0), description:safe($("toGoMenuDescription").value),
+        allergens:safe($("toGoMenuAllergens").value), vegetarian:$("toGoMenuVegetarian").checked,
+        active:true, updatedAt:serverTimestamp(), updatedBy:currentUser.uid
+      };
+      if(!data.name || !data.category || data.price < 0) return showMsg("Name, Kategorie und Preis prüfen.");
+      try{
+        if(existingId) await setDoc(doc(db, "toGoMenu", existingId), data, {merge:true});
+        else await addDoc(collection(db, "toGoMenu"), {...data, createdAt:serverTimestamp()});
+        $("toGoMenuEditor").classList.add("hidden");
+        clearToGoMenuForm();
+        await loadToGoMenu();
+        showMsg("To-Go-Eintrag gespeichert.");
+      }catch(err){ console.error(err); showMsg("Speichern nicht möglich: " + err.message); }
+    }
+
+    async function removeToGoMenuItem(id){
+      if(!isAdmin() || !confirm("To-Go-Eintrag wirklich löschen?")) return;
+      try{
+        await setDoc(doc(db, "toGoMenu", id), {active:false, updatedAt:serverTimestamp(), updatedBy:currentUser.uid}, {merge:true});
+        await loadToGoMenu();
+        showMsg("To-Go-Eintrag gelöscht.");
+      }catch(err){ console.error(err); showMsg("Löschen nicht möglich: " + err.message); }
     }
 
     function renderAdminVisibility(){
@@ -2002,6 +2218,7 @@ bruchCache.sort((a, b) => {
       await loadUrlaub();
       await loadBruch();
       await loadRestaurantMenu();
+      await loadToGoMenu();
       await loadDashboard();
       await loadHours();
       window.lucide?.createIcons();
@@ -2093,6 +2310,30 @@ bruchCache.sort((a, b) => {
     $("btnCancelMenuEdit").addEventListener("click", ()=>{
       clearMenuForm();
       $("menuEditor").classList.add("hidden");
+    });
+
+    $("toGoMenuSearch").addEventListener("input", renderToGoMenu);
+    $("toGoMenuCategoryFilter").addEventListener("change", (event)=>{
+      activeToGoMenuCategory = event.target.value;
+      renderToGoMenu();
+    });
+    $("toGoMenuCategoryChips").addEventListener("click", (event)=>{
+      const button = event.target.closest("[data-togo-category]");
+      if(!button) return;
+      activeToGoMenuCategory = button.dataset.togoCategory;
+      renderToGoMenu();
+    });
+    $("toGoMenuList").addEventListener("click", (event)=>{
+      const editButton = event.target.closest("[data-togo-edit]");
+      const deleteButton = event.target.closest("[data-togo-delete]");
+      if(editButton) openToGoMenuEditor(editButton.dataset.togoEdit);
+      if(deleteButton) removeToGoMenuItem(deleteButton.dataset.togoDelete);
+    });
+    $("btnToggleToGoMenuEditor").addEventListener("click", ()=> openToGoMenuEditor());
+    $("btnSaveToGoMenuItem").addEventListener("click", saveToGoMenuItem);
+    $("btnCancelToGoMenuEdit").addEventListener("click", ()=>{
+      clearToGoMenuForm();
+      $("toGoMenuEditor").classList.add("hidden");
     });
 
     $("btnPrint").addEventListener("click", ()=> window.print());
