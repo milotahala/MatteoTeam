@@ -210,6 +210,7 @@
     .documentCard{padding:15px;border:1px solid var(--line);border-radius:16px;background:#102239}
     .uploadProgress{height:8px;border-radius:999px;background:#182d46;overflow:hidden;margin-top:10px}
     .uploadProgress span{display:block;height:100%;width:0;background:#2dd486;transition:width .2s ease}
+    .urgentBadge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:950;background:#b91c1c;color:#fff;box-shadow:0 4px 12px rgba(239,68,68,.3)}
     .stat h3{margin:0 0 6px;font-size:13px;color:var(--muted)}
     .stat .num{font-size:28px;font-weight:900}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -472,6 +473,7 @@
           <button class="navBtn" data-view="viewTimeClock" type="button"><i data-lucide="timer" aria-hidden="true"></i><span>Stempeluhr</span></button>
           <button class="navBtn" data-view="viewAnnouncements" type="button"><i data-lucide="bell" aria-hidden="true"></i><span>Mitteilungen</span></button>
           <button class="navBtn" data-view="viewDocuments" type="button"><i data-lucide="scan-line" aria-hidden="true"></i><span>Lieferanten</span></button>
+          <button class="navBtn" data-view="viewSickLeave" type="button"><i data-lucide="heart-pulse" aria-hidden="true"></i><span>Krankmeldung</span></button>
           <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP</span></button>
           <button class="navBtn" data-view="viewOrders" type="button"><i data-lucide="notebook-tabs" aria-hidden="true"></i><span>Bestellung</span></button>
           <button class="navBtn" data-view="viewRestaurantMenu" type="button"><i data-lucide="utensils" aria-hidden="true"></i><span>Speisekarte</span></button>
@@ -496,6 +498,7 @@
               <button class="dashboardApp" data-dashboard-view="viewTimeClock" type="button"><span class="dashboardAppIcon"><i data-lucide="timer"></i></span><span>Stempeluhr</span></button>
               <button class="dashboardApp" data-dashboard-view="viewAnnouncements" type="button"><span class="dashboardAppIcon"><i data-lucide="bell"></i></span><span>Mitteilungen <span id="announcementUnreadBadge" class="noticeBadge hidden">0</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewDocuments" type="button"><span class="dashboardAppIcon"><i data-lucide="scan-line"></i></span><span>Lieferanten</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewSickLeave" type="button"><span class="dashboardAppIcon"><i data-lucide="heart-pulse"></i></span><span>Krankmeldung <span id="sickUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewHaccp" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-check"></i></span><span>HACCP</span></button>
               <button class="dashboardApp" data-dashboard-view="viewOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="notebook-tabs"></i></span><span>Bestellung</span></button>
               <button class="dashboardApp" data-dashboard-view="viewRestaurantMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="utensils"></i></span><span>Speisekarte</span></button>
@@ -578,6 +581,27 @@
               <span id="documentCount" class="pill ok">0 Dokumente</span>
             </div>
             <div id="documentList" class="documentGrid"><div class="muted">Noch keine Dokumente.</div></div>
+          </section>
+
+          <section id="viewSickLeave" class="view card hidden">
+            <div class="row" style="margin-bottom:16px">
+              <div><h2 class="sectionTitle">Krankmeldung</h2><div class="sectionSub" style="margin-bottom:0">Krankheit direkt an Admin und SuperAdmin melden.</div></div>
+              <button id="btnReloadSickLeave" class="ghost right" type="button">Aktualisieren</button>
+            </div>
+            <div class="item">
+              <strong>Neue Krankmeldung</strong>
+              <div class="divider"></div>
+              <div class="menuFormGrid">
+                <div class="field"><label class="label">Krank von</label><input id="sickFrom" class="input" type="date" /></div>
+                <div class="field"><label class="label">Voraussichtlich bis</label><input id="sickTo" class="input" type="date" /></div>
+              </div>
+              <div class="field"><label class="label">Nachricht an Admin</label><textarea id="sickNote" class="textarea" maxlength="1000" placeholder="z. B. Ich kann heute nicht zur Arbeit kommen."></textarea></div>
+              <div class="field"><label class="label">AU-Bescheinigung (optional)</label><input id="sickFile" class="input" type="file" accept="image/*,application/pdf" capture="environment" /></div>
+              <button id="btnSubmitSickLeave" class="btnDanger" type="button">Krankmeldung senden</button>
+              <div id="sickUploadProgress" class="uploadProgress hidden"><span></span></div>
+            </div>
+            <div class="row" style="margin-bottom:12px"><strong id="sickListTitle">Meine Krankmeldungen</strong><span id="sickPendingCount" class="pill danger right">0 offen</span></div>
+            <div id="sickLeaveList"><div class="muted">Noch keine Krankmeldungen.</div></div>
           </section>
 
           <section id="viewTimeClock" class="view card hidden">
@@ -1078,6 +1102,7 @@
     let announcementCache = [];
     let documentCache = [];
     let activeDocumentFolder = "Alle";
+    let sickLeaveCache = [];
 
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
     const DEFAULT_RESTAURANT_MENU = [
@@ -2716,6 +2741,101 @@ bruchCache.sort((a, b) => {
       }
     }
 
+    function renderSickLeave(){
+      const pending = sickLeaveCache.filter(item => item.status === "pending");
+      $("sickPendingCount").textContent = `${pending.length} offen`;
+      $("sickListTitle").textContent = isAdmin() ? "Krankmeldungen vom Team" : "Meine Krankmeldungen";
+      $("sickUnreadBadge").textContent = `${pending.length} Wichtig`;
+      $("sickUnreadBadge").classList.toggle("hidden", !isAdmin() || pending.length === 0);
+      $("sickLeaveList").innerHTML = sickLeaveCache.length ? sickLeaveCache.map(item => {
+        const pendingItem = item.status === "pending";
+        return `<article class="noticeCard${pendingItem ? " unread" : ""}">
+          <div class="row"><strong>${htmlEscape(item.staffName || "-")}</strong>${pendingItem ? `<span class="urgentBadge">Wichtig · Neu</span>` : `<span class="pill ok">Bestätigt</span>`}<span class="right tiny muted">${htmlEscape(item.from || "")} → ${htmlEscape(item.to || "")}</span></div>
+          <div class="noticeText">${htmlEscape(item.note || "Keine Nachricht")}</div>
+          <div class="row" style="margin-top:12px">
+            ${item.downloadUrl ? `<a class="smallBtn smallBlue" href="${htmlEscape(item.downloadUrl)}" target="_blank" rel="noopener">AU öffnen</a>` : `<span class="tiny muted">Keine AU hochgeladen</span>`}
+            ${isAdmin() && pendingItem ? `<button class="smallBtn smallGreen right" type="button" data-sick-confirm="${htmlEscape(item.id)}">Gelesen & bestätigt</button>` : ""}
+          </div>
+        </article>`;
+      }).join("") : `<div class="item muted">Noch keine Krankmeldungen.</div>`;
+    }
+
+    async function loadSickLeave(){
+      try{
+        const source = isAdmin()
+          ? collection(db, "sickLeave")
+          : query(collection(db, "sickLeave"), where("staffId", "==", currentUser.uid));
+        const qs = await getDocs(source);
+        sickLeaveCache = qs.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => {
+          const aa = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+          const bb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+          return bb - aa;
+        });
+        renderSickLeave();
+      }catch(err){
+        console.error(err);
+        showMsg("Krankmeldungen konnten nicht geladen werden: " + err.message);
+      }
+    }
+
+    async function submitSickLeave(){
+      const from = $("sickFrom").value;
+      const to = $("sickTo").value;
+      const note = safe($("sickNote").value);
+      const file = $("sickFile").files?.[0] || null;
+      if(!from || !to) return showMsg("Bitte Krankheitszeitraum eingeben.");
+      if(to < from) return showMsg("Bis-Datum darf nicht vor Von-Datum liegen.");
+      if(file && file.size > 20 * 1024 * 1024) return showMsg("Datei ist zu groß. Maximal 20 MB.");
+      const progress = $("sickUploadProgress");
+      const bar = progress.querySelector("span");
+      $("btnSubmitSickLeave").disabled = true;
+      let storagePath = "";
+      let downloadUrl = "";
+      try{
+        if(file){
+          progress.classList.remove("hidden");
+          bar.style.width = "0%";
+          storagePath = `sickLeave/${currentUser.uid}/${from}/${Date.now()}_${documentFileName(file.name)}`;
+          const task = uploadBytesResumable(storageRef(storage, storagePath), file, {contentType:file.type || "application/octet-stream"});
+          await new Promise((resolve, reject) => task.on("state_changed", snapshot => {
+            bar.style.width = `${Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100)}%`;
+          }, reject, resolve));
+          downloadUrl = await getDownloadURL(task.snapshot.ref);
+        }
+        await addDoc(collection(db, "sickLeave"), {
+          staffId:currentUser.uid, staffName:currentProfile.name || currentUser.email,
+          from, to, note, status:"pending", important:true,
+          storagePath, downloadUrl, fileName:file?.name || "",
+          createdAt:serverTimestamp()
+        });
+        $("sickNote").value = "";
+        $("sickFile").value = "";
+        await loadSickLeave();
+        showMsg("Krankmeldung wurde wichtig an Admin gesendet.");
+      }catch(err){
+        console.error(err);
+        showMsg("Krankmeldung konnte nicht gesendet werden: " + err.message);
+      }finally{
+        $("btnSubmitSickLeave").disabled = false;
+        setTimeout(() => progress.classList.add("hidden"), 600);
+      }
+    }
+
+    async function confirmSickLeave(id){
+      if(!isAdmin()) return;
+      try{
+        await updateDoc(doc(db, "sickLeave", id), {
+          status:"confirmed", confirmedBy:currentUser.uid,
+          confirmedByName:currentProfile.name || currentUser.email,
+          confirmedAt:serverTimestamp()
+        });
+        await loadSickLeave();
+      }catch(err){
+        console.error(err);
+        showMsg("Krankmeldung konnte nicht bestätigt werden: " + err.message);
+      }
+    }
+
     function localDateKey(date = new Date()){
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -2905,6 +3025,8 @@ bruchCache.sort((a, b) => {
       $("timeClockMonth").value = monthStr();
       $("documentDate").value = localDateKey();
       $("documentMonth").value = monthStr();
+      $("sickFrom").value = localDateKey();
+      $("sickTo").value = localDateKey();
 
       await loadStaff();
       await loadInventory();
@@ -2919,6 +3041,7 @@ bruchCache.sort((a, b) => {
       await loadOrders();
       await loadAnnouncements();
       await loadDocuments();
+      await loadSickLeave();
       await loadTimeClock();
       await loadTimeClockMonth();
       await loadDashboard();
@@ -3101,6 +3224,12 @@ bruchCache.sort((a, b) => {
     $("documentList").addEventListener("click", event => {
       const button = event.target.closest("[data-document-delete]");
       if(button) deleteDocumentRecord(button.dataset.documentDelete);
+    });
+    $("btnSubmitSickLeave").addEventListener("click", submitSickLeave);
+    $("btnReloadSickLeave").addEventListener("click", loadSickLeave);
+    $("sickLeaveList").addEventListener("click", event => {
+      const button = event.target.closest("[data-sick-confirm]");
+      if(button) confirmSickLeave(button.dataset.sickConfirm);
     });
     $("btnClockIn").addEventListener("click", clockIn);
     $("btnClockOut").addEventListener("click", clockOut);
