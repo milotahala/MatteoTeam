@@ -174,11 +174,22 @@
     .statIcon svg{width:17px;height:17px}
     .dashboardHead{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
     .dashboardDate{margin-left:auto;color:var(--muted);font-size:13px}
-    .dashboardApps{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px}
-    .dashboardApp{min-height:132px;border:1px solid #29435f;border-radius:18px;background:linear-gradient(145deg,#122740,#0e1f34);color:#fff;cursor:pointer;padding:16px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;text-align:center;font-weight:900}
-    .dashboardApp:hover{border-color:#2dd486;background:linear-gradient(145deg,#15334b,#123a31)}
-    .dashboardAppIcon{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;background:rgba(45,212,134,.14);color:#42e39b}
-    .dashboardAppIcon svg{width:28px;height:28px}
+    .dashboardApps{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:20px 12px;padding:18px 8px 8px;border-radius:24px;background:linear-gradient(145deg,rgba(16,34,57,.82),rgba(8,24,42,.5));border:1px solid rgba(66,191,245,.1)}
+    .dashboardApp{min-height:116px;border:0;background:transparent;color:#fff;cursor:pointer;padding:8px 5px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;text-align:center;font-weight:850}
+    .dashboardApp:hover{background:rgba(255,255,255,.04);border-radius:18px}
+    .dashboardAppIcon{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,#15945c,#2dd486);box-shadow:0 10px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.25)}
+    .dashboardAppIcon svg{width:32px;height:32px;stroke-width:2.2}
+    .dashboardApp:nth-child(2) .dashboardAppIcon{background:linear-gradient(145deg,#2563eb,#42bff5)}
+    .dashboardApp:nth-child(3) .dashboardAppIcon{background:linear-gradient(145deg,#b45309,#f59e0b)}
+    .dashboardApp:nth-child(4) .dashboardAppIcon{background:linear-gradient(145deg,#7c3aed,#a78bfa)}
+    .dashboardApp:nth-child(5) .dashboardAppIcon{background:linear-gradient(145deg,#be123c,#fb7185)}
+    .dashboardApp:nth-child(6) .dashboardAppIcon{background:linear-gradient(145deg,#0f766e,#2dd4bf)}
+    .dashboardApp:nth-child(7) .dashboardAppIcon{background:linear-gradient(145deg,#9a3412,#fb923c)}
+    .dashboardApp:nth-child(8) .dashboardAppIcon{background:linear-gradient(145deg,#4338ca,#818cf8)}
+    .dashboardApp:nth-child(9) .dashboardAppIcon{background:linear-gradient(145deg,#4d7c0f,#a3e635)}
+    .dashboardApp:nth-child(10) .dashboardAppIcon{background:linear-gradient(145deg,#0369a1,#38bdf8)}
+    .dashboardApp:nth-child(11) .dashboardAppIcon{background:linear-gradient(145deg,#a21caf,#e879f9)}
+    .dashboardApp:nth-child(12) .dashboardAppIcon{background:linear-gradient(145deg,#b91c1c,#f87171)}
     .clockNow{font-size:48px;font-weight:950;letter-spacing:-.04em;text-align:center;margin:8px 0 2px}
     .clockDate{text-align:center;color:var(--muted);margin-bottom:18px}
     .clockActions{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:620px;margin:0 auto}
@@ -342,10 +353,10 @@
       .title{font-size:16px}
       .subtitle{max-width:145px}
       .view{padding:14px}
-      .dashboardApps{grid-template-columns:repeat(3,minmax(82px,1fr));gap:9px}
-      .dashboardApp{min-height:105px;padding:12px 6px;font-size:13px;border-radius:15px}
-      .dashboardAppIcon{width:46px;height:46px;border-radius:14px}
-      .dashboardAppIcon svg{width:24px;height:24px}
+      .dashboardApps{grid-template-columns:repeat(3,minmax(82px,1fr));gap:16px 7px;padding:17px 5px 10px}
+      .dashboardApp{min-height:105px;padding:5px 2px;font-size:12px;line-height:1.25}
+      .dashboardAppIcon{width:62px;height:62px}
+      .dashboardAppIcon svg{width:28px;height:28px}
       .clockSummary{grid-template-columns:1fr 1fr}
       .clockSummary .item:first-child{grid-column:1/-1}
       .documentFolders{grid-template-columns:repeat(2,1fr)}
