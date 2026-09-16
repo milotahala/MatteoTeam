@@ -243,9 +243,31 @@
     .menuEmpty{grid-column:1/-1;text-align:center;padding:34px;color:var(--muted)}
     .menuFormGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .menuLegend{columns:2;column-gap:24px;font-size:12px;color:var(--muted);line-height:1.7}
+    .orderLayout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:14px;align-items:start}
+    .tableGrid{display:grid;grid-template-columns:repeat(6,minmax(70px,1fr));gap:9px}
+    .tableBtn{min-height:72px;border-radius:15px;border:1px solid #2a435f;background:#12243a;color:#fff;cursor:pointer;padding:9px;font-weight:900}
+    .tableBtn small{display:block;margin-top:4px;color:var(--muted);font-weight:700}
+    .tableBtn.open{background:rgba(245,158,11,.14);border-color:#f59e0b}
+    .tableBtn.selected{background:linear-gradient(135deg,#138452,#22b873);border-color:transparent;color:#04150e;box-shadow:0 8px 22px rgba(34,184,115,.22)}
+    .tableBtn.selected small{color:#083d28}
+    .orderPanel{position:sticky;top:98px;padding:17px;border:1px solid var(--line);border-radius:18px;background:#0a192b}
+    .orderMenuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:520px;overflow:auto;padding-right:3px}
+    .orderMenuItem{border:1px solid #29435f;background:#102239;color:#fff;border-radius:13px;padding:12px;text-align:left;cursor:pointer}
+    .orderMenuItem strong{display:block;line-height:1.25}
+    .orderMenuItem span{display:block;color:#86efac;margin-top:5px;font-weight:900}
+    .orderLine{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px 0;border-bottom:1px solid var(--line)}
+    .orderQty{display:flex;gap:5px;align-items:center}
+    .orderQty button{width:30px;height:30px;border:0;border-radius:9px;background:#1e3a56;color:#fff;cursor:pointer;font-weight:900}
+    .orderTotal{display:flex;justify-content:space-between;align-items:center;font-size:20px;font-weight:950;padding:15px 0}
+    .orderStatus{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+    .orderStatus button{min-height:42px;border-radius:11px;border:1px solid #2a435f;background:#12243a;color:#fff;cursor:pointer}
+    .orderStatus button.active{background:#14532d;border-color:#22c55e}
     @media (max-width:1100px){
       .authWrap,.grid2,.grid3{grid-template-columns:1fr}
       .stats{grid-template-columns:repeat(2,1fr)}
+      .orderLayout{grid-template-columns:1fr}
+      .orderPanel{position:static}
+      .tableGrid{grid-template-columns:repeat(5,minmax(64px,1fr))}
     }
     @media (max-width:800px){
       body{padding-bottom:92px}
@@ -296,6 +318,8 @@
       .menuGrid{grid-template-columns:1fr}
       .menuFormGrid{grid-template-columns:1fr}
       .menuLegend{columns:1}
+      .tableGrid{grid-template-columns:repeat(4,minmax(60px,1fr))}
+      .orderMenuGrid{grid-template-columns:1fr}
       #urlaubList .item>.row{align-items:flex-start}
       #urlaubList .item>.row .right{width:100%;margin:2px 0 0}
     }
@@ -399,6 +423,7 @@
           <button class="navBtn" data-view="viewInventory" type="button"><i data-lucide="package" aria-hidden="true"></i><span>Inventar</span></button>
           <button class="navBtn" data-view="viewMyHours" type="button"><i data-lucide="clock-3" aria-hidden="true"></i><span>Stunden</span></button>
           <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP</span></button>
+          <button class="navBtn" data-view="viewOrders" type="button"><i data-lucide="notebook-tabs" aria-hidden="true"></i><span>Bestellung</span></button>
           <button class="navBtn" data-view="viewRestaurantMenu" type="button"><i data-lucide="utensils" aria-hidden="true"></i><span>Speisekarte</span></button>
           <button class="navBtn" data-view="viewToGoMenu" type="button"><i data-lucide="pizza" aria-hidden="true"></i><span>To Go</span></button>
           <button class="navBtn" data-view="viewUrlaub" type="button"><i data-lucide="palmtree" aria-hidden="true"></i><span>Urlaub</span></button>
@@ -829,6 +854,51 @@
             <div id="toGoMenuList" class="menuGrid"></div>
             <div class="item tiny muted" style="margin-top:14px">Alle Preisangaben in €. Allergene und Zusatzstoffe entsprechen der aktuellen To-Go-Karte.</div>
           </section>
+
+          <section id="viewOrders" class="view card hidden">
+            <div class="row" style="margin-bottom:16px">
+              <div>
+                <h2 class="sectionTitle">Bestellung & Tische</h2>
+                <div class="sectionSub" style="margin-bottom:0">Tisch wählen, Produkte hinzufügen und Bestellung an Küche senden.</div>
+              </div>
+              <button id="btnReloadOrders" class="ghost right" type="button">Aktualisieren</button>
+            </div>
+
+            <div class="orderLayout">
+              <div>
+                <div class="item">
+                  <div class="row" style="margin-bottom:12px"><strong>Tische</strong><span id="openTablesBadge" class="pill warn right">0 offen</span></div>
+                  <div id="tableGrid" class="tableGrid"></div>
+                </div>
+                <div id="orderProductPicker" class="item hidden">
+                  <div class="menuToolbar" style="margin-bottom:10px">
+                    <input id="orderMenuSearch" class="input" type="search" placeholder="Gericht oder Getränk suchen …" />
+                    <select id="orderMenuCategory" class="select" aria-label="Kategorie"></select>
+                  </div>
+                  <div id="orderMenuList" class="orderMenuGrid"></div>
+                </div>
+              </div>
+
+              <aside class="orderPanel">
+                <div class="row"><strong id="currentOrderTitle">Tisch wählen</strong><span id="currentOrderStatus" class="pill warn right">Neu</span></div>
+                <div class="divider"></div>
+                <div id="currentOrderLines" class="muted">Bitte zuerst einen Tisch auswählen.</div>
+                <div id="orderEditorControls" class="hidden">
+                  <div class="field" style="margin-top:12px"><label class="label">Notiz für Küche / Service</label><textarea id="orderNote" class="textarea" placeholder="z. B. ohne Zwiebeln, extra scharf …"></textarea></div>
+                  <div class="orderTotal"><span>Gesamt</span><span id="currentOrderTotal">0,00 €</span></div>
+                  <div class="orderStatus" style="margin-bottom:10px">
+                    <button type="button" data-order-status="new">Neu</button>
+                    <button type="button" data-order-status="kitchen">Küche</button>
+                    <button type="button" data-order-status="ready">Fertig</button>
+                  </div>
+                  <div class="row">
+                    <button id="btnSaveOrder" class="btn" type="button">Bestellung speichern</button>
+                    <button id="btnCloseOrder" class="btnWarn right" type="button">Bezahlt / Schließen</button>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </section>
         </main>
       </div>
     </section>
@@ -868,6 +938,11 @@
     let bruchCache = [];
     let restaurantMenuCache = [];
     let activeMenuCategory = "Alle";
+    let orderCache = [];
+    let selectedTable = null;
+    let currentOrderItems = [];
+    let currentOrderId = null;
+    let currentOrderState = "new";
 
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
     const DEFAULT_RESTAURANT_MENU = [
@@ -2159,6 +2234,158 @@ bruchCache.sort((a, b) => {
       w.print();
     }
 
+    function orderStatusLabel(status){
+      if(status === "kitchen") return "Küche";
+      if(status === "ready") return "Fertig";
+      if(status === "closed") return "Bezahlt";
+      return "Neu";
+    }
+
+    function orderTotal(items = currentOrderItems){
+      return items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0), 0);
+    }
+
+    function renderTables(){
+      const openByTable = new Map(orderCache.filter(o => o.status !== "closed").map(o => [Number(o.table), o]));
+      $("openTablesBadge").textContent = `${openByTable.size} offen`;
+      $("tableGrid").innerHTML = Array.from({length:60}, (_, i) => i + 1).map(number => {
+        const order = openByTable.get(number);
+        const classes = ["tableBtn", order ? "open" : "", selectedTable === number ? "selected" : ""].filter(Boolean).join(" ");
+        const info = order ? `${orderStatusLabel(order.status)} · ${euro(order.total)}` : "Frei";
+        return `<button class="${classes}" type="button" data-table-number="${number}">Tisch ${number}<small>${htmlEscape(info)}</small></button>`;
+      }).join("");
+    }
+
+    function renderOrderMenu(){
+      const search = menuSearchText($("orderMenuSearch").value);
+      const category = $("orderMenuCategory").value || "Alle";
+      const rows = restaurantMenuCache.filter(item => {
+        const categoryMatch = category === "Alle" || item.category === category;
+        const textMatch = !search || menuSearchText([item.name,item.category,item.description].join(" ")).includes(search);
+        return categoryMatch && textMatch;
+      });
+      $("orderMenuList").innerHTML = rows.length ? rows.map(item => `
+        <button class="orderMenuItem" type="button" data-order-add="${htmlEscape(item.id)}">
+          <strong>${htmlEscape(item.name)}</strong>
+          <small class="muted">${htmlEscape(item.category || "")}</small>
+          <span>${euro(item.price)}</span>
+        </button>`).join("") : `<div class="menuEmpty">Keine Produkte gefunden.</div>`;
+    }
+
+    function renderCurrentOrder(){
+      if(!selectedTable){
+        $("currentOrderTitle").textContent = "Tisch wählen";
+        $("currentOrderLines").innerHTML = "Bitte zuerst einen Tisch auswählen.";
+        $("orderEditorControls").classList.add("hidden");
+        $("orderProductPicker").classList.add("hidden");
+        return;
+      }
+      $("currentOrderTitle").textContent = `Tisch ${selectedTable}`;
+      $("currentOrderStatus").textContent = orderStatusLabel(currentOrderState);
+      $("currentOrderStatus").className = `pill ${currentOrderState === "ready" ? "ok" : "warn"} right`;
+      $("orderEditorControls").classList.remove("hidden");
+      $("orderProductPicker").classList.remove("hidden");
+      $("currentOrderLines").innerHTML = currentOrderItems.length ? currentOrderItems.map((item, index) => `
+        <div class="orderLine">
+          <div><strong>${htmlEscape(item.name)}</strong><div class="tiny muted">${euro(item.price)} · ${euro(Number(item.price || 0) * Number(item.qty || 0))}</div></div>
+          <div class="orderQty">
+            <button type="button" data-order-minus="${index}">−</button>
+            <strong>${Number(item.qty || 0)}</strong>
+            <button type="button" data-order-plus="${index}">+</button>
+          </div>
+        </div>`).join("") : `<div class="muted">Noch keine Produkte hinzugefügt.</div>`;
+      $("currentOrderTotal").textContent = euro(orderTotal());
+      document.querySelectorAll("[data-order-status]").forEach(button => button.classList.toggle("active", button.dataset.orderStatus === currentOrderState));
+    }
+
+    async function loadOrders(){
+      try{
+        const qs = await getDocs(collection(db, "orders"));
+        orderCache = qs.docs.map(d => ({id:d.id, ...d.data()}));
+        renderTables();
+        if(selectedTable) selectTable(selectedTable);
+      }catch(err){
+        console.error(err);
+        showMsg("Bestellungen konnten nicht geladen werden: " + err.message);
+      }
+    }
+
+    function selectTable(number){
+      selectedTable = Number(number);
+      const existing = orderCache.find(order => Number(order.table) === selectedTable && order.status !== "closed");
+      currentOrderId = existing?.id || null;
+      currentOrderItems = (existing?.items || []).map(item => ({...item, qty:Number(item.qty || 1)}));
+      currentOrderState = existing?.status || "new";
+      $("orderNote").value = existing?.note || "";
+      renderTables();
+      renderOrderMenu();
+      renderCurrentOrder();
+    }
+
+    function addOrderItem(menuId){
+      const menuItem = restaurantMenuCache.find(item => item.id === menuId);
+      if(!menuItem) return;
+      const existing = currentOrderItems.find(item => item.menuId === menuId);
+      if(existing) existing.qty += 1;
+      else currentOrderItems.push({menuId:menuItem.id, name:menuItem.name, category:menuItem.category || "", price:Number(menuItem.price || 0), qty:1});
+      renderCurrentOrder();
+    }
+
+    function changeOrderQty(index, change){
+      const item = currentOrderItems[Number(index)];
+      if(!item) return;
+      item.qty += change;
+      if(item.qty <= 0) currentOrderItems.splice(Number(index), 1);
+      renderCurrentOrder();
+    }
+
+    async function saveOrder(){
+      if(!selectedTable) return showMsg("Bitte zuerst einen Tisch wählen.");
+      if(!currentOrderItems.length) return showMsg("Bitte mindestens ein Produkt hinzufügen.");
+      const data = {
+        table:selectedTable,
+        items:currentOrderItems,
+        note:safe($("orderNote").value),
+        status:currentOrderState,
+        total:orderTotal(),
+        waiterId:currentUser.uid,
+        waiterName:currentProfile.name || currentUser.email,
+        updatedAt:serverTimestamp()
+      };
+      try{
+        if(currentOrderId){
+          await updateDoc(doc(db, "orders", currentOrderId), data);
+        }else{
+          const created = await addDoc(collection(db, "orders"), {...data, createdAt:serverTimestamp()});
+          currentOrderId = created.id;
+        }
+        await loadOrders();
+        showMsg("Bestellung gespeichert.");
+      }catch(err){
+        console.error(err);
+        showMsg("Bestellung konnte nicht gespeichert werden: " + err.message);
+      }
+    }
+
+    async function closeOrder(){
+      if(!currentOrderId) return showMsg("Diese Bestellung wurde noch nicht gespeichert.");
+      if(!confirm(`Tisch ${selectedTable} als bezahlt schließen?`)) return;
+      try{
+        await updateDoc(doc(db, "orders", currentOrderId), {status:"closed", closedAt:serverTimestamp(), updatedAt:serverTimestamp()});
+        selectedTable = null;
+        currentOrderId = null;
+        currentOrderItems = [];
+        currentOrderState = "new";
+        $("orderNote").value = "";
+        await loadOrders();
+        renderCurrentOrder();
+        showMsg("Tisch wurde geschlossen.");
+      }catch(err){
+        console.error(err);
+        showMsg("Tisch konnte nicht geschlossen werden: " + err.message);
+      }
+    }
+
     async function loadDashboard(){
       $("statStaff").textContent = String(staffCache.length);
       $("statInventory").textContent = String(inventoryCache.length);
@@ -2219,6 +2446,8 @@ bruchCache.sort((a, b) => {
       await loadBruch();
       await loadRestaurantMenu();
       await loadToGoMenu();
+      $("orderMenuCategory").innerHTML = ["Alle", ...MENU_CATEGORIES].map(category => `<option value="${htmlEscape(category)}">${htmlEscape(category)}</option>`).join("");
+      await loadOrders();
       await loadDashboard();
       await loadHours();
       window.lucide?.createIcons();
@@ -2335,6 +2564,30 @@ bruchCache.sort((a, b) => {
       clearToGoMenuForm();
       $("toGoMenuEditor").classList.add("hidden");
     });
+
+    $("tableGrid").addEventListener("click", event => {
+      const button = event.target.closest("[data-table-number]");
+      if(button) selectTable(button.dataset.tableNumber);
+    });
+    $("orderMenuSearch").addEventListener("input", renderOrderMenu);
+    $("orderMenuCategory").addEventListener("change", renderOrderMenu);
+    $("orderMenuList").addEventListener("click", event => {
+      const button = event.target.closest("[data-order-add]");
+      if(button) addOrderItem(button.dataset.orderAdd);
+    });
+    $("currentOrderLines").addEventListener("click", event => {
+      const minus = event.target.closest("[data-order-minus]");
+      const plus = event.target.closest("[data-order-plus]");
+      if(minus) changeOrderQty(minus.dataset.orderMinus, -1);
+      if(plus) changeOrderQty(plus.dataset.orderPlus, 1);
+    });
+    document.querySelectorAll("[data-order-status]").forEach(button => button.addEventListener("click", () => {
+      currentOrderState = button.dataset.orderStatus;
+      renderCurrentOrder();
+    }));
+    $("btnSaveOrder").addEventListener("click", saveOrder);
+    $("btnCloseOrder").addEventListener("click", closeOrder);
+    $("btnReloadOrders").addEventListener("click", loadOrders);
 
     $("btnPrint").addEventListener("click", ()=> window.print());
 
