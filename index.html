@@ -316,6 +316,8 @@
       .topbar{position:static;padding:12px;border-radius:17px}
       .topbar>.row{gap:7px;flex-wrap:nowrap}
       .topbar .ghost,.topbar .btnDanger{min-height:40px;padding:8px 11px;font-size:13px}
+      #btnChangePassword span{display:none}
+      #btnChangePassword{width:42px;padding:8px;display:grid;place-items:center}
       .brandWrap{min-width:0;gap:9px}
       .brand{width:42px;height:42px;flex:0 0 42px;border-radius:12px}
       .title{font-size:17px;white-space:nowrap}
@@ -459,6 +461,7 @@
 
         <div class="row">
           <button id="btnPrint" class="ghost noPrint" type="button">Print</button>
+          <button id="btnChangePassword" class="ghost noPrint" type="button" title="Passwort ändern"><i data-lucide="key-round" aria-hidden="true"></i><span>Passwort</span></button>
           <button id="btnLogout" class="btnDanger noPrint" type="button">Logout</button>
         </div>
       </div>
@@ -674,6 +677,11 @@
                 <div class="field">
                   <label class="label">Hourly Rate (€)</label>
                   <input id="staffRate" class="input" type="number" step="0.01" />
+                </div>
+                <div class="field" id="staffPasswordField">
+                  <label class="label">Temporäres Passwort</label>
+                  <input id="staffPassword" class="input" type="password" minlength="6" autocomplete="new-password" placeholder="Mindestens 6 Zeichen" />
+                  <div class="tiny muted" style="margin-top:6px">Der Mitarbeiter kann dieses Passwort nach dem Login ändern.</div>
                 </div>
                 <div class="row">
                   <button id="btnSaveStaff" class="btn" type="button">Save Staff</button>
@@ -1058,7 +1066,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
-      getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
       getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp, query, where, arrayUnion
@@ -1080,7 +1088,9 @@
     const SUPERADMIN_UID = "zHjssSqBb4W1iffwCs9RJmfUVYJ3";
 
     const app = initializeApp(firebaseConfig);
+    const staffCreatorApp = initializeApp(firebaseConfig, "staffCreator");
     const auth = getAuth(app);
+    const staffCreatorAuth = getAuth(staffCreatorApp);
     const db = getFirestore(app);
     const storage = getStorage(app);
 
@@ -1701,6 +1711,8 @@
       $("staffDepartment").value = s.department || "Service";
       $("staffRole").value = s.role || "staff";
       $("staffRate").value = s.hourlyRate || "";
+      $("staffPassword").value = "";
+      $("staffPasswordField").classList.add("hidden");
       openView("viewStaff");
     };
 
@@ -1717,9 +1729,10 @@
     async function saveStaff(){
       if(!isAdmin()) return showMsg("Nur Admin.");
       const id = $("staffEditId").value.trim();
+      const temporaryPassword = $("staffPassword").value;
       const data = {
         name: safe($("staffName").value),
-        email: safe($("staffEmail").value),
+        email: safe($("staffEmail").value).toLowerCase(),
         department: $("staffDepartment").value,
         role: $("staffRole").value,
         hourlyRate: Number($("staffRate").value || 0),
@@ -1727,17 +1740,37 @@
       };
       if(!data.name || !data.email) return showMsg("Name und Email fehlen.");
       if(data.role === "superadmin" && !isSuperAdmin()) return showMsg("Nur SuperAdmin kann SuperAdmin setzen.");
-
-      if(id){
-        await updateDoc(doc(db, "users", id), data);
-      } else {
-        const newRef = doc(collection(db, "users"));
-        await setDoc(newRef, { ...data, uid:newRef.id, createdAt: serverTimestamp() });
+      if(!id && temporaryPassword.length < 6) return showMsg("Temporäres Passwort muss mindestens 6 Zeichen haben.");
+      $("btnSaveStaff").disabled = true;
+      try{
+        if(id){
+          await updateDoc(doc(db, "users", id), data);
+          showMsg("Mitarbeiter wurde aktualisiert.");
+        }else{
+          const credential = await createUserWithEmailAndPassword(staffCreatorAuth, data.email, temporaryPassword);
+          await setDoc(doc(db, "users", credential.user.uid), {
+            ...data, uid:credential.user.uid, createdAt:serverTimestamp(), createdBy:currentUser.uid,
+            mustChangePassword:true
+          });
+          await signOut(staffCreatorAuth);
+          showMsg("Mitarbeiter wurde erstellt. Bitte temporäres Passwort sicher weitergeben.");
+        }
+        clearStaffForm();
+        await loadStaff();
+        await buildWeeklyTable();
+        $("staffList").scrollIntoView({behavior:"smooth", block:"start"});
+      }catch(err){
+        console.error(err);
+        const message = err.code === "auth/email-already-in-use"
+          ? "Diese E-Mail ist bereits registriert. Bitte den vorhandenen Mitarbeiter bearbeiten."
+          : err.code === "auth/invalid-email"
+            ? "E-Mail-Adresse ist ungültig."
+            : "Mitarbeiter konnte nicht gespeichert werden: " + err.message;
+        showMsg(message);
+      }finally{
+        if(staffCreatorAuth.currentUser) await signOut(staffCreatorAuth).catch(()=>{});
+        $("btnSaveStaff").disabled = false;
       }
-      clearStaffForm();
-      await loadStaff();
-      await buildWeeklyTable();
-      showMsg("Staff gespeichert.");
     }
 
     function clearStaffForm(){
@@ -1747,6 +1780,33 @@
       $("staffDepartment").value = "Service";
       $("staffRole").value = "staff";
       $("staffRate").value = "";
+      $("staffPassword").value = "";
+      $("staffPasswordField").classList.remove("hidden");
+    }
+
+    async function changeOwnPassword(){
+      if(!currentUser) return;
+      const newPassword = prompt("Neues Passwort eingeben (mindestens 6 Zeichen):");
+      if(newPassword === null) return;
+      if(newPassword.length < 6) return showMsg("Passwort muss mindestens 6 Zeichen haben.");
+      const confirmation = prompt("Neues Passwort noch einmal eingeben:");
+      if(confirmation !== newPassword) return showMsg("Passwörter stimmen nicht überein.");
+      try{
+        await updatePassword(currentUser, newPassword);
+        await setDoc(doc(db, "users", currentUser.uid), {
+          mustChangePassword:false,
+          passwordChangedAt:serverTimestamp()
+        }, {merge:true});
+        currentProfile.mustChangePassword = false;
+        showMsg("Passwort wurde erfolgreich geändert.");
+      }catch(err){
+        console.error(err);
+        if(err.code === "auth/requires-recent-login"){
+          showMsg("Bitte ausloggen, erneut einloggen und Passwort sofort ändern.");
+        }else{
+          showMsg("Passwort konnte nicht geändert werden: " + err.message);
+        }
+      }
     }
 
     async function loadInventory(){
@@ -3085,6 +3145,7 @@ bruchCache.sort((a, b) => {
     $("btnLogout").addEventListener("click", async ()=>{
       await signOut(auth);
     });
+    $("btnChangePassword").addEventListener("click", changeOwnPassword);
 
     document.querySelectorAll(".navBtn").forEach(btn=>{
       btn.addEventListener("click", ()=> openView(btn.dataset.view));
