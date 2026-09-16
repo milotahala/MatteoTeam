@@ -179,6 +179,15 @@
     .dashboardApp:hover{border-color:#2dd486;background:linear-gradient(145deg,#15334b,#123a31)}
     .dashboardAppIcon{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;background:rgba(45,212,134,.14);color:#42e39b}
     .dashboardAppIcon svg{width:28px;height:28px}
+    .clockNow{font-size:48px;font-weight:950;letter-spacing:-.04em;text-align:center;margin:8px 0 2px}
+    .clockDate{text-align:center;color:var(--muted);margin-bottom:18px}
+    .clockActions{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:620px;margin:0 auto}
+    .clockAction{min-height:82px;border:0;border-radius:18px;cursor:pointer;font-size:20px;font-weight:950}
+    .clockIn{background:linear-gradient(135deg,#15803d,#2dd486);color:#04150e}
+    .clockOut{background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff}
+    .clockAction:disabled{opacity:.35;cursor:not-allowed;transform:none}
+    .clockSummary{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:620px;margin:16px auto}
+    .clockSummary .item{text-align:center;margin:0}
     .stat h3{margin:0 0 6px;font-size:13px;color:var(--muted)}
     .stat .num{font-size:28px;font-weight:900}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -435,6 +444,7 @@
           <button class="navBtn" data-view="viewStaff" type="button"><i data-lucide="users" aria-hidden="true"></i><span>Mitarbeiter</span></button>
           <button class="navBtn" data-view="viewInventory" type="button"><i data-lucide="package" aria-hidden="true"></i><span>Inventar</span></button>
           <button class="navBtn" data-view="viewMyHours" type="button"><i data-lucide="clock-3" aria-hidden="true"></i><span>Stunden</span></button>
+          <button class="navBtn" data-view="viewTimeClock" type="button"><i data-lucide="timer" aria-hidden="true"></i><span>Stempeluhr</span></button>
           <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP</span></button>
           <button class="navBtn" data-view="viewOrders" type="button"><i data-lucide="notebook-tabs" aria-hidden="true"></i><span>Bestellung</span></button>
           <button class="navBtn" data-view="viewRestaurantMenu" type="button"><i data-lucide="utensils" aria-hidden="true"></i><span>Speisekarte</span></button>
@@ -457,6 +467,7 @@
               <button class="dashboardApp" data-dashboard-view="viewStaff" type="button"><span class="dashboardAppIcon"><i data-lucide="users"></i></span><span>Mitarbeiter</span></button>
               <button class="dashboardApp" data-dashboard-view="viewInventory" type="button"><span class="dashboardAppIcon"><i data-lucide="package"></i></span><span>Inventar</span></button>
               <button class="dashboardApp" data-dashboard-view="viewMyHours" type="button"><span class="dashboardAppIcon"><i data-lucide="clock-3"></i></span><span>Stunden</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewTimeClock" type="button"><span class="dashboardAppIcon"><i data-lucide="timer"></i></span><span>Stempeluhr</span></button>
               <button class="dashboardApp" data-dashboard-view="viewHaccp" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-check"></i></span><span>HACCP</span></button>
               <button class="dashboardApp" data-dashboard-view="viewOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="notebook-tabs"></i></span><span>Bestellung</span></button>
               <button class="dashboardApp" data-dashboard-view="viewRestaurantMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="utensils"></i></span><span>Speisekarte</span></button>
@@ -489,6 +500,26 @@
                 </thead>
                 <tbody id="weekBody"></tbody>
               </table>
+            </div>
+          </section>
+
+          <section id="viewTimeClock" class="view card hidden">
+            <h2 class="sectionTitle">Stempeluhr</h2>
+            <div class="sectionSub">Arbeitszeit mit Kommen und Gehen erfassen.</div>
+            <div id="timeClockNow" class="clockNow">--:--:--</div>
+            <div id="timeClockDate" class="clockDate">--</div>
+            <div class="clockActions">
+              <button id="btnClockIn" class="clockAction clockIn" type="button"><i data-lucide="log-in"></i> Kommen</button>
+              <button id="btnClockOut" class="clockAction clockOut" type="button"><i data-lucide="log-out"></i> Gehen</button>
+            </div>
+            <div class="clockSummary">
+              <div class="item"><div class="tiny muted">Status</div><div id="timeClockStatus" class="kpi" style="font-size:22px">Nicht eingestempelt</div></div>
+              <div class="item"><div class="tiny muted">Heute gearbeitet</div><div id="timeClockTotal" class="kpi" style="font-size:22px">0:00 Std.</div></div>
+            </div>
+            <div class="item" style="max-width:620px;margin:0 auto">
+              <strong>Heutige Buchungen</strong>
+              <div class="divider"></div>
+              <div id="timeClockHistory" class="muted">Noch keine Buchungen.</div>
             </div>
           </section>
 
@@ -948,6 +979,8 @@
     let currentOrderItems = [];
     let currentOrderId = null;
     let currentOrderState = "new";
+    let timeClockRecord = {sessions:[]};
+    let timeClockTimer = null;
 
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
     const DEFAULT_RESTAURANT_MENU = [
@@ -2405,6 +2438,95 @@ bruchCache.sort((a, b) => {
       }
     }
 
+    function localDateKey(date = new Date()){
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatClockTime(value){
+      if(!value) return "--:--";
+      return new Date(value).toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"});
+    }
+
+    function timeClockMinutes(){
+      return (timeClockRecord.sessions || []).reduce((total, session) => {
+        if(!session.in) return total;
+        const start = new Date(session.in).getTime();
+        const end = session.out ? new Date(session.out).getTime() : Date.now();
+        return total + Math.max(0, Math.floor((end - start) / 60000));
+      }, 0);
+    }
+
+    function renderTimeClock(){
+      const now = new Date();
+      $("timeClockNow").textContent = now.toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+      $("timeClockDate").textContent = now.toLocaleDateString("de-DE", {weekday:"long", day:"2-digit", month:"long", year:"numeric"});
+      const sessions = timeClockRecord.sessions || [];
+      const openSession = sessions.find(session => session.in && !session.out);
+      $("timeClockStatus").textContent = openSession ? `Seit ${formatClockTime(openSession.in)}` : "Nicht eingestempelt";
+      $("btnClockIn").disabled = Boolean(openSession);
+      $("btnClockOut").disabled = !openSession;
+      const minutes = timeClockMinutes();
+      $("timeClockTotal").textContent = `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2,"0")} Std.`;
+      $("timeClockHistory").innerHTML = sessions.length ? sessions.map((session, index) => `
+        <div class="orderLine">
+          <div><strong>Arbeitszeit ${index + 1}</strong><div class="tiny muted">${session.out ? "Abgeschlossen" : "Läuft"}</div></div>
+          <strong>${formatClockTime(session.in)} – ${session.out ? formatClockTime(session.out) : "…"}</strong>
+        </div>`).join("") : `<div class="muted">Noch keine Buchungen.</div>`;
+    }
+
+    async function loadTimeClock(){
+      const key = `${currentUser.uid}_${localDateKey()}`;
+      try{
+        const snap = await getDoc(doc(db, "timeClock", key));
+        timeClockRecord = snap.exists() ? {id:key, ...snap.data()} : {id:key, date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email, sessions:[]};
+        renderTimeClock();
+        if(!timeClockTimer) timeClockTimer = setInterval(renderTimeClock, 1000);
+      }catch(err){
+        console.error(err);
+        showMsg("Stempeluhr konnte nicht geladen werden: " + err.message);
+      }
+    }
+
+    async function clockIn(){
+      const sessions = [...(timeClockRecord.sessions || [])];
+      if(sessions.some(session => session.in && !session.out)) return;
+      sessions.push({in:new Date().toISOString(), out:null});
+      try{
+        await setDoc(doc(db, "timeClock", timeClockRecord.id), {
+          date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
+          sessions, updatedAt:serverTimestamp()
+        });
+        timeClockRecord.sessions = sessions;
+        renderTimeClock();
+        showMsg("Kommen wurde gespeichert.");
+      }catch(err){
+        console.error(err);
+        showMsg("Kommen konnte nicht gespeichert werden: " + err.message);
+      }
+    }
+
+    async function clockOut(){
+      const sessions = (timeClockRecord.sessions || []).map(session => ({...session}));
+      const openIndex = sessions.findIndex(session => session.in && !session.out);
+      if(openIndex < 0) return;
+      sessions[openIndex].out = new Date().toISOString();
+      try{
+        await setDoc(doc(db, "timeClock", timeClockRecord.id), {
+          date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
+          sessions, updatedAt:serverTimestamp()
+        });
+        timeClockRecord.sessions = sessions;
+        renderTimeClock();
+        showMsg("Gehen wurde gespeichert.");
+      }catch(err){
+        console.error(err);
+        showMsg("Gehen konnte nicht gespeichert werden: " + err.message);
+      }
+    }
+
     async function loadDashboard(){
       $("statStaff").textContent = String(staffCache.length);
       $("statInventory").textContent = String(inventoryCache.length);
@@ -2467,6 +2589,7 @@ bruchCache.sort((a, b) => {
       await loadToGoMenu();
       $("orderMenuCategory").innerHTML = ["Alle", ...MENU_CATEGORIES].map(category => `<option value="${htmlEscape(category)}">${htmlEscape(category)}</option>`).join("");
       await loadOrders();
+      await loadTimeClock();
       await loadDashboard();
       await loadHours();
       window.lucide?.createIcons();
@@ -2623,6 +2746,8 @@ bruchCache.sort((a, b) => {
     $("btnSaveOrder").addEventListener("click", saveOrder);
     $("btnCloseOrder").addEventListener("click", closeOrder);
     $("btnReloadOrders").addEventListener("click", loadOrders);
+    $("btnClockIn").addEventListener("click", clockIn);
+    $("btnClockOut").addEventListener("click", clockOut);
 
     $("btnPrint").addEventListener("click", ()=> window.print());
 
