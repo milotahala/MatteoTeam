@@ -267,6 +267,16 @@
     .stockBar{height:8px;border-radius:999px;background:#1d334d;overflow:hidden;margin:12px 0}
     .stockBar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#15945c,#2dd486)}
     .inventoryCard.low .stockBar span{background:linear-gradient(90deg,#b91c1c,#ef4444)}
+    .supplierOrderHead{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .supplierOrderTable{min-width:760px}
+    .supplierOrderTable th:nth-child(1){width:7%}
+    .supplierOrderTable th:nth-child(2){width:12%}
+    .supplierOrderTable th:nth-child(3){width:57%}
+    .supplierOrderTable th:nth-child(4),.supplierOrderTable th:nth-child(5){width:12%}
+    .supplierOrderTable td{padding:7px}
+    .supplierOrderTable .input,.supplierOrderTable .select{padding:10px;min-height:42px}
+    .supplierOrderActions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+    .orderHistoryCard{padding:14px;border:1px solid var(--line);border-radius:15px;background:#102239;margin-bottom:9px}
     .pill{
       display:inline-flex;align-items:center;gap:6px;padding:6px 10px;
       border-radius:999px;font-size:12px;font-weight:800
@@ -388,6 +398,7 @@
       .inventoryStats{grid-template-columns:1fr 1fr}
       .inventoryToolbar{grid-template-columns:1fr}
       .inventoryGrid{grid-template-columns:1fr}
+      .supplierOrderHead{grid-template-columns:1fr}
       .authWrap{margin:10px auto}
       .hero{padding:20px}
       .hero h1{font-size:28px}
@@ -523,6 +534,7 @@
           <button class="navBtn" data-view="viewWeekly" type="button"><i data-lucide="calendar-days" aria-hidden="true"></i><span>Wochenplan</span></button>
           <button class="navBtn" data-view="viewStaff" type="button"><i data-lucide="users" aria-hidden="true"></i><span>Mitarbeiter</span></button>
           <button class="navBtn" data-view="viewInventory" type="button"><i data-lucide="package" aria-hidden="true"></i><span>Inventar</span></button>
+          <button class="navBtn" data-view="viewSupplierOrders" type="button"><i data-lucide="shopping-cart" aria-hidden="true"></i><span>Bestellliste</span></button>
           <button class="navBtn" data-view="viewTimeClock" type="button"><i data-lucide="timer" aria-hidden="true"></i><span>Stempeluhr</span></button>
           <button class="navBtn" data-view="viewAnnouncements" type="button"><i data-lucide="bell" aria-hidden="true"></i><span>Mitteilungen</span></button>
           <button class="navBtn" data-view="viewDocuments" type="button"><i data-lucide="scan-line" aria-hidden="true"></i><span>Lieferanten</span></button>
@@ -548,6 +560,7 @@
               <button class="dashboardApp" data-dashboard-view="viewWeekly" type="button"><span class="dashboardAppIcon"><i data-lucide="calendar-days"></i></span><span>Wochenplan</span></button>
               <button class="dashboardApp" data-dashboard-view="viewStaff" type="button"><span class="dashboardAppIcon"><i data-lucide="users"></i></span><span>Mitarbeiter</span></button>
               <button class="dashboardApp" data-dashboard-view="viewInventory" type="button"><span class="dashboardAppIcon"><i data-lucide="package"></i></span><span>Inventar</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewSupplierOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="shopping-cart"></i></span><span>Bestellliste</span></button>
               <button class="dashboardApp" data-dashboard-view="viewTimeClock" type="button"><span class="dashboardAppIcon"><i data-lucide="timer"></i></span><span>Stempeluhr</span></button>
               <button class="dashboardApp" data-dashboard-view="viewAnnouncements" type="button"><span class="dashboardAppIcon"><i data-lucide="bell"></i></span><span>Mitteilungen <span id="announcementUnreadBadge" class="noticeBadge hidden">0</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewDocuments" type="button"><span class="dashboardAppIcon"><i data-lucide="scan-line"></i></span><span>Lieferanten</span></button>
@@ -810,6 +823,45 @@
               <select id="inventoryCategoryFilter" class="select"><option>Alle</option><option>Küche</option><option>Pizza</option><option>Getränke</option><option>Verpackung</option><option>Reinigung</option><option>Sonstige</option></select>
             </div>
             <div id="inventoryList" class="inventoryGrid"></div>
+          </section>
+
+          <section id="viewSupplierOrders" class="view card hidden">
+            <div class="row" style="margin-bottom:16px">
+              <div><h2 class="sectionTitle">Bestellliste</h2><div class="sectionSub" style="margin-bottom:0">Lieferantenbestellung vorbereiten, speichern und in Outlook öffnen.</div></div>
+              <span class="pill ok right">Absender: matteobestellung@hotmail.com</span>
+            </div>
+
+            <div class="item adminOnly">
+              <div class="supplierOrderHead">
+                <div class="field"><label class="label">Lieferant</label><input id="supplierOrderName" class="input" placeholder="z. B. Arasco" /></div>
+                <div class="field"><label class="label">E-Mail des Lieferanten</label><input id="supplierOrderEmail" class="input" type="email" placeholder="bestellung@lieferant.de" /></div>
+                <div class="field"><label class="label">Lieferdatum gewünscht</label><input id="supplierOrderDeliveryDate" class="input" type="date" /></div>
+                <div class="field"><label class="label">Bestellnummer</label><input id="supplierOrderNumber" class="input" readonly /></div>
+              </div>
+              <div class="field"><label class="label">Nachricht</label><textarea id="supplierOrderNote" class="textarea" placeholder="Optional, z. B. Bitte vormittags liefern."></textarea></div>
+
+              <div class="supplierOrderHead" style="margin-bottom:10px">
+                <input id="supplierOrderSearch" class="input" type="search" placeholder="Artikelnummer oder Produkt suchen …" />
+                <label class="row item" style="margin:0"><input id="supplierOrderSelectedOnly" type="checkbox" /> Nur ausgewählte Produkte anzeigen</label>
+              </div>
+              <div class="tableWrap">
+                <table class="supplierOrderTable">
+                  <thead><tr><th>Nr.</th><th>Artikel</th><th>Bezeichnung</th><th>Stück</th><th>Karton</th></tr></thead>
+                  <tbody id="supplierOrderRows"></tbody>
+                </table>
+              </div>
+              <div class="supplierOrderActions">
+                <button id="btnClearSupplierOrder" class="ghost" type="button">Leeren</button>
+                <button id="btnSendSupplierOrder" class="btn right" type="button"><i data-lucide="mail"></i> In Outlook öffnen</button>
+              </div>
+              <div class="tiny muted" style="margin-top:10px">Outlook öffnet die fertige Bestellung. Prüfe dort den Absender und tippe anschließend auf „Senden“.</div>
+            </div>
+
+            <div class="item" style="margin-top:14px">
+              <div class="row"><strong>Gespeicherte Bestellungen</strong><button id="btnReloadSupplierOrders" class="ghost right" type="button">Aktualisieren</button></div>
+              <div class="divider"></div>
+              <div id="supplierOrderHistory" class="muted">Noch keine Bestellungen.</div>
+            </div>
           </section>
                     <section id="viewMyHours" class="view card hidden">
             <h2 class="sectionTitle">My Hours</h2>
@@ -1194,8 +1246,17 @@
     let vacationNotificationUnsubscribe = null;
     let vacationNotificationReady = false;
     let vacationPopupShown = false;
+    let supplierOrderCache = [];
+    let supplierOrderQuantities = {};
 
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
+    const ARASCO_PRODUCTS = [
+      [2,"10151","Plange Weizenmehl Typ 405 25 Kg"],[3,"10200","Friessinger Hartweizengrieß fein 25 Kg"],[4,"10300","Safrisalz Salz 24x500g"],[5,"10400","Zucker 10x1 Kg"],[6,"10500","Citadel Pizzasauce 5/1"],[7,"10512","Tukas Tomatenmark Klein 2-fach konz. 1/1 830g"],[8,"10539","Arasco Antica Napoli Schältomaten 2500g"],[9,"10619","Avo Artischockenherzen 30/40 3/1"],[10,"10643","Gemüse-Mais 425ml"],[11,"10660","La Perla Paprika Streifen Rot 5/1"],[12,"10670","Orto Bello Peperoni im Glas scharf grün 2,5 Kg"],[13,"10672","Orto Bello Peperoni grün geschnitten mild 5/1"],[14,"10680","Celeste Superiore Kapern 720ml"],[15,"10766","Skipjack Thunfisch-Stücke in Öl Vakuum 5x3 Kg"],[16,"10853","Vanelli Sardellenfilets 600g"],[17,"10860","La Perla Oliven schwarz ohne Stein"],[18,"10866","Dole Ananas Stücke 580ml"],[19,"11018","Knorr Mondamin fix Dunkel 1 Kg"],[20,"11023","Lay Pfeffer schwarz ganz 1 Kg"],[21,"11027","Lay Pfeffer weiß gemahlen 1 Kg"],[22,"11029","Lay Paprikapulver Edelsüß 1 Kg"],[23,"11034","Orto Bello Oregano getrocknet 1 Kg"],[24,"11039","Lay Lorbeerblätter 100g"],[25,"11042","Lay Currypulver Englisch 1 Kg"],[26,"11057","Vegeta Würzmischung 1 Kg"],[27,"11200","Rapsöl 10 Lt PET-Kanister"],[28,"11242","La Masseria Olivenöl Extra Vergine 1 Lt"],
+      [29,"11300","Pesto Genovese Tigullio 500g"],[30,"20102","Barilla Spaghetti No5 3x5 Kg"],[31,"20105","Barilla Penne Rigate No73 3x5 Kg"],[32,"30208","Grana Padano 1/8 Stück ca. 4,5 Kg"],[33,"30214","Galbani Gorgonzola Intenso 48% ca. 1,5 Kg"],[34,"30223","Salakis Schafskäse Brote ca. 1,8 Kg"],[35,"30305","Frischli Küchensahne 20% 1 Lt"],[36,"30360","Delina Gouda 48% ca. 15 Kg"],[37,"30401","H-Vollmilch 3,5% Tetrapack 1 Lt"],[38,"30406","Feine Butter 250g"],[39,"30412","Debic Sprühsahne gesüßt 700ml"],[40,"30417","VB Joghurt Griech. 10% 5 Kg"],[41,"30500","Eier KL M à 30 St"],[42,"30501","Uniferm Würfelhefe 24x42g"],[43,"30504","Eifix Vollei 1 Kg"],[44,"30531","Granarolo Mozzarella Kugeln 125g"],[45,"30532","Granarolo Mozzarella-Würfel-Cubetti 3 Kg"],[46,"30733","Frischli Vanilla Sauce Tetrapack 1 Lt"],[47,"31001","Rindersalami mit Putenfleisch Halal geschnitten 1 Kg"],[48,"31106","Form-Putenschinken Col di Lana 93% 5 Kg Halal"],[49,"31202","Knoblauch frisch 1 Kg"],[50,"40109","Anton Becker Schokosauce 1,1 Kg"],[51,"40411","Kaffee-Sahne Frischli 10% 240 St."],[52,"40608","G&G Sommerblütenhonig 500g Spender"],[53,"50105","Il Pedro Kaffee Rossi 1 Kg"],[54,"50253","Zitronensaft 100% 0,75 Lt"],[55,"50304","Amaretto Disaronno 28% 0,7 Lt"],[56,"50305","Amaro Averna 0,7 Lt"],[57,"50307","Aperol 11% 0,7 Lt"],
+      [58,"50369","Limoncello Ciemme 34% 0,7 Lt"],[59,"50404","Ramazzotti 30% 0,7 Lt"],[60,"50429","Jägermeister Kräuterlikör 35% 1 Lt"],[61,"61206","TDA Regaleali Bianco IGT 0,75 Lt"],[62,"63201","Pinot Grigio Montelvini 12% 20 Lt"],[63,"63202","B*A* Merlot Montelvini 12% 20 Lt"],[64,"64000","2023 Lugana DOC Ottella 0,75l"],[65,"64110","Sauvignon Blanc DOC Permani 0,75l"],[66,"64201","Chiaretto Rosé Riva D'Oro IGT 1,5 Lt"],[67,"64674","2022 Merlot DOC Scùri 0,75l"],[68,"64678","Prosecco DOC Extra Dr. 0,2l Borgo Molino, Veneto"],[69,"64701","Dogarina Prosecco Treviso DOC 0,75l"],[70,"64909","Grappa Ciemme 40% 0,7 Lt"],[71,"64916","Nardini Grappa Riserva Gelb 50% 1 Lt"],[72,"65001","Lambrusco Medici IGT 1,5 Lt"],[73,"65193","2023 Nero D'Avola IGP Roceno 0,75l Cantina Sibiliana, Sizilien"],[74,"65225","2022 Primitivo di Manduria DO 0,75l"],[75,"70166","Pizzabox 29x29x4cm New Yorkbraun eco 100 St."],[76,"70224","Alu-Schale 540L Tief Rund 790ml 100 St."],[77,"70225","Papp-Deckel zu T51L 533/540 100 St."],[78,"70412","Buttercup 50ml weiß"],[79,"70413","Deckel zu Buttercup 50ml transp."],[80,"70506","Servietten Disp 21,6x33cm weiß N4 9000 St."],[81,"70529","Servietten 202887 40x40cm 2-Lg. 1/8 F. Duni Weiß 1500 St."],[82,"70600","Bäckerbeutel Klein (Ital. Fahne) Nr. 418 12x5x24cm, 1000 St."],
+      [83,"70619","Papiertischsets 27x17x28cm 70g braun mittel, 250 St."],[84,"70700","Salat Kartonschale 1300ml Kleva"],[85,"70701","Deckel zu Kartonschale 185mm rPet 1100ml/1300ml, 300 St."],[86,"70704","Salat Kartonschale 1100ml Kleva"],[87,"70730","Holz Löffel 160mm"],[88,"70731","Holz Gabel 160mm"],[89,"70732","Holz Messer 160mm"],[90,"70921","Pappteller 26cm, braun, 1/2 Kraft 250 St."],[91,"71116","Holz Zahnstocher einzeln gehüllt in Papier 1000 St."],[92,"71121","Vakuumbeutel 90my transp. 300x400mm 100 St."],[93,"71122","Vakuumbeutel 90my transp. 250x280mm 100 St."],[94,"71123","Vakuumbeutel 90my transp. 130x260mm 100 St."],[95,"80103","Reinex Glasreiniger mit Sprühpist. 1 Lt"],[96,"80108","Reinex Fettlöser mit Sprühpistole 750ml"],[97,"80109","Reinex Spülmittel 1 Lt"],[98,"80121","Reinex Entkalker 1 Lt"],[99,"80127","Cremeseife flüssig Grüne Frische Regina 500ml"],[100,"80152","Vollwaschmittel Arasco Professional 20 Kg"],[101,"80201","Alufolie 45cm x 130m"],[102,"80203","Frischhaltefolie 45cm x 230m"],[103,"80214","Latex Handschuhe Gr. L ungepudert"],[104,"80218","Scheuerschwamm groß m. Griffleiste gelb/grün 70x150mm"],[105,"80220","Schwammtuch Blau 200x180mm"],[106,"80243","Winterhalter B100N Klarspüler 10 Lt"],[107,"80252","Winterhalter F8500 Universalreiniger 25 Kg"],[108,"80300","Müllsäcke 120 Lt 25x10 Rollen"],[109,"80403","Küchenrollen 3-lagig weiß 4'er"],[110,"80407","Toiletten Jumbo Rollen 2lg 300m"],
+      [111,"90139","TK Bindi 3687 Soufflé al"],[112,"90201","TK Debic Big Parisienne 16x550g"],[113,"90216","TK Artland Rinderhackfleisch 2 Kg"],[114,"90608","TK Garnelen 16/20 geschält"],[115,"90621","TK Schrimps 90-120 Blacktiger 1 Kg"],[116,"90638","TK Quadrifoglio Soufflé al Ciocc."],[117,"90702","TK Bonduelle Blattspinat Portion."],[118,"90713","TK Melzer Broccoli 20/40 2,5 Kg"],[119,"90739","TK Bonduelle Paprika rot/gelb"],[120,"90766","TK Orogel Auberginenscheiben"],[121,"90768","TK Orogel Zucchinischeiben"],[122,"90827","TK Hähncheninnenfilet Stücke"],[123,"91141","TK Effepi Tiramisu port. HALAL"],[124,"91202","TK Frutti di Mare 1 Kg"]
+    ].map(([nr,article,name]) => ({nr,article,name}));
     const DEFAULT_RESTAURANT_MENU = [
       {id:"vorspeisen-bruschetta",category:"Vorspeisen",name:"Bruschetta",description:"Geröstete Brotscheiben, belegt mit Tomate, Knoblauch und Zwiebeln",price:8.5,allergens:"I",vegetarian:true},
       {id:"vorspeisen-tomaten-mozzarella",category:"Vorspeisen",name:"Tomaten Mozzarella",description:"Frischer Blattsalat mit Tomaten und Mozzarella",price:8.5,allergens:"D",vegetarian:true},
@@ -2033,6 +2094,113 @@
       await loadInventory();
       await loadDashboard();
       showMsg(type === "in" ? "Wareneingang gebucht." : "Verbrauch gebucht.");
+    }
+
+    function createSupplierOrderNumber(){
+      const now = new Date();
+      const date = now.toISOString().slice(0,10).replaceAll("-","");
+      const time = now.toTimeString().slice(0,5).replace(":","");
+      return `AR-${date}-${time}`;
+    }
+
+    function resetSupplierOrderForm(){
+      supplierOrderQuantities = {};
+      $("supplierOrderName").value = "Arasco Deutschland GmbH";
+      $("supplierOrderEmail").value = "bestellung@arasco.de";
+      $("supplierOrderDeliveryDate").value = "";
+      $("supplierOrderNumber").value = createSupplierOrderNumber();
+      $("supplierOrderNote").value = "";
+      $("supplierOrderSearch").value = "";
+      $("supplierOrderSelectedOnly").checked = false;
+      renderSupplierOrderRows();
+    }
+
+    function selectedSupplierOrderItems(){
+      return ARASCO_PRODUCTS.map(product => ({
+        ...product,
+        piece:safe(supplierOrderQuantities[product.article]?.piece),
+        carton:safe(supplierOrderQuantities[product.article]?.carton)
+      })).filter(item => item.piece || item.carton);
+    }
+
+    function renderSupplierOrderRows(){
+      const search = menuSearchText($("supplierOrderSearch").value);
+      const selectedOnly = $("supplierOrderSelectedOnly").checked;
+      const rows = ARASCO_PRODUCTS.filter(product => {
+        const selected = supplierOrderQuantities[product.article]?.piece || supplierOrderQuantities[product.article]?.carton;
+        const matches = !search || menuSearchText(`${product.nr} ${product.article} ${product.name}`).includes(search);
+        return matches && (!selectedOnly || selected);
+      });
+      $("supplierOrderRows").innerHTML = rows.length ? rows.map(product => {
+        const values = supplierOrderQuantities[product.article] || {};
+        return `<tr>
+          <td>${product.nr}</td>
+          <td><strong>${htmlEscape(product.article)}</strong></td>
+          <td>${htmlEscape(product.name)}</td>
+          <td><input class="input" inputmode="decimal" data-supplier-article="${htmlEscape(product.article)}" data-supplier-field="piece" value="${htmlEscape(values.piece || "")}" aria-label="Stück ${htmlEscape(product.name)}" /></td>
+          <td><input class="input" inputmode="decimal" data-supplier-article="${htmlEscape(product.article)}" data-supplier-field="carton" value="${htmlEscape(values.carton || "")}" aria-label="Karton ${htmlEscape(product.name)}" /></td>
+        </tr>`;
+      }).join("") : `<tr><td colspan="5" class="muted">Keine passenden Produkte.</td></tr>`;
+    }
+
+    function supplierOrderEmailBody(order){
+      const itemLines = order.items.map(item => {
+        const amounts = [item.piece ? `Stück: ${item.piece}` : "", item.carton ? `Karton: ${item.carton}` : ""].filter(Boolean).join(" · ");
+        return `${item.nr}. ${item.article} – ${item.name}\n   ${amounts}`;
+      }).join("\n\n");
+      return `Guten Tag,\n\nhiermit bestellen wir folgende Artikel:\n\n${itemLines}\n\n${order.deliveryDate ? `Gewünschtes Lieferdatum: ${order.deliveryDate}\n` : ""}${order.note ? `Nachricht: ${order.note}\n` : ""}\nBestellnummer: ${order.orderNumber}\n\nMit freundlichen Grüßen\nPizzeria Ristorante Matteo`;
+    }
+
+    async function sendSupplierOrder(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const supplier = safe($("supplierOrderName").value);
+      const email = safe($("supplierOrderEmail").value);
+      const items = selectedSupplierOrderItems();
+      if(!supplier || !email || !email.includes("@")) return showMsg("Lieferant und gültige E-Mail-Adresse eingeben.");
+      if(!items.length) return showMsg("Bitte mindestens bei einem Produkt Stück oder Karton eintragen.");
+      const order = {
+        orderNumber:safe($("supplierOrderNumber").value) || createSupplierOrderNumber(),
+        supplier,
+        email,
+        senderEmail:"matteobestellung@hotmail.com",
+        deliveryDate:$("supplierOrderDeliveryDate").value,
+        note:safe($("supplierOrderNote").value),
+        items,
+        status:"prepared",
+        createdBy:currentUser.uid,
+        createdByName:currentProfile.name || currentUser.email,
+        createdAt:serverTimestamp()
+      };
+      try{
+        await addDoc(collection(db, "supplierOrders"), order);
+        const subject = `Bestellung ${order.orderNumber} – Pizzeria Ristorante Matteo`;
+        const body = supplierOrderEmailBody(order);
+        await loadSupplierOrders();
+        window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      }catch(err){
+        console.error(err);
+        showMsg("Bestellung konnte nicht gespeichert werden: " + err.message);
+      }
+    }
+
+    async function loadSupplierOrders(){
+      try{
+        const qs = await getDocs(collection(db, "supplierOrders"));
+        supplierOrderCache = qs.docs.map(d => ({id:d.id,...d.data()})).sort((a,b) => {
+          const ad = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+          const bd = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+          return bd - ad;
+        });
+        $("supplierOrderHistory").innerHTML = supplierOrderCache.length ? supplierOrderCache.slice(0,15).map(order => `
+          <div class="orderHistoryCard">
+            <div class="row"><strong>${htmlEscape(order.orderNumber || "Bestellung")}</strong><span class="pill ok right">${Number(order.items?.length || 0)} Artikel</span></div>
+            <div class="tiny muted" style="margin-top:7px">${htmlEscape(order.supplier || "-")} · ${htmlEscape(order.email || "-")}${order.deliveryDate ? ` · Lieferung ${htmlEscape(order.deliveryDate)}` : ""}</div>
+            <div class="tiny muted" style="margin-top:4px">Erstellt von ${htmlEscape(order.createdByName || "-")}</div>
+          </div>`).join("") : `<div class="muted">Noch keine Bestellungen.</div>`;
+      }catch(err){
+        console.error(err);
+        $("supplierOrderHistory").innerHTML = `<div class="muted">Bestellungen konnten nicht geladen werden.</div>`;
+      }
     }
 
     async function buildWeeklyTable(){
@@ -3304,9 +3472,11 @@ bruchCache.sort((a, b) => {
       $("documentMonth").value = monthStr();
       $("sickFrom").value = localDateKey();
       $("sickTo").value = localDateKey();
+      resetSupplierOrderForm();
 
       await loadStaff();
       await loadInventory();
+      await loadSupplierOrders();
       await buildWeeklyTable();
       await loadWeekly();
       await loadHaccp();
@@ -3385,6 +3555,20 @@ bruchCache.sort((a, b) => {
     $("btnApplyUsage").addEventListener("click", applyInventoryUsage);
     $("inventorySearch").addEventListener("input", renderInventory);
     $("inventoryCategoryFilter").addEventListener("change", renderInventory);
+    $("supplierOrderSearch").addEventListener("input", renderSupplierOrderRows);
+    $("supplierOrderSelectedOnly").addEventListener("change", renderSupplierOrderRows);
+    $("supplierOrderRows").addEventListener("input", event => {
+      const input = event.target.closest("[data-supplier-article]");
+      if(!input) return;
+      const article = input.dataset.supplierArticle;
+      supplierOrderQuantities[article] ||= {piece:"",carton:""};
+      supplierOrderQuantities[article][input.dataset.supplierField] = input.value;
+    });
+    $("btnClearSupplierOrder").addEventListener("click", () => {
+      if(confirm("Bestellliste wirklich leeren?")) resetSupplierOrderForm();
+    });
+    $("btnSendSupplierOrder").addEventListener("click", sendSupplierOrder);
+    $("btnReloadSupplierOrders").addEventListener("click", loadSupplierOrders);
 
     $("btnLoadWeekly").addEventListener("click", buildWeeklyTable);
     $("btnSaveWeekly").addEventListener("click", saveWeekly);
