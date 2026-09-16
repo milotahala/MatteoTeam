@@ -2000,7 +2000,7 @@
       const departmentOrder = ["Pizza", "Kasse", "Service", "Küche"];
       const grouped = new Map();
       staffCache.forEach(staff => {
-        const department = departmentOrder.includes(staff.department) ? staff.department : (staff.department || "Sonstige");
+        const department = departmentOrder.includes(staff.department) ? staff.department : "Küche";
         if(!grouped.has(department)) grouped.set(department, []);
         grouped.get(department).push(staff);
       });
