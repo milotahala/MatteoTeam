@@ -2292,7 +2292,7 @@ ${lastHoursPayload.details.join("\n")}`;
           <div class="tiny muted">${htmlEscape(r.reason || "-")}</div>
           ${isAdmin() ? `<div class="row" style="margin-top:10px">
             ${r.status !== "approved" ? `<button class="smallBtn smallGreen" type="button" onclick="window.handleUrlaub('${r.id}','approved')">Genehmigen</button>` : ``}
-            ${r.status !== "rejected" ? `<button class="smallBtn smallRed" type="button" onclick="window.handleUrlaub('${r.id}','rejected')">Ablehnen</button>` : ``}
+            ${r.status !== "rejected" ? `<button class="smallBtn smallRed" type="button" onclick="window.handleUrlaub('${r.id}','rejected')">${r.status === "approved" ? "Genehmigung stornieren" : "Ablehnen"}</button>` : ``}
           </div>` : ``}
         </div>`;
       }).join("");
