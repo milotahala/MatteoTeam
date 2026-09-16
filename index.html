@@ -506,7 +506,7 @@
               <button class="dashboardApp" data-dashboard-view="viewOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="notebook-tabs"></i></span><span>Bestellung</span></button>
               <button class="dashboardApp" data-dashboard-view="viewRestaurantMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="utensils"></i></span><span>Speisekarte</span></button>
               <button class="dashboardApp" data-dashboard-view="viewToGoMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="pizza"></i></span><span>To Go</span></button>
-              <button class="dashboardApp" data-dashboard-view="viewUrlaub" type="button"><span class="dashboardAppIcon"><i data-lucide="palmtree"></i></span><span>Urlaub Antrag</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewUrlaub" type="button"><span class="dashboardAppIcon"><i data-lucide="palmtree"></i></span><span>Urlaub Antrag <span id="urlaubUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewBruch" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-list"></i></span><span>Bruchliste</span></button>
             </div>
             <div class="hidden" aria-hidden="true"><span id="statStaff">0</span><span id="statInventory">0</span><span id="statUrlaub">0</span><span id="statHaccp">0/3</span><span id="haccpTodayBadge"></span><span id="dashHaccpList"></span><span id="dashUrlaubList"></span></div>
@@ -1069,7 +1069,7 @@
       getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
-      getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp, query, where, arrayUnion
+      getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp, query, where, arrayUnion, onSnapshot
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     import {
       getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject
@@ -1113,6 +1113,8 @@
     let documentCache = [];
     let activeDocumentFolder = "Alle";
     let sickLeaveCache = [];
+    let vacationNotificationUnsubscribe = null;
+    let vacationNotificationReady = false;
 
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
     const DEFAULT_RESTAURANT_MENU = [
@@ -2251,7 +2253,14 @@ ${lastHoursPayload.details.join("\n")}`;
         return bb.localeCompare(aa);
       });
 
-      $("statUrlaub").textContent = String(urlaubCache.filter(x => x.status === "pending").length);
+      renderUrlaubList();
+    }
+
+    function renderUrlaubList(){
+      const pendingCount = urlaubCache.filter(x => x.status === "pending").length;
+      $("statUrlaub").textContent = String(pendingCount);
+      $("urlaubUnreadBadge").textContent = `${pendingCount} Wichtig`;
+      $("urlaubUnreadBadge").classList.toggle("hidden", !isAdmin() || pendingCount === 0);
 
       const list = isAdmin() ? urlaubCache : urlaubCache.filter(x => x.staffId === currentUser.uid);
       const wrap = $("urlaubList");
@@ -2275,6 +2284,26 @@ ${lastHoursPayload.details.join("\n")}`;
           </div>` : ``}
         </div>`;
       }).join("");
+    }
+
+    function startVacationNotifications(){
+      if(vacationNotificationUnsubscribe){
+        vacationNotificationUnsubscribe();
+        vacationNotificationUnsubscribe = null;
+      }
+      vacationNotificationReady = false;
+      if(!isAdmin()) return;
+      vacationNotificationUnsubscribe = onSnapshot(collection(db, "vacationRequests"), snapshot => {
+        const oldPendingIds = new Set(urlaubCache.filter(item => item.status === "pending").map(item => item.id));
+        urlaubCache = snapshot.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => safe(b.from).localeCompare(safe(a.from)));
+        const newPending = urlaubCache.filter(item => item.status === "pending" && !oldPendingIds.has(item.id));
+        renderUrlaubList();
+        if(vacationNotificationReady && newPending.length){
+          const names = newPending.map(item => item.staffName || "Mitarbeiter").join(", ");
+          showMsg(`Wichtige Urlaub-Anfrage von: ${names}`);
+        }
+        vacationNotificationReady = true;
+      }, err => console.error("Urlaub notification error", err));
     }
 
     async function applyUrlaubToWeekly(req){
@@ -3094,6 +3123,7 @@ bruchCache.sort((a, b) => {
       await loadWeekly();
       await loadHaccp();
       await loadUrlaub();
+      startVacationNotifications();
       await loadBruch();
       await loadRestaurantMenu();
       await loadToGoMenu();
@@ -3302,6 +3332,10 @@ bruchCache.sort((a, b) => {
     onAuthStateChanged(auth, async (user)=>{
       currentUser = user || null;
       if(!user){
+        if(vacationNotificationUnsubscribe){
+          vacationNotificationUnsubscribe();
+          vacationNotificationUnsubscribe = null;
+        }
         currentProfile = null;
         $("authScreen").classList.remove("hidden");
         $("appShell").classList.add("hidden");
