@@ -192,6 +192,13 @@
     .noticeCard.unread{border-color:#2dd486;box-shadow:0 0 0 2px rgba(45,212,134,.09)}
     .noticeText{white-space:pre-wrap;line-height:1.55;color:#dbe7f5;margin-top:10px}
     .noticeBadge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:900;background:#14532d;color:#86efac}
+    .documentFolders{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
+    .documentFolder{border:1px solid #29435f;background:#102239;color:#fff;border-radius:14px;padding:13px;cursor:pointer;font-weight:850}
+    .documentFolder.active{background:#14532d;border-color:#2dd486}
+    .documentGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .documentCard{padding:15px;border:1px solid var(--line);border-radius:16px;background:#102239}
+    .uploadProgress{height:8px;border-radius:999px;background:#182d46;overflow:hidden;margin-top:10px}
+    .uploadProgress span{display:block;height:100%;width:0;background:#2dd486;transition:width .2s ease}
     .stat h3{margin:0 0 6px;font-size:13px;color:var(--muted)}
     .stat .num{font-size:28px;font-weight:900}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -341,6 +348,8 @@
       .dashboardAppIcon svg{width:24px;height:24px}
       .clockSummary{grid-template-columns:1fr 1fr}
       .clockSummary .item:first-child{grid-column:1/-1}
+      .documentFolders{grid-template-columns:repeat(2,1fr)}
+      .documentGrid{grid-template-columns:1fr}
       #viewUrlaub .btn{width:100%}
       .menuToolbar{grid-template-columns:1fr}
       .menuGrid{grid-template-columns:1fr}
@@ -451,6 +460,7 @@
           <button class="navBtn" data-view="viewInventory" type="button"><i data-lucide="package" aria-hidden="true"></i><span>Inventar</span></button>
           <button class="navBtn" data-view="viewTimeClock" type="button"><i data-lucide="timer" aria-hidden="true"></i><span>Stempeluhr</span></button>
           <button class="navBtn" data-view="viewAnnouncements" type="button"><i data-lucide="bell" aria-hidden="true"></i><span>Mitteilungen</span></button>
+          <button class="navBtn" data-view="viewDocuments" type="button"><i data-lucide="scan-line" aria-hidden="true"></i><span>Dokumente</span></button>
           <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP</span></button>
           <button class="navBtn" data-view="viewOrders" type="button"><i data-lucide="notebook-tabs" aria-hidden="true"></i><span>Bestellung</span></button>
           <button class="navBtn" data-view="viewRestaurantMenu" type="button"><i data-lucide="utensils" aria-hidden="true"></i><span>Speisekarte</span></button>
@@ -474,6 +484,7 @@
               <button class="dashboardApp" data-dashboard-view="viewInventory" type="button"><span class="dashboardAppIcon"><i data-lucide="package"></i></span><span>Inventar</span></button>
               <button class="dashboardApp" data-dashboard-view="viewTimeClock" type="button"><span class="dashboardAppIcon"><i data-lucide="timer"></i></span><span>Stempeluhr</span></button>
               <button class="dashboardApp" data-dashboard-view="viewAnnouncements" type="button"><span class="dashboardAppIcon"><i data-lucide="bell"></i></span><span>Mitteilungen <span id="announcementUnreadBadge" class="noticeBadge hidden">0</span></span></button>
+              <button class="dashboardApp" data-dashboard-view="viewDocuments" type="button"><span class="dashboardAppIcon"><i data-lucide="scan-line"></i></span><span>Rechnungen</span></button>
               <button class="dashboardApp" data-dashboard-view="viewHaccp" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-check"></i></span><span>HACCP</span></button>
               <button class="dashboardApp" data-dashboard-view="viewOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="notebook-tabs"></i></span><span>Bestellung</span></button>
               <button class="dashboardApp" data-dashboard-view="viewRestaurantMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="utensils"></i></span><span>Speisekarte</span></button>
@@ -523,6 +534,39 @@
               <button id="btnSaveAnnouncement" class="btn" type="button">Mitteilung senden</button>
             </div>
             <div id="announcementList"><div class="muted">Noch keine Mitteilungen.</div></div>
+          </section>
+
+          <section id="viewDocuments" class="view card hidden">
+            <div class="row" style="margin-bottom:16px">
+              <div><h2 class="sectionTitle">Rechnungen & Lieferscheine</h2><div class="sectionSub" style="margin-bottom:0">Dokument fotografieren oder als PDF hochladen und sicher ablegen.</div></div>
+              <button id="btnReloadDocuments" class="ghost right" type="button">Aktualisieren</button>
+            </div>
+            <div class="documentFolders" id="documentFolders">
+              <button class="documentFolder active" type="button" data-document-folder="Alle">Alle</button>
+              <button class="documentFolder" type="button" data-document-folder="Arasco">Arasco</button>
+              <button class="documentFolder" type="button" data-document-folder="Getränke">Getränke</button>
+              <button class="documentFolder" type="button" data-document-folder="Gemüse">Gemüse</button>
+              <button class="documentFolder" type="button" data-document-folder="Sonstige">Sonstige</button>
+            </div>
+            <div class="item">
+              <strong>Dokument scannen / hochladen</strong>
+              <div class="divider"></div>
+              <div class="menuFormGrid">
+                <div class="field"><label class="label">Dokumenttyp</label><select id="documentType" class="select"><option>Rechnung</option><option>Lieferschein</option></select></div>
+                <div class="field"><label class="label">Ordner</label><select id="documentFolder" class="select"><option>Arasco</option><option>Getränke</option><option>Gemüse</option><option>Sonstige</option></select></div>
+                <div class="field"><label class="label">Lieferant</label><input id="documentSupplier" class="input" placeholder="z. B. Arasco" /></div>
+                <div class="field"><label class="label">Datum</label><input id="documentDate" class="input" type="date" /></div>
+              </div>
+              <div class="field"><label class="label">Notiz</label><input id="documentNote" class="input" placeholder="Optional" /></div>
+              <div class="field"><label class="label">Foto oder PDF</label><input id="documentFile" class="input" type="file" accept="image/*,application/pdf" capture="environment" /></div>
+              <button id="btnUploadDocument" class="btn" type="button">Scannen & speichern</button>
+              <div id="documentUploadProgress" class="uploadProgress hidden"><span></span></div>
+            </div>
+            <div class="row" style="margin-bottom:12px">
+              <input id="documentMonth" class="input" type="month" style="max-width:210px" />
+              <span id="documentCount" class="pill ok">0 Dokumente</span>
+            </div>
+            <div id="documentList" class="documentGrid"><div class="muted">Noch keine Dokumente.</div></div>
           </section>
 
           <section id="viewTimeClock" class="view card hidden">
@@ -984,6 +1028,9 @@
     import {
       getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp, query, where, arrayUnion
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import {
+      getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
@@ -1000,6 +1047,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     let currentUser = null;
     let currentProfile = null;
@@ -1017,6 +1065,8 @@
     let timeClockRecord = {sessions:[]};
     let timeClockTimer = null;
     let announcementCache = [];
+    let documentCache = [];
+    let activeDocumentFolder = "Alle";
 
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
     const DEFAULT_RESTAURANT_MENU = [
@@ -2559,6 +2609,102 @@ bruchCache.sort((a, b) => {
       }
     }
 
+    function documentFileName(name){
+      return safe(name).replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-100) || "dokument";
+    }
+
+    function renderDocuments(){
+      const month = $("documentMonth").value || monthStr();
+      const rows = documentCache.filter(item => {
+        const folderMatch = activeDocumentFolder === "Alle" || item.folder === activeDocumentFolder;
+        return folderMatch && safe(item.date).startsWith(month);
+      });
+      $("documentCount").textContent = `${rows.length} Dokument${rows.length === 1 ? "" : "e"}`;
+      document.querySelectorAll("[data-document-folder]").forEach(button => button.classList.toggle("active", button.dataset.documentFolder === activeDocumentFolder));
+      $("documentList").innerHTML = rows.length ? rows.map(item => `
+        <article class="documentCard">
+          <div class="row"><span class="pill ${item.type === "Rechnung" ? "warn" : "ok"}">${htmlEscape(item.type || "Dokument")}</span><strong>${htmlEscape(item.supplier || item.folder || "-")}</strong><span class="right tiny muted">${htmlEscape(item.date || "")}</span></div>
+          <div class="tiny muted" style="margin-top:9px">Ordner: ${htmlEscape(item.folder || "Sonstige")} · Gescannt von: ${htmlEscape(item.uploadedByName || "-")}</div>
+          ${item.note ? `<div style="margin-top:8px">${htmlEscape(item.note)}</div>` : ""}
+          <div class="row" style="margin-top:12px"><a class="smallBtn smallBlue" href="${htmlEscape(item.downloadUrl || "#")}" target="_blank" rel="noopener">Öffnen</a>${isAdmin() ? `<button class="smallBtn smallRed right" type="button" data-document-delete="${htmlEscape(item.id)}">Löschen</button>` : ""}</div>
+        </article>`).join("") : `<div class="item muted">Keine Dokumente in diesem Ordner und Monat.</div>`;
+    }
+
+    async function loadDocuments(){
+      try{
+        const qs = await getDocs(collection(db, "restaurantDocuments"));
+        documentCache = qs.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => {
+          const dateCompare = safe(b.date).localeCompare(safe(a.date));
+          if(dateCompare) return dateCompare;
+          const aa = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+          const bb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+          return bb - aa;
+        });
+        renderDocuments();
+      }catch(err){
+        console.error(err);
+        showMsg("Dokumente konnten nicht geladen werden: " + err.message);
+      }
+    }
+
+    async function uploadDocument(){
+      const file = $("documentFile").files?.[0];
+      const type = $("documentType").value;
+      const folder = $("documentFolder").value;
+      const supplier = safe($("documentSupplier").value);
+      const date = $("documentDate").value || localDateKey();
+      const note = safe($("documentNote").value);
+      if(!file) return showMsg("Bitte zuerst ein Foto oder PDF auswählen.");
+      if(file.size > 20 * 1024 * 1024) return showMsg("Datei ist zu groß. Maximal 20 MB.");
+      const progress = $("documentUploadProgress");
+      const bar = progress.querySelector("span");
+      progress.classList.remove("hidden");
+      bar.style.width = "0%";
+      $("btnUploadDocument").disabled = true;
+      const path = `restaurantDocuments/${folder}/${date.slice(0,7)}/${Date.now()}_${documentFileName(file.name)}`;
+      try{
+        const task = uploadBytesResumable(storageRef(storage, path), file, {contentType:file.type || "application/octet-stream"});
+        await new Promise((resolve, reject) => task.on("state_changed", snapshot => {
+          bar.style.width = `${Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100)}%`;
+        }, reject, resolve));
+        const downloadUrl = await getDownloadURL(task.snapshot.ref);
+        await addDoc(collection(db, "restaurantDocuments"), {
+          type, folder, supplier:supplier || folder, date, note,
+          fileName:file.name, mimeType:file.type || "", size:file.size,
+          storagePath:path, downloadUrl,
+          uploadedBy:currentUser.uid, uploadedByName:currentProfile.name || currentUser.email,
+          createdAt:serverTimestamp()
+        });
+        $("documentSupplier").value = "";
+        $("documentNote").value = "";
+        $("documentFile").value = "";
+        activeDocumentFolder = folder;
+        $("documentMonth").value = date.slice(0,7);
+        await loadDocuments();
+        showMsg("Dokument wurde gespeichert.");
+      }catch(err){
+        console.error(err);
+        showMsg("Dokument konnte nicht gespeichert werden: " + err.message);
+      }finally{
+        $("btnUploadDocument").disabled = false;
+        setTimeout(() => progress.classList.add("hidden"), 600);
+      }
+    }
+
+    async function deleteDocumentRecord(id){
+      if(!isAdmin() || !confirm("Dokument wirklich löschen?")) return;
+      const item = documentCache.find(row => row.id === id);
+      if(!item) return;
+      try{
+        if(item.storagePath) await deleteObject(storageRef(storage, item.storagePath));
+        await deleteDoc(doc(db, "restaurantDocuments", id));
+        await loadDocuments();
+      }catch(err){
+        console.error(err);
+        showMsg("Dokument konnte nicht gelöscht werden: " + err.message);
+      }
+    }
+
     function localDateKey(date = new Date()){
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -2746,6 +2892,8 @@ bruchCache.sort((a, b) => {
       $("bruchDate").value = todayStr();
       $("bruchMonth").value = monthStr();
       $("timeClockMonth").value = monthStr();
+      $("documentDate").value = localDateKey();
+      $("documentMonth").value = monthStr();
 
       await loadStaff();
       await loadInventory();
@@ -2759,6 +2907,7 @@ bruchCache.sort((a, b) => {
       $("orderMenuCategory").innerHTML = ["Alle", ...MENU_CATEGORIES].map(category => `<option value="${htmlEscape(category)}">${htmlEscape(category)}</option>`).join("");
       await loadOrders();
       await loadAnnouncements();
+      await loadDocuments();
       await loadTimeClock();
       await loadTimeClockMonth();
       await loadDashboard();
@@ -2928,6 +3077,19 @@ bruchCache.sort((a, b) => {
       }
       const card = event.target.closest("[data-announcement-read]");
       if(card) markAnnouncementRead(card.dataset.announcementRead);
+    });
+    $("btnUploadDocument").addEventListener("click", uploadDocument);
+    $("btnReloadDocuments").addEventListener("click", loadDocuments);
+    $("documentMonth").addEventListener("change", renderDocuments);
+    $("documentFolders").addEventListener("click", event => {
+      const button = event.target.closest("[data-document-folder]");
+      if(!button) return;
+      activeDocumentFolder = button.dataset.documentFolder;
+      renderDocuments();
+    });
+    $("documentList").addEventListener("click", event => {
+      const button = event.target.closest("[data-document-delete]");
+      if(button) deleteDocumentRecord(button.dataset.documentDelete);
     });
     $("btnClockIn").addEventListener("click", clockIn);
     $("btnClockOut").addEventListener("click", clockOut);
