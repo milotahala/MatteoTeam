@@ -853,7 +853,7 @@
 
             <div class="item adminOnly">
               <div class="supplierOrderHead">
-                <div class="field"><label class="label">Bestellliste</label><select id="supplierOrderType" class="select"><option value="arasco">Arasco – Hauptbestellung</option><option value="gemuese">Gemüse</option></select></div>
+                <div class="field"><label class="label">Bestellliste</label><select id="supplierOrderType" class="select"><option value="arasco">Arasco – Hauptbestellung</option><option value="gemuese">Gemüse</option><option value="manual">Manuell schreiben / Test</option></select></div>
                 <div class="field"><label class="label">Lieferant</label><input id="supplierOrderName" class="input" placeholder="z. B. Arasco" /></div>
                 <div class="field"><label class="label">E-Mail des Lieferanten</label><input id="supplierOrderEmail" class="input" type="email" placeholder="bestellung@lieferant.de" /></div>
                 <div class="field"><label class="label">Lieferdatum gewünscht</label><input id="supplierOrderDeliveryDate" class="input" type="date" /></div>
@@ -861,13 +861,13 @@
                 <div class="field"><label class="label">Lieferant speichern</label><button id="btnSaveSupplierProfile" class="ghost" type="button">Name & E-Mail speichern</button></div>
               </div>
               <div class="field"><label class="label">Nachricht</label><textarea id="supplierOrderNote" class="textarea" placeholder="Optional, z. B. Bitte vormittags liefern."></textarea></div>
-              <div id="supplierOrderOtherField" class="field hidden"><label class="label">Sonstige Artikel</label><textarea id="supplierOrderOther" class="textarea" placeholder="Weitere Gemüseartikel, jeweils eine Zeile …"></textarea></div>
+              <div id="supplierOrderOtherField" class="field hidden"><label id="supplierOrderOtherLabel" class="label">Sonstige Artikel</label><textarea id="supplierOrderOther" class="textarea" placeholder="Weitere Artikel, jeweils eine Zeile …"></textarea></div>
 
-              <div class="supplierOrderHead" style="margin-bottom:10px">
+              <div id="supplierOrderTableTools" class="supplierOrderHead" style="margin-bottom:10px">
                 <input id="supplierOrderSearch" class="input" type="search" placeholder="Artikelnummer oder Produkt suchen …" />
                 <label class="row item" style="margin:0"><input id="supplierOrderSelectedOnly" type="checkbox" /> Nur ausgewählte Produkte anzeigen</label>
               </div>
-              <div class="tableWrap">
+              <div id="supplierOrderTableWrap" class="tableWrap">
                 <table class="supplierOrderTable">
                   <thead id="supplierOrderHead"><tr><th>Nr.</th><th>Artikel</th><th>Bezeichnung</th><th>Stück</th><th>Karton</th></tr></thead>
                   <tbody id="supplierOrderRows"></tbody>
@@ -875,6 +875,7 @@
               </div>
               <div class="supplierOrderActions">
                 <button id="btnClearSupplierOrder" class="ghost" type="button">Leeren</button>
+                <button id="btnPrintSupplierOrder" class="ghost" type="button"><i data-lucide="printer"></i> Vorschau / PDF</button>
                 <button id="btnSendSupplierOrder" class="btn right" type="button"><i data-lucide="mail"></i> E-Mail öffnen</button>
               </div>
               <div class="tiny muted" style="margin-top:10px">Die E-Mail-App öffnet die fertige Bestellung. Prüfe dort den Absender und tippe anschließend auf „Senden“.</div>
@@ -1279,7 +1280,8 @@
     let supplierOrderQuantities = {};
     let supplierProfiles = {
       arasco:{name:"Arasco Deutschland GmbH", email:"bestellung@arasco.de"},
-      gemuese:{name:"Berger & Tolls", email:"info@bergerundtolls-fruechte.de"}
+      gemuese:{name:"Berger & Tolls", email:"info@bergerundtolls-fruechte.de"},
+      manual:{name:"Test / anderer Lieferant", email:""}
     };
 
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
@@ -2138,7 +2140,8 @@
       const now = new Date();
       const date = now.toISOString().slice(0,10).replaceAll("-","");
       const time = now.toTimeString().slice(0,5).replace(":","");
-      const prefix = $("supplierOrderType")?.value === "gemuese" ? "GE" : "AR";
+      const type = $("supplierOrderType")?.value;
+      const prefix = type === "gemuese" ? "GE" : type === "manual" ? "MA" : "AR";
       return `${prefix}-${date}-${time}`;
     }
 
@@ -2159,6 +2162,7 @@
 
     function selectedSupplierOrderItems(){
       const type = $("supplierOrderType").value || "arasco";
+      if(type === "manual") return [];
       const products = type === "gemuese" ? GEMUESE_PRODUCTS : ARASCO_PRODUCTS;
       return products.map(product => type === "gemuese" ? ({
         ...product,
@@ -2174,10 +2178,16 @@
 
     function renderSupplierOrderRows(){
       const type = $("supplierOrderType").value || "arasco";
+      const manual = type === "manual";
       const products = type === "gemuese" ? GEMUESE_PRODUCTS : ARASCO_PRODUCTS;
       const search = menuSearchText($("supplierOrderSearch").value);
       const selectedOnly = $("supplierOrderSelectedOnly").checked;
-      $("supplierOrderOtherField").classList.toggle("hidden", type !== "gemuese");
+      $("supplierOrderOtherField").classList.toggle("hidden", type === "arasco");
+      $("supplierOrderOtherLabel").textContent = manual ? "Artikel und Mengen manuell schreiben" : "Sonstige Artikel";
+      $("supplierOrderOther").placeholder = manual ? "Beispiel:\nTomatensoße – 3 Kartons\nMehl – 2 Säcke\nServietten – 5 Pakete" : "Weitere Gemüseartikel, jeweils eine Zeile …";
+      $("supplierOrderTableTools").classList.toggle("hidden", manual);
+      $("supplierOrderTableWrap").classList.toggle("hidden", manual);
+      if(manual) return;
       $("supplierOrderHead").innerHTML = type === "gemuese"
         ? `<tr><th>Nr.</th><th>Artikel</th><th>Kiste/Sack</th><th>Kilo</th><th>Stück/Bund</th></tr>`
         : `<tr><th>Nr.</th><th>Artikel</th><th>Bezeichnung</th><th>Stück</th><th>Karton</th></tr>`;
@@ -2216,6 +2226,39 @@
       return `Guten Tag,\n\nhiermit bestellen wir folgende Artikel:\n\n${itemLines}${order.other ? `\n\nSonstiges:\n${order.other}` : ""}\n\n${order.deliveryDate ? `Gewünschtes Lieferdatum: ${order.deliveryDate}\n` : ""}${order.note ? `Nachricht: ${order.note}\n` : ""}\nBestellnummer: ${order.orderNumber}\n\nMit freundlichen Grüßen\nPizzeria Ristorante Matteo GmbH`;
     }
 
+    function currentSupplierOrder(){
+      return {
+        orderNumber:safe($("supplierOrderNumber").value) || createSupplierOrderNumber(),
+        supplier:safe($("supplierOrderName").value),
+        email:safe($("supplierOrderEmail").value),
+        type:$("supplierOrderType").value || "arasco",
+        senderEmail:"milot@pizzeriamatteo.de",
+        deliveryDate:$("supplierOrderDeliveryDate").value,
+        note:safe($("supplierOrderNote").value),
+        other:safe($("supplierOrderOther").value),
+        items:selectedSupplierOrderItems()
+      };
+    }
+
+    function printSupplierOrder(){
+      const order = currentSupplierOrder();
+      if(!order.supplier) return showMsg("Bitte Lieferant eingeben.");
+      if(!order.items.length && !order.other) return showMsg("Bitte mindestens einen Artikel oder manuellen Text eingeben.");
+      const rows = order.items.map(item => {
+        if(order.type === "gemuese") return `<tr><td>${item.nr}</td><td>${htmlEscape(item.name)}</td><td>${htmlEscape(item.crate || "")}</td><td>${htmlEscape(item.kilo || "")}</td><td>${htmlEscape(item.bundle || "")}</td></tr>`;
+        return `<tr><td>${item.nr}</td><td>${htmlEscape(item.article)}</td><td>${htmlEscape(item.name)}</td><td>${htmlEscape(item.piece || "")}</td><td>${htmlEscape(item.carton || "")}</td></tr>`;
+      }).join("");
+      const headings = order.type === "gemuese"
+        ? "<th>Nr.</th><th>Artikel</th><th>Kiste/Sack</th><th>Kilo</th><th>Stück/Bund</th>"
+        : "<th>Nr.</th><th>Artikel</th><th>Bezeichnung</th><th>Stück</th><th>Karton</th>";
+      const popup = window.open("", "_blank");
+      if(!popup) return showMsg("Pop-up wurde blockiert. Bitte Pop-ups erlauben.");
+      popup.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${htmlEscape(order.orderNumber)}</title><style>
+        @page{size:A4 landscape;margin:12mm}body{font-family:Arial,sans-serif;color:#111;margin:0}h1{margin:0 0 8px;font-size:24px}.head{display:flex;justify-content:space-between;gap:30px;margin-bottom:18px}.meta{font-size:13px;line-height:1.5;text-align:right}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #222;padding:5px;text-align:left}th{background:#eee}.manual{white-space:pre-wrap;border:1px solid #222;min-height:220px;padding:12px;font-size:14px;line-height:1.7}.note{margin-top:14px;font-size:12px;white-space:pre-wrap}.noPrint{margin:14px 0;padding:10px 16px;font-weight:bold}@media print{.noPrint{display:none}}
+      </style></head><body><button class="noPrint" onclick="window.print()">Drucken / Als PDF speichern</button><div class="head"><div><h1>Bestellliste</h1><strong>Pizzeria Ristorante Matteo GmbH</strong><br>Absender: ${htmlEscape(order.senderEmail)}</div><div class="meta"><strong>${htmlEscape(order.supplier)}</strong><br>${htmlEscape(order.email)}<br>Bestellnummer: ${htmlEscape(order.orderNumber)}${order.deliveryDate ? `<br>Lieferdatum: ${htmlEscape(order.deliveryDate)}` : ""}</div></div>${order.type === "manual" ? `<div class="manual">${htmlEscape(order.other)}</div>` : `<table><thead><tr>${headings}</tr></thead><tbody>${rows}</tbody></table>${order.other ? `<h3>Sonstiges</h3><div class="manual">${htmlEscape(order.other)}</div>` : ""}`}${order.note ? `<div class="note"><strong>Nachricht:</strong> ${htmlEscape(order.note)}</div>` : ""}</body></html>`);
+      popup.document.close();
+    }
+
     async function loadSupplierProfiles(){
       try{
         const qs = await getDocs(collection(db, "supplierProfiles"));
@@ -2238,22 +2281,12 @@
 
     async function sendSupplierOrder(){
       if(!isAdmin()) return showMsg("Nur Admin.");
-      const supplier = safe($("supplierOrderName").value);
-      const email = safe($("supplierOrderEmail").value);
-      const items = selectedSupplierOrderItems();
-      const type = $("supplierOrderType").value || "arasco";
-      const other = safe($("supplierOrderOther").value);
+      const draft = currentSupplierOrder();
+      const {supplier,email,items,type,other} = draft;
       if(!supplier || !email || !email.includes("@")) return showMsg("Lieferant und gültige E-Mail-Adresse eingeben.");
       if(!items.length && !other) return showMsg("Bitte mindestens bei einem Produkt eine Menge eintragen.");
       const order = {
-        orderNumber:safe($("supplierOrderNumber").value) || createSupplierOrderNumber(),
-        supplier,
-        email,
-        type,
-        senderEmail:"milot@pizzeriamatteo.de",
-        deliveryDate:$("supplierOrderDeliveryDate").value,
-        note:safe($("supplierOrderNote").value),
-        other,
+        ...draft,
         items,
         status:"prepared",
         createdBy:currentUser.uid,
@@ -3917,6 +3950,7 @@ bruchCache.sort((a, b) => {
     $("btnClearSupplierOrder").addEventListener("click", () => {
       if(confirm("Bestellliste wirklich leeren?")) resetSupplierOrderForm();
     });
+    $("btnPrintSupplierOrder").addEventListener("click", printSupplierOrder);
     $("btnSendSupplierOrder").addEventListener("click", sendSupplierOrder);
     $("btnReloadSupplierOrders").addEventListener("click", loadSupplierOrders);
 
