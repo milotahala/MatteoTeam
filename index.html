@@ -199,6 +199,10 @@
     .clockAction:disabled{opacity:.35;cursor:not-allowed;transform:none}
     .clockSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:620px;margin:16px auto}
     .clockSummary .item{text-align:center;margin:0}
+    .clockGeo{max-width:620px;margin:14px auto;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:#0b1a2b}
+    .clockGeo.ok{border-color:#21865b;background:#0b241c}
+    .clockGeo.warn{border-color:#b7791f;background:#2a1e0b}
+    .clockGeo.error{border-color:#b84b4b;background:#2a1014}
     .noticeCard{padding:16px;border-radius:16px;background:#102239;border:1px solid var(--line);margin-bottom:10px;cursor:pointer}
     .noticeCard.unread{border-color:#2dd486;box-shadow:0 0 0 2px rgba(45,212,134,.09)}
     .noticeText{white-space:pre-wrap;line-height:1.55;color:#dbe7f5;margin-top:10px}
@@ -682,6 +686,12 @@
             <div class="clockActions">
               <button id="btnClockIn" class="clockAction clockIn" type="button"><i data-lucide="log-in"></i> Kommen</button>
               <button id="btnClockOut" class="clockAction clockOut" type="button"><i data-lucide="log-out"></i> Gehen</button>
+            </div>
+            <div id="timeClockGeo" class="clockGeo warn">
+              <div class="row">
+                <div><strong>Standortprüfung</strong><div id="timeClockGeoText" class="tiny muted">Arbeitsort wird geladen…</div></div>
+                <button id="btnSetWorkplace" class="ghost right hidden" type="button">Arbeitsort hier festlegen</button>
+              </div>
             </div>
             <div class="clockSummary">
               <div class="item"><div class="tiny muted">Status</div><div id="timeClockStatus" class="kpi" style="font-size:22px">Nicht eingestempelt</div></div>
@@ -1239,6 +1249,8 @@
     let currentOrderState = "new";
     let timeClockRecord = {sessions:[]};
     let timeClockTimer = null;
+    let workplaceConfig = null;
+    let timeClockLocationBusy = false;
     let announcementCache = [];
     let documentCache = [];
     let activeDocumentFolder = "Alle";
@@ -3288,6 +3300,105 @@ bruchCache.sort((a, b) => {
       return `${year}-${month}-${day}`;
     }
 
+    function setTimeClockGeoState(type, text){
+      const box = $("timeClockGeo");
+      box.classList.remove("ok", "warn", "error");
+      box.classList.add(type);
+      $("timeClockGeoText").textContent = text;
+    }
+
+    function workplaceRadius(){
+      return Number(workplaceConfig?.radiusMeters) || 100;
+    }
+
+    function distanceMeters(lat1, lon1, lat2, lon2){
+      const toRad = value => value * Math.PI / 180;
+      const earthRadius = 6371000;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return earthRadius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function requestCurrentPosition(){
+      return new Promise((resolve, reject) => {
+        if(!navigator.geolocation){
+          reject(new Error("Dieses Gerät unterstützt keine Standortprüfung."));
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(resolve, error => {
+          if(error.code === 1) reject(new Error("Standortzugriff wurde abgelehnt. Bitte in den Einstellungen für MatteoTeam erlauben."));
+          else if(error.code === 2) reject(new Error("Standort konnte nicht bestimmt werden. Bitte GPS/WLAN einschalten."));
+          else reject(new Error("Standortprüfung dauerte zu lange. Bitte erneut versuchen."));
+        }, {enableHighAccuracy:true, timeout:15000, maximumAge:0});
+      });
+    }
+
+    async function loadWorkplaceConfig(){
+      try{
+        const snap = await getDoc(doc(db, "appSettings", "workplace"));
+        workplaceConfig = snap.exists() ? snap.data() : null;
+        $("btnSetWorkplace").classList.toggle("hidden", !isSuperAdmin());
+        if(workplaceConfig){
+          setTimeClockGeoState("ok", `Stempeln ist nur im Umkreis von ${workplaceRadius()} m um den Arbeitsplatz möglich.`);
+        }else{
+          setTimeClockGeoState("warn", isSuperAdmin() ? "Arbeitsort ist noch nicht festgelegt. Bitte im Restaurant speichern." : "Stempeluhr ist noch nicht freigeschaltet.");
+        }
+        renderTimeClock();
+      }catch(err){
+        console.error(err);
+        workplaceConfig = null;
+        setTimeClockGeoState("error", "Arbeitsort konnte nicht geladen werden.");
+      }
+    }
+
+    async function setWorkplaceHere(){
+      if(!isSuperAdmin()) return showMsg("Nur SuperAdmin.");
+      if(!confirm("Arbeitsort auf Ihre aktuelle Position setzen? Bitte nur direkt im Restaurant bestätigen.")) return;
+      try{
+        $("btnSetWorkplace").disabled = true;
+        setTimeClockGeoState("warn", "Aktueller Standort wird ermittelt…");
+        const position = await requestCurrentPosition();
+        const {latitude, longitude, accuracy} = position.coords;
+        if(accuracy > 100) throw new Error(`GPS ist zu ungenau (±${Math.round(accuracy)} m). Bitte ans Fenster gehen und erneut versuchen.`);
+        await setDoc(doc(db, "appSettings", "workplace"), {
+          latitude, longitude, radiusMeters:100,
+          setBy:currentUser.uid, setByName:currentProfile.name || currentUser.email,
+          accuracyMeters:Math.round(accuracy), updatedAt:serverTimestamp()
+        }, {merge:true});
+        workplaceConfig = {latitude, longitude, radiusMeters:100, accuracyMeters:Math.round(accuracy)};
+        setTimeClockGeoState("ok", "Arbeitsort gespeichert. Stempeln ist innerhalb von 100 m möglich.");
+        renderTimeClock();
+        showMsg("Arbeitsort wurde mit 100 m Radius gespeichert.");
+      }catch(err){
+        console.error(err);
+        setTimeClockGeoState("error", err.message);
+        showMsg(err.message);
+      }finally{
+        $("btnSetWorkplace").disabled = false;
+      }
+    }
+
+    async function verifyWorkplaceLocation(){
+      if(!workplaceConfig) await loadWorkplaceConfig();
+      if(!workplaceConfig) throw new Error("Der Arbeitsort wurde noch nicht festgelegt.");
+      setTimeClockGeoState("warn", "Standort wird geprüft…");
+      const position = await requestCurrentPosition();
+      const {latitude, longitude, accuracy} = position.coords;
+      if(accuracy > 100) throw new Error(`GPS ist zu ungenau (±${Math.round(accuracy)} m). Bitte GPS/WLAN aktivieren und erneut versuchen.`);
+      const distance = distanceMeters(latitude, longitude, Number(workplaceConfig.latitude), Number(workplaceConfig.longitude));
+      if(distance > workplaceRadius()){
+        setTimeClockGeoState("error", `Außerhalb des Arbeitsplatzes: ca. ${Math.round(distance)} m entfernt. Erlaubt sind ${workplaceRadius()} m.`);
+        throw new Error(`Stempeln ist nur am Arbeitsplatz möglich. Entfernung: ca. ${Math.round(distance)} m.`);
+      }
+      setTimeClockGeoState("ok", `Standort bestätigt: ca. ${Math.round(distance)} m vom Arbeitsplatz entfernt.`);
+      return {
+        latitude:Number(latitude.toFixed(6)), longitude:Number(longitude.toFixed(6)),
+        accuracyMeters:Math.round(accuracy), distanceMeters:Math.round(distance),
+        checkedAt:new Date().toISOString()
+      };
+    }
+
     function formatClockTime(value){
       if(!value) return "--:--";
       return new Date(value).toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"});
@@ -3329,8 +3440,9 @@ bruchCache.sort((a, b) => {
       const openSession = sessions.find(session => session.in && !session.out);
       $("timeClockEmployee").textContent = timeClockRecord.userName || currentProfile.name || currentUser.email;
       $("timeClockStatus").textContent = openSession ? `Seit ${formatClockTime(openSession.in)}` : "Nicht eingestempelt";
-      $("btnClockIn").disabled = Boolean(openSession);
-      $("btnClockOut").disabled = !openSession;
+      const unavailable = !workplaceConfig || timeClockLocationBusy;
+      $("btnClockIn").disabled = unavailable || Boolean(openSession);
+      $("btnClockOut").disabled = unavailable || !openSession;
       const grossMinutes = timeClockMinutes();
       const breakMinutes = automaticBreakMinutes(grossMinutes);
       $("timeClockTotal").textContent = formatMinutes(Math.max(0, grossMinutes - breakMinutes));
@@ -3381,19 +3493,24 @@ bruchCache.sort((a, b) => {
     async function clockIn(){
       const sessions = [...(timeClockRecord.sessions || [])];
       if(sessions.some(session => session.in && !session.out)) return;
-      sessions.push({in:new Date().toISOString(), out:null});
       try{
+        timeClockLocationBusy = true;
+        renderTimeClock();
+        const location = await verifyWorkplaceLocation();
+        sessions.push({in:new Date().toISOString(), out:null, inLocation:location});
         await setDoc(doc(db, "timeClock", timeClockRecord.id), {
           date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
-          sessions, updatedAt:serverTimestamp()
+          sessions, lastAction:"in", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
         });
         timeClockRecord.sessions = sessions;
-        renderTimeClock();
         await loadTimeClockMonth();
         showMsg("Kommen wurde gespeichert.");
       }catch(err){
         console.error(err);
         showMsg("Kommen konnte nicht gespeichert werden: " + err.message);
+      }finally{
+        timeClockLocationBusy = false;
+        renderTimeClock();
       }
     }
 
@@ -3401,19 +3518,25 @@ bruchCache.sort((a, b) => {
       const sessions = (timeClockRecord.sessions || []).map(session => ({...session}));
       const openIndex = sessions.findIndex(session => session.in && !session.out);
       if(openIndex < 0) return;
-      sessions[openIndex].out = new Date().toISOString();
       try{
+        timeClockLocationBusy = true;
+        renderTimeClock();
+        const location = await verifyWorkplaceLocation();
+        sessions[openIndex].out = new Date().toISOString();
+        sessions[openIndex].outLocation = location;
         await setDoc(doc(db, "timeClock", timeClockRecord.id), {
           date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
-          sessions, updatedAt:serverTimestamp()
+          sessions, lastAction:"out", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
         });
         timeClockRecord.sessions = sessions;
-        renderTimeClock();
         await loadTimeClockMonth();
         showMsg("Gehen wurde gespeichert.");
       }catch(err){
         console.error(err);
         showMsg("Gehen konnte nicht gespeichert werden: " + err.message);
+      }finally{
+        timeClockLocationBusy = false;
+        renderTimeClock();
       }
     }
 
@@ -3490,6 +3613,7 @@ bruchCache.sort((a, b) => {
       await loadAnnouncements();
       await loadDocuments();
       await loadSickLeave();
+      await loadWorkplaceConfig();
       await loadTimeClock();
       await loadTimeClockMonth();
       await loadDashboard();
@@ -3705,6 +3829,7 @@ bruchCache.sort((a, b) => {
     });
     $("btnClockIn").addEventListener("click", clockIn);
     $("btnClockOut").addEventListener("click", clockOut);
+    $("btnSetWorkplace").addEventListener("click", setWorkplaceHere);
     $("btnLoadTimeClockMonth").addEventListener("click", loadTimeClockMonth);
     $("timeClockMonth").addEventListener("change", loadTimeClockMonth);
 
