@@ -649,8 +649,15 @@
                 <div class="field"><label class="label">Datum</label><input id="documentDate" class="input" type="date" /></div>
               </div>
               <div class="field"><label class="label">Notiz</label><input id="documentNote" class="input" placeholder="Optional" /></div>
-              <div class="field"><label class="label">Foto oder PDF</label><input id="documentFile" class="input" type="file" accept="image/*,application/pdf" capture="environment" /></div>
-              <button id="btnUploadDocument" class="btn" type="button">Scannen & speichern</button>
+              <div class="field">
+                <label class="label">Dokument auswählen</label>
+                <div class="row">
+                  <label class="ghost" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><i data-lucide="camera"></i> Dokument scannen<input id="documentCameraFile" class="hidden" type="file" accept="image/*" capture="environment" /></label>
+                  <label class="ghost" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><i data-lucide="image-plus"></i> Foto / PDF auswählen<input id="documentLibraryFile" class="hidden" type="file" accept="image/*,application/pdf,.heic,.heif" /></label>
+                </div>
+                <div id="documentSelectedFile" class="tiny muted" style="margin-top:10px">Noch keine Datei ausgewählt.</div>
+              </div>
+              <button id="btnUploadDocument" class="btn" type="button" disabled>Jetzt sicher speichern</button>
               <div id="documentUploadProgress" class="uploadProgress hidden"><span></span></div>
             </div>
             <div class="row" style="margin-bottom:12px">
@@ -3216,6 +3223,21 @@ bruchCache.sort((a, b) => {
       return safe(name).replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-100) || "dokument";
     }
 
+    function selectedDocumentFile(){
+      return $("documentCameraFile").files?.[0] || $("documentLibraryFile").files?.[0] || null;
+    }
+
+    function updateDocumentFileSelection(source){
+      const other = source === "camera" ? $("documentLibraryFile") : $("documentCameraFile");
+      if(other) other.value = "";
+      const file = selectedDocumentFile();
+      $("documentSelectedFile").textContent = file
+        ? `Ausgewählt: ${file.name || "Foto"} · ${(file.size / 1024 / 1024).toFixed(1)} MB`
+        : "Noch keine Datei ausgewählt.";
+      $("documentSelectedFile").classList.toggle("muted", !file);
+      $("btnUploadDocument").disabled = !file;
+    }
+
     function renderDocuments(){
       const month = $("documentMonth").value || monthStr();
       const rows = documentCache.filter(item => {
@@ -3251,14 +3273,14 @@ bruchCache.sort((a, b) => {
     }
 
     async function uploadDocument(){
-      const file = $("documentFile").files?.[0];
+      const file = selectedDocumentFile();
       const type = $("documentType").value;
       const folder = $("documentFolder").value;
       const supplier = safe($("documentSupplier").value);
       const date = $("documentDate").value || localDateKey();
       const note = safe($("documentNote").value);
       if(!file) return showMsg("Bitte zuerst ein Foto oder PDF auswählen.");
-      if(file.size > 20 * 1024 * 1024) return showMsg("Datei ist zu groß. Maximal 20 MB.");
+      if(file.size > 30 * 1024 * 1024) return showMsg("Datei ist zu groß. Maximal 30 MB.");
       const progress = $("documentUploadProgress");
       const bar = progress.querySelector("span");
       progress.classList.remove("hidden");
@@ -3280,16 +3302,22 @@ bruchCache.sort((a, b) => {
         });
         $("documentSupplier").value = "";
         $("documentNote").value = "";
-        $("documentFile").value = "";
+        $("documentCameraFile").value = "";
+        $("documentLibraryFile").value = "";
+        $("documentSelectedFile").textContent = "Noch keine Datei ausgewählt.";
+        $("documentSelectedFile").classList.add("muted");
         activeDocumentFolder = folder;
         $("documentMonth").value = date.slice(0,7);
         await loadDocuments();
         showMsg("Dokument wurde gespeichert.");
       }catch(err){
         console.error(err);
-        showMsg("Dokument konnte nicht gespeichert werden: " + err.message);
+        const hint = safe(err?.code).includes("unauthorized")
+          ? " Keine Berechtigung im Speicher. Bitte erneut anmelden oder Firebase-Regeln prüfen."
+          : "";
+        showMsg("Dokument konnte nicht gespeichert werden: " + err.message + hint);
       }finally{
-        $("btnUploadDocument").disabled = false;
+        $("btnUploadDocument").disabled = !selectedDocumentFile();
         setTimeout(() => progress.classList.add("hidden"), 600);
       }
     }
@@ -4069,6 +4097,8 @@ bruchCache.sort((a, b) => {
       if(card) markAnnouncementRead(card.dataset.announcementRead);
     });
     $("btnUploadDocument").addEventListener("click", uploadDocument);
+    $("documentCameraFile").addEventListener("change", () => updateDocumentFileSelection("camera"));
+    $("documentLibraryFile").addEventListener("change", () => updateDocumentFileSelection("library"));
     $("btnReloadDocuments").addEventListener("click", loadDocuments);
     $("documentMonth").addEventListener("change", renderDocuments);
     $("documentFolders").addEventListener("click", event => {
