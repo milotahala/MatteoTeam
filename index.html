@@ -330,6 +330,8 @@
     .allergenBadge{background:rgba(148,163,184,.12);color:#cbd5e1}
     .menuEmpty{grid-column:1/-1;text-align:center;padding:34px;color:var(--muted)}
     .menuFormGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .menuFormGrid>*{min-width:0}
+    .menuFormGrid input[type="date"]{min-width:0;max-width:100%}
     .menuLegend{columns:2;column-gap:24px;font-size:12px;color:var(--muted);line-height:1.7}
     .orderLayout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:14px;align-items:start}
     .tableOpenRow{display:grid;grid-template-columns:1fr auto;gap:9px;margin-bottom:13px}
@@ -362,7 +364,7 @@
       .orderPanel{position:static}
     }
     @media (max-width:800px){
-      body{padding-bottom:92px}
+      body{padding-bottom:max(18px,env(safe-area-inset-bottom))}
       .app{padding:10px}
       .topbar{position:static;padding:12px;border-radius:17px}
       .topbar>.row{gap:7px;flex-wrap:nowrap}
@@ -375,7 +377,7 @@
       .subtitle{max-width:155px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .layout{display:block;margin-top:10px}
       .sidebar{
-        position:fixed;z-index:100;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));top:auto;
+        position:relative;z-index:10;left:auto;right:auto;bottom:auto;top:auto;margin-bottom:10px;
         display:flex;gap:6px;overflow-x:auto;padding:8px;border-radius:17px;
         scrollbar-width:none;background:rgba(9,24,42,.96)
       }
@@ -659,6 +661,7 @@
               </div>
               <button id="btnUploadDocument" class="btn" type="button" disabled>Jetzt sicher speichern</button>
               <div id="documentUploadProgress" class="uploadProgress hidden"><span></span></div>
+              <div id="documentUploadStatus" class="tiny muted" style="margin-top:10px">Bereit.</div>
             </div>
             <div class="row" style="margin-bottom:12px">
               <input id="documentMonth" class="input" type="month" style="max-width:210px" />
@@ -3236,6 +3239,8 @@ bruchCache.sort((a, b) => {
         : "Noch keine Datei ausgewählt.";
       $("documentSelectedFile").classList.toggle("muted", !file);
       $("btnUploadDocument").disabled = !file;
+      $("documentUploadStatus").textContent = file ? "Datei ist bereit. Jetzt auf „Jetzt sicher speichern“ tippen." : "Bereit.";
+      $("documentUploadStatus").style.color = "";
     }
 
     function renderDocuments(){
@@ -3286,11 +3291,15 @@ bruchCache.sort((a, b) => {
       progress.classList.remove("hidden");
       bar.style.width = "0%";
       $("btnUploadDocument").disabled = true;
+      $("documentUploadStatus").textContent = "Upload wird gestartet… Bitte diese Seite geöffnet lassen.";
+      $("documentUploadStatus").style.color = "#fcd34d";
       const path = `restaurantDocuments/${folder}/${date.slice(0,7)}/${Date.now()}_${documentFileName(file.name)}`;
       try{
         const task = uploadBytesResumable(storageRef(storage, path), file, {contentType:file.type || "application/octet-stream"});
         await new Promise((resolve, reject) => task.on("state_changed", snapshot => {
-          bar.style.width = `${Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100)}%`;
+          const percent = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
+          bar.style.width = `${percent}%`;
+          $("documentUploadStatus").textContent = `Wird hochgeladen: ${percent}%`;
         }, reject, resolve));
         const downloadUrl = await getDownloadURL(task.snapshot.ref);
         await addDoc(collection(db, "restaurantDocuments"), {
@@ -3309,16 +3318,21 @@ bruchCache.sort((a, b) => {
         activeDocumentFolder = folder;
         $("documentMonth").value = date.slice(0,7);
         await loadDocuments();
+        $("documentUploadStatus").textContent = "✓ Dokument wurde erfolgreich gespeichert.";
+        $("documentUploadStatus").style.color = "#86efac";
         showMsg("Dokument wurde gespeichert.");
       }catch(err){
         console.error(err);
         const hint = safe(err?.code).includes("unauthorized")
           ? " Keine Berechtigung im Speicher. Bitte erneut anmelden oder Firebase-Regeln prüfen."
           : "";
+        const errorText = "Fehler: " + (err.message || err.code || "Unbekannter Fehler") + hint;
+        $("documentUploadStatus").textContent = errorText;
+        $("documentUploadStatus").style.color = "#fca5a5";
         showMsg("Dokument konnte nicht gespeichert werden: " + err.message + hint);
       }finally{
         $("btnUploadDocument").disabled = !selectedDocumentFile();
-        setTimeout(() => progress.classList.add("hidden"), 600);
+        if(!selectedDocumentFile()) setTimeout(() => progress.classList.add("hidden"), 1200);
       }
     }
 
