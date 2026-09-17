@@ -853,12 +853,15 @@
 
             <div class="item adminOnly">
               <div class="supplierOrderHead">
+                <div class="field"><label class="label">Bestellliste</label><select id="supplierOrderType" class="select"><option value="arasco">Arasco – Hauptbestellung</option><option value="gemuese">Gemüse</option></select></div>
                 <div class="field"><label class="label">Lieferant</label><input id="supplierOrderName" class="input" placeholder="z. B. Arasco" /></div>
                 <div class="field"><label class="label">E-Mail des Lieferanten</label><input id="supplierOrderEmail" class="input" type="email" placeholder="bestellung@lieferant.de" /></div>
                 <div class="field"><label class="label">Lieferdatum gewünscht</label><input id="supplierOrderDeliveryDate" class="input" type="date" /></div>
                 <div class="field"><label class="label">Bestellnummer</label><input id="supplierOrderNumber" class="input" readonly /></div>
+                <div class="field"><label class="label">Lieferant speichern</label><button id="btnSaveSupplierProfile" class="ghost" type="button">Name & E-Mail speichern</button></div>
               </div>
               <div class="field"><label class="label">Nachricht</label><textarea id="supplierOrderNote" class="textarea" placeholder="Optional, z. B. Bitte vormittags liefern."></textarea></div>
+              <div id="supplierOrderOtherField" class="field hidden"><label class="label">Sonstige Artikel</label><textarea id="supplierOrderOther" class="textarea" placeholder="Weitere Gemüseartikel, jeweils eine Zeile …"></textarea></div>
 
               <div class="supplierOrderHead" style="margin-bottom:10px">
                 <input id="supplierOrderSearch" class="input" type="search" placeholder="Artikelnummer oder Produkt suchen …" />
@@ -866,7 +869,7 @@
               </div>
               <div class="tableWrap">
                 <table class="supplierOrderTable">
-                  <thead><tr><th>Nr.</th><th>Artikel</th><th>Bezeichnung</th><th>Stück</th><th>Karton</th></tr></thead>
+                  <thead id="supplierOrderHead"><tr><th>Nr.</th><th>Artikel</th><th>Bezeichnung</th><th>Stück</th><th>Karton</th></tr></thead>
                   <tbody id="supplierOrderRows"></tbody>
                 </table>
               </div>
@@ -1274,6 +1277,10 @@
     let vacationPopupShown = false;
     let supplierOrderCache = [];
     let supplierOrderQuantities = {};
+    let supplierProfiles = {
+      arasco:{name:"Arasco Deutschland GmbH", email:"bestellung@arasco.de"},
+      gemuese:{name:"Berger & Tolls", email:"info@bergerundtolls-fruechte.de"}
+    };
 
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
     const ARASCO_PRODUCTS = [
@@ -1283,6 +1290,11 @@
       [83,"70619","Papiertischsets 27x17x28cm 70g braun mittel, 250 St."],[84,"70700","Salat Kartonschale 1300ml Kleva"],[85,"70701","Deckel zu Kartonschale 185mm rPet 1100ml/1300ml, 300 St."],[86,"70704","Salat Kartonschale 1100ml Kleva"],[87,"70730","Holz Löffel 160mm"],[88,"70731","Holz Gabel 160mm"],[89,"70732","Holz Messer 160mm"],[90,"70921","Pappteller 26cm, braun, 1/2 Kraft 250 St."],[91,"71116","Holz Zahnstocher einzeln gehüllt in Papier 1000 St."],[92,"71121","Vakuumbeutel 90my transp. 300x400mm 100 St."],[93,"71122","Vakuumbeutel 90my transp. 250x280mm 100 St."],[94,"71123","Vakuumbeutel 90my transp. 130x260mm 100 St."],[95,"80103","Reinex Glasreiniger mit Sprühpist. 1 Lt"],[96,"80108","Reinex Fettlöser mit Sprühpistole 750ml"],[97,"80109","Reinex Spülmittel 1 Lt"],[98,"80121","Reinex Entkalker 1 Lt"],[99,"80127","Cremeseife flüssig Grüne Frische Regina 500ml"],[100,"80152","Vollwaschmittel Arasco Professional 20 Kg"],[101,"80201","Alufolie 45cm x 130m"],[102,"80203","Frischhaltefolie 45cm x 230m"],[103,"80214","Latex Handschuhe Gr. L ungepudert"],[104,"80218","Scheuerschwamm groß m. Griffleiste gelb/grün 70x150mm"],[105,"80220","Schwammtuch Blau 200x180mm"],[106,"80243","Winterhalter B100N Klarspüler 10 Lt"],[107,"80252","Winterhalter F8500 Universalreiniger 25 Kg"],[108,"80300","Müllsäcke 120 Lt 25x10 Rollen"],[109,"80403","Küchenrollen 3-lagig weiß 4'er"],[110,"80407","Toiletten Jumbo Rollen 2lg 300m"],
       [111,"90139","TK Bindi 3687 Soufflé al"],[112,"90201","TK Debic Big Parisienne 16x550g"],[113,"90216","TK Artland Rinderhackfleisch 2 Kg"],[114,"90608","TK Garnelen 16/20 geschält"],[115,"90621","TK Schrimps 90-120 Blacktiger 1 Kg"],[116,"90638","TK Quadrifoglio Soufflé al Ciocc."],[117,"90702","TK Bonduelle Blattspinat Portion."],[118,"90713","TK Melzer Broccoli 20/40 2,5 Kg"],[119,"90739","TK Bonduelle Paprika rot/gelb"],[120,"90766","TK Orogel Auberginenscheiben"],[121,"90768","TK Orogel Zucchinischeiben"],[122,"90827","TK Hähncheninnenfilet Stücke"],[123,"91141","TK Effepi Tiramisu port. HALAL"],[124,"91202","TK Frutti di Mare 1 Kg"]
     ].map(([nr,article,name]) => ({nr,article,name}));
+    const GEMUESE_PRODUCTS = [
+      "Champignons fein","Rucola","Salat gemischt 9er","Eisberg","Cherrytomaten, Schale","Strauchtomaten","Gurken",
+      "Paprika rot","Paprika gelb","Paprika grün","Zucchini","Aubergine","Möhren dick","Zitronen","Knoblauch frisch 5kg",
+      "Zwiebeln klein","Metzgerzwiebeln (groß)","Frühlingszwiebeln","Staudensellerie","Petersilie glatt","Basilikum im Topf"
+    ].map((name,index) => ({nr:index + 1, article:`G${String(index + 1).padStart(2,"0")}`, name}));
     const DEFAULT_RESTAURANT_MENU = [
       {id:"vorspeisen-bruschetta",category:"Vorspeisen",name:"Bruschetta",description:"Geröstete Brotscheiben, belegt mit Tomate, Knoblauch und Zwiebeln",price:8.5,allergens:"I",vegetarian:true},
       {id:"vorspeisen-tomaten-mozzarella",category:"Vorspeisen",name:"Tomaten Mozzarella",description:"Frischer Blattsalat mit Tomaten und Mozzarella",price:8.5,allergens:"D",vegetarian:true},
@@ -2126,39 +2138,64 @@
       const now = new Date();
       const date = now.toISOString().slice(0,10).replaceAll("-","");
       const time = now.toTimeString().slice(0,5).replace(":","");
-      return `AR-${date}-${time}`;
+      const prefix = $("supplierOrderType")?.value === "gemuese" ? "GE" : "AR";
+      return `${prefix}-${date}-${time}`;
     }
 
     function resetSupplierOrderForm(){
       supplierOrderQuantities = {};
-      $("supplierOrderName").value = "Arasco Deutschland GmbH";
-      $("supplierOrderEmail").value = "bestellung@arasco.de";
+      const type = $("supplierOrderType").value || "arasco";
+      const profile = supplierProfiles[type];
+      $("supplierOrderName").value = profile?.name || "";
+      $("supplierOrderEmail").value = profile?.email || "";
       $("supplierOrderDeliveryDate").value = "";
       $("supplierOrderNumber").value = createSupplierOrderNumber();
       $("supplierOrderNote").value = "";
+      $("supplierOrderOther").value = "";
       $("supplierOrderSearch").value = "";
       $("supplierOrderSelectedOnly").checked = false;
       renderSupplierOrderRows();
     }
 
     function selectedSupplierOrderItems(){
-      return ARASCO_PRODUCTS.map(product => ({
+      const type = $("supplierOrderType").value || "arasco";
+      const products = type === "gemuese" ? GEMUESE_PRODUCTS : ARASCO_PRODUCTS;
+      return products.map(product => type === "gemuese" ? ({
+        ...product,
+        crate:safe(supplierOrderQuantities[product.article]?.crate),
+        kilo:safe(supplierOrderQuantities[product.article]?.kilo),
+        bundle:safe(supplierOrderQuantities[product.article]?.bundle)
+      }) : ({
         ...product,
         piece:safe(supplierOrderQuantities[product.article]?.piece),
         carton:safe(supplierOrderQuantities[product.article]?.carton)
-      })).filter(item => item.piece || item.carton);
+      })).filter(item => type === "gemuese" ? (item.crate || item.kilo || item.bundle) : (item.piece || item.carton));
     }
 
     function renderSupplierOrderRows(){
+      const type = $("supplierOrderType").value || "arasco";
+      const products = type === "gemuese" ? GEMUESE_PRODUCTS : ARASCO_PRODUCTS;
       const search = menuSearchText($("supplierOrderSearch").value);
       const selectedOnly = $("supplierOrderSelectedOnly").checked;
-      const rows = ARASCO_PRODUCTS.filter(product => {
-        const selected = supplierOrderQuantities[product.article]?.piece || supplierOrderQuantities[product.article]?.carton;
+      $("supplierOrderOtherField").classList.toggle("hidden", type !== "gemuese");
+      $("supplierOrderHead").innerHTML = type === "gemuese"
+        ? `<tr><th>Nr.</th><th>Artikel</th><th>Kiste/Sack</th><th>Kilo</th><th>Stück/Bund</th></tr>`
+        : `<tr><th>Nr.</th><th>Artikel</th><th>Bezeichnung</th><th>Stück</th><th>Karton</th></tr>`;
+      const rows = products.filter(product => {
+        const values = supplierOrderQuantities[product.article] || {};
+        const selected = type === "gemuese" ? (values.crate || values.kilo || values.bundle) : (values.piece || values.carton);
         const matches = !search || menuSearchText(`${product.nr} ${product.article} ${product.name}`).includes(search);
         return matches && (!selectedOnly || selected);
       });
       $("supplierOrderRows").innerHTML = rows.length ? rows.map(product => {
         const values = supplierOrderQuantities[product.article] || {};
+        if(type === "gemuese") return `<tr>
+          <td>${product.nr}</td>
+          <td><strong>${htmlEscape(product.name)}</strong></td>
+          <td><input class="input" inputmode="decimal" data-supplier-article="${htmlEscape(product.article)}" data-supplier-field="crate" value="${htmlEscape(values.crate || "")}" aria-label="Kiste oder Sack ${htmlEscape(product.name)}" /></td>
+          <td><input class="input" inputmode="decimal" data-supplier-article="${htmlEscape(product.article)}" data-supplier-field="kilo" value="${htmlEscape(values.kilo || "")}" aria-label="Kilo ${htmlEscape(product.name)}" /></td>
+          <td><input class="input" inputmode="decimal" data-supplier-article="${htmlEscape(product.article)}" data-supplier-field="bundle" value="${htmlEscape(values.bundle || "")}" aria-label="Stück oder Bund ${htmlEscape(product.name)}" /></td>
+        </tr>`;
         return `<tr>
           <td>${product.nr}</td>
           <td><strong>${htmlEscape(product.article)}</strong></td>
@@ -2171,10 +2208,32 @@
 
     function supplierOrderEmailBody(order){
       const itemLines = order.items.map(item => {
-        const amounts = [item.piece ? `Stück: ${item.piece}` : "", item.carton ? `Karton: ${item.carton}` : ""].filter(Boolean).join(" · ");
-        return `${item.nr}. ${item.article} – ${item.name}\n   ${amounts}`;
+        const amounts = order.type === "gemuese"
+          ? [item.crate ? `Kiste/Sack: ${item.crate}` : "", item.kilo ? `Kilo: ${item.kilo}` : "", item.bundle ? `Stück/Bund: ${item.bundle}` : ""].filter(Boolean).join(" · ")
+          : [item.piece ? `Stück: ${item.piece}` : "", item.carton ? `Karton: ${item.carton}` : ""].filter(Boolean).join(" · ");
+        return order.type === "gemuese" ? `${item.nr}. ${item.name}\n   ${amounts}` : `${item.nr}. ${item.article} – ${item.name}\n   ${amounts}`;
       }).join("\n\n");
-      return `Guten Tag,\n\nhiermit bestellen wir folgende Artikel:\n\n${itemLines}\n\n${order.deliveryDate ? `Gewünschtes Lieferdatum: ${order.deliveryDate}\n` : ""}${order.note ? `Nachricht: ${order.note}\n` : ""}\nBestellnummer: ${order.orderNumber}\n\nMit freundlichen Grüßen\nPizzeria Ristorante Matteo`;
+      return `Guten Tag,\n\nhiermit bestellen wir folgende Artikel:\n\n${itemLines}${order.other ? `\n\nSonstiges:\n${order.other}` : ""}\n\n${order.deliveryDate ? `Gewünschtes Lieferdatum: ${order.deliveryDate}\n` : ""}${order.note ? `Nachricht: ${order.note}\n` : ""}\nBestellnummer: ${order.orderNumber}\n\nMit freundlichen Grüßen\nPizzeria Ristorante Matteo GmbH`;
+    }
+
+    async function loadSupplierProfiles(){
+      try{
+        const qs = await getDocs(collection(db, "supplierProfiles"));
+        qs.docs.forEach(item => { supplierProfiles[item.id] = {...supplierProfiles[item.id], ...item.data()}; });
+      }catch(err){ console.error("Lieferanten konnten nicht geladen werden", err); }
+    }
+
+    async function saveSupplierProfile(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const type = $("supplierOrderType").value || "arasco";
+      const name = safe($("supplierOrderName").value);
+      const email = safe($("supplierOrderEmail").value).toLowerCase();
+      if(!name || !email.includes("@")) return showMsg("Name und gültige E-Mail-Adresse eingeben.");
+      try{
+        await setDoc(doc(db, "supplierProfiles", type), {name,email,updatedBy:currentUser.uid,updatedAt:serverTimestamp()}, {merge:true});
+        supplierProfiles[type] = {name,email};
+        showMsg("Lieferant wurde gespeichert.");
+      }catch(err){ showMsg("Lieferant konnte nicht gespeichert werden: " + err.message); }
     }
 
     async function sendSupplierOrder(){
@@ -2182,15 +2241,19 @@
       const supplier = safe($("supplierOrderName").value);
       const email = safe($("supplierOrderEmail").value);
       const items = selectedSupplierOrderItems();
+      const type = $("supplierOrderType").value || "arasco";
+      const other = safe($("supplierOrderOther").value);
       if(!supplier || !email || !email.includes("@")) return showMsg("Lieferant und gültige E-Mail-Adresse eingeben.");
-      if(!items.length) return showMsg("Bitte mindestens bei einem Produkt Stück oder Karton eintragen.");
+      if(!items.length && !other) return showMsg("Bitte mindestens bei einem Produkt eine Menge eintragen.");
       const order = {
         orderNumber:safe($("supplierOrderNumber").value) || createSupplierOrderNumber(),
         supplier,
         email,
+        type,
         senderEmail:"milot@pizzeriamatteo.de",
         deliveryDate:$("supplierOrderDeliveryDate").value,
         note:safe($("supplierOrderNote").value),
+        other,
         items,
         status:"prepared",
         createdBy:currentUser.uid,
@@ -3754,6 +3817,7 @@ bruchCache.sort((a, b) => {
       $("documentMonth").value = monthStr();
       $("sickFrom").value = localDateKey();
       $("sickTo").value = localDateKey();
+      await loadSupplierProfiles();
       resetSupplierOrderForm();
 
       await loadStaff();
@@ -3841,11 +3905,13 @@ bruchCache.sort((a, b) => {
     $("inventoryCategoryFilter").addEventListener("change", renderInventory);
     $("supplierOrderSearch").addEventListener("input", renderSupplierOrderRows);
     $("supplierOrderSelectedOnly").addEventListener("change", renderSupplierOrderRows);
+    $("supplierOrderType").addEventListener("change", resetSupplierOrderForm);
+    $("btnSaveSupplierProfile").addEventListener("click", saveSupplierProfile);
     $("supplierOrderRows").addEventListener("input", event => {
       const input = event.target.closest("[data-supplier-article]");
       if(!input) return;
       const article = input.dataset.supplierArticle;
-      supplierOrderQuantities[article] ||= {piece:"",carton:""};
+      supplierOrderQuantities[article] ||= {};
       supplierOrderQuantities[article][input.dataset.supplierField] = input.value;
     });
     $("btnClearSupplierOrder").addEventListener("click", () => {
