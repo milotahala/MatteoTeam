@@ -196,6 +196,8 @@
     .clockAction{min-height:82px;border:0;border-radius:18px;cursor:pointer;font-size:20px;font-weight:950}
     .clockIn{background:linear-gradient(135deg,#15803d,#2dd486);color:#04150e}
     .clockOut{background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff}
+    .clockAway{background:linear-gradient(135deg,#1d4ed8,#60a5fa);color:#fff}
+    .clockReturn{background:linear-gradient(135deg,#6d28d9,#a78bfa);color:#fff}
     .clockAction:disabled{opacity:.35;cursor:not-allowed;transform:none}
     .clockSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:620px;margin:16px auto}
     .clockSummary .item{text-align:center;margin:0}
@@ -205,6 +207,7 @@
     .clockGeo.error{border-color:#b84b4b;background:#2a1014}
     .noticeCard{padding:16px;border-radius:16px;background:#102239;border:1px solid var(--line);margin-bottom:10px;cursor:pointer}
     .noticeCard.unread{border-color:#2dd486;box-shadow:0 0 0 2px rgba(45,212,134,.09)}
+    .noticeCard.urgent{border-color:#ef4444;background:#2a1014;box-shadow:0 0 0 2px rgba(239,68,68,.12)}
     .noticeText{white-space:pre-wrap;line-height:1.55;color:#dbe7f5;margin-top:10px}
     .noticeBadge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:900;background:#14532d;color:#86efac}
     .documentFolders{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
@@ -539,7 +542,7 @@
           <button class="navBtn" data-view="viewStaff" type="button"><i data-lucide="users" aria-hidden="true"></i><span>Mitarbeiter</span></button>
           <button class="navBtn" data-view="viewInventory" type="button"><i data-lucide="package" aria-hidden="true"></i><span>Inventar</span></button>
           <button class="navBtn" data-view="viewSupplierOrders" type="button"><i data-lucide="shopping-cart" aria-hidden="true"></i><span>Bestellliste</span></button>
-          <button class="navBtn" data-view="viewTimeClock" type="button"><i data-lucide="timer" aria-hidden="true"></i><span>Stempeluhr</span></button>
+          <button class="navBtn" data-view="viewTimeClock" type="button"><i data-lucide="timer" aria-hidden="true"></i><span>Stempeluhr <span id="timeClockAlertBadge" class="urgentBadge hidden">0</span></span></button>
           <button class="navBtn" data-view="viewAnnouncements" type="button"><i data-lucide="bell" aria-hidden="true"></i><span>Mitteilungen</span></button>
           <button class="navBtn" data-view="viewDocuments" type="button"><i data-lucide="scan-line" aria-hidden="true"></i><span>Lieferanten</span></button>
           <button class="navBtn" data-view="viewSickLeave" type="button"><i data-lucide="heart-pulse" aria-hidden="true"></i><span>Krankmeldung</span></button>
@@ -565,7 +568,7 @@
               <button class="dashboardApp" data-dashboard-view="viewStaff" type="button"><span class="dashboardAppIcon"><i data-lucide="users"></i></span><span>Mitarbeiter</span></button>
               <button class="dashboardApp" data-dashboard-view="viewInventory" type="button"><span class="dashboardAppIcon"><i data-lucide="package"></i></span><span>Inventar</span></button>
               <button class="dashboardApp" data-dashboard-view="viewSupplierOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="shopping-cart"></i></span><span>Bestellliste</span></button>
-              <button class="dashboardApp" data-dashboard-view="viewTimeClock" type="button"><span class="dashboardAppIcon"><i data-lucide="timer"></i></span><span>Stempeluhr</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewTimeClock" type="button"><span class="dashboardAppIcon"><i data-lucide="timer"></i></span><span>Stempeluhr <span id="timeClockDashboardBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewAnnouncements" type="button"><span class="dashboardAppIcon"><i data-lucide="bell"></i></span><span>Mitteilungen <span id="announcementUnreadBadge" class="noticeBadge hidden">0</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewDocuments" type="button"><span class="dashboardAppIcon"><i data-lucide="scan-line"></i></span><span>Lieferanten</span></button>
               <button class="dashboardApp" data-dashboard-view="viewSickLeave" type="button"><span class="dashboardAppIcon"><i data-lucide="heart-pulse"></i></span><span>Krankmeldung <span id="sickUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
@@ -686,6 +689,8 @@
             <div class="clockActions">
               <button id="btnClockIn" class="clockAction clockIn" type="button"><i data-lucide="log-in"></i> Kommen</button>
               <button id="btnClockOut" class="clockAction clockOut" type="button"><i data-lucide="log-out"></i> Gehen</button>
+              <button id="btnClockAway" class="clockAction clockAway" type="button"><i data-lucide="shopping-bag"></i> Kurz raus</button>
+              <button id="btnClockReturn" class="clockAction clockReturn" type="button"><i data-lucide="undo-2"></i> Zurück</button>
             </div>
             <div id="timeClockGeo" class="clockGeo warn">
               <div class="row">
@@ -714,6 +719,11 @@
               <div class="divider"></div>
               <div class="row" style="margin-bottom:10px"><strong>Gesamt</strong><span id="timeClockMonthTotal" class="pill ok right">0:00 Std.</span></div>
               <div id="timeClockMonthHistory" class="muted">Noch keine Buchungen.</div>
+            </div>
+            <div id="timeClockAdminPanel" class="item hidden" style="max-width:620px;margin:14px auto 0">
+              <div class="row"><div><strong>Aktuell eingestempelt</strong><div class="tiny muted">Admin-Übersicht und Notfall-Korrektur</div></div><button id="btnReloadActiveClocks" class="ghost right" type="button">Aktualisieren</button></div>
+              <div class="divider"></div>
+              <div id="activeTimeClockList" class="muted">Keine aktiven Mitarbeiter.</div>
             </div>
           </section>
 
@@ -1251,6 +1261,10 @@
     let timeClockTimer = null;
     let workplaceConfig = null;
     let timeClockLocationBusy = false;
+    let timeClockAdminUnsubscribe = null;
+    let timeClockAdminTimer = null;
+    let activeTimeClockCache = [];
+    let timeClockAwayAlerts = new Set();
     let announcementCache = [];
     let documentCache = [];
     let activeDocumentFolder = "Alle";
@@ -3404,6 +3418,14 @@ bruchCache.sort((a, b) => {
       return new Date(value).toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"});
     }
 
+    function openAwayPeriod(session){
+      return (session?.awayPeriods || []).find(period => period.startedAt && !period.returnedAt) || null;
+    }
+
+    function elapsedMinutes(value){
+      return value ? Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60000)) : 0;
+    }
+
     function sessionsMinutes(sessions = []){
       return sessions.reduce((total, session) => {
         if(!session.in) return total;
@@ -3438,18 +3460,21 @@ bruchCache.sort((a, b) => {
       $("timeClockDate").textContent = now.toLocaleDateString("de-DE", {weekday:"long", day:"2-digit", month:"long", year:"numeric"});
       const sessions = timeClockRecord.sessions || [];
       const openSession = sessions.find(session => session.in && !session.out);
+      const awayPeriod = openAwayPeriod(openSession);
       $("timeClockEmployee").textContent = timeClockRecord.userName || currentProfile.name || currentUser.email;
-      $("timeClockStatus").textContent = openSession ? `Seit ${formatClockTime(openSession.in)}` : "Nicht eingestempelt";
+      $("timeClockStatus").textContent = awayPeriod ? `Kurz raus seit ${formatClockTime(awayPeriod.startedAt)}` : (openSession ? `Seit ${formatClockTime(openSession.in)}` : "Nicht eingestempelt");
       const unavailable = !workplaceConfig || timeClockLocationBusy;
       $("btnClockIn").disabled = unavailable || Boolean(openSession);
       $("btnClockOut").disabled = unavailable || !openSession;
+      $("btnClockAway").disabled = unavailable || !openSession || Boolean(awayPeriod);
+      $("btnClockReturn").disabled = unavailable || !openSession || !awayPeriod;
       const grossMinutes = timeClockMinutes();
       const breakMinutes = automaticBreakMinutes(grossMinutes);
       $("timeClockTotal").textContent = formatMinutes(Math.max(0, grossMinutes - breakMinutes));
       $("timeClockBreak").textContent = `${breakMinutes} Min.`;
       $("timeClockHistory").innerHTML = sessions.length ? sessions.map((session, index) => `
         <div class="orderLine">
-          <div><strong>Arbeitszeit ${index + 1}</strong><div class="tiny muted">${session.out ? "Abgeschlossen" : "Läuft"}</div></div>
+          <div><strong>Arbeitszeit ${index + 1}</strong><div class="tiny muted">${session.out ? "Abgeschlossen" : "Läuft"}${(session.awayPeriods || []).length ? ` · Kurz raus ${(session.awayPeriods || []).length}×` : ""}</div></div>
           <strong>${formatClockTime(session.in)} – ${session.out ? formatClockTime(session.out) : "…"}</strong>
         </div>`).join("") : `<div class="muted">Noch keine Buchungen.</div>`;
     }
@@ -3522,6 +3547,12 @@ bruchCache.sort((a, b) => {
         timeClockLocationBusy = true;
         renderTimeClock();
         const location = await verifyWorkplaceLocation();
+        const activeAway = openAwayPeriod(sessions[openIndex]);
+        if(activeAway){
+          activeAway.returnedAt = new Date().toISOString();
+          activeAway.returnLocation = location;
+          activeAway.closedWithClockOut = true;
+        }
         sessions[openIndex].out = new Date().toISOString();
         sessions[openIndex].outLocation = location;
         await setDoc(doc(db, "timeClock", timeClockRecord.id), {
@@ -3537,6 +3568,134 @@ bruchCache.sort((a, b) => {
       }finally{
         timeClockLocationBusy = false;
         renderTimeClock();
+      }
+    }
+
+    async function clockAway(){
+      const sessions = (timeClockRecord.sessions || []).map(session => ({...session, awayPeriods:(session.awayPeriods || []).map(period => ({...period}))}));
+      const openIndex = sessions.findIndex(session => session.in && !session.out);
+      if(openIndex < 0 || openAwayPeriod(sessions[openIndex])) return;
+      try{
+        timeClockLocationBusy = true;
+        renderTimeClock();
+        const location = await verifyWorkplaceLocation();
+        sessions[openIndex].awayPeriods = [...(sessions[openIndex].awayPeriods || []), {
+          startedAt:new Date().toISOString(), startLocation:location
+        }];
+        await setDoc(doc(db, "timeClock", timeClockRecord.id), {
+          date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
+          sessions, lastAction:"away", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
+        });
+        timeClockRecord.sessions = sessions;
+        showMsg("Kurz raus wurde gespeichert. Bitte bei der Rückkehr 'Zurück' drücken.");
+      }catch(err){
+        console.error(err);
+        showMsg("Kurz raus konnte nicht gespeichert werden: " + err.message);
+      }finally{
+        timeClockLocationBusy = false;
+        renderTimeClock();
+      }
+    }
+
+    async function clockReturn(){
+      const sessions = (timeClockRecord.sessions || []).map(session => ({...session, awayPeriods:(session.awayPeriods || []).map(period => ({...period}))}));
+      const openIndex = sessions.findIndex(session => session.in && !session.out);
+      const away = openIndex >= 0 ? openAwayPeriod(sessions[openIndex]) : null;
+      if(!away) return;
+      try{
+        timeClockLocationBusy = true;
+        renderTimeClock();
+        const location = await verifyWorkplaceLocation();
+        away.returnedAt = new Date().toISOString();
+        away.returnLocation = location;
+        await setDoc(doc(db, "timeClock", timeClockRecord.id), {
+          date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
+          sessions, lastAction:"return", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
+        });
+        timeClockRecord.sessions = sessions;
+        showMsg("Rückkehr wurde gespeichert.");
+      }catch(err){
+        console.error(err);
+        showMsg("Rückkehr konnte nicht gespeichert werden: " + err.message);
+      }finally{
+        timeClockLocationBusy = false;
+        renderTimeClock();
+      }
+    }
+
+    function renderActiveTimeClocks(){
+      if(!isAdmin()) return;
+      const active = activeTimeClockCache.map(row => {
+        const sessionIndex = (row.sessions || []).findIndex(session => session.in && !session.out);
+        return sessionIndex >= 0 ? {...row, sessionIndex, session:row.sessions[sessionIndex]} : null;
+      }).filter(Boolean).sort((a,b) => safe(a.userName).localeCompare(safe(b.userName)));
+      const overdue = active.filter(row => elapsedMinutes(openAwayPeriod(row.session)?.startedAt) >= 10);
+      [$("timeClockAlertBadge"), $("timeClockDashboardBadge")].forEach(badge => {
+        badge.textContent = badge.id === "timeClockDashboardBadge" ? `${overdue.length} Wichtig` : String(overdue.length);
+        badge.classList.toggle("hidden", overdue.length === 0);
+      });
+      $("activeTimeClockList").innerHTML = active.length ? active.map(row => {
+        const away = openAwayPeriod(row.session);
+        const awayMinutes = elapsedMinutes(away?.startedAt);
+        return `<div class="noticeCard ${awayMinutes >= 10 ? "urgent" : ""}">
+          <div class="row"><div><strong>${htmlEscape(row.userName || "Mitarbeiter")}</strong><div class="tiny muted">Kommen ${formatClockTime(row.session.in)}${away ? ` · Kurz raus seit ${formatClockTime(away.startedAt)} (${awayMinutes} Min.)` : " · Im Dienst"}</div></div>
+          <button class="smallBtn smallRed right" type="button" data-force-clock-out="${htmlEscape(row.id)}">Gehen erzwingen</button></div>
+        </div>`;
+      }).join("") : `<div class="muted">Keine aktiven Mitarbeiter.</div>`;
+      overdue.forEach(row => {
+        const away = openAwayPeriod(row.session);
+        const alertKey = `${row.id}_${away.startedAt}`;
+        if(!timeClockAwayAlerts.has(alertKey)){
+          timeClockAwayAlerts.add(alertKey);
+          setTimeout(() => showMsg(`${row.userName || "Ein Mitarbeiter"} ist seit mehr als 10 Minuten außer Haus.`), 0);
+        }
+      });
+    }
+
+    function startActiveTimeClockMonitor(){
+      $("timeClockAdminPanel").classList.toggle("hidden", !isAdmin());
+      if(!isAdmin()) return;
+      if(timeClockAdminUnsubscribe) timeClockAdminUnsubscribe();
+      timeClockAdminUnsubscribe = onSnapshot(collection(db, "timeClock"), snapshot => {
+        activeTimeClockCache = snapshot.docs.map(item => ({id:item.id, ...item.data()}));
+        renderActiveTimeClocks();
+      }, err => {
+        console.error("Stempeluhr admin monitor", err);
+        $("activeTimeClockList").textContent = "Aktive Zeiten konnten nicht geladen werden.";
+      });
+      if(timeClockAdminTimer) clearInterval(timeClockAdminTimer);
+      timeClockAdminTimer = setInterval(renderActiveTimeClocks, 30000);
+    }
+
+    async function forceClockOut(recordId){
+      if(!isAdmin()) return showMsg("Nur Admin oder SuperAdmin.");
+      const row = activeTimeClockCache.find(item => item.id === recordId);
+      if(!row) return showMsg("Buchung nicht gefunden.");
+      const reason = prompt(`Warum soll ${row.userName || "der Mitarbeiter"} ausgestempelt werden?`, "Notfall / Gehen vergessen");
+      if(!safe(reason)) return;
+      const sessions = (row.sessions || []).map(session => ({...session, awayPeriods:(session.awayPeriods || []).map(period => ({...period}))}));
+      const openIndex = sessions.findIndex(session => session.in && !session.out);
+      if(openIndex < 0) return showMsg("Mitarbeiter ist bereits ausgestempelt.");
+      if(!confirm(`${row.userName || "Mitarbeiter"} jetzt ausstempeln?`)) return;
+      const now = new Date().toISOString();
+      const away = openAwayPeriod(sessions[openIndex]);
+      if(away){ away.returnedAt = now; away.closedByAdmin = true; }
+      sessions[openIndex].out = now;
+      sessions[openIndex].forcedOut = true;
+      sessions[openIndex].forcedOutBy = currentUser.uid;
+      sessions[openIndex].forcedOutByName = currentProfile.name || currentUser.email;
+      sessions[openIndex].forcedOutReason = safe(reason);
+      try{
+        await setDoc(doc(db, "timeClock", recordId), {
+          sessions, lastAction:"forcedOut", lastActionAt:serverTimestamp(),
+          forcedOutBy:currentUser.uid, forcedOutByName:currentProfile.name || currentUser.email,
+          forcedOutReason:safe(reason), updatedAt:serverTimestamp()
+        }, {merge:true});
+        if(recordId === timeClockRecord.id){ timeClockRecord.sessions = sessions; renderTimeClock(); }
+        showMsg(`${row.userName || "Mitarbeiter"} wurde ausgestempelt.`);
+      }catch(err){
+        console.error(err);
+        showMsg("Ausstempeln fehlgeschlagen: " + err.message);
       }
     }
 
@@ -3616,6 +3775,7 @@ bruchCache.sort((a, b) => {
       await loadWorkplaceConfig();
       await loadTimeClock();
       await loadTimeClockMonth();
+      startActiveTimeClockMonitor();
       await loadDashboard();
       await loadHours();
       window.lucide?.createIcons();
@@ -3829,7 +3989,14 @@ bruchCache.sort((a, b) => {
     });
     $("btnClockIn").addEventListener("click", clockIn);
     $("btnClockOut").addEventListener("click", clockOut);
+    $("btnClockAway").addEventListener("click", clockAway);
+    $("btnClockReturn").addEventListener("click", clockReturn);
     $("btnSetWorkplace").addEventListener("click", setWorkplaceHere);
+    $("btnReloadActiveClocks").addEventListener("click", renderActiveTimeClocks);
+    $("activeTimeClockList").addEventListener("click", event => {
+      const button = event.target.closest("[data-force-clock-out]");
+      if(button) forceClockOut(button.dataset.forceClockOut);
+    });
     $("btnLoadTimeClockMonth").addEventListener("click", loadTimeClockMonth);
     $("timeClockMonth").addEventListener("change", loadTimeClockMonth);
 
@@ -3838,6 +4005,14 @@ bruchCache.sort((a, b) => {
     onAuthStateChanged(auth, async (user)=>{
       currentUser = user || null;
       if(!user){
+        if(timeClockAdminUnsubscribe){
+          timeClockAdminUnsubscribe();
+          timeClockAdminUnsubscribe = null;
+        }
+        if(timeClockAdminTimer){
+          clearInterval(timeClockAdminTimer);
+          timeClockAdminTimer = null;
+        }
         if(vacationNotificationUnsubscribe){
           vacationNotificationUnsubscribe();
           vacationNotificationUnsubscribe = null;
