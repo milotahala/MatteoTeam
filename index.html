@@ -847,8 +847,8 @@
 
           <section id="viewSupplierOrders" class="view card hidden">
             <div class="row" style="margin-bottom:16px">
-              <div><h2 class="sectionTitle">Bestellliste</h2><div class="sectionSub" style="margin-bottom:0">Lieferantenbestellung vorbereiten, speichern und in Outlook öffnen.</div></div>
-              <span class="pill ok right">Absender: matteobestellung@hotmail.com</span>
+              <div><h2 class="sectionTitle">Bestellliste</h2><div class="sectionSub" style="margin-bottom:0">Lieferantenbestellung vorbereiten, speichern und in der E-Mail-App öffnen.</div></div>
+              <span class="pill ok right">Absender: milot@pizzeriamatteo.de</span>
             </div>
 
             <div class="item adminOnly">
@@ -872,9 +872,9 @@
               </div>
               <div class="supplierOrderActions">
                 <button id="btnClearSupplierOrder" class="ghost" type="button">Leeren</button>
-                <button id="btnSendSupplierOrder" class="btn right" type="button"><i data-lucide="mail"></i> In Outlook öffnen</button>
+                <button id="btnSendSupplierOrder" class="btn right" type="button"><i data-lucide="mail"></i> E-Mail öffnen</button>
               </div>
-              <div class="tiny muted" style="margin-top:10px">Outlook öffnet die fertige Bestellung. Prüfe dort den Absender und tippe anschließend auf „Senden“.</div>
+              <div class="tiny muted" style="margin-top:10px">Die E-Mail-App öffnet die fertige Bestellung. Prüfe dort den Absender und tippe anschließend auf „Senden“.</div>
             </div>
 
             <div class="item" style="margin-top:14px">
@@ -2188,7 +2188,7 @@
         orderNumber:safe($("supplierOrderNumber").value) || createSupplierOrderNumber(),
         supplier,
         email,
-        senderEmail:"matteobestellung@hotmail.com",
+        senderEmail:"milot@pizzeriamatteo.de",
         deliveryDate:$("supplierOrderDeliveryDate").value,
         note:safe($("supplierOrderNote").value),
         items,
