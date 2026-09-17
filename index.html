@@ -1236,7 +1236,7 @@
       getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp, query, where, arrayUnion, onSnapshot
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     import {
-      getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject
+      getStorage, ref as storageRef, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
     const firebaseConfig = {
@@ -3295,13 +3295,17 @@ bruchCache.sort((a, b) => {
       $("documentUploadStatus").style.color = "#fcd34d";
       const path = `restaurantDocuments/${folder}/${date.slice(0,7)}/${Date.now()}_${documentFileName(file.name)}`;
       try{
-        const task = uploadBytesResumable(storageRef(storage, path), file, {contentType:file.type || "application/octet-stream"});
-        await new Promise((resolve, reject) => task.on("state_changed", snapshot => {
-          const percent = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
-          bar.style.width = `${percent}%`;
-          $("documentUploadStatus").textContent = `Wird hochgeladen: ${percent}%`;
-        }, reject, resolve));
-        const downloadUrl = await getDownloadURL(task.snapshot.ref);
+        bar.style.width = "15%";
+        $("documentUploadStatus").textContent = "Foto wird direkt hochgeladen…";
+        const targetRef = storageRef(storage, path);
+        const uploadTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Upload-Zeitüberschreitung nach 45 Sekunden. Bitte WLAN/Mobilfunk prüfen und erneut versuchen.")), 45000));
+        const snapshot = await Promise.race([
+          uploadBytes(targetRef, file, {contentType:file.type || "application/octet-stream"}),
+          uploadTimeout
+        ]);
+        bar.style.width = "85%";
+        $("documentUploadStatus").textContent = "Upload fertig. Dokument wird registriert…";
+        const downloadUrl = await getDownloadURL(snapshot.ref);
         await addDoc(collection(db, "restaurantDocuments"), {
           type, folder, supplier:supplier || folder, date, note,
           fileName:file.name, mimeType:file.type || "", size:file.size,
@@ -3309,6 +3313,7 @@ bruchCache.sort((a, b) => {
           uploadedBy:currentUser.uid, uploadedByName:currentProfile.name || currentUser.email,
           createdAt:serverTimestamp()
         });
+        bar.style.width = "100%";
         $("documentSupplier").value = "";
         $("documentNote").value = "";
         $("documentCameraFile").value = "";
