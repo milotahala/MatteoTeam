@@ -210,6 +210,10 @@
     .clockGeo.ok{border-color:#21865b;background:#0b241c}
     .clockGeo.warn{border-color:#b7791f;background:#2a1e0b}
     .clockGeo.error{border-color:#b84b4b;background:#2a1014}
+    .clockQr{max-width:620px;margin:14px auto;padding:18px;text-align:center;border:1px solid #2dd486;border-radius:18px;background:linear-gradient(145deg,#0b241c,#102239)}
+    .clockQr img{width:min(280px,82vw);height:min(280px,82vw);background:#fff;border-radius:16px;padding:10px;margin:12px auto;display:block}
+    .clockQrCode{font-size:13px;color:var(--muted)}
+    .clockScanHint{max-width:620px;margin:12px auto;padding:14px;border-radius:16px;background:#102239;border:1px solid #29435f;text-align:center}
     .noticeCard{padding:16px;border-radius:16px;background:#102239;border:1px solid var(--line);margin-bottom:10px;cursor:pointer}
     .noticeCard.unread{border-color:#2dd486;box-shadow:0 0 0 2px rgba(45,212,134,.09)}
     .noticeCard.urgent{border-color:#ef4444;background:#2a1014;box-shadow:0 0 0 2px rgba(239,68,68,.12)}
@@ -701,6 +705,17 @@
             <div class="sectionSub">Arbeitszeit für <strong id="timeClockEmployee">–</strong> mit Kommen und Gehen erfassen.</div>
             <div id="timeClockNow" class="clockNow">--:--:--</div>
             <div id="timeClockDate" class="clockDate">--</div>
+            <div id="timeClockScanHint" class="clockScanHint">
+              <strong>Mit QR-Code stempeln</strong>
+              <div class="tiny muted" style="margin-top:5px">QR-Code am Arbeitsplatz mit der Handy-Kamera scannen. Beim Kommen erscheint „Willkommen“, beim Gehen „Auf Wiedersehen“.</div>
+            </div>
+            <div id="timeClockQrPanel" class="clockQr hidden">
+              <strong>Dynamischer Stempeluhr-QR</strong>
+              <div class="tiny muted">Der Code wechselt automatisch alle 15 Minuten.</div>
+              <img id="timeClockQrImage" alt="Dynamischer QR-Code für die Stempeluhr" />
+              <div id="timeClockQrCountdown" class="clockQrCode">QR-Code wird erstellt…</div>
+              <button id="btnRefreshTimeClockQr" class="ghost" type="button" style="margin-top:10px">Jetzt erneuern</button>
+            </div>
             <div class="clockActions">
               <button id="btnClockIn" class="clockAction clockIn" type="button"><i data-lucide="log-in"></i> Kommen</button>
               <button id="btnClockOut" class="clockAction clockOut" type="button"><i data-lucide="log-out"></i> Gehen</button>
@@ -750,6 +765,7 @@
                 <input id="timeClockAdminMonth" class="input" type="month" />
               </div>
               <button id="btnLoadAdminTimeClockMonth" class="ghost" type="button" style="width:100%;margin-top:8px">Monatsstunden anzeigen</button>
+              <button id="btnAddAdminTimeClock" class="btn" type="button" style="width:100%;margin-top:8px">Vergessene Stunden hinzufügen</button>
               <div class="row" style="margin:14px 0 8px"><strong>Gesamt</strong><span id="timeClockAdminMonthTotal" class="pill ok right">0:00 Std.</span></div>
               <div id="timeClockAdminMonthHistory" class="muted">Bitte Mitarbeiter auswählen.</div>
             </div>
@@ -1301,6 +1317,8 @@
     let timeClockLocationBusy = false;
     let timeClockAdminUnsubscribe = null;
     let timeClockAdminTimer = null;
+    let timeClockQrTimer = null;
+    let timeClockQrRecord = null;
     let activeTimeClockCache = [];
     let timeClockAwayAlerts = new Set();
     let timeClockGeofenceAlerts = new Set();
@@ -3587,6 +3605,92 @@ bruchCache.sort((a, b) => {
       return `${year}-${month}-${day}`;
     }
 
+    function qrQuarterSlot(date = new Date()){
+      return Math.floor(date.getTime() / (15 * 60 * 1000));
+    }
+
+    function randomQrToken(){
+      return (crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`).replace(/[^a-zA-Z0-9-]/g, "");
+    }
+
+    function qrClockUrl(token){
+      const url = new URL(window.location.href);
+      url.search = "";
+      url.hash = "";
+      url.searchParams.set("clockQr", token);
+      return url.toString();
+    }
+
+    async function refreshTimeClockQr(force=false){
+      if(!isAdmin()) return;
+      const slot = qrQuarterSlot();
+      try{
+        const ref = doc(db, "appSettings", "timeClockQr");
+        const snap = await getDoc(ref);
+        let record = snap.exists() ? snap.data() : null;
+        if(force || !record || Number(record.slot) !== slot || Number(record.expiresAt || 0) <= Date.now()){
+          record = {token:randomQrToken(), slot, expiresAt:(slot + 1) * 15 * 60 * 1000};
+          await setDoc(ref, {...record, createdBy:currentUser.uid, createdByName:currentProfile.name || currentUser.email, updatedAt:serverTimestamp()}, {merge:true});
+        }
+        timeClockQrRecord = record;
+        $("timeClockQrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=8&data=${encodeURIComponent(qrClockUrl(record.token))}`;
+        renderQrCountdown();
+      }catch(err){
+        console.error("QR clock", err);
+        $("timeClockQrCountdown").textContent = "QR-Code konnte nicht erstellt werden: " + err.message;
+      }
+    }
+
+    function renderQrCountdown(){
+      if(!isAdmin() || !timeClockQrRecord) return;
+      const remaining = Math.max(0, Number(timeClockQrRecord.expiresAt || 0) - Date.now());
+      if(remaining <= 0){ refreshTimeClockQr(); return; }
+      const min = Math.floor(remaining / 60000);
+      const sec = Math.floor((remaining % 60000) / 1000);
+      $("timeClockQrCountdown").textContent = `Noch ${min}:${String(sec).padStart(2,"0")} Min. gültig`;
+    }
+
+    function startTimeClockQr(){
+      $("timeClockQrPanel").classList.toggle("hidden", !isAdmin());
+      $("timeClockScanHint").classList.toggle("hidden", isAdmin());
+      if(!isAdmin()) return;
+      refreshTimeClockQr();
+      if(timeClockQrTimer) clearInterval(timeClockQrTimer);
+      timeClockQrTimer = setInterval(() => {
+        if(timeClockQrRecord && qrQuarterSlot() !== Number(timeClockQrRecord.slot)) refreshTimeClockQr();
+        else renderQrCountdown();
+      }, 1000);
+    }
+
+    async function handlePendingClockQr(){
+      const token = new URLSearchParams(window.location.search).get("clockQr");
+      if(!token || isAdmin()) return;
+      const lastHandled = JSON.parse(sessionStorage.getItem("matteoClockQrHandled") || "null");
+      if(lastHandled?.token === token && Date.now() - Number(lastHandled.at || 0) < 30000) return;
+      try{
+        const snap = await getDoc(doc(db, "appSettings", "timeClockQr"));
+        const record = snap.exists() ? snap.data() : null;
+        if(!record || record.token !== token || Number(record.expiresAt || 0) <= Date.now() || Number(record.slot) !== qrQuarterSlot()){
+          throw new Error("Dieser QR-Code ist abgelaufen. Bitte den aktuellen Code scannen.");
+        }
+        const wasWorking = hasOpenTimeClockSession();
+        if(wasWorking){
+          await clockOut(true);
+          showMsg(`Auf Wiedersehen, ${currentProfile.name || "Team"}!`);
+        }else{
+          await clockIn(true);
+          showMsg(`Willkommen, ${currentProfile.name || "Team"}!`);
+        }
+        sessionStorage.setItem("matteoClockQrHandled", JSON.stringify({token, at:Date.now()}));
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("clockQr");
+        history.replaceState({}, "", cleanUrl.toString());
+      }catch(err){
+        console.error("QR validation", err);
+        showMsg(err.message || "QR-Code konnte nicht geprüft werden.");
+      }
+    }
+
     function setTimeClockGeoState(type, text){
       const box = $("timeClockGeo");
       box.classList.remove("ok", "warn", "error");
@@ -3819,6 +3923,7 @@ bruchCache.sort((a, b) => {
       $("timeClockEmployee").textContent = timeClockRecord.userName || currentProfile.name || currentUser.email;
       $("timeClockStatus").textContent = awayPeriod ? `Kurz raus seit ${formatClockTime(awayPeriod.startedAt)}` : (openSession ? `Seit ${formatClockTime(openSession.in)}` : "Nicht eingestempelt");
       const unavailable = !workplaceConfig || timeClockLocationBusy;
+      document.querySelector(".clockActions").classList.toggle("hidden", !isAdmin());
       $("btnClockIn").disabled = unavailable || Boolean(openSession);
       $("btnClockOut").disabled = unavailable || !openSession;
       $("btnClockAway").disabled = unavailable || !openSession || Boolean(awayPeriod);
@@ -3857,13 +3962,17 @@ bruchCache.sort((a, b) => {
           .sort((a,b) => safe(b.date).localeCompare(safe(a.date)));
         const total = rows.reduce((sum, row) => sum + netWorkMinutes(row.sessions || []), 0);
         $("timeClockMonthTotal").textContent = formatMinutes(total);
-        $("timeClockMonthHistory").innerHTML = rows.length ? rows.map(row => {
+        const sickDays = sickDaysForUser(currentUser.uid, month);
+        const rowByDate = new Map(rows.map(row => [row.date, row]));
+        const dates = [...new Set([...rows.map(row => row.date), ...sickDays])].sort().reverse();
+        $("timeClockMonthHistory").innerHTML = dates.length ? dates.map(date => {
+          const row = rowByDate.get(date);
+          if(!row) return `<div class="orderLine"><div><strong>${htmlEscape(formatClockDate(date))}</strong><div class="tiny muted">Krank gemeldet</div></div><span class="pill danger">Krank</span></div>`;
           const grossMinutes = sessionsMinutes(row.sessions || []);
           const breakMinutes = automaticBreakMinutes(grossMinutes);
           const minutes = Math.max(0, grossMinutes - breakMinutes);
           const times = (row.sessions || []).map(session => `${formatClockTime(session.in)}–${session.out ? formatClockTime(session.out) : "…"}`).join(" · ");
-          const dateLabel = new Date(`${row.date}T12:00:00`).toLocaleDateString("de-DE", {weekday:"short", day:"2-digit", month:"2-digit"});
-          return `<div class="orderLine"><div><strong>${htmlEscape(dateLabel)}</strong><div class="tiny muted">${htmlEscape(times || "Keine Zeiten")}${breakMinutes ? ` · Pause −${breakMinutes} Min.` : ""}</div></div><strong>${formatMinutes(minutes)}</strong></div>`;
+          return `<div class="orderLine"><div><strong>${htmlEscape(formatClockDate(row.date))}${sickDays.includes(row.date) ? ` · <span class="pill danger">Krank</span>` : ""}</strong><div class="tiny muted">${htmlEscape(times || "Keine Zeiten")}${breakMinutes ? ` · Pause −${breakMinutes} Min.` : ""}</div></div><strong>${formatMinutes(minutes)}</strong></div>`;
         }).join("") : `<div class="muted">Keine Buchungen in diesem Monat.</div>`;
       }catch(err){
         console.error(err);
@@ -3871,7 +3980,7 @@ bruchCache.sort((a, b) => {
       }
     }
 
-    async function clockIn(){
+    async function clockIn(fromQr=false){
       const sessions = [...(timeClockRecord.sessions || [])];
       if(sessions.some(session => session.in && !session.out)) return;
       try{
@@ -3890,17 +3999,18 @@ bruchCache.sort((a, b) => {
         timeClockRecord.geofenceAlert = {active:false};
         startGeofenceMonitor();
         await loadTimeClockMonth();
-        showMsg("Kommen wurde gespeichert. 30-m-Standortprüfung ist aktiv.");
+        if(!fromQr) showMsg("Kommen wurde gespeichert. 30-m-Standortprüfung ist aktiv.");
       }catch(err){
         console.error(err);
-        showMsg("Kommen konnte nicht gespeichert werden: " + err.message);
+        if(!fromQr) showMsg("Kommen konnte nicht gespeichert werden: " + err.message);
+        if(fromQr) throw err;
       }finally{
         timeClockLocationBusy = false;
         renderTimeClock();
       }
     }
 
-    async function clockOut(){
+    async function clockOut(fromQr=false){
       const sessions = (timeClockRecord.sessions || []).map(session => ({...session}));
       const openIndex = sessions.findIndex(session => session.in && !session.out);
       if(openIndex < 0) return;
@@ -3945,10 +4055,11 @@ bruchCache.sort((a, b) => {
         timeClockRecord.sessions = sessions;
         stopGeofenceMonitor();
         await loadTimeClockMonth();
-        showMsg(recordsToClose.length > 1 ? `Gehen wurde gespeichert. ${recordsToClose.length} offene Buchungen wurden geschlossen.` : "Gehen wurde gespeichert.");
+        if(!fromQr) showMsg(recordsToClose.length > 1 ? `Gehen wurde gespeichert. ${recordsToClose.length} offene Buchungen wurden geschlossen.` : "Gehen wurde gespeichert.");
       }catch(err){
         console.error(err);
-        showMsg("Gehen konnte nicht gespeichert werden: " + err.message);
+        if(!fromQr) showMsg("Gehen konnte nicht gespeichert werden: " + err.message);
+        if(fromQr) throw err;
       }finally{
         timeClockLocationBusy = false;
         renderTimeClock();
@@ -4089,13 +4200,67 @@ bruchCache.sort((a, b) => {
       const rows = activeTimeClockCache.filter(row => row.userId === userId && safe(row.date).startsWith(month)).sort((a,b) => safe(b.date).localeCompare(safe(a.date)));
       const total = rows.reduce((sum,row) => sum + netWorkMinutes(row.sessions || []), 0);
       $("timeClockAdminMonthTotal").textContent = formatMinutes(total);
-      $("timeClockAdminMonthHistory").innerHTML = rows.length ? rows.map(row => {
+      const sickDays = sickDaysForUser(userId, month);
+      const rowByDate = new Map(rows.map(row => [row.date, row]));
+      const dates = [...new Set([...rows.map(row => row.date), ...sickDays])].sort().reverse();
+      $("timeClockAdminMonthHistory").innerHTML = dates.length ? dates.map(date => {
+        const row = rowByDate.get(date);
+        if(!row) return `<div class="orderLine"><div><strong>${htmlEscape(formatClockDate(date))}</strong><div class="tiny muted">Krank gemeldet</div></div><span class="pill danger">Krank</span></div>`;
         const gross = sessionsMinutes(row.sessions || []);
         const pause = automaticBreakMinutes(gross);
         const times = (row.sessions || []).map(session => `${formatClockTime(session.in)}–${session.out ? formatClockTime(session.out) : "…"}`).join(" · ");
-        const label = new Date(`${row.date}T12:00:00`).toLocaleDateString("de-DE", {weekday:"short", day:"2-digit", month:"2-digit"});
-        return `<div class="orderLine"><div><strong>${htmlEscape(label)}</strong><div class="tiny muted">${htmlEscape(times || "Keine Zeiten")}${pause ? ` · Pause −${pause} Min.` : ""}</div></div><strong>${formatMinutes(Math.max(0,gross-pause))}</strong></div>`;
+        return `<div class="orderLine"><div><strong>${htmlEscape(formatClockDate(row.date))}${sickDays.includes(row.date) ? ` · <span class="pill danger">Krank</span>` : ""}</strong><div class="tiny muted">${htmlEscape(times || "Keine Zeiten")}${pause ? ` · Pause −${pause} Min.` : ""}</div><button class="smallBtn smallBlue" type="button" data-clock-edit="${htmlEscape(row.id)}" style="margin-top:7px">Zeiten bearbeiten</button></div><strong>${formatMinutes(Math.max(0,gross-pause))}</strong></div>`;
       }).join("") : `<div class="muted">Keine Buchungen in diesem Monat.</div>`;
+    }
+
+    function formatClockDate(date){
+      return new Date(`${date}T12:00:00`).toLocaleDateString("de-DE", {weekday:"short", day:"2-digit", month:"2-digit"});
+    }
+
+    function sickDaysForUser(userId, month){
+      const days = new Set();
+      sickLeaveCache.filter(item => item.staffId === userId && item.from && item.to).forEach(item => {
+        let day = item.from;
+        let guard = 0;
+        while(day <= item.to && guard++ < 370){
+          if(day.startsWith(month)) days.add(day);
+          day = addDays(day, 1);
+        }
+      });
+      return [...days];
+    }
+
+    function clockIso(date, time){
+      const parsed = new Date(`${date}T${time}:00`);
+      if(Number.isNaN(parsed.getTime())) throw new Error("Datum oder Uhrzeit ist ungültig.");
+      return parsed.toISOString();
+    }
+
+    async function saveAdminClockTimes(recordId=""){
+      if(!isAdmin()) return showMsg("Nur Admin oder SuperAdmin.");
+      const existing = activeTimeClockCache.find(row => row.id === recordId);
+      const userId = existing?.userId || $("timeClockAdminStaff").value;
+      const staff = staffCache.find(item => item.id === userId);
+      if(!userId || !staff) return showMsg("Bitte Mitarbeiter auswählen.");
+      const date = prompt("Arbeitstag (JJJJ-MM-TT)", existing?.date || localDateKey());
+      if(!date) return;
+      const first = existing?.sessions?.[0];
+      const start = prompt("Arbeitsbeginn (HH:MM)", first ? formatClockTime(first.in) : "09:00");
+      if(!start) return;
+      const end = prompt("Arbeitsende (HH:MM)", first?.out ? formatClockTime(first.out) : "18:00");
+      if(!end) return;
+      try{
+        let out = clockIso(date, end);
+        const input = clockIso(date, start);
+        if(new Date(out) <= new Date(input)) out = clockIso(addDays(date, 1), end);
+        const id = recordId || `${userId}_${date}`;
+        await setDoc(doc(db, "timeClock", id), {
+          date, userId, userName:staff.name || staff.email,
+          sessions:[{in:input, out, enteredByAdmin:true, editedBy:currentUser.uid, editedByName:currentProfile.name || currentUser.email}],
+          lastAction:"adminEdit", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
+        }, {merge:true});
+        showMsg("Arbeitszeit wurde gespeichert.");
+      }catch(err){ console.error(err); showMsg("Arbeitszeit konnte nicht gespeichert werden: " + err.message); }
     }
 
     function startActiveTimeClockMonitor(){
@@ -4229,6 +4394,8 @@ bruchCache.sort((a, b) => {
       await loadTimeClock();
       await loadTimeClockMonth();
       startActiveTimeClockMonitor();
+      startTimeClockQr();
+      await handlePendingClockQr();
       await loadDashboard();
       await loadHours();
       window.lucide?.createIcons();
@@ -4451,13 +4618,19 @@ bruchCache.sort((a, b) => {
     $("btnClockReturn").addEventListener("click", clockReturn);
     $("btnSetWorkplace").addEventListener("click", setWorkplaceHere);
     $("btnReloadActiveClocks").addEventListener("click", renderActiveTimeClocks);
+    $("btnRefreshTimeClockQr").addEventListener("click", () => refreshTimeClockQr(true));
     $("btnLoadAdminTimeClockMonth").addEventListener("click", renderAdminTimeClockMonth);
+    $("btnAddAdminTimeClock").addEventListener("click", () => saveAdminClockTimes());
     $("timeClockAdminStaff").addEventListener("change", renderAdminTimeClockMonth);
     $("timeClockAdminMonth").addEventListener("change", renderAdminTimeClockMonth);
     $("btnEnablePushNotifications").addEventListener("click", enablePushNotifications);
     $("activeTimeClockList").addEventListener("click", event => {
       const button = event.target.closest("[data-force-clock-out-user]");
       if(button) forceClockOut(button.dataset.forceClockOutUser);
+    });
+    $("timeClockAdminMonthHistory").addEventListener("click", event => {
+      const button = event.target.closest("[data-clock-edit]");
+      if(button) saveAdminClockTimes(button.dataset.clockEdit);
     });
     $("btnLoadTimeClockMonth").addEventListener("click", loadTimeClockMonth);
     $("timeClockMonth").addEventListener("change", loadTimeClockMonth);
@@ -4468,6 +4641,7 @@ bruchCache.sort((a, b) => {
       currentUser = user || null;
       if(!user){
         stopGeofenceMonitor();
+        if(timeClockQrTimer){ clearInterval(timeClockQrTimer); timeClockQrTimer = null; }
         if(timeClockAdminUnsubscribe){
           timeClockAdminUnsubscribe();
           timeClockAdminUnsubscribe = null;
