@@ -356,6 +356,14 @@
     .menuFormGrid>*{min-width:0}
     .menuFormGrid input[type="date"]{min-width:0;max-width:100%}
     .menuLegend{columns:2;column-gap:24px;font-size:12px;color:var(--muted);line-height:1.7}
+    .teamChatComposer{position:sticky;bottom:0;z-index:2;margin-bottom:14px;background:#102239}
+    .teamChatComposer .textarea{min-height:78px;resize:vertical}
+    .teamChatList{display:flex;flex-direction:column;gap:10px;max-height:62vh;overflow-y:auto;padding:4px}
+    .teamChatMessage{max-width:86%;padding:11px 13px;border:1px solid var(--line);border-radius:16px 16px 16px 4px;background:#12243a}
+    .teamChatMessage.own{align-self:flex-end;border-radius:16px 16px 4px 16px;background:#17365a;border-color:#315d8e}
+    .teamChatMeta{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+    .teamChatAuthor{font-weight:900;color:#fff}
+    .teamChatText{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}
     .orderLayout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:14px;align-items:start}
     .tableOpenRow{display:grid;grid-template-columns:1fr auto;gap:9px;margin-bottom:13px}
     .tableGrid{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
@@ -640,18 +648,17 @@
 
           <section id="viewAnnouncements" class="view card hidden">
             <div class="row" style="margin-bottom:16px">
-              <div><h2 class="sectionTitle">Mitteilungen</h2><div class="sectionSub" style="margin-bottom:0">Wichtige Informationen für das Matteo Team.</div></div>
+              <div><h2 class="sectionTitle">Mitteilungen</h2><div class="sectionSub" style="margin-bottom:0">Gemeinsamer Chat für das ganze Matteo Team.</div></div>
               <button id="btnReloadAnnouncements" class="ghost right" type="button">Aktualisieren</button>
             </div>
-            <div class="item adminOnly">
-              <strong>Neue Mitteilung</strong>
+            <div class="item teamChatComposer">
+              <strong>Nachricht schreiben</strong>
               <div class="divider"></div>
-              <div class="field"><label class="label">Titel</label><input id="announcementTitle" class="input" maxlength="100" placeholder="z. B. Team-Besprechung" /></div>
-              <div class="field"><label class="label">Nachricht</label><textarea id="announcementText" class="textarea" maxlength="2000" placeholder="Nachricht an das Team …"></textarea></div>
-              <label class="row" style="margin-bottom:12px"><input id="announcementImportant" type="checkbox" /> Als wichtig markieren</label>
-              <button id="btnSaveAnnouncement" class="btn" type="button">Mitteilung senden</button>
+              <div class="field"><label class="label">Nachricht</label><textarea id="announcementText" class="textarea" maxlength="2000" placeholder="Schreibe eine Nachricht an das Team …"></textarea></div>
+              <label class="row adminOnly" style="margin-bottom:12px"><input id="announcementImportant" type="checkbox" /> Als wichtig markieren</label>
+              <button id="btnSaveAnnouncement" class="btn" type="button">Senden</button>
             </div>
-            <div id="announcementList"><div class="muted">Noch keine Mitteilungen.</div></div>
+            <div id="announcementList" class="teamChatList"><div class="muted">Noch keine Mitteilungen.</div></div>
           </section>
 
           <section id="viewDocuments" class="view card hidden">
@@ -1332,6 +1339,7 @@
     let workplaceConfig = null;
     let timeClockLocationBusy = false;
     let timeClockAdminUnsubscribe = null;
+    let announcementUnsubscribe = null;
     let timeClockAdminTimer = null;
     let timeClockQrTimer = null;
     let timeClockQrRecord = null;
@@ -3315,15 +3323,16 @@ bruchCache.sort((a, b) => {
       $("announcementUnreadBadge").classList.toggle("hidden", unread === 0);
       $("announcementList").innerHTML = announcementCache.length ? announcementCache.map(item => {
         const isUnread = !(item.readBy || []).includes(currentUser.uid);
-        return `<article class="noticeCard${isUnread ? " unread" : ""}" data-announcement-read="${htmlEscape(item.id)}">
-          <div class="row">
-            <strong>${htmlEscape(item.title || "Mitteilung")}</strong>
+        const isOwn = item.authorId === currentUser.uid;
+        return `<article class="teamChatMessage${isOwn ? " own" : ""}${isUnread ? " unread" : ""}" data-announcement-read="${htmlEscape(item.id)}">
+          <div class="teamChatMeta">
+            <span class="teamChatAuthor">${htmlEscape(item.authorName || "Matteo Team")}</span>
             ${isUnread ? `<span class="noticeBadge">Neu</span>` : ""}
             ${item.important ? `<span class="pill warn">Wichtig</span>` : ""}
             <span class="right tiny muted">${htmlEscape(announcementDate(item.createdAt))}</span>
           </div>
-          <div class="noticeText">${htmlEscape(item.text || "")}</div>
-          <div class="row" style="margin-top:12px"><span class="tiny muted">Von: ${htmlEscape(item.authorName || "Matteo Team")}</span>${isAdmin() ? `<button class="smallBtn smallRed right" type="button" data-announcement-delete="${htmlEscape(item.id)}">Löschen</button>` : ""}</div>
+          <div class="teamChatText">${htmlEscape(item.text || "")}</div>
+          ${isAdmin() ? `<div class="row" style="margin-top:8px"><button class="smallBtn smallRed right" type="button" data-announcement-delete="${htmlEscape(item.id)}">Löschen</button></div>` : ""}
         </article>`;
       }).join("") : `<div class="item muted">Noch keine Mitteilungen.</div>`;
     }
@@ -3334,7 +3343,7 @@ bruchCache.sort((a, b) => {
         announcementCache = qs.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => {
           const aa = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
           const bb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-          return bb - aa;
+          return aa - bb;
         });
         renderAnnouncements();
       }catch(err){
@@ -3343,22 +3352,34 @@ bruchCache.sort((a, b) => {
       }
     }
 
+    function startAnnouncementChat(){
+      if(announcementUnsubscribe) announcementUnsubscribe();
+      announcementUnsubscribe = onSnapshot(collection(db, "announcements"), snapshot => {
+        announcementCache = snapshot.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => {
+          const aa = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+          const bb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+          return aa - bb;
+        });
+        renderAnnouncements();
+        const list = $("announcementList");
+        requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
+      }, err => {
+        console.error(err);
+        showMsg("Mitteilungen konnten nicht live geladen werden: " + err.message);
+      });
+    }
+
     async function saveAnnouncement(){
-      if(!isAdmin()) return showMsg("Nur Admin.");
-      const title = safe($("announcementTitle").value);
       const text = safe($("announcementText").value);
-      if(!title || !text) return showMsg("Titel und Nachricht fehlen.");
+      if(!text) return showMsg("Bitte eine Nachricht schreiben.");
       try{
         await addDoc(collection(db, "announcements"), {
-          title, text, important:$("announcementImportant").checked,
+          title:"Mitteilung", text, important:isAdmin() && $("announcementImportant").checked,
           authorId:currentUser.uid, authorName:currentProfile.name || currentUser.email,
           readBy:[currentUser.uid], createdAt:serverTimestamp()
         });
-        $("announcementTitle").value = "";
         $("announcementText").value = "";
         $("announcementImportant").checked = false;
-        await loadAnnouncements();
-        showMsg("Mitteilung wurde gesendet.");
       }catch(err){
         console.error(err);
         showMsg("Mitteilung konnte nicht gesendet werden: " + err.message);
@@ -4411,7 +4432,7 @@ bruchCache.sort((a, b) => {
       await loadToGoMenu();
       $("orderMenuCategory").innerHTML = ["Alle", ...MENU_CATEGORIES].map(category => `<option value="${htmlEscape(category)}">${htmlEscape(category)}</option>`).join("");
       await loadOrders();
-      await loadAnnouncements();
+      startAnnouncementChat();
       await loadDocuments();
       await loadSickLeave();
       await loadWorkplaceConfig();
@@ -4605,6 +4626,12 @@ bruchCache.sort((a, b) => {
     $("btnReloadOrders").addEventListener("click", loadOrders);
     $("btnSaveAnnouncement").addEventListener("click", saveAnnouncement);
     $("btnReloadAnnouncements").addEventListener("click", loadAnnouncements);
+    $("announcementText").addEventListener("keydown", event => {
+      if(event.key === "Enter" && (event.ctrlKey || event.metaKey)){
+        event.preventDefault();
+        saveAnnouncement();
+      }
+    });
     $("announcementList").addEventListener("click", event => {
       const deleteButton = event.target.closest("[data-announcement-delete]");
       if(deleteButton){
@@ -4669,6 +4696,10 @@ bruchCache.sort((a, b) => {
         if(timeClockAdminUnsubscribe){
           timeClockAdminUnsubscribe();
           timeClockAdminUnsubscribe = null;
+        }
+        if(announcementUnsubscribe){
+          announcementUnsubscribe();
+          announcementUnsubscribe = null;
         }
         if(timeClockAdminTimer){
           clearInterval(timeClockAdminTimer);
