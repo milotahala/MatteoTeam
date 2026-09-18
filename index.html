@@ -737,12 +737,21 @@
               <div id="timeClockMonthHistory" class="muted">Noch keine Buchungen.</div>
             </div>
             <div id="timeClockAdminPanel" class="item hidden" style="max-width:620px;margin:14px auto 0">
-              <div class="row"><div><strong>Aktuell eingestempelt</strong><div class="tiny muted">Admin-Übersicht und Notfall-Korrektur</div></div><button id="btnReloadActiveClocks" class="ghost right" type="button">Aktualisieren</button></div>
+              <div class="row"><div><strong>Mitarbeiter-Status</strong><div class="tiny muted">Alle Mitarbeiter: grün = aktiv, grau = nicht eingestempelt</div></div><button id="btnReloadActiveClocks" class="ghost right" type="button">Aktualisieren</button></div>
               <div id="pushNotificationControls" class="hidden" style="margin-top:12px;padding:12px;border:1px solid #29435f;border-radius:14px;background:#0b1a2b">
                 <div class="row"><div><strong>Alarm-Benachrichtigungen</strong><div id="pushNotificationStatus" class="tiny muted">Noch nicht aktiviert.</div></div><button id="btnEnablePushNotifications" class="btn right" type="button">Benachrichtigungen aktivieren</button></div>
               </div>
               <div class="divider"></div>
-              <div id="activeTimeClockList" class="muted">Keine aktiven Mitarbeiter.</div>
+              <div id="activeTimeClockList" class="muted">Mitarbeiter werden geladen…</div>
+              <div class="divider"></div>
+              <div><strong>Monatsstunden eines Mitarbeiters</strong><div class="tiny muted">Mitarbeiter und Monat auswählen, um alle Arbeitstage zu sehen.</div></div>
+              <div class="menuFormGrid" style="margin-top:10px">
+                <select id="timeClockAdminStaff" class="select"></select>
+                <input id="timeClockAdminMonth" class="input" type="month" />
+              </div>
+              <button id="btnLoadAdminTimeClockMonth" class="ghost" type="button" style="width:100%;margin-top:8px">Monatsstunden anzeigen</button>
+              <div class="row" style="margin:14px 0 8px"><strong>Gesamt</strong><span id="timeClockAdminMonthTotal" class="pill ok right">0:00 Std.</span></div>
+              <div id="timeClockAdminMonthHistory" class="muted">Bitte Mitarbeiter auswählen.</div>
             </div>
           </section>
 
@@ -1956,14 +1965,20 @@
 
       const staffList = $("staffList");
       const staffSelect = $("hoursStaffSelect");
+      const clockAdminSelect = $("timeClockAdminStaff");
       staffList.innerHTML = "";
       staffSelect.innerHTML = "";
+      if(clockAdminSelect) clockAdminSelect.innerHTML = "";
 
       staffCache.forEach(s => {
         const option = document.createElement("option");
         option.value = s.id;
         option.textContent = `${s.name || "-"} (${s.department || "-"})`;
         staffSelect.appendChild(option);
+        if(clockAdminSelect){
+          const clockOption = option.cloneNode(true);
+          clockAdminSelect.appendChild(clockOption);
+        }
 
         const div = document.createElement("div");
         div.className = "item";
@@ -3951,10 +3966,21 @@ bruchCache.sort((a, b) => {
 
     function renderActiveTimeClocks(){
       if(!isAdmin()) return;
-      const active = activeTimeClockCache.map(row => {
+      const openRows = activeTimeClockCache.map(row => {
         const sessionIndex = (row.sessions || []).findIndex(session => session.in && !session.out);
         return sessionIndex >= 0 ? {...row, sessionIndex, session:row.sessions[sessionIndex]} : null;
-      }).filter(Boolean).sort((a,b) => safe(a.userName).localeCompare(safe(b.userName)));
+      }).filter(Boolean);
+      const activeByUser = new Map();
+      openRows.forEach(row => {
+        const key = row.userId || row.userName || row.id;
+        const existing = activeByUser.get(key);
+        if(!existing || new Date(row.session.in).getTime() > new Date(existing.session.in).getTime()){
+          activeByUser.set(key, {...row, duplicateCount:(existing?.duplicateCount || 0) + (existing ? 1 : 0)});
+        }else{
+          existing.duplicateCount = (existing.duplicateCount || 0) + 1;
+        }
+      });
+      const active = [...activeByUser.values()].sort((a,b) => safe(a.userName).localeCompare(safe(b.userName)));
       const overdue = active.filter(row => elapsedMinutes(openAwayPeriod(row.session)?.startedAt) >= 10);
       const outside = active.filter(row => row.geofenceAlert?.active);
       const importantCount = overdue.length + outside.length;
@@ -3962,16 +3988,23 @@ bruchCache.sort((a, b) => {
         badge.textContent = badge.id === "timeClockDashboardBadge" ? `${importantCount} Wichtig` : String(importantCount);
         badge.classList.toggle("hidden", importantCount === 0);
       });
-      $("activeTimeClockList").innerHTML = active.length ? active.map(row => {
+      const staffRows = staffCache.filter(staff => staff.status !== "deleted").map(staff => {
+        const row = activeByUser.get(staff.id);
+        if(!row) return `<div class="noticeCard" style="opacity:.72"><div class="row"><div><strong>⚫ ${htmlEscape(staff.name || staff.email || "Mitarbeiter")}</strong><div class="tiny muted">Nicht eingestempelt</div></div><span class="pill right">Inaktiv</span></div></div>`;
         const away = openAwayPeriod(row.session);
         const awayMinutes = elapsedMinutes(away?.startedAt);
         const geoAlert = row.geofenceAlert?.active;
-        const geoText = geoAlert ? ` · ⚠️ ca. ${Math.round(row.geofenceAlert.distanceMeters || 0)} m entfernt seit ${formatClockTime(row.geofenceAlert.outsideSince)}` : "";
-        return `<div class="noticeCard ${awayMinutes >= 10 || geoAlert ? "urgent" : ""}">
-          <div class="row"><div><strong>${htmlEscape(row.userName || "Mitarbeiter")}</strong><div class="tiny muted">Kommen ${formatClockTime(row.session.in)}${away ? ` · Kurz raus seit ${formatClockTime(away.startedAt)} (${awayMinutes} Min.)` : " · Eingestempelt"}${geoText}</div></div>
-          <button class="smallBtn smallRed right" type="button" data-force-clock-out="${htmlEscape(row.id)}">Gehen erzwingen</button></div>
+        const geoText = geoAlert ? ` · ⚠️ ${Math.round(row.geofenceAlert.distanceMeters || 0)} m entfernt` : "";
+        const duplicateText = row.duplicateCount ? ` · ⚠️ ${row.duplicateCount + 1} offene Buchungen` : "";
+        return `<div class="noticeCard ${awayMinutes >= 10 || geoAlert ? "urgent" : ""}" style="border-color:#15945c">
+          <div class="row"><div><strong>🟢 ${htmlEscape(staff.name || row.userName || "Mitarbeiter")}</strong><div class="tiny muted">Aktiv seit ${formatClockTime(row.session.in)}${away ? ` · Kurz raus ${awayMinutes} Min.` : ""}${geoText}${duplicateText}</div></div><span class="pill ok right">Aktiv</span></div>
+          <button class="smallBtn smallRed" style="width:100%;margin-top:10px" type="button" data-force-clock-out="${htmlEscape(row.id)}">Arbeitstag beenden</button>
         </div>`;
-      }).join("") : `<div class="muted">Keine aktiven Mitarbeiter.</div>`;
+      });
+      const knownIds = new Set(staffCache.map(staff => staff.id));
+      active.filter(row => !knownIds.has(row.userId)).forEach(row => staffRows.unshift(`<div class="noticeCard" style="border-color:#15945c"><div class="row"><div><strong>🟢 ${htmlEscape(row.userName || "Mitarbeiter")}</strong><div class="tiny muted">Aktiv seit ${formatClockTime(row.session.in)}</div></div><span class="pill ok right">Aktiv</span></div><button class="smallBtn smallRed" style="width:100%;margin-top:10px" type="button" data-force-clock-out="${htmlEscape(row.id)}">Arbeitstag beenden</button></div>`));
+      $("activeTimeClockList").innerHTML = staffRows.join("") || `<div class="muted">Keine Mitarbeiter gefunden.</div>`;
+      renderAdminTimeClockMonth();
       overdue.forEach(row => {
         const away = openAwayPeriod(row.session);
         const alertKey = `${row.id}_${away.startedAt}`;
@@ -3987,6 +4020,23 @@ bruchCache.sort((a, b) => {
           setTimeout(() => showMsg(`${row.userName || "Ein Mitarbeiter"} ist seit mehr als 1 Minute über 30 m vom Arbeitsplatz entfernt.`), 0);
         }
       });
+    }
+
+    function renderAdminTimeClockMonth(){
+      if(!isAdmin()) return;
+      const userId = $("timeClockAdminStaff").value;
+      const month = $("timeClockAdminMonth").value || localDateKey().slice(0,7);
+      if(!userId) return;
+      const rows = activeTimeClockCache.filter(row => row.userId === userId && safe(row.date).startsWith(month)).sort((a,b) => safe(b.date).localeCompare(safe(a.date)));
+      const total = rows.reduce((sum,row) => sum + netWorkMinutes(row.sessions || []), 0);
+      $("timeClockAdminMonthTotal").textContent = formatMinutes(total);
+      $("timeClockAdminMonthHistory").innerHTML = rows.length ? rows.map(row => {
+        const gross = sessionsMinutes(row.sessions || []);
+        const pause = automaticBreakMinutes(gross);
+        const times = (row.sessions || []).map(session => `${formatClockTime(session.in)}–${session.out ? formatClockTime(session.out) : "…"}`).join(" · ");
+        const label = new Date(`${row.date}T12:00:00`).toLocaleDateString("de-DE", {weekday:"short", day:"2-digit", month:"2-digit"});
+        return `<div class="orderLine"><div><strong>${htmlEscape(label)}</strong><div class="tiny muted">${htmlEscape(times || "Keine Zeiten")}${pause ? ` · Pause −${pause} Min.` : ""}</div></div><strong>${formatMinutes(Math.max(0,gross-pause))}</strong></div>`;
+      }).join("") : `<div class="muted">Keine Buchungen in diesem Monat.</div>`;
     }
 
     function startActiveTimeClockMonitor(){
@@ -4088,6 +4138,7 @@ bruchCache.sort((a, b) => {
       $("bruchDate").value = todayStr();
       $("bruchMonth").value = monthStr();
       $("timeClockMonth").value = monthStr();
+      $("timeClockAdminMonth").value = monthStr();
       $("documentDate").value = localDateKey();
       $("documentMonth").value = monthStr();
       $("sickFrom").value = localDateKey();
@@ -4337,6 +4388,9 @@ bruchCache.sort((a, b) => {
     $("btnClockReturn").addEventListener("click", clockReturn);
     $("btnSetWorkplace").addEventListener("click", setWorkplaceHere);
     $("btnReloadActiveClocks").addEventListener("click", renderActiveTimeClocks);
+    $("btnLoadAdminTimeClockMonth").addEventListener("click", renderAdminTimeClockMonth);
+    $("timeClockAdminStaff").addEventListener("change", renderAdminTimeClockMonth);
+    $("timeClockAdminMonth").addEventListener("change", renderAdminTimeClockMonth);
     $("btnEnablePushNotifications").addEventListener("click", enablePushNotifications);
     $("activeTimeClockList").addEventListener("click", event => {
       const button = event.target.closest("[data-force-clock-out]");
