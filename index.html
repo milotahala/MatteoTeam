@@ -707,7 +707,7 @@
                 <div><strong>Standortprüfung</strong><div id="timeClockGeoText" class="tiny muted">Arbeitsort wird geladen…</div></div>
                 <button id="btnSetWorkplace" class="ghost right hidden" type="button">Arbeitsort hier festlegen</button>
               </div>
-              <div class="tiny muted" style="margin-top:8px">Während der eingestempelten Arbeitszeit prüft MatteoTeam den Standort. Bei mehr als 30 m Entfernung über 5 Minuten erhält Admin einen Hinweis. Die Prüfung endet beim Ausstempeln.</div>
+              <div class="tiny muted" style="margin-top:8px">Während der eingestempelten Arbeitszeit prüft MatteoTeam den Standort. Bei mehr als 30 m Entfernung über 1 Minute erhält Admin einen Hinweis. Die Prüfung endet beim Ausstempeln.</div>
             </div>
             <div class="clockSummary">
               <div class="item"><div class="tiny muted">Status</div><div id="timeClockStatus" class="kpi" style="font-size:22px">Nicht eingestempelt</div></div>
@@ -3620,8 +3620,8 @@ bruchCache.sort((a, b) => {
         if(distance > workplaceRadius()){
           if(!geofenceOutsideSince) geofenceOutsideSince = Date.now();
           const outsideMinutes = Math.floor((Date.now() - geofenceOutsideSince) / 60000);
-          setTimeClockGeoState("error", `Außerhalb: ca. ${Math.round(distance)} m · seit ${outsideMinutes} Min. (Alarm nach 5 Min.)`);
-          if(Date.now() - geofenceOutsideSince >= 5 * 60000 && !timeClockRecord.geofenceAlert?.active){
+          setTimeClockGeoState("error", `Außerhalb: ca. ${Math.round(distance)} m · seit ${outsideMinutes} Min. (Alarm nach 1 Min.)`);
+          if(Date.now() - geofenceOutsideSince >= 1 * 60000 && !timeClockRecord.geofenceAlert?.active){
             await saveGeofenceAlert(true, distance, accuracy);
           }
         }else{
@@ -3887,7 +3887,7 @@ bruchCache.sort((a, b) => {
         const alertKey = `${row.id}_${row.geofenceAlert.detectedAt || row.geofenceAlert.outsideSince}`;
         if(!timeClockGeofenceAlerts.has(alertKey)){
           timeClockGeofenceAlerts.add(alertKey);
-          setTimeout(() => showMsg(`${row.userName || "Ein Mitarbeiter"} ist seit mehr als 5 Minuten über 30 m vom Arbeitsplatz entfernt.`), 0);
+          setTimeout(() => showMsg(`${row.userName || "Ein Mitarbeiter"} ist seit mehr als 1 Minute über 30 m vom Arbeitsplatz entfernt.`), 0);
         }
       });
     }
