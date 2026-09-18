@@ -755,7 +755,7 @@
               <div class="divider"></div>
               <div id="timeClockHistory" class="muted">Noch keine Buchungen.</div>
             </div>
-            <div class="item" style="max-width:620px;margin:14px auto 0">
+            <div id="timeClockPersonalMonthPanel" class="item" style="max-width:620px;margin:14px auto 0">
               <div class="row">
                 <div><strong>Monatsübersicht</strong><div class="tiny muted">Alle Arbeitstage und Stunden im Monat</div></div>
                 <div class="right row">
@@ -1988,6 +1988,8 @@
       });
       const staffNav = document.querySelector('[data-view="viewStaff"]');
       if(staffNav) staffNav.classList.toggle("hiddenByRole", !isAdmin());
+      const personalClockMonth = $("timeClockPersonalMonthPanel");
+      if(personalClockMonth) personalClockMonth.classList.toggle("hidden", isAdmin());
     }
 
     async function ensureUserProfile(user, fallbackName=""){
