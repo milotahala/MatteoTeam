@@ -1326,17 +1326,18 @@
       const controls = $("pushNotificationControls");
       if(!controls || !isSuperAdmin()) return;
       controls.classList.remove("hidden");
-      if(!(await isMessagingSupported()) || !("serviceWorker" in navigator)){
-        $("pushNotificationStatus").textContent = "Dieses Gerät unterstützt Web-Push nicht.";
-        $("btnEnablePushNotifications").disabled = true;
-        return;
-      }
-      messagingRegistration = await navigator.serviceWorker.register("./firebase-messaging-sw.js");
-      messaging = getMessaging(app);
-      const permission = Notification.permission;
-      $("pushNotificationStatus").textContent = permission === "granted" ? "Aktiviert – Alarme kommen auch bei geschlossener App." : permission === "denied" ? "In den iPhone-Einstellungen blockiert." : "Noch nicht aktiviert.";
-      $("btnEnablePushNotifications").textContent = permission === "granted" ? "Erneut registrieren" : "Benachrichtigungen aktivieren";
-      onMessage(messaging, payload => {
+      try{
+        if(!(await isMessagingSupported()) || !("serviceWorker" in navigator)){
+          $("pushNotificationStatus").textContent = "Dieses Gerät unterstützt Web-Push nicht.";
+          $("btnEnablePushNotifications").disabled = true;
+          return;
+        }
+        messagingRegistration = await navigator.serviceWorker.register("./firebase-messaging-sw.js");
+        messaging = getMessaging(app);
+        const permission = Notification.permission;
+        $("pushNotificationStatus").textContent = permission === "granted" ? "Aktiviert – Alarme kommen auch bei geschlossener App." : permission === "denied" ? "In den iPhone-Einstellungen blockiert." : "Noch nicht aktiviert.";
+        $("btnEnablePushNotifications").textContent = permission === "granted" ? "Erneut registrieren" : "Benachrichtigungen aktivieren";
+        onMessage(messaging, payload => {
         const title = payload.notification?.title || "MatteoTeam Alarm";
         const body = payload.notification?.body || "Neue wichtige Meldung.";
         showMsg(`${title}: ${body}`);
@@ -1352,7 +1353,13 @@
           oscillator.stop(audio.currentTime + .7);
           navigator.vibrate?.([250,120,250]);
         }catch(err){ console.warn("Alarmton", err); }
-      });
+        });
+      }catch(err){
+        console.warn("Push messaging is unavailable", err);
+        controls.classList.add("hidden");
+        messaging = null;
+        messagingRegistration = null;
+      }
     }
 
     async function enablePushNotifications(){
@@ -4061,7 +4068,7 @@ bruchCache.sort((a, b) => {
         weekday:"long", day:"2-digit", month:"2-digit", year:"numeric"
       }).format(new Date());
       renderAdminVisibility();
-      await preparePushMessaging();
+      preparePushMessaging();
 
       $("weekPicker").value = mondayOf(todayStr());
       $("hoursWeekPicker").value = mondayOf(todayStr());
