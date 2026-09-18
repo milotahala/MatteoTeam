@@ -707,6 +707,7 @@
                 <div><strong>Standortprüfung</strong><div id="timeClockGeoText" class="tiny muted">Arbeitsort wird geladen…</div></div>
                 <button id="btnSetWorkplace" class="ghost right hidden" type="button">Arbeitsort hier festlegen</button>
               </div>
+              <div class="tiny muted" style="margin-top:8px">Während der eingestempelten Arbeitszeit prüft MatteoTeam den Standort. Bei mehr als 30 m Entfernung über 5 Minuten erhält Admin einen Hinweis. Die Prüfung endet beim Ausstempeln.</div>
             </div>
             <div class="clockSummary">
               <div class="item"><div class="tiny muted">Status</div><div id="timeClockStatus" class="kpi" style="font-size:22px">Nicht eingestempelt</div></div>
@@ -1279,6 +1280,10 @@
     let timeClockAdminTimer = null;
     let activeTimeClockCache = [];
     let timeClockAwayAlerts = new Set();
+    let timeClockGeofenceAlerts = new Set();
+    let geofenceWatchId = null;
+    let geofenceOutsideSince = null;
+    let geofenceWriteBusy = false;
     let announcementCache = [];
     let documentCache = [];
     let activeDocumentFolder = "Alle";
@@ -3465,7 +3470,7 @@ bruchCache.sort((a, b) => {
     }
 
     function workplaceRadius(){
-      return Number(workplaceConfig?.radiusMeters) || 100;
+      return 30;
     }
 
     function distanceMeters(lat1, lon1, lat2, lon2){
@@ -3519,14 +3524,14 @@ bruchCache.sort((a, b) => {
         const {latitude, longitude, accuracy} = position.coords;
         if(accuracy > 100) throw new Error(`GPS ist zu ungenau (±${Math.round(accuracy)} m). Bitte ans Fenster gehen und erneut versuchen.`);
         await setDoc(doc(db, "appSettings", "workplace"), {
-          latitude, longitude, radiusMeters:100,
+          latitude, longitude, radiusMeters:30,
           setBy:currentUser.uid, setByName:currentProfile.name || currentUser.email,
           accuracyMeters:Math.round(accuracy), updatedAt:serverTimestamp()
         }, {merge:true});
-        workplaceConfig = {latitude, longitude, radiusMeters:100, accuracyMeters:Math.round(accuracy)};
-        setTimeClockGeoState("ok", "Arbeitsort gespeichert. Stempeln ist innerhalb von 100 m möglich.");
+        workplaceConfig = {latitude, longitude, radiusMeters:30, accuracyMeters:Math.round(accuracy)};
+        setTimeClockGeoState("ok", "Arbeitsort gespeichert. Stempeln ist innerhalb von 30 m möglich.");
         renderTimeClock();
-        showMsg("Arbeitsort wurde mit 100 m Radius gespeichert.");
+        showMsg("Arbeitsort wurde mit 30 m Radius gespeichert.");
       }catch(err){
         console.error(err);
         setTimeClockGeoState("error", err.message);
@@ -3554,6 +3559,82 @@ bruchCache.sort((a, b) => {
         accuracyMeters:Math.round(accuracy), distanceMeters:Math.round(distance),
         checkedAt:new Date().toISOString()
       };
+    }
+
+    function hasOpenTimeClockSession(){
+      return (timeClockRecord.sessions || []).some(session => session.in && !session.out);
+    }
+
+    function stopGeofenceMonitor(){
+      if(geofenceWatchId !== null && navigator.geolocation){
+        navigator.geolocation.clearWatch(geofenceWatchId);
+      }
+      geofenceWatchId = null;
+      geofenceOutsideSince = null;
+    }
+
+    async function saveGeofenceAlert(active, distance, accuracy){
+      if(geofenceWriteBusy || !timeClockRecord.id) return;
+      geofenceWriteBusy = true;
+      const now = new Date().toISOString();
+      const alert = active ? {
+        active:true,
+        outsideSince:new Date(geofenceOutsideSince || Date.now()).toISOString(),
+        detectedAt:now,
+        distanceMeters:Math.round(distance),
+        accuracyMeters:Math.round(accuracy)
+      } : {
+        active:false,
+        returnedAt:now,
+        distanceMeters:Math.round(distance),
+        accuracyMeters:Math.round(accuracy)
+      };
+      try{
+        await setDoc(doc(db, "timeClock", timeClockRecord.id), {
+          geofenceAlert:alert,
+          lastLocationCheckAt:serverTimestamp(),
+          updatedAt:serverTimestamp()
+        }, {merge:true});
+        timeClockRecord.geofenceAlert = alert;
+      }catch(err){
+        console.error("Geofence alert save", err);
+      }finally{
+        geofenceWriteBusy = false;
+      }
+    }
+
+    function startGeofenceMonitor(){
+      stopGeofenceMonitor();
+      if(!hasOpenTimeClockSession() || !workplaceConfig || !navigator.geolocation) return;
+      geofenceWatchId = navigator.geolocation.watchPosition(async position => {
+        if(!hasOpenTimeClockSession()){
+          stopGeofenceMonitor();
+          return;
+        }
+        const {latitude, longitude, accuracy} = position.coords;
+        if(!Number.isFinite(accuracy) || accuracy > 60){
+          setTimeClockGeoState("warn", `Standort zu ungenau (±${Math.round(accuracy || 0)} m). Für die 30-m-Prüfung bitte Genauer Standort aktivieren.`);
+          return;
+        }
+        const distance = distanceMeters(latitude, longitude, Number(workplaceConfig.latitude), Number(workplaceConfig.longitude));
+        if(distance > workplaceRadius()){
+          if(!geofenceOutsideSince) geofenceOutsideSince = Date.now();
+          const outsideMinutes = Math.floor((Date.now() - geofenceOutsideSince) / 60000);
+          setTimeClockGeoState("error", `Außerhalb: ca. ${Math.round(distance)} m · seit ${outsideMinutes} Min. (Alarm nach 5 Min.)`);
+          if(Date.now() - geofenceOutsideSince >= 5 * 60000 && !timeClockRecord.geofenceAlert?.active){
+            await saveGeofenceAlert(true, distance, accuracy);
+          }
+        }else{
+          geofenceOutsideSince = null;
+          setTimeClockGeoState("ok", `Am Arbeitsplatz: ca. ${Math.round(distance)} m entfernt. Live-Prüfung aktiv.`);
+          if(timeClockRecord.geofenceAlert?.active){
+            await saveGeofenceAlert(false, distance, accuracy);
+          }
+        }
+      }, error => {
+        console.error("Geofence watch", error);
+        setTimeClockGeoState("warn", "Live-Standort ist nicht verfügbar. MatteoTeam geöffnet lassen und Standort erlauben.");
+      }, {enableHighAccuracy:true, maximumAge:15000, timeout:20000});
     }
 
     function formatClockTime(value){
@@ -3629,6 +3710,7 @@ bruchCache.sort((a, b) => {
         timeClockRecord = snap.exists() ? {id:key, ...snap.data()} : {id:key, date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email, sessions:[]};
         renderTimeClock();
         if(!timeClockTimer) timeClockTimer = setInterval(renderTimeClock, 1000);
+        if(hasOpenTimeClockSession()) startGeofenceMonitor();
       }catch(err){
         console.error(err);
         showMsg("Stempeluhr konnte nicht geladen werden: " + err.message);
@@ -3671,8 +3753,10 @@ bruchCache.sort((a, b) => {
           sessions, lastAction:"in", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
         });
         timeClockRecord.sessions = sessions;
+        timeClockRecord.geofenceAlert = {active:false};
+        startGeofenceMonitor();
         await loadTimeClockMonth();
-        showMsg("Kommen wurde gespeichert.");
+        showMsg("Kommen wurde gespeichert. 30-m-Standortprüfung ist aktiv.");
       }catch(err){
         console.error(err);
         showMsg("Kommen konnte nicht gespeichert werden: " + err.message);
@@ -3703,6 +3787,8 @@ bruchCache.sort((a, b) => {
           sessions, lastAction:"out", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
         });
         timeClockRecord.sessions = sessions;
+        stopGeofenceMonitor();
+        await saveGeofenceAlert(false, location.distanceMeters, location.accuracyMeters);
         await loadTimeClockMonth();
         showMsg("Gehen wurde gespeichert.");
       }catch(err){
@@ -3773,15 +3859,19 @@ bruchCache.sort((a, b) => {
         return sessionIndex >= 0 ? {...row, sessionIndex, session:row.sessions[sessionIndex]} : null;
       }).filter(Boolean).sort((a,b) => safe(a.userName).localeCompare(safe(b.userName)));
       const overdue = active.filter(row => elapsedMinutes(openAwayPeriod(row.session)?.startedAt) >= 10);
+      const outside = active.filter(row => row.geofenceAlert?.active);
+      const importantCount = overdue.length + outside.length;
       [$("timeClockAlertBadge"), $("timeClockDashboardBadge")].forEach(badge => {
-        badge.textContent = badge.id === "timeClockDashboardBadge" ? `${overdue.length} Wichtig` : String(overdue.length);
-        badge.classList.toggle("hidden", overdue.length === 0);
+        badge.textContent = badge.id === "timeClockDashboardBadge" ? `${importantCount} Wichtig` : String(importantCount);
+        badge.classList.toggle("hidden", importantCount === 0);
       });
       $("activeTimeClockList").innerHTML = active.length ? active.map(row => {
         const away = openAwayPeriod(row.session);
         const awayMinutes = elapsedMinutes(away?.startedAt);
-        return `<div class="noticeCard ${awayMinutes >= 10 ? "urgent" : ""}">
-          <div class="row"><div><strong>${htmlEscape(row.userName || "Mitarbeiter")}</strong><div class="tiny muted">Kommen ${formatClockTime(row.session.in)}${away ? ` · Kurz raus seit ${formatClockTime(away.startedAt)} (${awayMinutes} Min.)` : " · Im Dienst"}</div></div>
+        const geoAlert = row.geofenceAlert?.active;
+        const geoText = geoAlert ? ` · ⚠️ ca. ${Math.round(row.geofenceAlert.distanceMeters || 0)} m entfernt seit ${formatClockTime(row.geofenceAlert.outsideSince)}` : "";
+        return `<div class="noticeCard ${awayMinutes >= 10 || geoAlert ? "urgent" : ""}">
+          <div class="row"><div><strong>${htmlEscape(row.userName || "Mitarbeiter")}</strong><div class="tiny muted">Kommen ${formatClockTime(row.session.in)}${away ? ` · Kurz raus seit ${formatClockTime(away.startedAt)} (${awayMinutes} Min.)` : " · Eingestempelt"}${geoText}</div></div>
           <button class="smallBtn smallRed right" type="button" data-force-clock-out="${htmlEscape(row.id)}">Gehen erzwingen</button></div>
         </div>`;
       }).join("") : `<div class="muted">Keine aktiven Mitarbeiter.</div>`;
@@ -3791,6 +3881,13 @@ bruchCache.sort((a, b) => {
         if(!timeClockAwayAlerts.has(alertKey)){
           timeClockAwayAlerts.add(alertKey);
           setTimeout(() => showMsg(`${row.userName || "Ein Mitarbeiter"} ist seit mehr als 10 Minuten außer Haus.`), 0);
+        }
+      });
+      outside.forEach(row => {
+        const alertKey = `${row.id}_${row.geofenceAlert.detectedAt || row.geofenceAlert.outsideSince}`;
+        if(!timeClockGeofenceAlerts.has(alertKey)){
+          timeClockGeofenceAlerts.add(alertKey);
+          setTimeout(() => showMsg(`${row.userName || "Ein Mitarbeiter"} ist seit mehr als 5 Minuten über 30 m vom Arbeitsplatz entfernt.`), 0);
         }
       });
     }
@@ -4154,6 +4251,7 @@ bruchCache.sort((a, b) => {
     onAuthStateChanged(auth, async (user)=>{
       currentUser = user || null;
       if(!user){
+        stopGeofenceMonitor();
         if(timeClockAdminUnsubscribe){
           timeClockAdminUnsubscribe();
           timeClockAdminUnsubscribe = null;
