@@ -1396,6 +1396,28 @@
       }
     }
 
+    async function playAdminAlert(title, body){
+      showMsg(`${title}: ${body}`);
+      try{
+        const audio = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+        oscillator.frequency.value = 960;
+        gain.gain.setValueAtTime(.28, audio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + 1);
+        oscillator.connect(gain).connect(audio.destination);
+        oscillator.start();
+        oscillator.stop(audio.currentTime + 1);
+        navigator.vibrate?.([350,150,350,150,350]);
+      }catch(err){ console.warn("Alarmton", err); }
+      try{
+        if(Notification.permission === "granted"){
+          const registration = messagingRegistration || await navigator.serviceWorker?.getRegistration();
+          await registration?.showNotification(title, {body, icon:"./icons/icon-192.png", tag:`matteo-geofence-${Date.now()}`});
+        }
+      }catch(err){ console.warn("Lokale Alarm-Benachrichtigung", err); }
+    }
+
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
     const ARASCO_PRODUCTS = [
       [2,"10151","Plange Weizenmehl Typ 405 25 Kg"],[3,"10200","Friessinger Hartweizengrieß fein 25 Kg"],[4,"10300","Safrisalz Salz 24x500g"],[5,"10400","Zucker 10x1 Kg"],[6,"10500","Citadel Pizzasauce 5/1"],[7,"10512","Tukas Tomatenmark Klein 2-fach konz. 1/1 830g"],[8,"10539","Arasco Antica Napoli Schältomaten 2500g"],[9,"10619","Avo Artischockenherzen 30/40 3/1"],[10,"10643","Gemüse-Mais 425ml"],[11,"10660","La Perla Paprika Streifen Rot 5/1"],[12,"10670","Orto Bello Peperoni im Glas scharf grün 2,5 Kg"],[13,"10672","Orto Bello Peperoni grün geschnitten mild 5/1"],[14,"10680","Celeste Superiore Kapern 720ml"],[15,"10766","Skipjack Thunfisch-Stücke in Öl Vakuum 5x3 Kg"],[16,"10853","Vanelli Sardellenfilets 600g"],[17,"10860","La Perla Oliven schwarz ohne Stein"],[18,"10866","Dole Ananas Stücke 580ml"],[19,"11018","Knorr Mondamin fix Dunkel 1 Kg"],[20,"11023","Lay Pfeffer schwarz ganz 1 Kg"],[21,"11027","Lay Pfeffer weiß gemahlen 1 Kg"],[22,"11029","Lay Paprikapulver Edelsüß 1 Kg"],[23,"11034","Orto Bello Oregano getrocknet 1 Kg"],[24,"11039","Lay Lorbeerblätter 100g"],[25,"11042","Lay Currypulver Englisch 1 Kg"],[26,"11057","Vegeta Würzmischung 1 Kg"],[27,"11200","Rapsöl 10 Lt PET-Kanister"],[28,"11242","La Masseria Olivenöl Extra Vergine 1 Lt"],
@@ -3892,17 +3914,38 @@ bruchCache.sort((a, b) => {
           activeAway.returnLocation = location;
           activeAway.closedWithClockOut = true;
         }
-        sessions[openIndex].out = new Date().toISOString();
+        const clockOutAt = new Date().toISOString();
+        sessions[openIndex].out = clockOutAt;
         sessions[openIndex].outLocation = location;
-        await setDoc(doc(db, "timeClock", currentTimeClockId()), {
-          date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
-          sessions, lastAction:"out", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
-        });
+        const ownRecords = await getDocs(query(collection(db, "timeClock"), where("userId", "==", currentUser.uid)));
+        const recordsToClose = ownRecords.docs.map(item => ({id:item.id, ...item.data()}))
+          .filter(row => (row.sessions || []).some(session => session.in && !session.out));
+        if(!recordsToClose.some(row => row.id === currentTimeClockId())){
+          recordsToClose.push({...timeClockRecord, id:currentTimeClockId(), sessions});
+        }
+        await Promise.all(recordsToClose.map(async row => {
+          const rowSessions = row.id === currentTimeClockId() ? sessions : (row.sessions || []).map(session => ({...session, awayPeriods:(session.awayPeriods || []).map(period => ({...period}))}));
+          rowSessions.forEach(session => {
+            if(!session.in || session.out) return;
+            const away = openAwayPeriod(session);
+            if(away){
+              away.returnedAt = clockOutAt;
+              away.returnLocation = location;
+              away.closedWithClockOut = true;
+            }
+            session.out = clockOutAt;
+            session.outLocation = location;
+          });
+          await setDoc(doc(db, "timeClock", row.id), {
+            date:row.date || localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
+            sessions:rowSessions, geofenceAlert:{active:false, returnedAt:clockOutAt},
+            lastAction:"out", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
+          }, {merge:true});
+        }));
         timeClockRecord.sessions = sessions;
         stopGeofenceMonitor();
-        await saveGeofenceAlert(false, location.distanceMeters, location.accuracyMeters);
         await loadTimeClockMonth();
-        showMsg("Gehen wurde gespeichert.");
+        showMsg(recordsToClose.length > 1 ? `Gehen wurde gespeichert. ${recordsToClose.length} offene Buchungen wurden geschlossen.` : "Gehen wurde gespeichert.");
       }catch(err){
         console.error(err);
         showMsg("Gehen konnte nicht gespeichert werden: " + err.message);
@@ -4032,7 +4075,8 @@ bruchCache.sort((a, b) => {
         const alertKey = `${row.id}_${row.geofenceAlert.detectedAt || row.geofenceAlert.outsideSince}`;
         if(!timeClockGeofenceAlerts.has(alertKey)){
           timeClockGeofenceAlerts.add(alertKey);
-          setTimeout(() => showMsg(`${row.userName || "Ein Mitarbeiter"} ist seit mehr als 1 Minute über 30 m vom Arbeitsplatz entfernt.`), 0);
+          const displayName = matchingStaffForClock(row)[0]?.name || row.userName || "Ein Mitarbeiter";
+          setTimeout(() => playAdminAlert("Standort-Alarm", `${displayName} ist seit mehr als 1 Minute über 30 m vom Arbeitsplatz entfernt.`), 0);
         }
       });
     }
