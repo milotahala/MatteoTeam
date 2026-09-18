@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MatteoTeam" />
+  <link rel="manifest" href="./manifest.webmanifest" />
   <title>MatteoTeam PRO</title>
   <style>
     :root{
@@ -733,6 +738,9 @@
             </div>
             <div id="timeClockAdminPanel" class="item hidden" style="max-width:620px;margin:14px auto 0">
               <div class="row"><div><strong>Aktuell eingestempelt</strong><div class="tiny muted">Admin-Übersicht und Notfall-Korrektur</div></div><button id="btnReloadActiveClocks" class="ghost right" type="button">Aktualisieren</button></div>
+              <div id="pushNotificationControls" class="hidden" style="margin-top:12px;padding:12px;border:1px solid #29435f;border-radius:14px;background:#0b1a2b">
+                <div class="row"><div><strong>Alarm-Benachrichtigungen</strong><div id="pushNotificationStatus" class="tiny muted">Noch nicht aktiviert.</div></div><button id="btnEnablePushNotifications" class="btn right" type="button">Benachrichtigungen aktivieren</button></div>
+              </div>
               <div class="divider"></div>
               <div id="activeTimeClockList" class="muted">Keine aktiven Mitarbeiter.</div>
             </div>
@@ -1239,6 +1247,9 @@
     import {
       getStorage, ref as storageRef, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+    import {
+      getMessaging, getToken, onMessage, isSupported as isMessagingSupported
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
@@ -1258,6 +1269,9 @@
     const staffCreatorAuth = getAuth(staffCreatorApp);
     const db = getFirestore(app);
     const storage = getStorage(app);
+    const WEB_PUSH_VAPID_KEY = "BM2EXN1YfVTz0ujBbFwZcrMpSxzDpFv9Vwwrglc-UfMMwC6IU3QGI3oEUJuLmKcfdyx5fsVrTzQ7LFv57OtdjwQ";
+    let messaging = null;
+    let messagingRegistration = null;
 
     let currentUser = null;
     let currentProfile = null;
@@ -1298,6 +1312,73 @@
       gemuese:{name:"Berger & Tolls", email:"info@bergerundtolls-fruechte.de"},
       manual:{name:"Test / anderer Lieferant", email:""}
     };
+
+    function pushDeviceId(){
+      let value = localStorage.getItem("matteoPushDeviceId");
+      if(!value){
+        value = (crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`).replace(/[^a-zA-Z0-9-]/g, "");
+        localStorage.setItem("matteoPushDeviceId", value);
+      }
+      return value;
+    }
+
+    async function preparePushMessaging(){
+      const controls = $("pushNotificationControls");
+      if(!controls || !isSuperAdmin()) return;
+      controls.classList.remove("hidden");
+      if(!(await isMessagingSupported()) || !("serviceWorker" in navigator)){
+        $("pushNotificationStatus").textContent = "Dieses Gerät unterstützt Web-Push nicht.";
+        $("btnEnablePushNotifications").disabled = true;
+        return;
+      }
+      messagingRegistration = await navigator.serviceWorker.register("./firebase-messaging-sw.js");
+      messaging = getMessaging(app);
+      const permission = Notification.permission;
+      $("pushNotificationStatus").textContent = permission === "granted" ? "Aktiviert – Alarme kommen auch bei geschlossener App." : permission === "denied" ? "In den iPhone-Einstellungen blockiert." : "Noch nicht aktiviert.";
+      $("btnEnablePushNotifications").textContent = permission === "granted" ? "Erneut registrieren" : "Benachrichtigungen aktivieren";
+      onMessage(messaging, payload => {
+        const title = payload.notification?.title || "MatteoTeam Alarm";
+        const body = payload.notification?.body || "Neue wichtige Meldung.";
+        showMsg(`${title}: ${body}`);
+        try{
+          const audio = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audio.createOscillator();
+          const gain = audio.createGain();
+          oscillator.frequency.value = 880;
+          gain.gain.setValueAtTime(.22, audio.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + .7);
+          oscillator.connect(gain).connect(audio.destination);
+          oscillator.start();
+          oscillator.stop(audio.currentTime + .7);
+          navigator.vibrate?.([250,120,250]);
+        }catch(err){ console.warn("Alarmton", err); }
+      });
+    }
+
+    async function enablePushNotifications(){
+      if(!isSuperAdmin()) return showMsg("Nur SuperAdmin.");
+      try{
+        $("btnEnablePushNotifications").disabled = true;
+        if(!messaging || !messagingRegistration) await preparePushMessaging();
+        const permission = await Notification.requestPermission();
+        if(permission !== "granted") throw new Error("Benachrichtigungen wurden nicht erlaubt.");
+        const token = await getToken(messaging, {vapidKey:WEB_PUSH_VAPID_KEY, serviceWorkerRegistration:messagingRegistration});
+        if(!token) throw new Error("Für dieses Gerät konnte kein Push-Token erstellt werden.");
+        await setDoc(doc(db, "fcmTokens", `${currentUser.uid}_${pushDeviceId()}`), {
+          uid:currentUser.uid, token, role:"superadmin", active:true,
+          userAgent:navigator.userAgent, updatedAt:serverTimestamp()
+        }, {merge:true});
+        $("pushNotificationStatus").textContent = "Aktiviert – Alarme kommen auch bei geschlossener App.";
+        $("btnEnablePushNotifications").textContent = "Aktiv";
+        showMsg("Push-Benachrichtigungen wurden aktiviert.");
+      }catch(err){
+        console.error("Push activation", err);
+        $("pushNotificationStatus").textContent = err.message;
+        showMsg(err.message);
+      }finally{
+        $("btnEnablePushNotifications").disabled = false;
+      }
+    }
 
     const MENU_CATEGORIES = ["Vorspeisen","Salate","Pasta","Al Forno","Pizza","Extras","Dessert","Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"];
     const ARASCO_PRODUCTS = [
@@ -3980,6 +4061,7 @@ bruchCache.sort((a, b) => {
         weekday:"long", day:"2-digit", month:"2-digit", year:"numeric"
       }).format(new Date());
       renderAdminVisibility();
+      await preparePushMessaging();
 
       $("weekPicker").value = mondayOf(todayStr());
       $("hoursWeekPicker").value = mondayOf(todayStr());
@@ -4239,6 +4321,7 @@ bruchCache.sort((a, b) => {
     $("btnClockReturn").addEventListener("click", clockReturn);
     $("btnSetWorkplace").addEventListener("click", setWorkplaceHere);
     $("btnReloadActiveClocks").addEventListener("click", renderActiveTimeClocks);
+    $("btnEnablePushNotifications").addEventListener("click", enablePushNotifications);
     $("activeTimeClockList").addEventListener("click", event => {
       const button = event.target.closest("[data-force-clock-out]");
       if(button) forceClockOut(button.dataset.forceClockOut);
