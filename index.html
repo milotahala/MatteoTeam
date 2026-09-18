@@ -3964,6 +3964,19 @@ bruchCache.sort((a, b) => {
       }
     }
 
+    function normalizedEmployeeIdentity(value){
+      return safe(value).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+    }
+
+    function matchingStaffForClock(row){
+      const clockName = normalizedEmployeeIdentity(row.userName || safe(row.userEmail).split("@")[0]);
+      const candidates = staffCache.filter(staff => {
+        const staffName = normalizedEmployeeIdentity(staff.name || safe(staff.email).split("@")[0]);
+        return staff.id === row.userId || (clockName.length >= 3 && staffName.length >= 3 && (clockName.includes(staffName) || staffName.includes(clockName)));
+      });
+      return candidates.sort((a,b) => normalizedEmployeeIdentity(a.name || a.email).length - normalizedEmployeeIdentity(b.name || b.email).length);
+    }
+
     function renderActiveTimeClocks(){
       if(!isAdmin()) return;
       const openRows = activeTimeClockCache.map(row => {
@@ -3975,9 +3988,9 @@ bruchCache.sort((a, b) => {
         const key = row.userId || row.userName || row.id;
         const existing = activeByUser.get(key);
         if(!existing || new Date(row.session.in).getTime() > new Date(existing.session.in).getTime()){
-          activeByUser.set(key, {...row, duplicateCount:(existing?.duplicateCount || 0) + (existing ? 1 : 0)});
+          activeByUser.set(key, {...row, relatedRecordIds:[...(existing?.relatedRecordIds || []), row.id]});
         }else{
-          existing.duplicateCount = (existing.duplicateCount || 0) + 1;
+          existing.relatedRecordIds = [...(existing.relatedRecordIds || [existing.id]), row.id];
         }
       });
       const active = [...activeByUser.values()].sort((a,b) => safe(a.userName).localeCompare(safe(b.userName)));
@@ -3988,21 +4001,23 @@ bruchCache.sort((a, b) => {
         badge.textContent = badge.id === "timeClockDashboardBadge" ? `${importantCount} Wichtig` : String(importantCount);
         badge.classList.toggle("hidden", importantCount === 0);
       });
-      const staffRows = staffCache.filter(staff => staff.status !== "deleted").map(staff => {
-        const row = activeByUser.get(staff.id);
-        if(!row) return `<div class="noticeCard" style="opacity:.72"><div class="row"><div><strong>⚫ ${htmlEscape(staff.name || staff.email || "Mitarbeiter")}</strong><div class="tiny muted">Nicht eingestempelt</div></div><span class="pill right">Inaktiv</span></div></div>`;
+      const claimedStaffIds = new Set();
+      const staffRows = active.map(row => {
+        const matches = matchingStaffForClock(row);
+        matches.forEach(staff => claimedStaffIds.add(staff.id));
+        const staff = matches[0];
         const away = openAwayPeriod(row.session);
         const awayMinutes = elapsedMinutes(away?.startedAt);
         const geoAlert = row.geofenceAlert?.active;
         const geoText = geoAlert ? ` · ⚠️ ${Math.round(row.geofenceAlert.distanceMeters || 0)} m entfernt` : "";
-        const duplicateText = row.duplicateCount ? ` · ⚠️ ${row.duplicateCount + 1} offene Buchungen` : "";
         return `<div class="noticeCard ${awayMinutes >= 10 || geoAlert ? "urgent" : ""}" style="border-color:#15945c">
-          <div class="row"><div><strong>🟢 ${htmlEscape(staff.name || row.userName || "Mitarbeiter")}</strong><div class="tiny muted">Aktiv seit ${formatClockTime(row.session.in)}${away ? ` · Kurz raus ${awayMinutes} Min.` : ""}${geoText}${duplicateText}</div></div><span class="pill ok right">Aktiv</span></div>
-          <button class="smallBtn smallRed" style="width:100%;margin-top:10px" type="button" data-force-clock-out="${htmlEscape(row.id)}">Arbeitstag beenden</button>
+          <div class="row"><div><strong>🟢 ${htmlEscape(staff?.name || row.userName || "Mitarbeiter")}</strong><div class="tiny muted">Aktiv seit ${formatClockTime(row.session.in)}${away ? ` · Kurz raus ${awayMinutes} Min.` : ""}${geoText}</div></div><span class="pill ok right">Aktiv</span></div>
+          <button class="smallBtn smallRed" style="width:100%;margin-top:10px" type="button" data-force-clock-out-user="${htmlEscape(row.userId || row.id)}">Arbeitstag beenden</button>
         </div>`;
       });
-      const knownIds = new Set(staffCache.map(staff => staff.id));
-      active.filter(row => !knownIds.has(row.userId)).forEach(row => staffRows.unshift(`<div class="noticeCard" style="border-color:#15945c"><div class="row"><div><strong>🟢 ${htmlEscape(row.userName || "Mitarbeiter")}</strong><div class="tiny muted">Aktiv seit ${formatClockTime(row.session.in)}</div></div><span class="pill ok right">Aktiv</span></div><button class="smallBtn smallRed" style="width:100%;margin-top:10px" type="button" data-force-clock-out="${htmlEscape(row.id)}">Arbeitstag beenden</button></div>`));
+      staffCache.filter(staff => staff.status !== "deleted" && !claimedStaffIds.has(staff.id)).forEach(staff => {
+        staffRows.push(`<div class="noticeCard" style="opacity:.72"><div class="row"><div><strong>⚫ ${htmlEscape(staff.name || staff.email || "Mitarbeiter")}</strong><div class="tiny muted">Nicht eingestempelt</div></div><span class="pill right">Inaktiv</span></div></div>`);
+      });
       $("activeTimeClockList").innerHTML = staffRows.join("") || `<div class="muted">Keine Mitarbeiter gefunden.</div>`;
       renderAdminTimeClockMonth();
       overdue.forEach(row => {
@@ -4054,32 +4069,36 @@ bruchCache.sort((a, b) => {
       timeClockAdminTimer = setInterval(renderActiveTimeClocks, 30000);
     }
 
-    async function forceClockOut(recordId){
+    async function forceClockOut(userOrRecordId){
       if(!isAdmin()) return showMsg("Nur Admin oder SuperAdmin.");
-      const row = activeTimeClockCache.find(item => item.id === recordId);
-      if(!row) return showMsg("Buchung nicht gefunden.");
-      const reason = prompt(`Warum soll ${row.userName || "der Mitarbeiter"} ausgestempelt werden?`, "Notfall / Gehen vergessen");
+      const rows = activeTimeClockCache.filter(item => (item.userId || item.id) === userOrRecordId && (item.sessions || []).some(session => session.in && !session.out));
+      if(!rows.length) return showMsg("Buchung nicht gefunden.");
+      const row = rows[0];
+      const displayName = matchingStaffForClock(row)[0]?.name || row.userName || "Mitarbeiter";
+      const reason = prompt(`Warum soll ${displayName} ausgestempelt werden?`, "Notfall / Gehen vergessen");
       if(!safe(reason)) return;
-      const sessions = (row.sessions || []).map(session => ({...session, awayPeriods:(session.awayPeriods || []).map(period => ({...period}))}));
-      const openIndex = sessions.findIndex(session => session.in && !session.out);
-      if(openIndex < 0) return showMsg("Mitarbeiter ist bereits ausgestempelt.");
-      if(!confirm(`${row.userName || "Mitarbeiter"} jetzt ausstempeln?`)) return;
+      if(!confirm(`${displayName} jetzt ausstempeln?`)) return;
       const now = new Date().toISOString();
-      const away = openAwayPeriod(sessions[openIndex]);
-      if(away){ away.returnedAt = now; away.closedByAdmin = true; }
-      sessions[openIndex].out = now;
-      sessions[openIndex].forcedOut = true;
-      sessions[openIndex].forcedOutBy = currentUser.uid;
-      sessions[openIndex].forcedOutByName = currentProfile.name || currentUser.email;
-      sessions[openIndex].forcedOutReason = safe(reason);
       try{
-        await setDoc(doc(db, "timeClock", recordId), {
-          sessions, lastAction:"forcedOut", lastActionAt:serverTimestamp(),
-          forcedOutBy:currentUser.uid, forcedOutByName:currentProfile.name || currentUser.email,
-          forcedOutReason:safe(reason), updatedAt:serverTimestamp()
-        }, {merge:true});
-        if(recordId === timeClockRecord.id){ timeClockRecord.sessions = sessions; renderTimeClock(); }
-        showMsg(`${row.userName || "Mitarbeiter"} wurde ausgestempelt.`);
+        await Promise.all(rows.map(async currentRow => {
+          const sessions = (currentRow.sessions || []).map(session => ({...session, awayPeriods:(session.awayPeriods || []).map(period => ({...period}))}));
+          sessions.forEach(session => {
+            if(!session.in || session.out) return;
+            const away = openAwayPeriod(session);
+            if(away){ away.returnedAt = now; away.closedByAdmin = true; }
+            session.out = now;
+            session.forcedOut = true;
+            session.forcedOutBy = currentUser.uid;
+            session.forcedOutByName = currentProfile.name || currentUser.email;
+            session.forcedOutReason = safe(reason);
+          });
+          await setDoc(doc(db, "timeClock", currentRow.id), {
+            sessions, lastAction:"forcedOut", lastActionAt:serverTimestamp(), forcedOutBy:currentUser.uid,
+            forcedOutByName:currentProfile.name || currentUser.email, forcedOutReason:safe(reason), updatedAt:serverTimestamp()
+          }, {merge:true});
+          if(currentRow.id === timeClockRecord.id){ timeClockRecord.sessions = sessions; renderTimeClock(); }
+        }));
+        showMsg(`${displayName} wurde ausgestempelt.`);
       }catch(err){
         console.error(err);
         showMsg("Ausstempeln fehlgeschlagen: " + err.message);
@@ -4393,8 +4412,8 @@ bruchCache.sort((a, b) => {
     $("timeClockAdminMonth").addEventListener("change", renderAdminTimeClockMonth);
     $("btnEnablePushNotifications").addEventListener("click", enablePushNotifications);
     $("activeTimeClockList").addEventListener("click", event => {
-      const button = event.target.closest("[data-force-clock-out]");
-      if(button) forceClockOut(button.dataset.forceClockOut);
+      const button = event.target.closest("[data-force-clock-out-user]");
+      if(button) forceClockOut(button.dataset.forceClockOutUser);
     });
     $("btnLoadTimeClockMonth").addEventListener("click", loadTimeClockMonth);
     $("timeClockMonth").addEventListener("change", loadTimeClockMonth);
