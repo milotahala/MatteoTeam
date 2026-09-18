@@ -3653,6 +3653,10 @@ bruchCache.sort((a, b) => {
       return (timeClockRecord.sessions || []).some(session => session.in && !session.out);
     }
 
+    function currentTimeClockId(){
+      return safe(timeClockRecord?.id) || (currentUser ? `${currentUser.uid}_${localDateKey()}` : "");
+    }
+
     function stopGeofenceMonitor(){
       if(geofenceWatchId !== null && navigator.geolocation){
         navigator.geolocation.clearWatch(geofenceWatchId);
@@ -3662,7 +3666,8 @@ bruchCache.sort((a, b) => {
     }
 
     async function saveGeofenceAlert(active, distance, accuracy){
-      if(geofenceWriteBusy || !timeClockRecord.id) return;
+      const recordId = currentTimeClockId();
+      if(geofenceWriteBusy || !recordId) return;
       geofenceWriteBusy = true;
       const now = new Date().toISOString();
       const alert = active ? {
@@ -3678,11 +3683,12 @@ bruchCache.sort((a, b) => {
         accuracyMeters:Math.round(accuracy)
       };
       try{
-        await setDoc(doc(db, "timeClock", timeClockRecord.id), {
+        await setDoc(doc(db, "timeClock", recordId), {
           geofenceAlert:alert,
           lastLocationCheckAt:serverTimestamp(),
           updatedAt:serverTimestamp()
         }, {merge:true});
+        timeClockRecord.id = recordId;
         timeClockRecord.geofenceAlert = alert;
       }catch(err){
         console.error("Geofence alert save", err);
@@ -3795,7 +3801,7 @@ bruchCache.sort((a, b) => {
       const key = `${currentUser.uid}_${localDateKey()}`;
       try{
         const snap = await getDoc(doc(db, "timeClock", key));
-        timeClockRecord = snap.exists() ? {id:key, ...snap.data()} : {id:key, date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email, sessions:[]};
+        timeClockRecord = snap.exists() ? {...snap.data(), id:key} : {id:key, date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email, sessions:[]};
         renderTimeClock();
         if(!timeClockTimer) timeClockTimer = setInterval(renderTimeClock, 1000);
         if(hasOpenTimeClockSession()) startGeofenceMonitor();
@@ -3836,10 +3842,13 @@ bruchCache.sort((a, b) => {
         renderTimeClock();
         const location = await verifyWorkplaceLocation();
         sessions.push({in:new Date().toISOString(), out:null, inLocation:location});
-        await setDoc(doc(db, "timeClock", timeClockRecord.id), {
+        const recordId = currentTimeClockId();
+        if(!recordId) throw new Error("Stempeluhr-ID fehlt. Bitte neu anmelden.");
+        await setDoc(doc(db, "timeClock", recordId), {
           date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
           sessions, lastAction:"in", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
         });
+        timeClockRecord.id = recordId;
         timeClockRecord.sessions = sessions;
         timeClockRecord.geofenceAlert = {active:false};
         startGeofenceMonitor();
@@ -3870,7 +3879,7 @@ bruchCache.sort((a, b) => {
         }
         sessions[openIndex].out = new Date().toISOString();
         sessions[openIndex].outLocation = location;
-        await setDoc(doc(db, "timeClock", timeClockRecord.id), {
+        await setDoc(doc(db, "timeClock", currentTimeClockId()), {
           date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
           sessions, lastAction:"out", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
         });
@@ -3899,7 +3908,7 @@ bruchCache.sort((a, b) => {
         sessions[openIndex].awayPeriods = [...(sessions[openIndex].awayPeriods || []), {
           startedAt:new Date().toISOString(), startLocation:location
         }];
-        await setDoc(doc(db, "timeClock", timeClockRecord.id), {
+        await setDoc(doc(db, "timeClock", currentTimeClockId()), {
           date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
           sessions, lastAction:"away", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
         });
@@ -3925,7 +3934,7 @@ bruchCache.sort((a, b) => {
         const location = await verifyWorkplaceLocation();
         away.returnedAt = new Date().toISOString();
         away.returnLocation = location;
-        await setDoc(doc(db, "timeClock", timeClockRecord.id), {
+        await setDoc(doc(db, "timeClock", currentTimeClockId()), {
           date:localDateKey(), userId:currentUser.uid, userName:currentProfile.name || currentUser.email,
           sessions, lastAction:"return", lastActionAt:serverTimestamp(), updatedAt:serverTimestamp()
         });
