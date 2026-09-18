@@ -214,6 +214,20 @@
     .clockQr img{width:min(280px,82vw);height:min(280px,82vw);background:#fff;border-radius:16px;padding:10px;margin:12px auto;display:block}
     .clockQrCode{font-size:13px;color:var(--muted)}
     .clockScanHint{max-width:620px;margin:12px auto;padding:14px;border-radius:16px;background:#102239;border:1px solid #29435f;text-align:center}
+    .clockMonthTableWrap{overflow-x:auto;border:1px solid #29435f;border-radius:15px;background:#09182a;-webkit-overflow-scrolling:touch}
+    .clockMonthTable{width:100%;min-width:760px;border-collapse:collapse}
+    .clockMonthTable th,.clockMonthTable td{padding:11px 10px;border-right:1px solid #233a54;border-bottom:1px solid #233a54;white-space:nowrap;vertical-align:middle}
+    .clockMonthTable th:last-child,.clockMonthTable td:last-child{border-right:0}
+    .clockMonthTable tbody tr:last-child td{border-bottom:0}
+    .clockMonthTable th{position:static;background:#172d47;color:#dce9f7;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+    .clockMonthTable td{font-size:13px;color:#e7eef7}
+    .clockMonthTable tbody tr:nth-child(even){background:#0d2035}
+    .clockMonthTable tbody tr:hover{background:#132b45}
+    .clockMonthTable .clockDateCell{font-weight:850}
+    .clockMonthTable .clockNetCell{font-weight:900;color:#74e7ad}
+    .clockMonthTable .clockBookings{white-space:normal;min-width:170px;color:var(--muted);line-height:1.45}
+    .clockMonthTable .clockSickRow td{background:#2a1014;color:#fecaca}
+    .clockTableHint{display:none;margin:0 0 8px;color:var(--muted);font-size:12px}
     .noticeCard{padding:16px;border-radius:16px;background:#102239;border:1px solid var(--line);margin-bottom:10px;cursor:pointer}
     .noticeCard.unread{border-color:#2dd486;box-shadow:0 0 0 2px rgba(45,212,134,.09)}
     .noticeCard.urgent{border-color:#ef4444;background:#2a1014;box-shadow:0 0 0 2px rgba(239,68,68,.12)}
@@ -436,6 +450,8 @@
       .dashboardAppIcon svg{width:28px;height:28px}
       .clockSummary{grid-template-columns:1fr 1fr}
       .clockSummary .item:first-child{grid-column:1/-1}
+      .clockTableHint{display:block}
+      .clockMonthTable{min-width:720px}
       .documentFolders{grid-template-columns:repeat(2,1fr)}
       .documentGrid{grid-template-columns:1fr}
       #viewUrlaub .btn{width:100%}
@@ -3963,17 +3979,7 @@ bruchCache.sort((a, b) => {
         const total = rows.reduce((sum, row) => sum + netWorkMinutes(row.sessions || []), 0);
         $("timeClockMonthTotal").textContent = formatMinutes(total);
         const sickDays = sickDaysForUser(currentUser.uid, month);
-        const rowByDate = new Map(rows.map(row => [row.date, row]));
-        const dates = [...new Set([...rows.map(row => row.date), ...sickDays])].sort().reverse();
-        $("timeClockMonthHistory").innerHTML = dates.length ? dates.map(date => {
-          const row = rowByDate.get(date);
-          if(!row) return `<div class="orderLine"><div><strong>${htmlEscape(formatClockDate(date))}</strong><div class="tiny muted">Krank gemeldet</div></div><span class="pill danger">Krank</span></div>`;
-          const grossMinutes = sessionsMinutes(row.sessions || []);
-          const breakMinutes = automaticBreakMinutes(grossMinutes);
-          const minutes = Math.max(0, grossMinutes - breakMinutes);
-          const times = (row.sessions || []).map(session => `${formatClockTime(session.in)}–${session.out ? formatClockTime(session.out) : "…"}`).join(" · ");
-          return `<div class="orderLine"><div><strong>${htmlEscape(formatClockDate(row.date))}${sickDays.includes(row.date) ? ` · <span class="pill danger">Krank</span>` : ""}</strong><div class="tiny muted">${htmlEscape(times || "Keine Zeiten")}${breakMinutes ? ` · Pause −${breakMinutes} Min.` : ""}</div></div><strong>${formatMinutes(minutes)}</strong></div>`;
-        }).join("") : `<div class="muted">Keine Buchungen in diesem Monat.</div>`;
+        $("timeClockMonthHistory").innerHTML = timeClockMonthTable(rows, sickDays, false);
       }catch(err){
         console.error(err);
         showMsg("Monatsübersicht konnte nicht geladen werden: " + err.message);
@@ -4131,6 +4137,31 @@ bruchCache.sort((a, b) => {
       return candidates.sort((a,b) => normalizedEmployeeIdentity(a.name || a.email).length - normalizedEmployeeIdentity(b.name || b.email).length);
     }
 
+    function timeClockMonthTable(rows, sickDays, allowEdit=false){
+      const rowByDate = new Map(rows.map(row => [row.date, row]));
+      const dates = [...new Set([...rows.map(row => row.date), ...sickDays])].sort().reverse();
+      if(!dates.length) return `<div class="muted">Keine Buchungen in diesem Monat.</div>`;
+      const actionHead = allowEdit ? `<th>Aktion</th>` : "";
+      const body = dates.map(date => {
+        const row = rowByDate.get(date);
+        if(!row){
+          return `<tr class="clockSickRow"><td class="clockDateCell">${htmlEscape(formatClockDate(date))}</td><td colspan="${allowEdit ? 6 : 5}"><span class="pill danger">Krank</span> Krank gemeldet</td></tr>`;
+        }
+        const sessions = (row.sessions || []).filter(session => session.in);
+        const gross = sessionsMinutes(sessions);
+        const pause = automaticBreakMinutes(gross);
+        const net = Math.max(0, gross - pause);
+        const start = sessions.length ? formatClockTime(sessions[0].in) : "–";
+        const lastSession = sessions[sessions.length - 1];
+        const end = lastSession?.out ? formatClockTime(lastSession.out) : "…";
+        const bookings = sessions.map(session => `${formatClockTime(session.in)}–${session.out ? formatClockTime(session.out) : "…"}`).join(" · ") || "Keine Zeiten";
+        const sickBadge = sickDays.includes(row.date) ? ` <span class="pill danger">Krank</span>` : "";
+        const action = allowEdit ? `<td><button class="smallBtn smallBlue" type="button" data-clock-edit="${htmlEscape(row.id)}">Bearbeiten</button></td>` : "";
+        return `<tr><td class="clockDateCell">${htmlEscape(formatClockDate(row.date))}${sickBadge}</td><td>${htmlEscape(start)}</td><td>${htmlEscape(end)}</td><td class="clockBookings">${htmlEscape(bookings)}</td><td>${pause ? `${pause} Min.` : "–"}</td><td class="clockNetCell">${htmlEscape(formatMinutes(net))}</td>${action}</tr>`;
+      }).join("");
+      return `<div class="clockTableHint">↔ Tabelle nach links oder rechts schieben</div><div class="clockMonthTableWrap"><table class="clockMonthTable"><thead><tr><th>Datum</th><th>Arbeitsbeginn</th><th>Arbeitsende</th><th>Buchungen</th><th>Pause</th><th>Arbeitszeit</th>${actionHead}</tr></thead><tbody>${body}</tbody></table></div>`;
+    }
+
     function renderActiveTimeClocks(){
       if(!isAdmin()) return;
       const openRows = activeTimeClockCache.map(row => {
@@ -4201,16 +4232,7 @@ bruchCache.sort((a, b) => {
       const total = rows.reduce((sum,row) => sum + netWorkMinutes(row.sessions || []), 0);
       $("timeClockAdminMonthTotal").textContent = formatMinutes(total);
       const sickDays = sickDaysForUser(userId, month);
-      const rowByDate = new Map(rows.map(row => [row.date, row]));
-      const dates = [...new Set([...rows.map(row => row.date), ...sickDays])].sort().reverse();
-      $("timeClockAdminMonthHistory").innerHTML = dates.length ? dates.map(date => {
-        const row = rowByDate.get(date);
-        if(!row) return `<div class="orderLine"><div><strong>${htmlEscape(formatClockDate(date))}</strong><div class="tiny muted">Krank gemeldet</div></div><span class="pill danger">Krank</span></div>`;
-        const gross = sessionsMinutes(row.sessions || []);
-        const pause = automaticBreakMinutes(gross);
-        const times = (row.sessions || []).map(session => `${formatClockTime(session.in)}–${session.out ? formatClockTime(session.out) : "…"}`).join(" · ");
-        return `<div class="orderLine"><div><strong>${htmlEscape(formatClockDate(row.date))}${sickDays.includes(row.date) ? ` · <span class="pill danger">Krank</span>` : ""}</strong><div class="tiny muted">${htmlEscape(times || "Keine Zeiten")}${pause ? ` · Pause −${pause} Min.` : ""}</div><button class="smallBtn smallBlue" type="button" data-clock-edit="${htmlEscape(row.id)}" style="margin-top:7px">Zeiten bearbeiten</button></div><strong>${formatMinutes(Math.max(0,gross-pause))}</strong></div>`;
-      }).join("") : `<div class="muted">Keine Buchungen in diesem Monat.</div>`;
+      $("timeClockAdminMonthHistory").innerHTML = timeClockMonthTable(rows, sickDays, true);
     }
 
     function formatClockDate(date){
