@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07111f">
+  <title>MatteoTeam Stempel-Terminal</title>
+  <style>
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#07111f}
+    #terminalFrame{width:100%;height:100%;border:0;display:block;background:#07111f}
+    #loading{position:fixed;inset:0;display:grid;place-items:center;background:#07111f;color:#eaf4ff;font:700 22px system-ui,sans-serif;z-index:2}
+    #loading.hidden{display:none}
+  </style>
+</head>
+<body>
+  <div id="loading">Stempel-Terminal wird geladen…</div>
+  <iframe id="terminalFrame" title="MatteoTeam Stempel-Terminal" src="./index.html#stempeluhr" allow="geolocation"></iframe>
+  <script>
+    const frame = document.getElementById("terminalFrame");
+    const loading = document.getElementById("loading");
+
+    const terminalCss = `
+      body{min-height:100vh!important}
+      #appShell>.topbar,
+      #appShell .sidebar,
+      #appShell .mobileNav,
+      #appShell .bottomNav,
+      #appShell .fab,
+      #appShell .noPrint{display:none!important}
+      #appShell .layout{display:block!important;grid-template-columns:1fr!important}
+      #appShell main.content{width:100%!important;max-width:none!important;margin:0!important;padding:clamp(16px,3vw,38px)!important}
+      #appShell main.content>.view{display:none!important}
+      #appShell #viewTimeClock{display:block!important;max-width:760px!important;margin:0 auto!important;padding:clamp(20px,4vw,42px)!important;text-align:center!important}
+      #viewTimeClock>*{display:none!important}
+      #viewTimeClock>.sectionTitle,
+      #viewTimeClock>#timeClockNow,
+      #viewTimeClock>#timeClockDate,
+      #viewTimeClock>#timeClockQrPanel:not(.hidden){display:block!important}
+      #viewTimeClock>.sectionTitle{font-size:clamp(28px,4vw,46px)!important;margin-bottom:12px!important}
+      #timeClockNow{font-size:clamp(42px,8vw,86px)!important}
+      #timeClockDate{font-size:clamp(17px,2.5vw,26px)!important;margin-bottom:18px!important}
+      #timeClockQrPanel{max-width:620px!important;margin:18px auto 0!important;padding:clamp(20px,3vw,34px)!important}
+      #timeClockQrImage{width:min(420px,68vh,82vw)!important;height:min(420px,68vh,82vw)!important}
+      #btnRefreshTimeClockQr{display:none!important}
+      #authShell{max-width:760px!important;margin:5vh auto!important}
+      #authShell .hero,
+      #authShell #btnTabRegister,
+      #authShell #registerForm,
+      #authShell .tiny.muted{display:none!important}
+      @media (orientation:landscape){
+        #appShell #viewTimeClock{max-width:1100px!important}
+        #timeClockQrImage{width:min(390px,58vh)!important;height:min(390px,58vh)!important}
+      }
+    `;
+
+    function applyTerminalMode(){
+      try{
+        const doc = frame.contentDocument;
+        if(!doc || !doc.head) return;
+        let style = doc.getElementById("matteoTerminalOnlyStyle");
+        if(!style){
+          style = doc.createElement("style");
+          style.id = "matteoTerminalOnlyStyle";
+          style.textContent = terminalCss;
+          doc.head.appendChild(style);
+        }
+        doc.title = "MatteoTeam Stempel-Terminal";
+        loading.classList.add("hidden");
+      }catch(error){
+        loading.textContent = "Terminal konnte nicht geladen werden.";
+      }
+    }
+
+    frame.addEventListener("load", ()=>{
+      applyTerminalMode();
+      const doc = frame.contentDocument;
+      if(doc?.body){
+        new MutationObserver(applyTerminalMode).observe(doc.body,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
+      }
+    });
+    setInterval(applyTerminalMode,1000);
+  </script>
+</body>
+</html>
