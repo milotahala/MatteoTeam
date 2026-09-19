@@ -303,6 +303,11 @@
     .supplierOrderTable th:nth-child(2){width:12%}
     .supplierOrderTable th:nth-child(3){width:57%}
     .supplierOrderTable th:nth-child(4),.supplierOrderTable th:nth-child(5){width:12%}
+    .supplierOrderTable.gemuese th:nth-child(1){width:7%}
+    .supplierOrderTable.gemuese th:nth-child(2){width:43%}
+    .supplierOrderTable.gemuese th:nth-child(3){width:18%}
+    .supplierOrderTable.gemuese th:nth-child(4){width:14%}
+    .supplierOrderTable.gemuese th:nth-child(5){width:18%}
     .supplierOrderTable td{padding:7px}
     .supplierOrderTable .input,.supplierOrderTable .select{padding:10px;min-height:42px}
     .supplierOrderActions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
@@ -2370,6 +2375,7 @@
       $("supplierOrderOther").placeholder = manual ? "Beispiel:\nTomatensoße – 3 Kartons\nMehl – 2 Säcke\nServietten – 5 Pakete" : "Weitere Gemüseartikel, jeweils eine Zeile …";
       $("supplierOrderTableTools").classList.toggle("hidden", manual);
       $("supplierOrderTableWrap").classList.toggle("hidden", manual);
+      document.querySelector(".supplierOrderTable").classList.toggle("gemuese", type === "gemuese");
       if(manual) return;
       $("supplierOrderHead").innerHTML = type === "gemuese"
         ? `<tr><th>Nr.</th><th>Artikel</th><th>Kiste/Sack</th><th>Kilo</th><th>Stück/Bund</th></tr>`
@@ -2385,7 +2391,7 @@
         if(type === "gemuese") return `<tr>
           <td>${product.nr}</td>
           <td><strong>${htmlEscape(product.name)}</strong></td>
-          <td><input class="input" inputmode="decimal" data-supplier-article="${htmlEscape(product.article)}" data-supplier-field="crate" value="${htmlEscape(values.crate || "")}" aria-label="Kiste oder Sack ${htmlEscape(product.name)}" /></td>
+          <td><input class="input" type="text" inputmode="text" placeholder="z. B. 3 Kisten" data-supplier-article="${htmlEscape(product.article)}" data-supplier-field="crate" value="${htmlEscape(values.crate || "")}" aria-label="Kiste oder Sack ${htmlEscape(product.name)}" /></td>
           <td><input class="input" inputmode="decimal" data-supplier-article="${htmlEscape(product.article)}" data-supplier-field="kilo" value="${htmlEscape(values.kilo || "")}" aria-label="Kilo ${htmlEscape(product.name)}" /></td>
           <td><input class="input" inputmode="decimal" data-supplier-article="${htmlEscape(product.article)}" data-supplier-field="bundle" value="${htmlEscape(values.bundle || "")}" aria-label="Stück oder Bund ${htmlEscape(product.name)}" /></td>
         </tr>`;
