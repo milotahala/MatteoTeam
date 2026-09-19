@@ -356,9 +356,12 @@
     .menuFormGrid>*{min-width:0}
     .menuFormGrid input[type="date"]{min-width:0;max-width:100%}
     .menuLegend{columns:2;column-gap:24px;font-size:12px;color:var(--muted);line-height:1.7}
-    .teamChatComposer{position:sticky;bottom:0;z-index:2;margin-bottom:14px;background:#102239}
+    .teamChatComposer{position:sticky;bottom:0;z-index:2;margin-top:14px;margin-bottom:0;background:#102239}
     .teamChatComposer .textarea{min-height:78px;resize:vertical}
-    .teamChatList{display:flex;flex-direction:column;gap:10px;max-height:62vh;overflow-y:auto;padding:4px}
+    .teamChatComposer .field{margin-bottom:10px}
+    .teamChatComposerActions{display:flex;align-items:center;gap:12px}
+    .teamChatComposerActions .btn{margin-left:auto}
+    .teamChatList{display:flex;flex-direction:column;gap:10px;min-height:280px;max-height:62vh;overflow-y:auto;padding:4px}
     .teamChatMessage{max-width:86%;padding:11px 13px;border:1px solid var(--line);border-radius:16px 16px 16px 4px;background:#12243a}
     .teamChatMessage.own{align-self:flex-end;border-radius:16px 16px 4px 16px;background:#17365a;border-color:#315d8e}
     .teamChatMeta{display:flex;align-items:center;gap:8px;margin-bottom:5px}
@@ -647,18 +650,14 @@
           </section>
 
           <section id="viewAnnouncements" class="view card hidden">
-            <div class="row" style="margin-bottom:16px">
-              <div><h2 class="sectionTitle">Mitteilungen</h2><div class="sectionSub" style="margin-bottom:0">Gemeinsamer Chat für das ganze Matteo Team.</div></div>
-              <button id="btnReloadAnnouncements" class="ghost right" type="button">Aktualisieren</button>
-            </div>
-            <div class="item teamChatComposer">
-              <strong>Nachricht schreiben</strong>
-              <div class="divider"></div>
-              <div class="field"><label class="label">Nachricht</label><textarea id="announcementText" class="textarea" maxlength="2000" placeholder="Schreibe eine Nachricht an das Team …"></textarea></div>
-              <label class="row adminOnly" style="margin-bottom:12px"><input id="announcementImportant" type="checkbox" /> Als wichtig markieren</label>
-              <button id="btnSaveAnnouncement" class="btn" type="button">Senden</button>
-            </div>
             <div id="announcementList" class="teamChatList"><div class="muted">Noch keine Mitteilungen.</div></div>
+            <div class="item teamChatComposer">
+              <div class="field"><textarea id="announcementText" class="textarea" maxlength="2000" placeholder="Nachricht schreiben …"></textarea></div>
+              <div class="teamChatComposerActions">
+                <label class="row adminOnly"><input id="announcementImportant" type="checkbox" /> Wichtig</label>
+                <button id="btnSaveAnnouncement" class="btn" type="button">Senden</button>
+              </div>
+            </div>
           </section>
 
           <section id="viewDocuments" class="view card hidden">
@@ -4625,7 +4624,6 @@ bruchCache.sort((a, b) => {
     $("btnCloseOrder").addEventListener("click", closeOrder);
     $("btnReloadOrders").addEventListener("click", loadOrders);
     $("btnSaveAnnouncement").addEventListener("click", saveAnnouncement);
-    $("btnReloadAnnouncements").addEventListener("click", loadAnnouncements);
     $("announcementText").addEventListener("keydown", event => {
       if(event.key === "Enter" && (event.ctrlKey || event.metaKey)){
         event.preventDefault();
