@@ -2975,21 +2975,21 @@ ${lastHoursPayload.details.join("\n")}`;
         ["tkFisch","TK 3. OG – Fisch","Soll: −18 °C oder kälter"],
         ["tkFleisch","TK 3. OG – Fleisch","Soll: −18 °C oder kälter"],
         ["tkGemuese","TK 3. OG – Gemüse","Soll: −18 °C oder kälter"],
-        ["kuehlhaus","Küche – Kühlhaus","Soll: 0 bis +7 °C"],
-        ["kuehlschrank1","Küche – Kühlschrank 1","Soll: 0 bis +7 °C"],
-        ["kuehlschrank2","Küche – Kühlschrank 2","Soll: 0 bis +7 °C"],
-        ["meeresfruechte","Küche – Kühlschrank Meeresfrüchte","Soll: 0 bis +4 °C"]
+        ["kuehlhaus","Küche – Kühlhaus","Soll: +2 bis +7 °C"],
+        ["kuehlschrank1","Küche – Kühlschrank 1","Soll: +2 bis +7 °C"],
+        ["kuehlschrank2","Küche – Kühlschrank 2","Soll: +2 bis +7 °C"],
+        ["meeresfruechte","Küche – Kühlschrank Meeresfrüchte","Soll: 0 bis +2 °C"]
       ],cleaning:[
         ["arbeitsflaechen","Arbeitsflächen sauber/desinfiziert"],["boden","Boden sauber"],
         ["geraete","Küchengeräte sauber"],["kuehlung","Kühlgeräte innen/außen sauber"],
         ["abfall","Abfallbehälter geleert/sauber"],["handwaschplatz","Handwaschplatz, Seife und Papier vorhanden"]
       ]},
       pizza:{title:"Pizza & Keller",responsibility:"Pizzabäcker",devices:[
-        ["grossesKuehlhaus","Pizza – großes Kühlhaus","Soll: 0 bis +7 °C"],
-        ["saladette","Saladette – Rucola/Parmesan","Soll: 0 bis +7 °C"],
-        ["tageskuehlschrank","Pizza – Tageskühlschrank","Soll: 0 bis +7 °C"],
-        ["fleischKuehlschrank","Pizza – Schwein/Geflügel","Soll: 0 bis +4 °C"],
-        ["kellerKuehlhaus","Keller – Käse/Salami Kühlhaus","Soll: 0 bis +7 °C"],
+        ["grossesKuehlhaus","Pizza – großes Kühlhaus","Soll: +2 bis +7 °C"],
+        ["saladette","Saladette – Rucola/Parmesan","Soll: +2 bis +7 °C"],
+        ["tageskuehlschrank","Pizza – Tageskühlschrank","Soll: +2 bis +7 °C"],
+        ["fleischKuehlschrank","Pizza – Fleisch/Geflügel & weitere Ware","Soll: 0 bis +4 °C"],
+        ["kellerKuehlhaus","Keller – Käse/Salami Kühlhaus","Soll: +2 bis +7 °C"],
         ["bierfass","Keller – Bierfass-Kühlschrank","Soll: +2 bis +8 °C"]
       ],cleaning:[
         ["pizzaArbeitsplatz","Pizza-Arbeitsplatz sauber/desinfiziert"],["pizzaOfenBereich","Ofen- und Bodenbereich sauber"],
@@ -3085,13 +3085,27 @@ ${lastHoursPayload.details.join("\n")}`;
 
     async function printMonthHaccp(){
       if(!isAdmin()) return;
+      const w=window.open("","_blank");
+      if(!w) return showMsg("Das Druckfenster wurde blockiert. Bitte Pop-ups für diese Seite erlauben.");
+      w.document.write(`<html><head><title>HACCP wird geladen …</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:Arial,sans-serif;padding:24px"><p>HACCP-Monatsbericht wird geladen …</p></body></html>`);
+      w.document.close();
       const month=($("haccpDate").value||todayStr()).slice(0,7);
-      const qs=await getDocs(collection(db,"haccpDaily"));
-      const saved=new Map(qs.docs.map(d=>[d.id,{id:d.id,...d.data()}]));
-      const [year,monthNumber]=month.split("-").map(Number),daysInMonth=new Date(year,monthNumber,0).getDate();
-      const rows=Array.from({length:daysInMonth},(_,index)=>{const id=`${month}-${String(index+1).padStart(2,"0")}`;return saved.get(id)||{id};});
-      const html=`<html><head><title>HACCP ${month}</title><style>@page{size:landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#111}h2{margin:0 0 4px}h3{margin:22px 0 6px;page-break-after:avoid}table{width:100%;border-collapse:collapse;page-break-inside:auto}tr{page-break-inside:avoid}th,td{border:1px solid #777;padding:5px;font-size:9px;vertical-align:top}th{background:#eee}</style></head><body><h2>Pizzeria Ristorante Matteo GmbH – HACCP Monatskontrolle ${month}</h2><p>Temperaturen, Reinigung, Verantwortliche und Abweichungen</p>${Object.keys(HACCP_SECTIONS).map(key=>haccpPrintTable(key,rows)).join("")}</body></html>`;
-      const w=window.open("","_blank"); w.document.write(html); w.document.close(); w.print();
+      try{
+        const qs=await getDocs(collection(db,"haccpDaily"));
+        const saved=new Map(qs.docs.map(d=>[d.id,{id:d.id,...d.data()}]));
+        const [year,monthNumber]=month.split("-").map(Number),daysInMonth=new Date(year,monthNumber,0).getDate();
+        const rows=Array.from({length:daysInMonth},(_,index)=>{const id=`${month}-${String(index+1).padStart(2,"0")}`;return saved.get(id)||{id};});
+        const html=`<html><head><title>HACCP ${month}</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#111;margin:0}.toolbar{position:sticky;top:0;display:flex;gap:10px;padding:12px;background:#0b1727}.toolbar button{border:0;border-radius:9px;padding:11px 16px;font-size:16px;font-weight:bold;cursor:pointer}.back{background:#e5e7eb;color:#111}.print{background:#22b873;color:#04150e}.sheet{padding:10mm}h2{margin:0 0 4px}h3{margin:22px 0 6px;page-break-after:avoid}table{width:100%;border-collapse:collapse;page-break-inside:auto}tr{page-break-inside:avoid}th,td{border:1px solid #777;padding:5px;font-size:9px;vertical-align:top}th{background:#eee}@media print{.toolbar{display:none}.sheet{padding:0}}</style></head><body><div class="toolbar"><button class="back" onclick="if(window.opener)window.opener.focus();window.close()">← Zurück</button><button class="print" onclick="window.print()">Drucken / Als PDF speichern</button></div><div class="sheet"><h2>Pizzeria Ristorante Matteo GmbH – HACCP Monatskontrolle ${month}</h2><p>Temperaturen, Reinigung, Verantwortliche und Abweichungen</p>${Object.keys(HACCP_SECTIONS).map(key=>haccpPrintTable(key,rows)).join("")}</div></body></html>`;
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+        w.focus();
+      }catch(err){
+        console.error("HACCP print error",err);
+        w.document.open();
+        w.document.write(`<html><body style="font-family:Arial,sans-serif;padding:24px"><h2>Bericht konnte nicht geladen werden.</h2><p>Bitte zurückgehen und erneut versuchen.</p><button onclick="window.close()">Zurück</button></body></html>`);
+        w.document.close();
+      }
     }
 
     async function submitUrlaub(){
