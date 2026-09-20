@@ -1109,13 +1109,14 @@
           </section>
 
           <section id="viewUrlaub" class="view card hidden">
-            <h2 class="sectionTitle">Urlaub Antrag</h2>
-            <div class="sectionSub">Staff bën kërkesë. Admin / SuperAdmin aprovon ose refuzon.</div>
+            <h2 class="sectionTitle">Urlaub & Frei Antrag</h2>
+            <div class="sectionSub">Mitarbeiter beantragen Urlaub oder einen freien Tag. Admin / SuperAdmin genehmigt oder lehnt ab.</div>
 
             <div class="grid2">
               <div class="item">
                 <strong>Neuer Antrag</strong>
                 <div class="divider"></div>
+                <div class="field"><label class="label">Art des Antrags</label><select id="urlaubType" class="select"><option value="urlaub">Urlaub</option><option value="frei">Frei</option></select></div>
                 <div class="field"><label class="label">Von</label><input id="urlaubFrom" class="input" type="date" /></div>
                 <div class="field"><label class="label">Bis</label><input id="urlaubTo" class="input" type="date" /></div>
                 <div class="field"><label class="label">Grund (optional)</label><textarea id="urlaubReason" class="textarea"></textarea></div>
@@ -2120,7 +2121,7 @@
             <span class="right tiny muted">${htmlEscape(s.email || "")}</span>
           </div>
           <div class="tiny muted">Abteilung: ${htmlEscape(s.department || "-")} · Stundenlohn: ${(Number(s.hourlyRate||0)).toFixed(2)} €</div>
-          ${isAdmin() ? `<div class="row" style="margin-top:10px">
+          ${isAdmin() && r.status !== "cancelled" ? `<div class="row" style="margin-top:10px">
             <button class="smallBtn smallBlue" type="button" onclick="window.editStaff('${s.id}')">Edit</button>
             ${s.id !== currentUser.uid ? `<button class="smallBtn smallRed" type="button" onclick="window.removeStaff('${s.id}')">Delete</button>` : ``}
           </div>` : ``}
@@ -2905,15 +2906,19 @@ ${lastHoursPayload.details.join("\n")}`;
     }
 
     async function submitUrlaub(){
+      const type = $("urlaubType").value === "frei" ? "frei" : "urlaub";
       const from = $("urlaubFrom").value;
       const to = $("urlaubTo").value;
       const reason = safe($("urlaubReason").value);
       if(!from || !to) return showMsg("Datum fehlt.");
       if(to < from) return showMsg("Bis darf nicht vor Von sein.");
+      const overlap = urlaubCache.some(item => item.staffId === currentUser.uid && item.status !== "rejected" && item.status !== "cancelled" && from <= item.to && to >= item.from);
+      if(overlap) return showMsg("Für diesen Zeitraum gibt es bereits einen offenen oder genehmigten Antrag.");
 
       await addDoc(collection(db, "vacationRequests"), {
         staffId: currentUser.uid,
         staffName: currentProfile.name,
+        type,
         from,
         to,
         reason,
@@ -2923,7 +2928,7 @@ ${lastHoursPayload.details.join("\n")}`;
       $("urlaubReason").value = "";
       await loadUrlaub();
       await loadDashboard();
-      showMsg("Urlaub Antrag gesendet.");
+      showMsg(`${type === "frei" ? "Frei" : "Urlaub"} Antrag gesendet.`);
     }
 
     async function loadUrlaub(){
@@ -2951,18 +2956,21 @@ ${lastHoursPayload.details.join("\n")}`;
       }
 
       wrap.innerHTML = list.map(r => {
-        const badge = r.status === "approved" ? "ok" : r.status === "rejected" ? "danger" : "warn";
+        const badge = r.status === "approved" ? "ok" : (r.status === "rejected" || r.status === "cancelled") ? "danger" : "warn";
+        const type = r.type === "frei" ? "Frei" : "Urlaub";
+        const statusLabel = r.status === "approved" ? "GENEHMIGT" : r.status === "rejected" ? "ABGELEHNT" : r.status === "cancelled" ? "STORNIERT" : "OFFEN";
         return `<div class="item">
           <div class="row">
             <strong>${htmlEscape(r.staffName || "-")}</strong>
-            <span class="pill ${badge}">${htmlEscape((r.status || "").toUpperCase())}</span>
+            <span class="pill">${type}</span>
+            <span class="pill ${badge}">${statusLabel}</span>
             <span class="right tiny muted">${htmlEscape(r.from || "")} → ${htmlEscape(r.to || "")}</span>
           </div>
           <div class="tiny muted">${htmlEscape(r.reason || "-")}</div>
           ${isAdmin() ? `<div class="row" style="margin-top:10px">
             ${r.status !== "approved" ? `<button class="smallBtn smallGreen" type="button" onclick="window.handleUrlaub('${r.id}','approved')">Genehmigen</button>` : ``}
             ${r.status !== "rejected" ? `<button class="smallBtn smallRed" type="button" onclick="window.handleUrlaub('${r.id}','rejected')">${r.status === "approved" ? "Genehmigung stornieren" : "Ablehnen"}</button>` : ``}
-          </div>` : ``}
+          </div>` : r.status === "pending" ? `<div class="row" style="margin-top:10px"><button class="smallBtn smallRed" type="button" onclick="window.cancelUrlaub('${r.id}')">Antrag zurückziehen</button></div>` : ``}
         </div>`;
       }).join("");
     }
@@ -2993,7 +3001,7 @@ ${lastHoursPayload.details.join("\n")}`;
       if(!isAdmin() || !requests.length) return;
       $("vacationNotificationContent").innerHTML = requests.map(item => `
         <div class="noticeCard unread">
-          <div class="row"><strong>${htmlEscape(item.staffName || "Mitarbeiter")}</strong><span class="urgentBadge">Neu</span></div>
+          <div class="row"><strong>${htmlEscape(item.staffName || "Mitarbeiter")}</strong><span class="pill">${item.type === "frei" ? "Frei" : "Urlaub"}</span><span class="urgentBadge">Neu</span></div>
           <div style="margin-top:9px">${htmlEscape(item.from || "")} → ${htmlEscape(item.to || "")}</div>
           ${item.reason ? `<div class="tiny muted" style="margin-top:5px">${htmlEscape(item.reason)}</div>` : ""}
         </div>`).join("");
@@ -3008,6 +3016,7 @@ ${lastHoursPayload.details.join("\n")}`;
     }
 
     async function applyUrlaubToWeekly(req){
+      const planCode = req.type === "frei" ? "Frei" : "U";
       let cur = req.from;
       while(cur <= req.to){
         const weekStart = weekKeyFrom(cur);
@@ -3017,7 +3026,7 @@ ${lastHoursPayload.details.join("\n")}`;
         const data = snap.exists() ? snap.data() : { weekStart, entries:{} };
         data.entries = data.entries || {};
         data.entries[req.staffId] = data.entries[req.staffId] || {};
-        data.entries[req.staffId][String(dayIndex)] = "U";
+        data.entries[req.staffId][String(dayIndex)] = planCode;
         await setDoc(ref, {
           weekStart,
           entries: data.entries,
@@ -3029,6 +3038,7 @@ ${lastHoursPayload.details.join("\n")}`;
     }
 
     async function removeUrlaubFromWeekly(req){
+      const planCode = req.type === "frei" ? "Frei" : "U";
       let cur = req.from;
       while(cur <= req.to){
         const weekStart = weekKeyFrom(cur);
@@ -3039,7 +3049,7 @@ ${lastHoursPayload.details.join("\n")}`;
           const data = snap.data();
           data.entries = data.entries || {};
           data.entries[req.staffId] = data.entries[req.staffId] || {};
-          if(data.entries[req.staffId][String(dayIndex)] === "U"){
+          if(data.entries[req.staffId][String(dayIndex)] === planCode){
             data.entries[req.staffId][String(dayIndex)] = "";
             await setDoc(ref, {
               weekStart,
@@ -3071,7 +3081,19 @@ ${lastHoursPayload.details.join("\n")}`;
       }
       await loadUrlaub();
       await loadDashboard();
-      showMsg(`Urlaub ${status}.`);
+      showMsg(`${req.type === "frei" ? "Frei" : "Urlaub"} ${status}.`);
+    };
+
+    window.cancelUrlaub = async id => {
+      const req = urlaubCache.find(item => item.id === id);
+      if(!req || req.staffId !== currentUser.uid || req.status !== "pending") return;
+      if(!confirm("Antrag wirklich zurückziehen?")) return;
+      await updateDoc(doc(db, "vacationRequests", id), {
+        status:"cancelled", cancelledAt:serverTimestamp(), updatedAt:serverTimestamp()
+      });
+      await loadUrlaub();
+      await loadDashboard();
+      showMsg("Antrag wurde zurückgezogen.");
     };
 
     async function saveBruch() {
