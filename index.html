@@ -423,13 +423,14 @@
     .haccpCleaning{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
     .haccpResponsible{margin-top:12px;padding:10px 12px;border-radius:12px;background:#09182a;border:1px solid var(--line)}
     .bruchReasons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .bruchQtyRow{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:9px}
     .bruchReasonOption{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:10px;min-height:48px;padding:10px 12px;border:1px solid #2b4563;border-radius:12px;background:#09182a;cursor:pointer;font-weight:800;overflow:hidden;overflow-wrap:anywhere}
     .bruchReasonOption:has(input:checked){border-color:var(--green);background:rgba(34,184,115,.16);color:#86efac}
     #viewBruch .bruchReasonOption input{appearance:none;-webkit-appearance:none;width:22px;min-width:22px;height:22px;min-height:22px;margin:0;padding:0;border:2px solid #6f839c;border-radius:6px;background:#07111f;display:grid;place-items:center}
     #viewBruch .bruchReasonOption input:checked{border-color:var(--green);background:var(--green)}
     #viewBruch .bruchReasonOption input:checked::after{content:"✓";color:#04150e;font-size:16px;font-weight:950;line-height:1}
     @media(max-width:760px){.haccpDeviceGrid,.haccpCleaning{grid-template-columns:1fr}.haccpDeviceRow{grid-template-columns:1fr}}
-    @media(max-width:520px){.bruchReasons{grid-template-columns:1fr}}
+    @media(max-width:520px){.bruchReasons{grid-template-columns:1fr}.bruchQtyRow{grid-template-columns:minmax(0,1fr) 105px}}
     @media(max-width:720px){.barcodeActions{grid-template-columns:1fr 1fr}.barcodeActions .field{grid-column:1/-1}.barcodeActions button{width:100%}}
     @media(max-width:820px){.closingKpis{grid-template-columns:repeat(2,1fr)}.closingGrid{grid-template-columns:1fr}}
     @media(max-width:760px){.taskFormGrid{grid-template-columns:minmax(0,1fr)}.taskCard .row .right{margin-left:0}}
@@ -1214,7 +1215,10 @@
 
   <div class="field">
     <label class="label">Menge</label>
-    <input id="bruchQty" class="input" type="number" min="0" step="0.01" inputmode="decimal" />
+    <div class="bruchQtyRow">
+      <input id="bruchQty" class="input" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 3" />
+      <select id="bruchUnit" class="select" aria-label="Einheit"><option>Stück</option><option>kg</option></select>
+    </div>
   </div>
 
   <div class="field">
@@ -3330,9 +3334,10 @@ ${lastHoursPayload.details.join("\n")}`;
     const elDate = $("bruchDate");
     const elProduct = $("bruchProduct");
     const elQty = $("bruchQty");
+    const elUnit = $("bruchUnit");
     const elReason = document.querySelector('input[name="bruchReason"]:checked');
 
-    if (!elDate || !elProduct || !elQty) {
+    if (!elDate || !elProduct || !elQty || !elUnit) {
       console.error("Bruch field missing:", {
         bruchDate: elDate,
         bruchProduct: elProduct,
@@ -3344,6 +3349,7 @@ ${lastHoursPayload.details.join("\n")}`;
     const date = elDate.value || todayStr();
     const product = (elProduct.value || "").trim();
     const qty = Number(elQty.value || 0);
+    const unit = elUnit.value === "kg" ? "kg" : "Stück";
     const reason = (elReason?.value || "").trim();
 
     if (!product) return showMsg("Produkt fehlt.");
@@ -3375,6 +3381,7 @@ await addDoc(collection(db, "bruchliste"), {
   date: date,
   product: product || "-",
   qty: qty || "0",
+  unit,
   reason: reason || "-",
   byUid: user.uid,
   byName: userName || user.email || "Milot",
@@ -3393,6 +3400,10 @@ await addDoc(collection(db, "bruchliste"), {
   }
 }
 
+    function formatBruchQty(qty,unit){
+      return `${Number(qty||0).toLocaleString("de-DE",{minimumFractionDigits:0,maximumFractionDigits:2})} ${unit==="kg"?"kg":"Stück"}`;
+    }
+
     async function loadBruch(){
       const qs = await getDocs(collection(db, "bruchliste"));
       bruchCache = qs.docs.map(d => {
@@ -3402,6 +3413,7 @@ await addDoc(collection(db, "bruchliste"), {
     ...x,
     product: x.product || x.produkt || "-",
     qty: x.qty || x.menge || "0",
+    unit: x.unit === "kg" ? "kg" : "Stück",
     reason: x.reason || x.grund || "-",
     byName: x.byName || "Milot"
   };
@@ -3422,7 +3434,7 @@ bruchCache.sort((a, b) => {
   <div class="item">
     <div class="row">
       <strong>${htmlEscape(r.product || "-")}</strong>
-      <span class="pill warn">${Number(r.qty || 0).toFixed(2)}</span>
+      <span class="pill warn">${formatBruchQty(r.qty,r.unit)}</span>
       <span class="right tiny muted">${htmlEscape(r.date || "-")}</span>
     </div>
     <div class="tiny muted">
@@ -3457,7 +3469,7 @@ bruchCache.sort((a, b) => {
         html += `<tr>
           <td>${htmlEscape(r.date || "")}</td>
           <td>${htmlEscape(r.product || "")}</td>
-          <td>${Number(r.qty || 0).toFixed(2)}</td>
+          <td>${formatBruchQty(r.qty,r.unit)}</td>
           <td>${htmlEscape(r.reason || "")}</td>
          <td>${htmlEscape(r.byName || "-")}</td>
         </tr>`;
