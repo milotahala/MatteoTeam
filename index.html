@@ -230,6 +230,17 @@
     .clockMonthTable .clockBookings{white-space:normal;min-width:170px;color:var(--muted);line-height:1.45}
     .clockMonthTable .clockSickRow td{background:#2a1014;color:#fecaca}
     .clockTableHint{display:none;margin:0 0 8px;color:var(--muted);font-size:12px}
+    #viewTimeClock.staffClockView>.sectionSub,
+    #viewTimeClock.staffClockView>.clockNow,
+    #viewTimeClock.staffClockView>.clockDate,
+    #viewTimeClock.staffClockView>#timeClockScanHint,
+    #viewTimeClock.staffClockView>#timeClockQrPanel,
+    #viewTimeClock.staffClockView>.clockActions,
+    #viewTimeClock.staffClockView>#timeClockGeo,
+    #viewTimeClock.staffClockView #timeClockStatusCard,
+    #viewTimeClock.staffClockView #timeClockBreakCard{display:none!important}
+    #viewTimeClock.staffClockView .clockSummary{grid-template-columns:1fr;max-width:620px;margin-top:8px}
+    #viewTimeClock.staffClockView #timeClockTotalCard{grid-column:1/-1}
     .noticeCard{padding:16px;border-radius:16px;background:#102239;border:1px solid var(--line);margin-bottom:10px;cursor:pointer}
     .noticeCard.unread{border-color:#2dd486;box-shadow:0 0 0 2px rgba(45,212,134,.09)}
     .noticeCard.urgent{border-color:#ef4444;background:#2a1014;box-shadow:0 0 0 2px rgba(239,68,68,.12)}
@@ -804,9 +815,9 @@
               <div class="tiny muted" style="margin-top:8px">Während der eingestempelten Arbeitszeit prüft MatteoTeam den Standort. Bei mehr als 30 m Entfernung über 1 Minute erhält Admin einen Hinweis. Die Prüfung endet beim Ausstempeln.</div>
             </div>
             <div class="clockSummary">
-              <div class="item"><div class="tiny muted">Status</div><div id="timeClockStatus" class="kpi" style="font-size:22px">Nicht eingestempelt</div></div>
-              <div class="item"><div class="tiny muted">Heute gearbeitet</div><div id="timeClockTotal" class="kpi" style="font-size:22px">0:00 Std.</div></div>
-              <div class="item"><div class="tiny muted">Pause abgezogen</div><div id="timeClockBreak" class="kpi" style="font-size:22px">0 Min.</div></div>
+              <div id="timeClockStatusCard" class="item"><div class="tiny muted">Status</div><div id="timeClockStatus" class="kpi" style="font-size:22px">Nicht eingestempelt</div></div>
+              <div id="timeClockTotalCard" class="item"><div class="tiny muted">Heute gearbeitet</div><div id="timeClockTotal" class="kpi" style="font-size:22px">0:00 Std.</div></div>
+              <div id="timeClockBreakCard" class="item"><div class="tiny muted">Pause abgezogen</div><div id="timeClockBreak" class="kpi" style="font-size:22px">0 Min.</div></div>
             </div>
             <div class="item" style="max-width:620px;margin:0 auto">
               <strong>Heutige Buchungen</strong>
@@ -4190,6 +4201,7 @@ bruchCache.sort((a, b) => {
 
     function renderTimeClock(){
       const now = new Date();
+      $("viewTimeClock").classList.toggle("staffClockView", !isAdmin());
       $("timeClockNow").textContent = now.toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
       $("timeClockDate").textContent = now.toLocaleDateString("de-DE", {weekday:"long", day:"2-digit", month:"long", year:"numeric"});
       const sessions = timeClockRecord.sessions || [];
