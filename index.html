@@ -953,7 +953,7 @@
             <h2 class="sectionTitle">Inventar & Warenwirtschaft</h2>
             <div class="sectionSub">Bestände, Wareneingänge, Verbrauch und Mindestbestand verwalten.</div>
 
-            <div class="inventoryStats">
+            <div class="inventoryStats adminOnly">
               <div class="inventoryStat"><div class="tiny muted">Produkte</div><div id="inventoryStatProducts" class="value">0</div></div>
               <div class="inventoryStat"><div class="tiny muted">Niedriger Bestand</div><div id="inventoryStatLow" class="value" style="color:#fca5a5">0</div></div>
               <div class="inventoryStat"><div class="tiny muted">Nicht auf Lager</div><div id="inventoryStatEmpty" class="value" style="color:#f87171">0</div></div>
@@ -1004,8 +1004,8 @@
               </div>
             </div>
 
-            <div class="item barcodePanel adminOnly">
-              <div class="row"><div><strong>Barcode Scanner</strong><div class="tiny muted">Produkt scannen und Bestand direkt buchen.</div></div><span id="barcodeSupport" class="pill right">Bereit</span></div>
+            <div class="item barcodePanel">
+              <div class="row"><div><strong>Produkt entnehmen</strong><div class="tiny muted">Barcode scannen, Menge eintragen und Verbrauch buchen.</div></div><span id="barcodeSupport" class="pill right">Bereit</span></div>
               <div class="divider"></div>
               <div class="barcodeActions">
                 <div class="field" style="margin:0"><label class="label">Barcode manuell</label><input id="barcodeManual" class="input" inputmode="numeric" autocomplete="off" placeholder="EAN eingeben" /></div>
@@ -1015,13 +1015,27 @@
               <div class="row" style="margin-top:9px"><label class="ghost" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><i data-lucide="image-plus"></i> Barcode-Foto wählen<input id="barcodeImage" class="hidden" type="file" accept="image/*" capture="environment" /></label><button id="btnStopBarcode" class="btnDanger hidden" type="button">Kamera schließen</button></div>
               <div id="barcodeVideoWrap" class="barcodeVideoWrap hidden"><video id="barcodeVideo" playsinline muted></video><div class="barcodeFrame"></div></div>
               <div id="barcodeResult" class="barcodeResult muted">Noch kein Barcode gescannt.</div>
+              <div id="staffConsumptionForm" class="hidden" style="margin-top:12px">
+                <div class="row">
+                  <div class="field" style="flex:1;margin:0"><label class="label">Entnommene Menge</label><input id="staffConsumptionQty" class="input" type="number" min="0.01" step="0.01" placeholder="z. B. 2" /></div>
+                  <button id="btnUseOnePack" class="ghost hidden" type="button" style="align-self:end">1 Packung</button>
+                  <button id="btnBookConsumption" class="btnWarn" type="button" style="align-self:end">Entnehmen</button>
+                </div>
+                <div id="staffConsumptionHint" class="tiny muted" style="margin-top:8px"></div>
+              </div>
             </div>
 
-            <div class="inventoryToolbar">
+            <div class="item adminOnly">
+              <div class="row"><strong>Letzte Lagerentnahmen</strong><span class="pill right">Historie</span></div>
+              <div class="divider"></div>
+              <div id="inventoryUsageHistory" class="closingList"><div class="tiny muted">Noch keine Entnahmen.</div></div>
+            </div>
+
+            <div class="inventoryToolbar adminOnly">
               <input id="inventorySearch" class="input" type="search" placeholder="Produkt oder Lieferant suchen …" />
               <select id="inventoryCategoryFilter" class="select"><option>Alle</option><option>Küche</option><option>Pizza</option><option>Getränke</option><option>Verpackung</option><option>Reinigung</option><option>Sonstige</option></select>
             </div>
-            <div id="inventoryList" class="inventoryGrid"></div>
+            <div id="inventoryList" class="inventoryGrid adminOnly"></div>
           </section>
 
           <section id="viewSupplierOrders" class="view card hidden">
@@ -1403,7 +1417,7 @@
       getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
-      getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp, query, where, arrayUnion, onSnapshot
+      getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp, query, where, arrayUnion, onSnapshot, runTransaction
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     import {
       getStorage, ref as storageRef, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject
@@ -1441,6 +1455,7 @@
     let barcodeStream = null;
     let barcodeFrameRequest = null;
     let barcodeDetector = null;
+    let scannedInventoryItemId = "";
     let urlaubCache = [];
     let bruchCache = [];
     let restaurantMenuCache = [];
@@ -2311,6 +2326,17 @@
       });
 
       renderInventory();
+      if(isAdmin()) await loadInventoryUsageHistory();
+    }
+
+    async function loadInventoryUsageHistory(){
+      const wrap=$("inventoryUsageHistory");
+      if(!wrap) return;
+      try{
+        const qs=await getDocs(collection(db,"inventoryUsage"));
+        const rows=qs.docs.map(d=>({id:d.id,...d.data()})).filter(row=>row.type==="out").sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0)).slice(0,30);
+        wrap.innerHTML=rows.length?rows.map(row=>`<div class="closingRow row"><div><strong>${htmlEscape(row.itemName||"Produkt")}</strong><div class="tiny muted">${htmlEscape(row.createdByName||"-")} · ${htmlEscape(taskDate(row.createdAt))}</div></div><div class="right" style="text-align:right"><span class="pill warn">−${Number(row.qty||0).toFixed(2)} ${htmlEscape(row.unit||"")}</span>${row.stockAfter!==undefined?`<div class="tiny muted" style="margin-top:4px">Rest: ${Number(row.stockAfter).toFixed(2)}</div>`:""}</div></div>`).join(""):`<div class="tiny muted">Noch keine Entnahmen.</div>`;
+      }catch(err){console.error(err);wrap.innerHTML=`<div class="tiny muted">Historie konnte nicht geladen werden.</div>`;}
     }
 
     function renderInventory(){
@@ -2418,13 +2444,24 @@
       $("barcodeManual").value = code;
       const item = inventoryCache.find(row => safe(row.barcode).replace(/\s/g,"") === code);
       if(item){
+        scannedInventoryItemId = item.id;
         $("usageItem").value = item.id;
-        $("barcodeResult").innerHTML = `<strong style="color:var(--green)">${htmlEscape(item.name||"Produkt")}</strong><div class="tiny muted">Bestand: ${Number(item.stock||0).toFixed(2)} ${htmlEscape(item.unit||"")} · Barcode ${htmlEscape(code)}</div><div class="tiny" style="margin-top:5px">Jetzt Bewegung und Menge wählen, dann „Bestand buchen“.</div>`;
-        $("inventoryMovementPanel").scrollIntoView({behavior:"smooth",block:"center"});
+        $("barcodeResult").innerHTML = `<strong style="color:var(--green)">${htmlEscape(item.name||"Produkt")}</strong><div class="tiny muted">Aktueller Bestand: ${Number(item.stock||0).toFixed(2)} ${htmlEscape(item.unit||"")} · Barcode ${htmlEscape(code)}</div>`;
+        $("staffConsumptionForm").classList.remove("hidden");
+        $("staffConsumptionQty").value = "";
+        $("staffConsumptionHint").textContent = item.packSize > 0 ? `1 Packung = ${Number(item.packSize)} ${item.unit||"Einheiten"}` : `Menge in ${item.unit||"Einheiten"} eingeben.`;
+        $("btnUseOnePack").classList.toggle("hidden", !(Number(item.packSize)>0));
+        $("staffConsumptionQty").focus();
       }else{
-        $("invEditId").value = "";
-        $("invBarcode").value = code;
-        $("barcodeResult").innerHTML = `<strong style="color:var(--orange)">Produkt nicht gefunden</strong><div class="tiny muted">Barcode ${htmlEscape(code)} wurde ins neue Produkt übernommen. Bitte Produktdaten ausfüllen und speichern.</div>`;
+        scannedInventoryItemId = "";
+        $("staffConsumptionForm").classList.add("hidden");
+        if(isAdmin()){
+          $("invEditId").value = "";
+          $("invBarcode").value = code;
+          $("barcodeResult").innerHTML = `<strong style="color:var(--orange)">Produkt nicht gefunden</strong><div class="tiny muted">Barcode ${htmlEscape(code)} wurde ins neue Produkt übernommen. Bitte Produktdaten ausfüllen und speichern.</div>`;
+        }else{
+          $("barcodeResult").innerHTML = `<strong style="color:var(--orange)">Produkt nicht gefunden</strong><div class="tiny muted">Bitte Admin informieren, damit Barcode ${htmlEscape(code)} dem Produkt zugeordnet wird.</div>`;
+        }
       }
       stopBarcodeCamera();
     }
@@ -2453,7 +2490,6 @@
     }
 
     async function startBarcodeCamera(){
-      if(!isAdmin()) return;
       try{
         const detector = await prepareBarcodeDetector();
         if(!detector) return showMsg("Automatisches Scannen wird von diesem Browser nicht unterstützt. Bitte Barcode-Foto oder manuelle Eingabe verwenden.");
@@ -2494,6 +2530,36 @@
         findInventoryByBarcode(results[0].rawValue);
       }catch(err){ console.error(err); showMsg("Barcode-Foto konnte nicht gelesen werden."); }
       finally{ $("barcodeImage").value = ""; }
+    }
+
+    async function bookStaffConsumption(){
+      const item = inventoryCache.find(row=>row.id===scannedInventoryItemId);
+      const qty = Number($("staffConsumptionQty").value||0);
+      if(!item) return showMsg("Bitte zuerst ein Produkt scannen.");
+      if(!(qty>0)) return showMsg("Bitte eine gültige Menge eingeben.");
+      const itemRef = doc(db,"inventory",item.id);
+      try{
+        const remaining = await runTransaction(db, async transaction=>{
+          const snapshot = await transaction.get(itemRef);
+          if(!snapshot.exists()) throw new Error("Produkt nicht gefunden.");
+          const currentStock = Number(snapshot.data().stock||0);
+          if(qty>currentStock) throw new Error(`Nicht genügend Bestand. Verfügbar: ${currentStock} ${item.unit||""}`);
+          const nextStock = currentStock-qty;
+          transaction.update(itemRef,{stock:nextStock,lastUsageDate:localDateKey(),updatedAt:serverTimestamp()});
+          return nextStock;
+        });
+        await addDoc(collection(db,"inventoryUsage"),{
+          itemId:item.id,itemName:item.name,barcode:item.barcode||"",qty,type:"out",unit:item.unit||"",
+          date:localDateKey(),stockAfter:remaining,createdBy:currentUser.uid,
+          createdByName:currentProfile.name||currentUser.email,source:"staffBarcode",createdAt:serverTimestamp()
+        });
+        await loadInventory();
+        $("staffConsumptionQty").value="";
+        $("barcodeResult").innerHTML=`<strong style="color:var(--green)">Gebucht: ${qty} ${htmlEscape(item.unit||"")} ${htmlEscape(item.name||"")}</strong><div class="tiny muted">Restbestand: ${Number(remaining).toFixed(2)} ${htmlEscape(item.unit||"")} · Von: ${htmlEscape(currentProfile.name||currentUser.email)}</div>`;
+        $("staffConsumptionForm").classList.add("hidden");
+        scannedInventoryItemId="";
+        showMsg("Entnahme wurde gespeichert.");
+      }catch(err){ console.error(err); showMsg(err.message||"Entnahme konnte nicht gespeichert werden."); }
     }
 
     async function applyInventoryUsage(){
@@ -4989,6 +5055,12 @@ bruchCache.sort((a, b) => {
     $("btnStartBarcode").addEventListener("click", startBarcodeCamera);
     $("btnStopBarcode").addEventListener("click", stopBarcodeCamera);
     $("barcodeImage").addEventListener("change", event => scanBarcodeImage(event.target.files?.[0]));
+    $("btnBookConsumption").addEventListener("click", bookStaffConsumption);
+    $("staffConsumptionQty").addEventListener("keydown", event=>{if(event.key==="Enter") bookStaffConsumption();});
+    $("btnUseOnePack").addEventListener("click", ()=>{
+      const item=inventoryCache.find(row=>row.id===scannedInventoryItemId);
+      if(item&&Number(item.packSize)>0) $("staffConsumptionQty").value=String(Number(item.packSize));
+    });
     $("supplierOrderSearch").addEventListener("input", renderSupplierOrderRows);
     $("supplierOrderSelectedOnly").addEventListener("change", renderSupplierOrderRows);
     $("supplierOrderType").addEventListener("change", resetSupplierOrderForm);
