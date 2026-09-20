@@ -423,9 +423,11 @@
     .haccpCleaning{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
     .haccpResponsible{margin-top:12px;padding:10px 12px;border-radius:12px;background:#09182a;border:1px solid var(--line)}
     .bruchReasons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-    .bruchReasonOption{display:flex;align-items:center;gap:9px;min-height:48px;padding:10px 12px;border:1px solid #2b4563;border-radius:12px;background:#09182a;cursor:pointer;font-weight:800}
+    .bruchReasonOption{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:10px;min-height:48px;padding:10px 12px;border:1px solid #2b4563;border-radius:12px;background:#09182a;cursor:pointer;font-weight:800;overflow:hidden;overflow-wrap:anywhere}
     .bruchReasonOption:has(input:checked){border-color:var(--green);background:rgba(34,184,115,.16);color:#86efac}
-    .bruchReasonOption input{width:21px;height:21px;accent-color:var(--green)}
+    #viewBruch .bruchReasonOption input{appearance:none;-webkit-appearance:none;width:22px;min-width:22px;height:22px;min-height:22px;margin:0;padding:0;border:2px solid #6f839c;border-radius:6px;background:#07111f;display:grid;place-items:center}
+    #viewBruch .bruchReasonOption input:checked{border-color:var(--green);background:var(--green)}
+    #viewBruch .bruchReasonOption input:checked::after{content:"✓";color:#04150e;font-size:16px;font-weight:950;line-height:1}
     @media(max-width:760px){.haccpDeviceGrid,.haccpCleaning{grid-template-columns:1fr}.haccpDeviceRow{grid-template-columns:1fr}}
     @media(max-width:520px){.bruchReasons{grid-template-columns:1fr}}
     @media(max-width:720px){.barcodeActions{grid-template-columns:1fr 1fr}.barcodeActions .field{grid-column:1/-1}.barcodeActions button{width:100%}}
@@ -1218,13 +1220,13 @@
   <div class="field">
     <label class="label">Grund</label>
     <div id="bruchReasons" class="bruchReasons">
-      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Verbrannt"> ✅ Verbrannt</label>
-      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Beschädigt"> ✅ Beschädigt</label>
-      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Geschenk"> ✅ Geschenk</label>
-      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Verdorben"> ✅ Verdorben</label>
-      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Heruntergefallen"> ✅ Heruntergefallen</label>
-      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Vom Gast zurückgegeben"> ✅ Vom Gast zurückgegeben</label>
-      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="MHD abgelaufen"> ✅ MHD abgelaufen</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Verbrannt"> Verbrannt</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Beschädigt"> Beschädigt</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Geschenk"> Geschenk</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Verdorben"> Verdorben</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Heruntergefallen"> Heruntergefallen</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Vom Gast zurückgegeben"> Vom Gast zurückgegeben</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="MHD abgelaufen"> MHD abgelaufen</label>
     </div>
   </div>
 
