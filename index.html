@@ -422,7 +422,12 @@
     .haccpCheck input{width:22px;height:22px;accent-color:var(--green)}
     .haccpCleaning{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
     .haccpResponsible{margin-top:12px;padding:10px 12px;border-radius:12px;background:#09182a;border:1px solid var(--line)}
+    .bruchReasons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .bruchReasonOption{display:flex;align-items:center;gap:9px;min-height:48px;padding:10px 12px;border:1px solid #2b4563;border-radius:12px;background:#09182a;cursor:pointer;font-weight:800}
+    .bruchReasonOption:has(input:checked){border-color:var(--green);background:rgba(34,184,115,.16);color:#86efac}
+    .bruchReasonOption input{width:21px;height:21px;accent-color:var(--green)}
     @media(max-width:760px){.haccpDeviceGrid,.haccpCleaning{grid-template-columns:1fr}.haccpDeviceRow{grid-template-columns:1fr}}
+    @media(max-width:520px){.bruchReasons{grid-template-columns:1fr}}
     @media(max-width:720px){.barcodeActions{grid-template-columns:1fr 1fr}.barcodeActions .field{grid-column:1/-1}.barcodeActions button{width:100%}}
     @media(max-width:820px){.closingKpis{grid-template-columns:repeat(2,1fr)}.closingGrid{grid-template-columns:1fr}}
     @media(max-width:760px){.taskFormGrid{grid-template-columns:minmax(0,1fr)}.taskCard .row .right{margin-left:0}}
@@ -1182,27 +1187,27 @@
             <div class="row">
               <div>
                 <h2 class="sectionTitle">Bruchliste</h2>
-                <div class="sectionSub">Staff mund të shtojë. Admin / SuperAdmin mund të printojë raport mujor.</div>
+                <div class="sectionSub">Mitarbeiter erfassen Verluste per Schnellauswahl. Admin und SuperAdmin können den Monatsbericht drucken.</div>
               </div>
               <div class="right row adminOnly">
                 <input id="bruchMonth" class="input" type="month" style="max-width:180px" />
-                <button id="btnPrintMonthBruch" class="btnWarn" type="button">Print Month</button>
+                <button id="btnPrintMonthBruch" class="btnWarn" type="button">Monat drucken</button>
               </div>
             </div>
 
             <div class="grid2">
                 <div class="item">
-  <strong>New Bruch</strong>
+  <strong>Neuer Eintrag</strong>
   <div class="divider"></div>
 
   <div class="field">
-    <label class="label">Date</label>
+    <label class="label">Datum</label>
     <input id="bruchDate" class="input" type="date" />
   </div>
 
   <div class="field">
-    <label class="label">Product</label>
-    <input type="text" id="bruchProduct" class="input" placeholder="Produkt eingeben">
+    <label class="label">Produkt / Gericht</label>
+    <input type="text" id="bruchProduct" class="input" placeholder="z. B. Pizza Salami">
   </div>
 
   <div class="field">
@@ -1212,13 +1217,21 @@
 
   <div class="field">
     <label class="label">Grund</label>
-    <textarea id="bruchReason" class="textarea"></textarea>
+    <div id="bruchReasons" class="bruchReasons">
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Verbrannt"> ✅ Verbrannt</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Beschädigt"> ✅ Beschädigt</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Geschenk"> ✅ Geschenk</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Verdorben"> ✅ Verdorben</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Heruntergefallen"> ✅ Heruntergefallen</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="Vom Gast zurückgegeben"> ✅ Vom Gast zurückgegeben</label>
+      <label class="bruchReasonOption"><input type="radio" name="bruchReason" value="MHD abgelaufen"> ✅ MHD abgelaufen</label>
+    </div>
   </div>
 
- <button id="btnSaveBruch" type="button" class="btn">Save Bruch</button>
+ <button id="btnSaveBruch" type="button" class="btn">Eintrag speichern</button>
 </div>
               <div class="item">
-                <strong>Bruchliste History</strong>
+                <strong>Verlauf</strong>
                 <div class="divider"></div>
                 <div id="bruchList"></div>
               </div>
@@ -3304,25 +3317,25 @@ ${lastHoursPayload.details.join("\n")}`;
     const elDate = $("bruchDate");
     const elProduct = $("bruchProduct");
     const elQty = $("bruchQty");
-    const elReason = $("bruchReason");
+    const elReason = document.querySelector('input[name="bruchReason"]:checked');
 
-    if (!elDate || !elProduct || !elQty || !elReason) {
+    if (!elDate || !elProduct || !elQty) {
       console.error("Bruch field missing:", {
         bruchDate: elDate,
         bruchProduct: elProduct,
-        bruchQty: elQty,
-        bruchReason: elReason
+        bruchQty: elQty
       });
-      return alert("Gabim: mungon nje ID te forma Bruch.");
+      return showMsg("Formular konnte nicht geladen werden.");
     }
 
     const date = elDate.value || todayStr();
     const product = (elProduct.value || "").trim();
     const qty = Number(elQty.value || 0);
-    const reason = (elReason.value || "").trim();
+    const reason = (elReason?.value || "").trim();
 
     if (!product) return showMsg("Produkt fehlt.");
     if (qty <= 0) return showMsg("Menge fehlt.");
+    if (!reason) return showMsg("Bitte einen Grund auswählen.");
 
     const uid = currentUser?.uid || auth.currentUser?.uid;
     const name = currentProfile?.name || auth.currentUser?.email || "Unknown";
@@ -3357,7 +3370,7 @@ await addDoc(collection(db, "bruchliste"), {
 });
     elProduct.value = "";
     elQty.value = "";
-    elReason.value = "";
+    document.querySelectorAll('input[name="bruchReason"]').forEach(input => { input.checked = false; });
 
     await loadBruch();
     showMsg("Bruch gespeichert.");
