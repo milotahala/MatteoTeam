@@ -3433,14 +3433,21 @@ bruchCache.sort((a, b) => {
       const month = $("bruchMonth").value || monthStr();
       const rows = bruchCache.filter(x => (x.date || "").startsWith(month)).sort((a,b)=> (a.date || "").localeCompare(b.date || ""));
 
-      let html = `<html><head><title>Bruchliste ${month}</title><style>
-        body{font-family:Arial,sans-serif;padding:20px}
+      let html = `<html><head><title>Bruchliste ${month}</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+        *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;color:#111}
+        .toolbar{position:sticky;top:0;z-index:2;display:flex;gap:10px;padding:12px;background:#0b1727}
+        .toolbar button{border:0;border-radius:9px;padding:11px 16px;font-size:16px;font-weight:bold;cursor:pointer}
+        .back{background:#e5e7eb;color:#111}.print{background:#22b873;color:#04150e}
+        .sheet{padding:20px}
         table{width:100%;border-collapse:collapse}
         th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:12px}
         th{background:#f4f4f4}
+        @media print{.toolbar{display:none}.sheet{padding:0}}
       </style></head><body>
+      <div class="toolbar"><button class="back" onclick="if(window.opener)window.opener.focus();window.close()">← Zurück</button><button class="print" onclick="window.print()">Drucken / Als PDF speichern</button></div>
+      <div class="sheet">
       <h2>Pizzeria Ristorante Matteo GmbH – Bruchliste ${month}</h2>
-      <table><thead><tr><th>Date</th><th>Produkt</th><th>Menge</th><th>Grund</th><th>Von</th></tr></thead><tbody>`;
+      <table><thead><tr><th>Datum</th><th>Produkt</th><th>Menge</th><th>Grund</th><th>Von</th></tr></thead><tbody>`;
 
       rows.forEach(r => {
         html += `<tr>
@@ -3452,11 +3459,12 @@ bruchCache.sort((a, b) => {
         </tr>`;
       });
 
-      html += `</tbody></table></body></html>`;
+      html += `</tbody></table></div></body></html>`;
       const w = window.open("", "_blank");
+      if(!w) return showMsg("Das Druckfenster wurde blockiert. Bitte Pop-ups für diese Seite erlauben.");
       w.document.write(html);
       w.document.close();
-      w.print();
+      w.focus();
     }
 
     function orderStatusLabel(status){
