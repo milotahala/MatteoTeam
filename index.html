@@ -374,6 +374,18 @@
     .teamChatMeta{display:flex;align-items:center;gap:8px;margin-bottom:5px}
     .teamChatAuthor{font-weight:900;color:#fff}
     .teamChatText{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}
+    .taskFormGrid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px}
+    .taskFilters{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+    .taskFilter.active{background:linear-gradient(135deg,#138452,#22b873);border-color:transparent;color:#fff}
+    .taskList{display:grid;gap:12px}
+    .taskCard{padding:16px;border:1px solid var(--line);border-radius:16px;background:#102239}
+    .taskCard.isDone{opacity:.72}
+    .taskCard.isUrgent{border-color:#ef4444;box-shadow:inset 4px 0 0 #ef4444}
+    .taskTitle{font-size:17px;font-weight:900;margin-bottom:7px}
+    .taskDescription{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45;color:#dbe7f4}
+    .taskPhoto{display:block;max-width:100%;max-height:320px;margin-top:12px;border-radius:12px;border:1px solid var(--line);object-fit:cover}
+    .taskMeta{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:12px}
+    @media(max-width:760px){.taskFormGrid{grid-template-columns:1fr}.taskCard .row .right{margin-left:0}}
     .orderLayout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:14px;align-items:start}
     .tableOpenRow{display:grid;grid-template-columns:1fr auto;gap:9px;margin-bottom:13px}
     .tableGrid{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
@@ -589,6 +601,7 @@
           <button class="navBtn" data-view="viewSupplierOrders" type="button"><i data-lucide="shopping-cart" aria-hidden="true"></i><span>Bestellliste</span></button>
           <button class="navBtn" data-view="viewTimeClock" type="button"><i data-lucide="timer" aria-hidden="true"></i><span>Stempeluhr <span id="timeClockAlertBadge" class="urgentBadge hidden">0</span></span></button>
           <button class="navBtn" data-view="viewAnnouncements" type="button"><i data-lucide="bell" aria-hidden="true"></i><span>Mitteilungen</span></button>
+          <button class="navBtn" data-view="viewTasks" type="button"><i data-lucide="list-checks" aria-hidden="true"></i><span>Aufgaben <span id="taskNavBadge" class="urgentBadge hidden">0</span></span></button>
           <button class="navBtn" data-view="viewDocuments" type="button"><i data-lucide="scan-line" aria-hidden="true"></i><span>Lieferanten</span></button>
           <button class="navBtn" data-view="viewSickLeave" type="button"><i data-lucide="heart-pulse" aria-hidden="true"></i><span>Krankmeldung</span></button>
           <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP</span></button>
@@ -615,6 +628,7 @@
               <button class="dashboardApp" data-dashboard-view="viewSupplierOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="shopping-cart"></i></span><span>Bestellliste</span></button>
               <button class="dashboardApp" data-dashboard-view="viewTimeClock" type="button"><span class="dashboardAppIcon"><i data-lucide="timer"></i></span><span>Stempeluhr <span id="timeClockDashboardBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewAnnouncements" type="button"><span class="dashboardAppIcon"><i data-lucide="bell"></i></span><span>Mitteilungen <span id="announcementUnreadBadge" class="noticeBadge hidden">0</span></span></button>
+              <button class="dashboardApp" data-dashboard-view="viewTasks" type="button"><span class="dashboardAppIcon"><i data-lucide="list-checks"></i></span><span>Aufgaben <span id="taskDashboardBadge" class="urgentBadge hidden">0 Offen</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewDocuments" type="button"><span class="dashboardAppIcon"><i data-lucide="scan-line"></i></span><span>Lieferanten</span></button>
               <button class="dashboardApp" data-dashboard-view="viewSickLeave" type="button"><span class="dashboardAppIcon"><i data-lucide="heart-pulse"></i></span><span>Krankmeldung <span id="sickUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewHaccp" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-check"></i></span><span>HACCP</span></button>
@@ -665,6 +679,35 @@
                 <button id="btnSaveAnnouncement" class="btn" type="button">Senden</button>
               </div>
             </div>
+          </section>
+
+          <section id="viewTasks" class="view card hidden">
+            <div class="row" style="margin-bottom:16px">
+              <div><h2 class="sectionTitle">Aufgaben & Schichtübergabe</h2><div class="sectionSub" style="margin-bottom:0">Aufgaben festhalten, zuweisen und gemeinsam erledigen.</div></div>
+              <button id="btnReloadTasks" class="ghost right" type="button">Aktualisieren</button>
+            </div>
+            <div class="item">
+              <div class="taskFormGrid">
+                <div class="field"><label class="label">Titel *</label><input id="taskTitleInput" class="input" maxlength="100" placeholder="z. B. Kühlschrank 3 kontrollieren" /></div>
+                <div class="field"><label class="label">Bereich</label><select id="taskDepartment" class="select"><option>Alle</option><option>Pizza</option><option>Küche</option><option>Kasse</option><option>Service</option><option>Theke</option><option>Technik</option></select></div>
+                <div class="field"><label class="label">Priorität</label><select id="taskPriority" class="select"><option value="normal">Normal</option><option value="urgent">Dringend</option></select></div>
+              </div>
+              <div class="taskFormGrid">
+                <div class="field"><label class="label">Verantwortlich</label><select id="taskAssignee" class="select"><option value="">Ganzes Team</option></select></div>
+                <div class="field"><label class="label">Fällig bis</label><input id="taskDueDate" class="input" type="date" /></div>
+                <div class="field"><label class="label">Foto (optional)</label><input id="taskPhoto" class="input" type="file" accept="image/*" capture="environment" /></div>
+              </div>
+              <div class="field"><label class="label">Beschreibung / Übergabe</label><textarea id="taskDescription" class="textarea" maxlength="1500" placeholder="Was muss gemacht oder beim nächsten Dienst beachtet werden?"></textarea></div>
+              <button id="btnSaveTask" class="btn" type="button">Aufgabe erstellen</button>
+              <span id="taskUploadStatus" class="tiny muted" style="margin-left:10px"></span>
+            </div>
+            <div class="taskFilters">
+              <button class="ghost taskFilter active" data-task-filter="open" type="button">Offen</button>
+              <button class="ghost taskFilter" data-task-filter="mine" type="button">Für mich</button>
+              <button class="ghost taskFilter" data-task-filter="done" type="button">Erledigt</button>
+              <button class="ghost taskFilter" data-task-filter="all" type="button">Alle</button>
+            </div>
+            <div id="taskList" class="taskList"><div class="muted">Noch keine Aufgaben.</div></div>
           </section>
 
           <section id="viewDocuments" class="view card hidden">
@@ -1356,6 +1399,9 @@
     let geofenceOutsideSince = null;
     let geofenceWriteBusy = false;
     let announcementCache = [];
+    let taskCache = [];
+    let taskUnsubscribe = null;
+    let activeTaskFilter = "open";
     let documentCache = [];
     let activeDocumentFolder = "Alle";
     let sickLeaveCache = [];
@@ -2093,6 +2139,7 @@
       if(!confirm("Wirklich löschen?")) return;
       await deleteDoc(doc(db, "users", id));
       await loadStaff();
+      populateTaskAssignees();
       await buildWeeklyTable();
       await loadDashboard();
       showMsg("Mitarbeiter gelöscht.");
@@ -3416,6 +3463,135 @@ bruchCache.sort((a, b) => {
       }
     }
 
+    function taskDate(value){
+      if(!value) return "";
+      const date = value?.toDate ? value.toDate() : new Date(value);
+      if(Number.isNaN(date.getTime())) return "";
+      return date.toLocaleString("de-DE", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"});
+    }
+
+    function populateTaskAssignees(){
+      const current = $("taskAssignee").value;
+      $("taskAssignee").innerHTML = `<option value="">Ganzes Team</option>` + staffCache
+        .filter(person => person.status !== "disabled")
+        .sort((a,b) => (a.name || "").localeCompare(b.name || "", "de"))
+        .map(person => `<option value="${htmlEscape(person.uid || person.id)}">${htmlEscape(person.name || person.email || "Mitarbeiter")}</option>`).join("");
+      $("taskAssignee").value = current;
+    }
+
+    function visibleTasks(){
+      return taskCache.filter(task => {
+        if(activeTaskFilter === "open") return task.status !== "done";
+        if(activeTaskFilter === "done") return task.status === "done";
+        if(activeTaskFilter === "mine") return task.status !== "done" && (task.assigneeId === currentUser.uid || task.authorId === currentUser.uid);
+        return true;
+      });
+    }
+
+    function renderTasks(){
+      const openCount = taskCache.filter(task => task.status !== "done").length;
+      ["taskNavBadge", "taskDashboardBadge"].forEach(id => {
+        const badge = $(id);
+        badge.textContent = id === "taskDashboardBadge" ? `${openCount} Offen` : String(openCount);
+        badge.classList.toggle("hidden", openCount === 0);
+      });
+      const tasks = visibleTasks();
+      $("taskList").innerHTML = tasks.length ? tasks.map(task => {
+        const done = task.status === "done";
+        const canDelete = isAdmin() || task.authorId === currentUser.uid;
+        const canFinish = !done;
+        const due = task.dueDate ? new Date(`${task.dueDate}T23:59:59`) : null;
+        const overdue = !done && due && due < new Date();
+        return `<article class="taskCard${done ? " isDone" : ""}${task.priority === "urgent" ? " isUrgent" : ""}">
+          <div class="row">
+            <div class="taskTitle">${htmlEscape(task.title || "Aufgabe")}</div>
+            <span class="pill ${done ? "ok" : task.priority === "urgent" || overdue ? "warn" : ""} right">${done ? "Erledigt" : overdue ? "Überfällig" : task.priority === "urgent" ? "Dringend" : "Offen"}</span>
+          </div>
+          ${task.description ? `<div class="taskDescription">${htmlEscape(task.description)}</div>` : ""}
+          ${task.downloadUrl ? `<a href="${htmlEscape(task.downloadUrl)}" target="_blank" rel="noopener"><img class="taskPhoto" src="${htmlEscape(task.downloadUrl)}" alt="Foto zur Aufgabe" /></a>` : ""}
+          <div class="taskMeta">
+            <span class="pill">${htmlEscape(task.department || "Alle")}</span>
+            <span class="tiny muted">Für: ${htmlEscape(task.assigneeName || "Ganzes Team")}</span>
+            ${task.dueDate ? `<span class="tiny muted">Bis: ${htmlEscape(task.dueDate.split("-").reverse().join("."))}</span>` : ""}
+            <span class="tiny muted">Von ${htmlEscape(task.authorName || "-")} · ${htmlEscape(taskDate(task.createdAt))}</span>
+          </div>
+          ${done ? `<div class="tiny muted" style="margin-top:9px">Erledigt von ${htmlEscape(task.completedByName || "-")} · ${htmlEscape(taskDate(task.completedAt))}</div>` : ""}
+          <div class="row" style="margin-top:12px">
+            ${canFinish ? `<button class="btn" type="button" data-task-done="${htmlEscape(task.id)}">Als erledigt markieren</button>` : ""}
+            ${done && isAdmin() ? `<button class="ghost" type="button" data-task-reopen="${htmlEscape(task.id)}">Wieder öffnen</button>` : ""}
+            ${canDelete ? `<button class="smallBtn smallRed right" type="button" data-task-delete="${htmlEscape(task.id)}">Löschen</button>` : ""}
+          </div>
+        </article>`;
+      }).join("") : `<div class="item muted">Keine Aufgaben in dieser Ansicht.</div>`;
+      window.lucide?.createIcons();
+    }
+
+    function startTasks(){
+      if(taskUnsubscribe) taskUnsubscribe();
+      taskUnsubscribe = onSnapshot(collection(db, "tasks"), snapshot => {
+        taskCache = snapshot.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => {
+          const doneDiff = Number(a.status === "done") - Number(b.status === "done");
+          if(doneDiff) return doneDiff;
+          const urgentDiff = Number(b.priority === "urgent") - Number(a.priority === "urgent");
+          if(urgentDiff) return urgentDiff;
+          return (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0);
+        });
+        renderTasks();
+      }, err => { console.error(err); showMsg("Aufgaben konnten nicht geladen werden: " + err.message); });
+    }
+
+    async function saveTask(){
+      const title = safe($("taskTitleInput").value);
+      if(!title) return showMsg("Bitte einen Titel für die Aufgabe eingeben.");
+      const file = $("taskPhoto").files?.[0] || null;
+      if(file && !file.type.startsWith("image/")) return showMsg("Bitte nur ein Foto auswählen.");
+      if(file && file.size > 10 * 1024 * 1024) return showMsg("Das Foto darf maximal 10 MB groß sein.");
+      const assigneeId = $("taskAssignee").value;
+      const assignee = staffCache.find(person => (person.uid || person.id) === assigneeId);
+      const button = $("btnSaveTask");
+      button.disabled = true;
+      $("taskUploadStatus").textContent = file ? "Foto wird hochgeladen …" : "Aufgabe wird gespeichert …";
+      let storagePath = "";
+      try{
+        let downloadUrl = "";
+        if(file){
+          storagePath = `tasks/${currentUser.uid}/${Date.now()}_${documentFileName(file.name)}`;
+          await uploadBytes(storageRef(storage, storagePath), file, {contentType:file.type});
+          downloadUrl = await getDownloadURL(storageRef(storage, storagePath));
+        }
+        await addDoc(collection(db, "tasks"), {
+          title, description:safe($("taskDescription").value), department:$("taskDepartment").value,
+          priority:$("taskPriority").value, assigneeId, assigneeName:assignee?.name || "",
+          dueDate:$("taskDueDate").value || "", status:"open", downloadUrl, storagePath,
+          authorId:currentUser.uid, authorName:currentProfile.name || currentUser.email,
+          createdAt:serverTimestamp(), updatedAt:serverTimestamp()
+        });
+        $("taskTitleInput").value = ""; $("taskDescription").value = ""; $("taskPhoto").value = "";
+        $("taskDueDate").value = ""; $("taskPriority").value = "normal"; $("taskAssignee").value = "";
+        $("taskUploadStatus").textContent = "Gespeichert.";
+      }catch(err){
+        console.error(err); $("taskUploadStatus").textContent = ""; showMsg("Aufgabe konnte nicht gespeichert werden: " + err.message);
+      }finally{ button.disabled = false; }
+    }
+
+    async function setTaskStatus(id, status){
+      try{
+        await updateDoc(doc(db, "tasks", id), status === "done" ? {
+          status, completedById:currentUser.uid, completedByName:currentProfile.name || currentUser.email,
+          completedAt:serverTimestamp(), updatedAt:serverTimestamp()
+        } : {status:"open", completedById:"", completedByName:"", completedAt:null, updatedAt:serverTimestamp()});
+      }catch(err){ console.error(err); showMsg("Status konnte nicht geändert werden: " + err.message); }
+    }
+
+    async function deleteTask(id){
+      const task = taskCache.find(row => row.id === id);
+      if(!task || (!isAdmin() && task.authorId !== currentUser.uid) || !confirm("Aufgabe wirklich löschen?")) return;
+      try{
+        if(task.storagePath) await deleteObject(storageRef(storage, task.storagePath)).catch(()=>{});
+        await deleteDoc(doc(db, "tasks", id));
+      }catch(err){ console.error(err); showMsg("Aufgabe konnte nicht gelöscht werden: " + err.message); }
+    }
+
     function documentFileName(name){
       return safe(name).replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-100) || "dokument";
     }
@@ -4427,6 +4603,7 @@ bruchCache.sort((a, b) => {
       resetSupplierOrderForm();
 
       await loadStaff();
+      populateTaskAssignees();
       await loadInventory();
       await loadSupplierOrders();
       await buildWeeklyTable();
@@ -4440,6 +4617,7 @@ bruchCache.sort((a, b) => {
       $("orderMenuCategory").innerHTML = ["Alle", ...MENU_CATEGORIES].map(category => `<option value="${htmlEscape(category)}">${htmlEscape(category)}</option>`).join("");
       await loadOrders();
       startAnnouncementChat();
+      startTasks();
       await loadDocuments();
       await loadSickLeave();
       await loadWorkplaceConfig();
@@ -4648,6 +4826,21 @@ bruchCache.sort((a, b) => {
       const card = event.target.closest("[data-announcement-read]");
       if(card) markAnnouncementRead(card.dataset.announcementRead);
     });
+    $("btnSaveTask").addEventListener("click", saveTask);
+    $("btnReloadTasks").addEventListener("click", startTasks);
+    document.querySelectorAll("[data-task-filter]").forEach(button => button.addEventListener("click", () => {
+      activeTaskFilter = button.dataset.taskFilter;
+      document.querySelectorAll("[data-task-filter]").forEach(item => item.classList.toggle("active", item === button));
+      renderTasks();
+    }));
+    $("taskList").addEventListener("click", event => {
+      const done = event.target.closest("[data-task-done]");
+      const reopen = event.target.closest("[data-task-reopen]");
+      const remove = event.target.closest("[data-task-delete]");
+      if(done) setTaskStatus(done.dataset.taskDone, "done");
+      if(reopen) setTaskStatus(reopen.dataset.taskReopen, "open");
+      if(remove) deleteTask(remove.dataset.taskDelete);
+    });
     $("btnUploadDocument").addEventListener("click", uploadDocument);
     $("documentCameraFile").addEventListener("change", () => updateDocumentFileSelection("camera"));
     $("documentLibraryFile").addEventListener("change", () => updateDocumentFileSelection("library"));
@@ -4706,6 +4899,10 @@ bruchCache.sort((a, b) => {
         if(announcementUnsubscribe){
           announcementUnsubscribe();
           announcementUnsubscribe = null;
+        }
+        if(taskUnsubscribe){
+          taskUnsubscribe();
+          taskUnsubscribe = null;
         }
         if(timeClockAdminTimer){
           clearInterval(timeClockAdminTimer);
