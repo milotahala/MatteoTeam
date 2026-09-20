@@ -404,6 +404,13 @@
     .closingGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .closingList{display:grid;gap:8px;margin-top:10px}
     .closingRow{padding:10px 12px;border-radius:12px;background:#0b1c30;border:1px solid var(--line)}
+    .barcodePanel{margin:14px 0;border-color:#315d8e;background:linear-gradient(135deg,#102239,#0d2940)}
+    .barcodeActions{display:grid;grid-template-columns:1fr auto auto;gap:9px;align-items:end}
+    .barcodeVideoWrap{position:relative;overflow:hidden;border-radius:16px;background:#02060b;margin-top:12px;aspect-ratio:4/3}
+    .barcodeVideoWrap video{width:100%;height:100%;object-fit:cover}
+    .barcodeFrame{position:absolute;left:12%;right:12%;top:32%;height:36%;border:3px solid var(--green);border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+    .barcodeResult{padding:12px;border-radius:12px;background:#09182a;border:1px solid var(--line);margin-top:10px}
+    @media(max-width:720px){.barcodeActions{grid-template-columns:1fr 1fr}.barcodeActions .field{grid-column:1/-1}.barcodeActions button{width:100%}}
     @media(max-width:820px){.closingKpis{grid-template-columns:repeat(2,1fr)}.closingGrid{grid-template-columns:1fr}}
     @media(max-width:760px){.taskFormGrid{grid-template-columns:minmax(0,1fr)}.taskCard .row .right{margin-left:0}}
     .orderLayout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:14px;align-items:start}
@@ -959,6 +966,7 @@
                 <div class="divider"></div>
                 <input id="invEditId" type="hidden" />
                 <div class="field"><label class="label">Produktname</label><input id="invName" class="input" /></div>
+                <div class="field"><label class="label">Barcode / EAN</label><input id="invBarcode" class="input" inputmode="numeric" autocomplete="off" placeholder="Scannen oder Nummer eingeben" /></div>
                 <div class="menuFormGrid">
                   <div class="field"><label class="label">Kategorie</label><select id="invCategory" class="select"><option>Küche</option><option>Pizza</option><option>Getränke</option><option>Verpackung</option><option>Reinigung</option><option>Sonstige</option></select></div>
                   <div class="field"><label class="label">Lieferant</label><input id="invSupplier" class="input" placeholder="z. B. Arasco" /></div>
@@ -985,7 +993,7 @@
                 </div>
               </div>
 
-              <div class="item adminOnly">
+              <div id="inventoryMovementPanel" class="item adminOnly">
                 <strong>Lagerbewegung</strong>
                 <div class="divider"></div>
                 <div class="field"><label class="label">Date</label><input id="usageDate" class="input" type="date" /></div>
@@ -994,6 +1002,19 @@
                 <div class="field"><label class="label">Menge</label><input id="usageQty" class="input" type="number" step="0.01" /></div>
                 <button id="btnApplyUsage" class="btnWarn" type="button">Bestand buchen</button>
               </div>
+            </div>
+
+            <div class="item barcodePanel adminOnly">
+              <div class="row"><div><strong>Barcode Scanner</strong><div class="tiny muted">Produkt scannen und Bestand direkt buchen.</div></div><span id="barcodeSupport" class="pill right">Bereit</span></div>
+              <div class="divider"></div>
+              <div class="barcodeActions">
+                <div class="field" style="margin:0"><label class="label">Barcode manuell</label><input id="barcodeManual" class="input" inputmode="numeric" autocomplete="off" placeholder="EAN eingeben" /></div>
+                <button id="btnFindBarcode" class="ghost" type="button">Suchen</button>
+                <button id="btnStartBarcode" class="btn" type="button">Kamera öffnen</button>
+              </div>
+              <div class="row" style="margin-top:9px"><label class="ghost" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><i data-lucide="image-plus"></i> Barcode-Foto wählen<input id="barcodeImage" class="hidden" type="file" accept="image/*" capture="environment" /></label><button id="btnStopBarcode" class="btnDanger hidden" type="button">Kamera schließen</button></div>
+              <div id="barcodeVideoWrap" class="barcodeVideoWrap hidden"><video id="barcodeVideo" playsinline muted></video><div class="barcodeFrame"></div></div>
+              <div id="barcodeResult" class="barcodeResult muted">Noch kein Barcode gescannt.</div>
             </div>
 
             <div class="inventoryToolbar">
@@ -1417,6 +1438,9 @@
     let currentProfile = null;
     let staffCache = [];
     let inventoryCache = [];
+    let barcodeStream = null;
+    let barcodeFrameRequest = null;
+    let barcodeDetector = null;
     let urlaubCache = [];
     let bruchCache = [];
     let restaurantMenuCache = [];
@@ -2317,7 +2341,7 @@
           <div class="row"><div><div class="tiny muted">${htmlEscape(item.category || "Sonstige")}</div><strong>${htmlEscape(item.name || "-")}</strong></div><span class="pill ${low ? "danger" : "ok"} right">${stock <= 0 ? "Leer" : low ? "Nachbestellen" : "OK"}</span></div>
           <div class="stockBar"><span style="width:${percent}%"></span></div>
           <div class="row"><strong>${stock.toFixed(2)} ${htmlEscape(item.unit || "")}</strong><span class="right tiny muted">Min. ${minimum.toFixed(2)} · Pack ${Number(item.packSize || 0).toFixed(2)}</span></div>
-          <div class="tiny muted" style="margin-top:9px">Lieferant: ${htmlEscape(item.supplier || "-")} · Preis: ${euro(item.lastPrice || 0)} · Wert: ${euro(stock * Number(item.lastPrice || 0))}</div>
+          <div class="tiny muted" style="margin-top:9px">Lieferant: ${htmlEscape(item.supplier || "-")} · Preis: ${euro(item.lastPrice || 0)} · Wert: ${euro(stock * Number(item.lastPrice || 0))}${item.barcode ? ` · EAN: ${htmlEscape(item.barcode)}` : ""}</div>
           ${isAdmin() ? `<div class="row" style="margin-top:12px"><button class="smallBtn smallBlue" type="button" onclick="window.editInventory('${item.id}')">Bearbeiten</button><button class="smallBtn smallRed" type="button" onclick="window.removeInventory('${item.id}')">Löschen</button></div>` : ""}
         </article>`;
       }).join("") : `<div class="item muted">Keine passenden Produkte.</div>`;
@@ -2335,6 +2359,7 @@
       $("invStock").value = item.stock || "";
       $("invMin").value = item.minStock || "";
       $("invPrice").value = item.lastPrice || "";
+      $("invBarcode").value = item.barcode || "";
       openView("viewInventory");
     };
 
@@ -2358,9 +2383,11 @@
         stock: Number($("invStock").value || 0),
         minStock: Number($("invMin").value || 0),
         lastPrice: Number($("invPrice").value || 0),
+        barcode: safe($("invBarcode").value).replace(/\s/g,""),
         updatedAt: serverTimestamp()
       };
       if(!data.name) return showMsg("Item fehlt.");
+      if(data.barcode && inventoryCache.some(item => item.barcode === data.barcode && item.id !== id)) return showMsg("Dieser Barcode ist bereits einem anderen Produkt zugeordnet.");
       if(id){
         await updateDoc(doc(db, "inventory", id), data);
       } else {
@@ -2382,6 +2409,91 @@
       $("invStock").value = "";
       $("invMin").value = "";
       $("invPrice").value = "";
+      $("invBarcode").value = "";
+    }
+
+    function findInventoryByBarcode(rawCode){
+      const code = safe(rawCode).replace(/\s/g,"");
+      if(!code) return showMsg("Bitte Barcode scannen oder eingeben.");
+      $("barcodeManual").value = code;
+      const item = inventoryCache.find(row => safe(row.barcode).replace(/\s/g,"") === code);
+      if(item){
+        $("usageItem").value = item.id;
+        $("barcodeResult").innerHTML = `<strong style="color:var(--green)">${htmlEscape(item.name||"Produkt")}</strong><div class="tiny muted">Bestand: ${Number(item.stock||0).toFixed(2)} ${htmlEscape(item.unit||"")} · Barcode ${htmlEscape(code)}</div><div class="tiny" style="margin-top:5px">Jetzt Bewegung und Menge wählen, dann „Bestand buchen“.</div>`;
+        $("inventoryMovementPanel").scrollIntoView({behavior:"smooth",block:"center"});
+      }else{
+        $("invEditId").value = "";
+        $("invBarcode").value = code;
+        $("barcodeResult").innerHTML = `<strong style="color:var(--orange)">Produkt nicht gefunden</strong><div class="tiny muted">Barcode ${htmlEscape(code)} wurde ins neue Produkt übernommen. Bitte Produktdaten ausfüllen und speichern.</div>`;
+      }
+      stopBarcodeCamera();
+    }
+
+    async function prepareBarcodeDetector(){
+      if(!("BarcodeDetector" in window)) return null;
+      if(!barcodeDetector){
+        const supported = await BarcodeDetector.getSupportedFormats().catch(()=>[]);
+        const wanted = ["ean_13","ean_8","upc_a","upc_e","code_128","code_39","itf"].filter(format=>supported.includes(format));
+        barcodeDetector = new BarcodeDetector(wanted.length ? {formats:wanted} : undefined);
+      }
+      return barcodeDetector;
+    }
+
+    async function scanBarcodeFrame(){
+      if(!barcodeStream) return;
+      try{
+        const detector = await prepareBarcodeDetector();
+        const video = $("barcodeVideo");
+        if(detector && video.readyState >= 2){
+          const results = await detector.detect(video);
+          if(results.length){ findInventoryByBarcode(results[0].rawValue); return; }
+        }
+      }catch(err){ console.error("Barcode scan",err); }
+      barcodeFrameRequest = requestAnimationFrame(scanBarcodeFrame);
+    }
+
+    async function startBarcodeCamera(){
+      if(!isAdmin()) return;
+      try{
+        const detector = await prepareBarcodeDetector();
+        if(!detector) return showMsg("Automatisches Scannen wird von diesem Browser nicht unterstützt. Bitte Barcode-Foto oder manuelle Eingabe verwenden.");
+        barcodeStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false});
+        $("barcodeVideo").srcObject = barcodeStream;
+        await $("barcodeVideo").play();
+        $("barcodeVideoWrap").classList.remove("hidden");
+        $("btnStopBarcode").classList.remove("hidden");
+        $("btnStartBarcode").classList.add("hidden");
+        $("barcodeSupport").textContent = "Kamera aktiv";
+        scanBarcodeFrame();
+      }catch(err){
+        console.error(err); showMsg("Kamera konnte nicht geöffnet werden. Bitte Kamerazugriff erlauben oder Barcode manuell eingeben.");
+      }
+    }
+
+    function stopBarcodeCamera(){
+      if(barcodeFrameRequest) cancelAnimationFrame(barcodeFrameRequest);
+      barcodeFrameRequest = null;
+      if(barcodeStream) barcodeStream.getTracks().forEach(track=>track.stop());
+      barcodeStream = null;
+      if($("barcodeVideo")) $("barcodeVideo").srcObject = null;
+      $("barcodeVideoWrap")?.classList.add("hidden");
+      $("btnStopBarcode")?.classList.add("hidden");
+      $("btnStartBarcode")?.classList.remove("hidden");
+      if($("barcodeSupport")) $("barcodeSupport").textContent = "Bereit";
+    }
+
+    async function scanBarcodeImage(file){
+      if(!file) return;
+      try{
+        const detector = await prepareBarcodeDetector();
+        if(!detector) return showMsg("Barcode-Foto wird von diesem Browser nicht unterstützt. Bitte Nummer manuell eingeben.");
+        const bitmap = await createImageBitmap(file);
+        const results = await detector.detect(bitmap);
+        bitmap.close?.();
+        if(!results.length) return showMsg("Auf dem Foto wurde kein Barcode erkannt. Bitte näher und schärfer fotografieren.");
+        findInventoryByBarcode(results[0].rawValue);
+      }catch(err){ console.error(err); showMsg("Barcode-Foto konnte nicht gelesen werden."); }
+      finally{ $("barcodeImage").value = ""; }
     }
 
     async function applyInventoryUsage(){
@@ -4872,6 +4984,11 @@ bruchCache.sort((a, b) => {
     $("btnApplyUsage").addEventListener("click", applyInventoryUsage);
     $("inventorySearch").addEventListener("input", renderInventory);
     $("inventoryCategoryFilter").addEventListener("change", renderInventory);
+    $("btnFindBarcode").addEventListener("click", () => findInventoryByBarcode($("barcodeManual").value));
+    $("barcodeManual").addEventListener("keydown", event => { if(event.key === "Enter") findInventoryByBarcode(event.target.value); });
+    $("btnStartBarcode").addEventListener("click", startBarcodeCamera);
+    $("btnStopBarcode").addEventListener("click", stopBarcodeCamera);
+    $("barcodeImage").addEventListener("change", event => scanBarcodeImage(event.target.files?.[0]));
     $("supplierOrderSearch").addEventListener("input", renderSupplierOrderRows);
     $("supplierOrderSelectedOnly").addEventListener("change", renderSupplierOrderRows);
     $("supplierOrderType").addEventListener("change", resetSupplierOrderForm);
@@ -5076,6 +5193,7 @@ bruchCache.sort((a, b) => {
     onAuthStateChanged(auth, async (user)=>{
       currentUser = user || null;
       if(!user){
+        stopBarcodeCamera();
         stopGeofenceMonitor();
         if(timeClockQrTimer){ clearInterval(timeClockQrTimer); timeClockQrTimer = null; }
         if(timeClockAdminUnsubscribe){
