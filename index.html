@@ -2150,7 +2150,7 @@
             <span class="right tiny muted">${htmlEscape(s.email || "")}</span>
           </div>
           <div class="tiny muted">Abteilung: ${htmlEscape(s.department || "-")} · Stundenlohn: ${(Number(s.hourlyRate||0)).toFixed(2)} €</div>
-          ${isAdmin() && r.status !== "cancelled" ? `<div class="row" style="margin-top:10px">
+          ${isAdmin() ? `<div class="row" style="margin-top:10px">
             <button class="smallBtn smallBlue" type="button" onclick="window.editStaff('${s.id}')">Edit</button>
             ${s.id !== currentUser.uid ? `<button class="smallBtn smallRed" type="button" onclick="window.removeStaff('${s.id}')">Delete</button>` : ``}
           </div>` : ``}
@@ -2996,7 +2996,7 @@ ${lastHoursPayload.details.join("\n")}`;
             <span class="right tiny muted">${htmlEscape(r.from || "")} → ${htmlEscape(r.to || "")}</span>
           </div>
           <div class="tiny muted">${htmlEscape(r.reason || "-")}</div>
-          ${isAdmin() ? `<div class="row" style="margin-top:10px">
+          ${isAdmin() && r.status !== "cancelled" ? `<div class="row" style="margin-top:10px">
             ${r.status !== "approved" ? `<button class="smallBtn smallGreen" type="button" onclick="window.handleUrlaub('${r.id}','approved')">Genehmigen</button>` : ``}
             ${r.status !== "rejected" ? `<button class="smallBtn smallRed" type="button" onclick="window.handleUrlaub('${r.id}','rejected')">${r.status === "approved" ? "Genehmigung stornieren" : "Ablehnen"}</button>` : ``}
           </div>` : r.status === "pending" ? `<div class="row" style="margin-top:10px"><button class="smallBtn smallRed" type="button" onclick="window.cancelUrlaub('${r.id}')">Antrag zurückziehen</button></div>` : ``}
