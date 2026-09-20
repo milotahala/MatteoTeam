@@ -3011,7 +3011,9 @@ ${lastHoursPayload.details.join("\n")}`;
         ["saladetteSauber","Saladette und Behälter sauber"],["kellerSauber","Kellerbereich ordentlich/sauber"],
         ["toiletten","Toiletten kontrolliert und sauber"],["toilettenMaterial","Seife, Papier und Desinfektion aufgefüllt"]
       ]},
-      service:{title:"Service & Kellner",responsibility:"Kellner/Service",devices:[],cleaning:[
+      service:{title:"Service & Kellner",responsibility:"Kellner/Service",devices:[
+        ["getraenkeKuehlschrank","Service – Getränkekühlschrank","Soll: +2 bis +8 °C"]
+      ],cleaning:[
         ["tische","Tische und Stühle sauber"],["kaffeemaschine","Kaffeemaschine gereinigt"],
         ["theke","Theke/Servicebereich sauber"],["serviceBoden","Boden im Gästebereich sauber"],
         ["kartenTabletts","Speisekarten und Tabletts sauber"],["abfallService","Abfall geleert und Bereich ordentlich"]
@@ -3093,7 +3095,7 @@ ${lastHoursPayload.details.join("\n")}`;
 
     function haccpPrintTable(sectionKey,rows,month){
       const definition=HACCP_SECTIONS[sectionKey];
-      const shortNames={tkFisch:"TK Fisch",tkFleisch:"TK Fleisch",tkGemuese:"TK Gemüse",kuehlhaus:"Kühlhaus",kuehlschrank1:"Kühlschrank 1",kuehlschrank2:"Kühlschrank 2",meeresfruechte:"Meeresfrüchte",grossesKuehlhaus:"Kühlhaus groß",saladette:"Saladette",tageskuehlschrank:"Tageskühlschrank",fleischKuehlschrank:"Fleisch/Geflügel",kellerKuehlhaus:"Keller Kühlhaus",bierfass:"Bierfass"};
+      const shortNames={tkFisch:"TK Fisch",tkFleisch:"TK Fleisch",tkGemuese:"TK Gemüse",kuehlhaus:"Kühlhaus",kuehlschrank1:"Kühlschrank 1",kuehlschrank2:"Kühlschrank 2",meeresfruechte:"Meeresfrüchte",grossesKuehlhaus:"Kühlhaus groß",saladette:"Saladette",tageskuehlschrank:"Tageskühlschrank",fleischKuehlschrank:"Fleisch/Geflügel",kellerKuehlhaus:"Keller Kühlhaus",bierfass:"Bierfass",getraenkeKuehlschrank:"Getränkekühlschrank"};
       const head=definition.devices.map(([key])=>`<th>${shortNames[key]||key}<br><small>°C / sauber</small></th>`).join("");
       const body=rows.map(row=>{
         const section=row[sectionKey]||{};
