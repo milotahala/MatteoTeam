@@ -1035,8 +1035,12 @@
             </div>
 
             <div class="item barcodePanel">
-              <div class="row"><div><strong>Produkt entnehmen</strong><div class="tiny muted">Barcode scannen, Menge eintragen und Verbrauch buchen.</div></div><span id="barcodeSupport" class="pill right">Bereit</span></div>
+              <div class="row"><div><strong id="barcodePanelTitle">Produkt entnehmen</strong><div id="barcodePanelDescription" class="tiny muted">Barcode scannen, Menge eintragen und Verbrauch buchen.</div></div><span id="barcodeSupport" class="pill right">Bereit</span></div>
               <div class="divider"></div>
+              <div class="row" style="margin-bottom:12px">
+                <button id="btnBarcodeModeOut" class="tabBtn active" type="button">Produkt entnehmen</button>
+                <button id="btnBarcodeModeIn" class="tabBtn adminOnly" type="button">Produkt einlegen</button>
+              </div>
               <div class="barcodeActions">
                 <div class="field" style="margin:0"><label class="label">Barcode manuell</label><input id="barcodeManual" class="input" inputmode="numeric" autocomplete="off" placeholder="EAN eingeben" /></div>
                 <button id="btnFindBarcode" class="ghost" type="button">Suchen</button>
@@ -1047,7 +1051,7 @@
               <div id="barcodeResult" class="barcodeResult muted">Noch kein Barcode gescannt.</div>
               <div id="staffConsumptionForm" class="hidden" style="margin-top:12px">
                 <div class="row">
-                  <div class="field" style="flex:1;margin:0"><label class="label">Entnommene Menge</label><input id="staffConsumptionQty" class="input" type="number" min="0.01" step="0.01" placeholder="z. B. 2" /></div>
+                  <div class="field" style="flex:1;margin:0"><label id="barcodeQtyLabel" class="label">Entnommene Menge</label><input id="staffConsumptionQty" class="input" type="number" min="0.01" step="0.01" placeholder="z. B. 2" /></div>
                   <button id="btnUseOnePack" class="ghost hidden" type="button" style="align-self:end">1 Packung</button>
                   <button id="btnBookConsumption" class="btnWarn" type="button" style="align-self:end">Entnehmen</button>
                 </div>
@@ -1492,6 +1496,7 @@
     let barcodeZxingReader = null;
     let barcodeZxingControls = null;
     let scannedInventoryItemId = "";
+    let barcodeMovementMode = "out";
     let urlaubCache = [];
     let bruchCache = [];
     let restaurantMenuCache = [];
@@ -2515,6 +2520,28 @@
       stopBarcodeCamera();
     }
 
+    function setBarcodeMovementMode(mode){
+      if(mode === "in" && !isAdmin()) return showMsg("Nur Admin kann Produkte einlegen.");
+      barcodeMovementMode = mode === "in" ? "in" : "out";
+      const incoming = barcodeMovementMode === "in";
+      $("btnBarcodeModeOut").classList.toggle("active", !incoming);
+      $("btnBarcodeModeIn").classList.toggle("active", incoming);
+      $("barcodePanelTitle").textContent = incoming ? "Produkt einlegen" : "Produkt entnehmen";
+      $("barcodePanelDescription").textContent = incoming
+        ? "Barcode scannen, Menge eintragen und Wareneingang buchen."
+        : "Barcode scannen, Menge eintragen und Verbrauch buchen.";
+      $("barcodeQtyLabel").textContent = incoming ? "Eingelegte Menge" : "Entnommene Menge";
+      $("btnBookConsumption").textContent = incoming ? "Einlegen" : "Entnehmen";
+      $("btnBookConsumption").classList.toggle("btnWarn", !incoming);
+      $("btnBookConsumption").classList.toggle("btn", incoming);
+      scannedInventoryItemId = "";
+      $("barcodeManual").value = "";
+      $("barcodeResult").textContent = "Noch kein Barcode gescannt.";
+      $("barcodeResult").classList.add("muted");
+      $("staffConsumptionForm").classList.add("hidden");
+      stopBarcodeCamera();
+    }
+
     async function prepareBarcodeDetector(){
       if(!("BarcodeDetector" in window)) return null;
       if(!barcodeDetector){
@@ -2656,29 +2683,31 @@
       const qty = Number($("staffConsumptionQty").value||0);
       if(!item) return showMsg("Bitte zuerst ein Produkt scannen.");
       if(!(qty>0)) return showMsg("Bitte eine gültige Menge eingeben.");
+      if(barcodeMovementMode === "in" && !isAdmin()) return showMsg("Nur Admin kann Produkte einlegen.");
+      const incoming = barcodeMovementMode === "in";
       const itemRef = doc(db,"inventory",item.id);
       try{
-        const remaining = await runTransaction(db, async transaction=>{
+        const newStock = await runTransaction(db, async transaction=>{
           const snapshot = await transaction.get(itemRef);
           if(!snapshot.exists()) throw new Error("Produkt nicht gefunden.");
           const currentStock = Number(snapshot.data().stock||0);
-          if(qty>currentStock) throw new Error(`Nicht genügend Bestand. Verfügbar: ${currentStock} ${item.unit||""}`);
-          const nextStock = currentStock-qty;
+          if(!incoming && qty>currentStock) throw new Error(`Nicht genügend Bestand. Verfügbar: ${currentStock} ${item.unit||""}`);
+          const nextStock = currentStock + (incoming ? qty : -qty);
           transaction.update(itemRef,{stock:nextStock,lastUsageDate:localDateKey(),updatedAt:serverTimestamp()});
           return nextStock;
         });
         await addDoc(collection(db,"inventoryUsage"),{
-          itemId:item.id,itemName:item.name,barcode:item.barcode||"",qty,type:"out",unit:item.unit||"",
-          date:localDateKey(),stockAfter:remaining,createdBy:currentUser.uid,
-          createdByName:currentProfile.name||currentUser.email,source:"staffBarcode",createdAt:serverTimestamp()
+          itemId:item.id,itemName:item.name,barcode:item.barcode||"",qty,type:incoming?"in":"out",unit:item.unit||"",
+          date:localDateKey(),stockAfter:newStock,createdBy:currentUser.uid,
+          createdByName:currentProfile.name||currentUser.email,source:incoming?"adminBarcodeIn":"staffBarcode",createdAt:serverTimestamp()
         });
         await loadInventory();
         $("staffConsumptionQty").value="";
-        $("barcodeResult").innerHTML=`<strong style="color:var(--green)">Gebucht: ${qty} ${htmlEscape(item.unit||"")} ${htmlEscape(item.name||"")}</strong><div class="tiny muted">Restbestand: ${Number(remaining).toFixed(2)} ${htmlEscape(item.unit||"")} · Von: ${htmlEscape(currentProfile.name||currentUser.email)}</div>`;
+        $("barcodeResult").innerHTML=`<strong style="color:var(--green)">${incoming?"Eingelegt":"Entnommen"}: ${qty} ${htmlEscape(item.unit||"")} ${htmlEscape(item.name||"")}</strong><div class="tiny muted">Neuer Bestand: ${Number(newStock).toFixed(2)} ${htmlEscape(item.unit||"")} · Von: ${htmlEscape(currentProfile.name||currentUser.email)}</div>`;
         $("staffConsumptionForm").classList.add("hidden");
         scannedInventoryItemId="";
-        showMsg("Entnahme wurde gespeichert.");
-      }catch(err){ console.error(err); showMsg(err.message||"Entnahme konnte nicht gespeichert werden."); }
+        showMsg(incoming ? "Wareneingang wurde gespeichert." : "Entnahme wurde gespeichert.");
+      }catch(err){ console.error(err); showMsg(err.message||(incoming?"Wareneingang konnte nicht gespeichert werden.":"Entnahme konnte nicht gespeichert werden.")); }
     }
 
     async function applyInventoryUsage(){
@@ -5228,6 +5257,8 @@ bruchCache.sort((a, b) => {
     $("inventorySearch").addEventListener("input", renderInventory);
     $("inventoryCategoryFilter").addEventListener("change", renderInventory);
     $("btnFindBarcode").addEventListener("click", () => findInventoryByBarcode($("barcodeManual").value));
+    $("btnBarcodeModeOut").addEventListener("click", () => setBarcodeMovementMode("out"));
+    $("btnBarcodeModeIn").addEventListener("click", () => setBarcodeMovementMode("in"));
     $("barcodeManual").addEventListener("keydown", event => { if(event.key === "Enter") findInventoryByBarcode(event.target.value); });
     $("btnStartBarcode").addEventListener("click", startBarcodeCamera);
     $("btnStopBarcode").addEventListener("click", stopBarcodeCamera);
