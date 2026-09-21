@@ -1463,9 +1463,6 @@
     import {
       getMessaging, getToken, onMessage, isSupported as isMessagingSupported
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging.js";
-    import {
-      getFunctions, httpsCallable
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
@@ -1485,8 +1482,6 @@
     const staffCreatorAuth = getAuth(staffCreatorApp);
     const db = getFirestore(app);
     const storage = getStorage(app);
-    const functions = getFunctions(app, "europe-west1");
-    const sendSupplierOrderEmail = httpsCallable(functions, "sendSupplierOrderEmail");
     const WEB_PUSH_VAPID_KEY = "BM2EXN1YfVTz0ujBbFwZcrMpSxzDpFv9Vwwrglc-UfMMwC6IU3QGI3oEUJuLmKcfdyx5fsVrTzQ7LFv57OtdjwQ";
     let messaging = null;
     let messagingRegistration = null;
@@ -2829,13 +2824,16 @@
     }
 
     function supplierOrderEmailBody(order){
-      const itemLines = order.items.map(item => {
-        const amounts = order.type === "gemuese"
-          ? [item.crate ? `Kiste/Sack: ${item.crate}` : "", item.kilo ? `Kilo: ${item.kilo}` : "", item.bundle ? `Stück/Bund: ${item.bundle}` : ""].filter(Boolean).join(" · ")
-          : [item.piece ? `Stück: ${item.piece}` : "", item.carton ? `Karton: ${item.carton}` : ""].filter(Boolean).join(" · ");
-        return order.type === "gemuese" ? `${item.nr}. ${item.name}\n   ${amounts}` : `${item.nr}. ${item.article} – ${item.name}\n   ${amounts}`;
-      }).join("\n\n");
-      return `Guten Tag,\n\nhiermit bestellen wir folgende Artikel:\n\n${itemLines}${order.other ? `\n\nSonstiges:\n${order.other}` : ""}\n\n${order.deliveryDate ? `Gewünschtes Lieferdatum: ${order.deliveryDate}\n` : ""}${order.note ? `Nachricht: ${order.note}\n` : ""}\nBestellnummer: ${order.orderNumber}\n\nMit freundlichen Grüßen\nPizzeria Ristorante Matteo GmbH`;
+      const vegetable = order.type === "gemuese";
+      const heading = vegetable
+        ? "Nr. | Artikel | Kiste/Sack | Kilo | Stück/Bund"
+        : "Nr. | Artikel | Bezeichnung | Stück | Karton";
+      const separator = "────────────────────────────────────────";
+      const itemLines = order.items.map(item => vegetable
+        ? `${item.nr || "-"} | ${item.name || "-"} | ${item.crate || "-"} | ${item.kilo || "-"} | ${item.bundle || "-"}`
+        : `${item.nr || "-"} | ${item.article || "-"} | ${item.name || "-"} | ${item.piece || "-"} | ${item.carton || "-"}`
+      ).join("\n");
+      return `Guten Tag,\n\nhiermit bestellen wir folgende Artikel:\n\n${heading}\n${separator}\n${itemLines}${order.other ? `\n\nSonstiges:\n${order.other}` : ""}\n\n${order.deliveryDate ? `Gewünschtes Lieferdatum: ${order.deliveryDate}\n` : ""}${order.note ? `Nachricht: ${order.note}\n` : ""}Bestellnummer: ${order.orderNumber}\nAbsender: milot@pizzeriamatteo.de\n\nMit freundlichen Grüßen\nPizzeria Ristorante Matteo GmbH`;
     }
 
     function currentSupplierOrder(){
@@ -2906,38 +2904,14 @@
         createdAt:serverTimestamp()
       };
       try{
-        const sendResult = await sendSupplierOrderEmail({
-          supplier:order.supplier,
-          email:order.email,
-          type:order.type,
-          orderNumber:order.orderNumber,
-          deliveryDate:order.deliveryDate,
-          note:order.note,
-          other:order.other,
-          items:order.items
-        });
-        await addDoc(collection(db, "supplierOrders"), {
-          ...order,
-          status:"sent",
-          sentFrom:"milot@pizzeriamatteo.de",
-          messageId:safe(sendResult.data?.messageId),
-          sentAt:serverTimestamp()
-        });
+        await addDoc(collection(db, "supplierOrders"), order);
+        const subject = `Bestellung ${order.orderNumber} – Pizzeria Ristorante Matteo`;
+        const body = supplierOrderEmailBody(order);
         await loadSupplierOrders();
-        resetSupplierOrderForm();
-        showMsg(`Bestellung wurde direkt von milot@pizzeriamatteo.de an ${email} gesendet.`);
+        window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       }catch(err){
         console.error(err);
-        const fallback = confirm("Der direkte Versand über milot@pizzeriamatteo.de ist noch nicht aktiviert. Bestellung stattdessen im E-Mail-Programm öffnen?");
-        if(fallback){
-          const subject = `Bestellung ${order.orderNumber} – Pizzeria Ristorante Matteo`;
-          const body = supplierOrderEmailBody(order);
-          await addDoc(collection(db, "supplierOrders"), {...order, status:"prepared"}).catch(console.error);
-          await loadSupplierOrders();
-          window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        }else{
-          showMsg("Bestellung wurde nicht gesendet. Direktversand muss zuerst aktiviert werden.");
-        }
+        showMsg("Bestellung konnte nicht vorbereitet werden: " + (err?.message || "Unbekannter Fehler"));
       }
     }
 
