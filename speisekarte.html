@@ -11,8 +11,8 @@
     .wrap{width:min(100%,980px);margin:auto;padding:18px 14px 50px}.hero{text-align:center;padding:25px 12px 18px}.eyebrow{color:#fca5a5;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.hero h1{margin:6px 0 5px;font-size:clamp(30px,8vw,48px)}.muted{color:var(--muted)}
     .tabs{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;background:rgba(8,21,37,.94);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:16px}.tab{min-height:50px;border:1px solid var(--line);border-radius:12px;background:#122a45;color:#fff;font-weight:900;font-size:16px}.tab.active{background:linear-gradient(135deg,#138452,var(--green));color:#04150e;border-color:transparent}
     .search{width:100%;margin:12px 0;padding:14px 15px;border:1px solid var(--line);border-radius:13px;background:#091a2d;color:#fff;font-size:16px}.chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;padding:0 0 16px}.chip{min-height:50px;border:1px solid var(--line);border-radius:13px;padding:10px 12px;background:linear-gradient(145deg,#132a45,#0d1f35);color:#fff;font-weight:850;box-shadow:0 5px 14px rgba(0,0,0,.13)}.chip.active{background:linear-gradient(135deg,#138452,var(--green));color:#04150e;border-color:transparent;box-shadow:0 7px 18px rgba(34,201,131,.24)}
-    .category{scroll-margin-top:86px;margin:12px 0 24px}.category h2{margin:0 0 10px;padding:11px 14px;border-left:4px solid var(--green);border-radius:9px;background:#0d2036;font-size:22px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{padding:14px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}.head{display:flex;gap:10px;justify-content:space-between}.name{font-weight:900;font-size:17px}.price{color:#fde68a;font-weight:950;white-space:nowrap}.desc{margin-top:6px;color:#d5deea}.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;font-size:12px}.badge{padding:4px 8px;border-radius:999px;background:#0a192b;color:#b8c7d9}.veg{color:#86efac;background:#123c2b}.empty,.error{padding:20px;text-align:center;border:1px solid var(--line);border-radius:14px;background:var(--panel)}details{margin-top:20px;padding:15px;border:1px solid var(--line);border-radius:14px;background:#0d2036}summary{font-weight:900;cursor:pointer}.legend{margin-top:12px;color:#cbd5e1;font-size:13px}.footer{text-align:center;color:var(--muted);padding-top:22px}
-    @media(max-width:650px){.wrap{padding:10px 10px 35px}.grid{grid-template-columns:1fr}.chips{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding-top:18px}.card{padding:13px}.tabs{border-radius:14px}}
+    .category{scroll-margin-top:86px;margin:12px 0 24px}.category h2{margin:0 0 10px;padding:11px 14px;border-left:4px solid var(--green);border-radius:9px;background:#0d2036;font-size:22px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{padding:14px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}.head{display:flex;gap:10px;justify-content:space-between}.name{font-weight:900;font-size:17px}.price{color:#fde68a;font-weight:950;white-space:nowrap}.desc{margin-top:6px;color:#d5deea}.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;font-size:12px}.badge{padding:4px 8px;border-radius:999px;background:#0a192b;color:#b8c7d9}.veg{color:#86efac;background:#123c2b}.empty,.error{padding:20px;text-align:center;border:1px solid var(--line);border-radius:14px;background:var(--panel)}details{margin-top:20px;padding:15px;border:1px solid var(--line);border-radius:14px;background:#0d2036}summary{font-weight:900;cursor:pointer}.legend{margin-top:14px;color:#cbd5e1;font-size:13px}.legendGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 14px}.legendTitle{margin:15px 0 8px;color:#fff;font-weight:900}.legendItem{padding:7px 9px;border-radius:9px;background:#0a192b}.legendItem strong{display:inline-block;min-width:24px;color:#fde68a}.notice{margin:15px 0 0;padding-top:12px;border-top:1px solid var(--line);color:#d5deea}.footer{text-align:center;color:var(--muted);padding-top:22px}
+    @media(max-width:650px){.wrap{padding:10px 10px 35px}.grid,.legendGrid{grid-template-columns:1fr}.chips{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding-top:18px}.card{padding:13px}.tabs{border-radius:14px}}
   </style>
 </head>
 <body>
@@ -22,7 +22,30 @@
     <input id="search" class="search" type="search" placeholder="Gericht oder Zutat suchen …" />
     <div id="chips" class="chips"></div>
     <div id="menu"><div class="empty">Speisekarte wird geladen …</div></div>
-    <details><summary>Allergene & Zusatzstoffe</summary><div class="legend"><strong>A</strong> Eier · <strong>B</strong> Fisch · <strong>C</strong> Krebstiere · <strong>D</strong> Milch · <strong>E</strong> Sellerie · <strong>F</strong> Sesam · <strong>G</strong> Sulphite · <strong>H</strong> Erdnüsse · <strong>I</strong> Gluten/Weizen · <strong>J</strong> Lupine · <strong>K</strong> Schalenfrüchte · <strong>L</strong> Senf · <strong>M</strong> Soja · <strong>N</strong> Weichtiere<br><br><strong>1–16</strong> Zusatzstoffe. Bei Allergien bitte unser Team ansprechen. Keines unserer Gerichte enthält Schweinefleisch oder Alkohol.</div></details>
+    <details><summary>Allergene & Zusatzstoffe</summary><div class="legend">
+      <div class="legendTitle">Allergene</div>
+      <div class="legendGrid">
+        <div class="legendItem"><strong>A</strong> Eier</div><div class="legendItem"><strong>B</strong> Fisch</div>
+        <div class="legendItem"><strong>C</strong> Krebstiere</div><div class="legendItem"><strong>D</strong> Milch</div>
+        <div class="legendItem"><strong>E</strong> Sellerie</div><div class="legendItem"><strong>F</strong> Sesamsamen</div>
+        <div class="legendItem"><strong>G</strong> Schwefeldioxid & Sulphite</div><div class="legendItem"><strong>H</strong> Erdnüsse</div>
+        <div class="legendItem"><strong>I</strong> Glutenhaltiges Getreide (Weizen)</div><div class="legendItem"><strong>J</strong> Lupine</div>
+        <div class="legendItem"><strong>K</strong> Schalenfrüchte</div><div class="legendItem"><strong>L</strong> Senf</div>
+        <div class="legendItem"><strong>M</strong> Sojabohnen</div><div class="legendItem"><strong>N</strong> Weichtiere</div>
+      </div>
+      <div class="legendTitle">Zusatzstoffe</div>
+      <div class="legendGrid">
+        <div class="legendItem"><strong>1</strong> Konservierungsstoffe</div><div class="legendItem"><strong>2</strong> Farbstoff</div>
+        <div class="legendItem"><strong>3</strong> Antioxidationsmittel</div><div class="legendItem"><strong>4</strong> Süßungsmittel Saccharin</div>
+        <div class="legendItem"><strong>5</strong> Süßungsmittel Cyclamat</div><div class="legendItem"><strong>6</strong> Süßungsmittel Aspartam, enthält Phenylalaninquelle</div>
+        <div class="legendItem"><strong>7</strong> Süßungsmittel Acesulfam</div><div class="legendItem"><strong>8</strong> Phosphat</div>
+        <div class="legendItem"><strong>9</strong> Geschwefelt</div><div class="legendItem"><strong>10</strong> Chininhaltig</div>
+        <div class="legendItem"><strong>11</strong> Koffeinhaltig</div><div class="legendItem"><strong>12</strong> Geschmacksverstärker</div>
+        <div class="legendItem"><strong>13</strong> Geschwärzt</div><div class="legendItem"><strong>14</strong> Gewachst</div>
+        <div class="legendItem"><strong>15</strong> Gentechnisch verändert</div><div class="legendItem"><strong>16</strong> Glutenhaltiges Getreide, Gerstenmalz</div>
+      </div>
+      <p class="notice">Bei Unverträglichkeiten oder Allergien wenden Sie sich bitte an unsere Mitarbeiter. Keines unserer Gerichte enthält Schweinefleisch oder Alkohol.</p>
+    </div></details>
     <footer class="footer">Alle Preise in Euro · Pizzeria Ristorante Matteo GmbH</footer>
   </main>
   <script type="module">
