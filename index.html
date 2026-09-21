@@ -1463,6 +1463,9 @@
     import {
       getMessaging, getToken, onMessage, isSupported as isMessagingSupported
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging.js";
+    import {
+      getFunctions, httpsCallable
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",
@@ -1482,6 +1485,8 @@
     const staffCreatorAuth = getAuth(staffCreatorApp);
     const db = getFirestore(app);
     const storage = getStorage(app);
+    const functions = getFunctions(app, "europe-west1");
+    const sendSupplierOrderEmail = httpsCallable(functions, "sendSupplierOrderEmail");
     const WEB_PUSH_VAPID_KEY = "BM2EXN1YfVTz0ujBbFwZcrMpSxzDpFv9Vwwrglc-UfMMwC6IU3QGI3oEUJuLmKcfdyx5fsVrTzQ7LFv57OtdjwQ";
     let messaging = null;
     let messagingRegistration = null;
@@ -2901,14 +2906,29 @@
         createdAt:serverTimestamp()
       };
       try{
-        await addDoc(collection(db, "supplierOrders"), order);
-        const subject = `Bestellung ${order.orderNumber} – Pizzeria Ristorante Matteo`;
-        const body = supplierOrderEmailBody(order);
+        const sendResult = await sendSupplierOrderEmail({
+          supplier:order.supplier,
+          email:order.email,
+          type:order.type,
+          orderNumber:order.orderNumber,
+          deliveryDate:order.deliveryDate,
+          note:order.note,
+          other:order.other,
+          items:order.items
+        });
+        await addDoc(collection(db, "supplierOrders"), {
+          ...order,
+          status:"sent",
+          sentFrom:"milot@pizzeriamatteo.de",
+          messageId:safe(sendResult.data?.messageId),
+          sentAt:serverTimestamp()
+        });
         await loadSupplierOrders();
-        window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        resetSupplierOrderForm();
+        showMsg(`Bestellung wurde direkt von milot@pizzeriamatteo.de an ${email} gesendet.`);
       }catch(err){
         console.error(err);
-        showMsg("Bestellung konnte nicht gespeichert werden: " + err.message);
+        showMsg("Bestellung konnte nicht gesendet werden: " + (err?.message || "Unbekannter Fehler"));
       }
     }
 
