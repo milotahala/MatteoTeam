@@ -1103,9 +1103,9 @@
               <div class="supplierOrderActions">
                 <button id="btnClearSupplierOrder" class="ghost" type="button">Leeren</button>
                 <button id="btnPrintSupplierOrder" class="ghost" type="button"><i data-lucide="printer"></i> Vorschau / PDF</button>
-                <button id="btnSendSupplierOrder" class="btn right" type="button"><i data-lucide="mail"></i> E-Mail öffnen</button>
+                <button id="btnSendSupplierOrder" class="btn right" type="button"><i data-lucide="mail"></i> PDF per E-Mail</button>
               </div>
-              <div class="tiny muted" style="margin-top:10px">Die E-Mail-App öffnet die fertige Bestellung. Prüfe dort den Absender und tippe anschließend auf „Senden“.</div>
+              <div class="tiny muted" style="margin-top:10px">Die Bestellung wird als übersichtliche PDF-Tabelle erstellt. Wähle danach „Mail“, trage den Empfänger ein und prüfe den Absender milot@pizzeriamatteo.de.</div>
             </div>
 
             <div class="item" style="margin-top:14px">
@@ -1449,6 +1449,8 @@
 
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
@@ -2850,6 +2852,73 @@
       };
     }
 
+    function supplierOrderPdfFile(order){
+      const jsPDF = window.jspdf?.jsPDF;
+      if(!jsPDF) throw new Error("PDF-Modul konnte nicht geladen werden.");
+      const doc = new jsPDF({orientation:"landscape", unit:"mm", format:"a4"});
+      const vegetable = order.type === "gemuese";
+      const margin = 12;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(19);
+      doc.text("Bestellliste", margin, 17);
+      doc.setFontSize(11);
+      doc.text("Pizzeria Ristorante Matteo GmbH", margin, 24);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text(`Absender: ${order.senderEmail}`, margin, 29);
+      doc.setFont("helvetica", "bold");
+      doc.text(order.supplier || "Lieferant", 285, 17, {align:"right"});
+      doc.setFont("helvetica", "normal");
+      doc.text(order.email || "", 285, 22, {align:"right"});
+      doc.text(`Bestellnummer: ${order.orderNumber}`, 285, 27, {align:"right"});
+      if(order.deliveryDate) doc.text(`Lieferdatum: ${order.deliveryDate}`, 285, 32, {align:"right"});
+
+      let finalY = 39;
+      if(order.type === "manual"){
+        doc.setFontSize(11);
+        const lines = doc.splitTextToSize(order.other || "", 270);
+        doc.text(lines, margin, finalY);
+        finalY += lines.length * 5;
+      }else{
+        const head = vegetable
+          ? [["Nr.", "Artikel", "Kiste/Sack", "Kilo", "Stück/Bund"]]
+          : [["Nr.", "Artikel", "Bezeichnung", "Stück", "Karton"]];
+        const body = order.items.map(item => vegetable
+          ? [item.nr || "-", item.name || "-", item.crate || "-", item.kilo || "-", item.bundle || "-"]
+          : [item.nr || "-", item.article || "-", item.name || "-", item.piece || "-", item.carton || "-"]
+        );
+        doc.autoTable({
+          startY:39,
+          head,
+          body,
+          theme:"grid",
+          margin:{left:margin, right:margin},
+          styles:{font:"helvetica", fontSize:9, cellPadding:2.5, textColor:[20,20,20], lineColor:[70,70,70], lineWidth:.2},
+          headStyles:{fillColor:[35,35,35], textColor:[255,255,255], fontStyle:"bold"},
+          columnStyles:vegetable
+            ? {0:{cellWidth:14},1:{cellWidth:135},2:{cellWidth:42},3:{cellWidth:32},4:{cellWidth:42}}
+            : {0:{cellWidth:14},1:{cellWidth:30},2:{cellWidth:161},3:{cellWidth:28},4:{cellWidth:32}}
+        });
+        finalY = doc.lastAutoTable?.finalY || 39;
+      }
+      if(order.other && order.type !== "manual"){
+        doc.setFont("helvetica", "bold");
+        doc.text("Sonstiges:", margin, finalY + 8);
+        doc.setFont("helvetica", "normal");
+        const otherLines = doc.splitTextToSize(order.other, 270);
+        doc.text(otherLines, margin, finalY + 13);
+        finalY += 13 + otherLines.length * 4;
+      }
+      if(order.note){
+        doc.setFont("helvetica", "bold");
+        doc.text("Nachricht:", margin, finalY + 8);
+        doc.setFont("helvetica", "normal");
+        doc.text(doc.splitTextToSize(order.note, 255), margin + 22, finalY + 8);
+      }
+      const filename = `Bestellung-${order.orderNumber}.pdf`;
+      return new File([doc.output("blob")], filename, {type:"application/pdf"});
+    }
+
     function printSupplierOrder(){
       const order = currentSupplierOrder();
       if(!order.supplier) return showMsg("Bitte Lieferant eingeben.");
@@ -2904,12 +2973,30 @@
         createdAt:serverTimestamp()
       };
       try{
-        await addDoc(collection(db, "supplierOrders"), order);
         const subject = `Bestellung ${order.orderNumber} – Pizzeria Ristorante Matteo`;
-        const body = supplierOrderEmailBody(order);
+        const pdfFile = supplierOrderPdfFile(order);
+        if(!navigator.share || !navigator.canShare?.({files:[pdfFile]})){
+          const url = URL.createObjectURL(pdfFile);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = pdfFile.name;
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 30000);
+          await addDoc(collection(db, "supplierOrders"), order);
+          await loadSupplierOrders();
+          showMsg("PDF wurde gespeichert. Bitte in Mail an " + email + " anhängen.");
+          return;
+        }
+        const sharePromise = navigator.share({
+          title:subject,
+          text:`Guten Tag,\n\nanbei erhalten Sie unsere Bestellung ${order.orderNumber}.\n\nMit freundlichen Grüßen\nPizzeria Ristorante Matteo GmbH\n\nEmpfänger: ${email}`,
+          files:[pdfFile]
+        });
+        await sharePromise;
+        await addDoc(collection(db, "supplierOrders"), order);
         await loadSupplierOrders();
-        window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       }catch(err){
+        if(err?.name === "AbortError") return;
         console.error(err);
         showMsg("Bestellung konnte nicht vorbereitet werden: " + (err?.message || "Unbekannter Fehler"));
       }
