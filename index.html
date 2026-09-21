@@ -2928,7 +2928,16 @@
         showMsg(`Bestellung wurde direkt von milot@pizzeriamatteo.de an ${email} gesendet.`);
       }catch(err){
         console.error(err);
-        showMsg("Bestellung konnte nicht gesendet werden: " + (err?.message || "Unbekannter Fehler"));
+        const fallback = confirm("Der direkte Versand über milot@pizzeriamatteo.de ist noch nicht aktiviert. Bestellung stattdessen im E-Mail-Programm öffnen?");
+        if(fallback){
+          const subject = `Bestellung ${order.orderNumber} – Pizzeria Ristorante Matteo`;
+          const body = supplierOrderEmailBody(order);
+          await addDoc(collection(db, "supplierOrders"), {...order, status:"prepared"}).catch(console.error);
+          await loadSupplierOrders();
+          window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }else{
+          showMsg("Bestellung wurde nicht gesendet. Direktversand muss zuerst aktiviert werden.");
+        }
       }
     }
 
