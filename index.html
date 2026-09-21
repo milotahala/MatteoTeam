@@ -987,7 +987,15 @@
                 <div class="divider"></div>
                 <input id="invEditId" type="hidden" />
                 <div class="field"><label class="label">Produktname</label><input id="invName" class="input" /></div>
-                <div class="field"><label class="label">Barcode / EAN</label><input id="invBarcode" class="input" inputmode="numeric" autocomplete="off" placeholder="Scannen oder Nummer eingeben" /></div>
+                <div class="field">
+                  <label class="label">Barcode / EAN</label>
+                  <input id="invBarcode" class="input" inputmode="numeric" autocomplete="off" placeholder="Scannen oder Nummer eingeben" />
+                  <div class="row" style="margin-top:9px;gap:9px">
+                    <label class="btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer"><i data-lucide="camera"></i> Kamera öffnen<input id="invBarcodeCamera" class="hidden" type="file" accept="image/*" capture="environment" /></label>
+                    <label class="ghost" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer"><i data-lucide="image-plus"></i> Barcode-Foto wählen<input id="invBarcodeImage" class="hidden" type="file" accept="image/*" /></label>
+                  </div>
+                  <div id="invBarcodeStatus" class="tiny muted" style="margin-top:7px">Noch kein Barcode gescannt.</div>
+                </div>
                 <div class="menuFormGrid">
                   <div class="field"><label class="label">Kategorie</label><select id="invCategory" class="select"><option>Küche</option><option>Pizza</option><option>Getränke</option><option>Verpackung</option><option>Reinigung</option><option>Sonstige</option></select></div>
                   <div class="field"><label class="label">Lieferant</label><input id="invSupplier" class="input" placeholder="z. B. Arasco" /></div>
@@ -2438,6 +2446,7 @@
       $("invMin").value = "";
       $("invPrice").value = "";
       $("invBarcode").value = "";
+      if($("invBarcodeStatus")) $("invBarcodeStatus").textContent = "Noch kein Barcode gescannt.";
     }
 
     function findInventoryByBarcode(rawCode){
@@ -2532,6 +2541,29 @@
         findInventoryByBarcode(results[0].rawValue);
       }catch(err){ console.error(err); showMsg("Barcode-Foto konnte nicht gelesen werden."); }
       finally{ $("barcodeImage").value = ""; }
+    }
+
+    async function scanNewProductBarcodeImage(file, inputId){
+      if(!file) return;
+      try{
+        const detector = await prepareBarcodeDetector();
+        if(!detector) return showMsg("Barcode-Scan wird von diesem Browser nicht unterstützt. Bitte Nummer manuell eingeben.");
+        const bitmap = await createImageBitmap(file);
+        const results = await detector.detect(bitmap);
+        bitmap.close?.();
+        if(!results.length) return showMsg("Auf dem Bild wurde kein Barcode erkannt. Bitte näher und schärfer fotografieren.");
+        const code = safe(results[0].rawValue).replace(/\s/g,"");
+        $("invBarcode").value = code;
+        const existing = inventoryCache.find(item => safe(item.barcode).replace(/\s/g,"") === code);
+        $("invBarcodeStatus").innerHTML = existing
+          ? `<span style="color:var(--orange)">Barcode gehört bereits zu ${htmlEscape(existing.name||"einem Produkt")}.</span>`
+          : `<span style="color:var(--green)">Barcode erkannt: ${htmlEscape(code)}</span>`;
+      }catch(err){
+        console.error(err);
+        showMsg("Barcode konnte nicht gelesen werden.");
+      }finally{
+        if($(inputId)) $(inputId).value = "";
+      }
     }
 
     async function bookStaffConsumption(){
@@ -5115,6 +5147,8 @@ bruchCache.sort((a, b) => {
     $("btnStartBarcode").addEventListener("click", startBarcodeCamera);
     $("btnStopBarcode").addEventListener("click", stopBarcodeCamera);
     $("barcodeImage").addEventListener("change", event => scanBarcodeImage(event.target.files?.[0]));
+    $("invBarcodeCamera").addEventListener("change", event => scanNewProductBarcodeImage(event.target.files?.[0], "invBarcodeCamera"));
+    $("invBarcodeImage").addEventListener("change", event => scanNewProductBarcodeImage(event.target.files?.[0], "invBarcodeImage"));
     $("btnBookConsumption").addEventListener("click", bookStaffConsumption);
     $("staffConsumptionQty").addEventListener("keydown", event=>{if(event.key==="Enter") bookStaffConsumption();});
     $("btnUseOnePack").addEventListener("click", ()=>{
