@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#081525" />
+  <title>Matteo · Speisekarte</title>
+  <style>
+    :root{--bg:#081525;--panel:#102239;--line:#29435f;--text:#f8fafc;--muted:#9fb0c5;--green:#22c983;--gold:#f59e0b}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#07111f,#0b1b2e);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+    .wrap{width:min(100%,980px);margin:auto;padding:18px 14px 50px}.hero{text-align:center;padding:25px 12px 18px}.eyebrow{color:#fca5a5;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.hero h1{margin:6px 0 5px;font-size:clamp(30px,8vw,48px)}.muted{color:var(--muted)}
+    .tabs{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;background:rgba(8,21,37,.94);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:16px}.tab{min-height:50px;border:1px solid var(--line);border-radius:12px;background:#122a45;color:#fff;font-weight:900;font-size:16px}.tab.active{background:linear-gradient(135deg,#138452,var(--green));color:#04150e;border-color:transparent}
+    .search{width:100%;margin:12px 0;padding:14px 15px;border:1px solid var(--line);border-radius:13px;background:#091a2d;color:#fff;font-size:16px}.chips{display:flex;gap:8px;overflow:auto;padding:0 0 13px;scrollbar-width:none}.chip{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:9px 13px;background:#102239;color:#fff;font-weight:800}.chip.active{background:var(--green);color:#04150e;border-color:transparent}
+    .category{scroll-margin-top:86px;margin:12px 0 24px}.category h2{margin:0 0 10px;padding:11px 14px;border-left:4px solid var(--green);border-radius:9px;background:#0d2036;font-size:22px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{padding:14px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}.head{display:flex;gap:10px;justify-content:space-between}.name{font-weight:900;font-size:17px}.price{color:#fde68a;font-weight:950;white-space:nowrap}.desc{margin-top:6px;color:#d5deea}.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;font-size:12px}.badge{padding:4px 8px;border-radius:999px;background:#0a192b;color:#b8c7d9}.veg{color:#86efac;background:#123c2b}.empty,.error{padding:20px;text-align:center;border:1px solid var(--line);border-radius:14px;background:var(--panel)}details{margin-top:20px;padding:15px;border:1px solid var(--line);border-radius:14px;background:#0d2036}summary{font-weight:900;cursor:pointer}.legend{margin-top:12px;color:#cbd5e1;font-size:13px}.footer{text-align:center;color:var(--muted);padding-top:22px}
+    @media(max-width:650px){.wrap{padding:10px 10px 35px}.grid{grid-template-columns:1fr}.hero{padding-top:18px}.card{padding:13px}.tabs{border-radius:14px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero"><div class="eyebrow">Pizzeria · Ristorante</div><h1>Matteo</h1><div class="muted">Unsere Speisekarte für Restaurant und To Go</div></header>
+    <nav class="tabs" aria-label="Speisekarten"><button class="tab active" data-mode="restaurant">Restaurant</button><button class="tab" data-mode="togo">To Go</button></nav>
+    <input id="search" class="search" type="search" placeholder="Gericht oder Zutat suchen …" />
+    <div id="chips" class="chips"></div>
+    <div id="menu"><div class="empty">Speisekarte wird geladen …</div></div>
+    <details><summary>Allergene & Zusatzstoffe</summary><div class="legend"><strong>A</strong> Eier · <strong>B</strong> Fisch · <strong>C</strong> Krebstiere · <strong>D</strong> Milch · <strong>E</strong> Sellerie · <strong>F</strong> Sesam · <strong>G</strong> Sulphite · <strong>H</strong> Erdnüsse · <strong>I</strong> Gluten/Weizen · <strong>J</strong> Lupine · <strong>K</strong> Schalenfrüchte · <strong>L</strong> Senf · <strong>M</strong> Soja · <strong>N</strong> Weichtiere<br><br><strong>1–16</strong> Zusatzstoffe. Bei Allergien bitte unser Team ansprechen. Keines unserer Gerichte enthält Schweinefleisch oder Alkohol.</div></details>
+    <footer class="footer">Alle Preise in Euro · Pizzeria Ristorante Matteo GmbH</footer>
+  </main>
+  <script type="module">
+    const state={mode:"restaurant",category:"Alle",restaurant:[],togo:[],restaurantCategories:[],togoCategories:[]};
+    const esc=value=>String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+    const norm=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    const euro=value=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(Number(value||0));
+
+    function readArray(source,start,end){
+      const from=source.indexOf(start); if(from<0) throw new Error(`Fehlt: ${start}`);
+      const valueStart=source.indexOf("[",from); const to=source.indexOf(end,valueStart);
+      if(valueStart<0||to<0) throw new Error(`Menüdaten unvollständig: ${start}`);
+      return Function(`"use strict";return (${source.slice(valueStart,to).trim().replace(/;$/,"")})`)();
+    }
+
+    async function loadMenus(){
+      const source=await fetch("./index.html",{cache:"no-store"}).then(r=>r.text());
+      state.restaurantCategories=readArray(source,"const MENU_CATEGORIES =","const ARASCO_PRODUCTS");
+      state.restaurant=readArray(source,"const DEFAULT_RESTAURANT_MENU =","let toGoMenuCache");
+      state.togoCategories=readArray(source,"const TO_GO_CATEGORIES =","const DEFAULT_TO_GO_MENU");
+      state.togo=readArray(source,"const DEFAULT_TO_GO_MENU =","const $ =");
+      await applyPublicOverrides();
+      render();
+    }
+
+    async function applyPublicOverrides(){
+      try{
+        const [{initializeApp},{getFirestore,collection,getDocs}]=await Promise.all([
+          import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"),
+          import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js")
+        ]);
+        const app=initializeApp({apiKey:"AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",authDomain:"matteoteam-test.firebaseapp.com",projectId:"matteoteam-test",storageBucket:"matteoteam-test.firebasestorage.app",messagingSenderId:"1084486170913",appId:"1:1084486170913:web:d68cf328becefe226a6660"},"publicMenu");
+        const db=getFirestore(app);
+        for(const [collectionName,key] of [["restaurantMenu","restaurant"],["toGoMenu","togo"]]){
+          const snapshot=await getDocs(collection(db,collectionName));
+          const overrides=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+          const map=new Map(overrides.map(item=>[item.id,item]));
+          const defaults=state[key].map(item=>({...item,...(map.get(item.id)||{})}));
+          const ids=new Set(defaults.map(item=>item.id));
+          state[key]=[...defaults,...overrides.filter(item=>!ids.has(item.id))].filter(item=>item.active!==false);
+        }
+      }catch(error){console.info("Öffentliche Karte nutzt gespeicherte Standarddaten.",error?.message||error)}
+    }
+
+    function render(){
+      const categories=state.mode==="restaurant"?state.restaurantCategories:state.togoCategories;
+      const items=state.mode==="restaurant"?state.restaurant:state.togo;
+      document.querySelectorAll(".tab").forEach(button=>button.classList.toggle("active",button.dataset.mode===state.mode));
+      document.getElementById("chips").innerHTML=["Alle",...categories].map(category=>`<button class="chip${category===state.category?" active":""}" data-category="${esc(category)}">${esc(category)}</button>`).join("");
+      const search=norm(document.getElementById("search").value);
+      const visible=items.filter(item=>(state.category==="Alle"||item.category===state.category)&&(!search||norm([item.name,item.description,item.category,item.allergens].join(" ")).includes(search)));
+      const shownCategories=state.category==="Alle"?categories:[state.category];
+      document.getElementById("menu").innerHTML=shownCategories.map(category=>{
+        const rows=visible.filter(item=>item.category===category);
+        if(!rows.length)return "";
+        return `<section class="category" id="${esc(category)}"><h2>${esc(category)}</h2><div class="grid">${rows.map(card).join("")}</div></section>`;
+      }).join("")||'<div class="empty">Keine passenden Gerichte gefunden.</div>';
+    }
+
+    function card(item){return `<article class="card"><div class="head"><div><div class="name">${esc(item.name||"-")}</div>${item.size?`<div class="muted">${esc(item.size)}</div>`:""}</div><div class="price">${item.priceLabel?esc(item.priceLabel):euro(item.price)}</div></div>${item.description?`<div class="desc">${esc(item.description)}</div>`:""}<div class="meta">${item.vegetarian?'<span class="badge veg">🌿 Vegetarisch</span>':""}${item.allergens?`<span class="badge">Allergene: ${esc(item.allergens)}</span>`:""}</div></article>`}
+
+    document.querySelector(".tabs").addEventListener("click",event=>{const button=event.target.closest("[data-mode]");if(!button)return;state.mode=button.dataset.mode;state.category="Alle";render();window.scrollTo({top:0,behavior:"smooth"})});
+    document.getElementById("chips").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(!button)return;state.category=button.dataset.category;render()});
+    document.getElementById("search").addEventListener("input",render);
+    loadMenus().catch(error=>{console.error(error);document.getElementById("menu").innerHTML='<div class="error">Speisekarte konnte nicht geladen werden. Bitte später erneut versuchen.</div>'});
+  </script>
+</body>
+</html>
