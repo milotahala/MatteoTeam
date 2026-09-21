@@ -1442,6 +1442,7 @@
   </div>
 
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
@@ -1486,6 +1487,8 @@
     let barcodeStream = null;
     let barcodeFrameRequest = null;
     let barcodeDetector = null;
+    let barcodeZxingReader = null;
+    let barcodeZxingControls = null;
     let scannedInventoryItemId = "";
     let urlaubCache = [];
     let bruchCache = [];
@@ -2520,6 +2523,13 @@
       return barcodeDetector;
     }
 
+    function prepareZxingReader(){
+      if(barcodeZxingReader) return barcodeZxingReader;
+      if(!window.ZXingBrowser?.BrowserMultiFormatReader) return null;
+      barcodeZxingReader = new window.ZXingBrowser.BrowserMultiFormatReader();
+      return barcodeZxingReader;
+    }
+
     async function scanBarcodeFrame(){
       if(!barcodeStream) return;
       try{
@@ -2536,7 +2546,25 @@
     async function startBarcodeCamera(){
       try{
         const detector = await prepareBarcodeDetector();
-        if(!detector) return showMsg("Automatisches Scannen wird von diesem Browser nicht unterstützt. Bitte Barcode-Foto oder manuelle Eingabe verwenden.");
+        if(!detector){
+          const reader = prepareZxingReader();
+          if(!reader) return showMsg("Der Barcode-Scanner konnte nicht geladen werden. Bitte Internetverbindung prüfen oder die Nummer manuell eingeben.");
+          const video = $("barcodeVideo");
+          $("barcodeVideoWrap").classList.remove("hidden");
+          $("btnStopBarcode").classList.remove("hidden");
+          $("btnStartBarcode").classList.add("hidden");
+          $("barcodeSupport").textContent = "Kamera aktiv";
+          barcodeZxingControls = await reader.decodeFromConstraints(
+            {video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false},
+            video,
+            (result, error, controls) => {
+              if(!result) return;
+              barcodeZxingControls = controls;
+              findInventoryByBarcode(result.getText());
+            }
+          );
+          return;
+        }
         barcodeStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false});
         $("barcodeVideo").srcObject = barcodeStream;
         await $("barcodeVideo").play();
@@ -2551,6 +2579,10 @@
     }
 
     function stopBarcodeCamera(){
+      if(barcodeZxingControls){
+        barcodeZxingControls.stop();
+        barcodeZxingControls = null;
+      }
       if(barcodeFrameRequest) cancelAnimationFrame(barcodeFrameRequest);
       barcodeFrameRequest = null;
       if(barcodeStream) barcodeStream.getTracks().forEach(track=>track.stop());
@@ -2566,12 +2598,21 @@
       if(!file) return;
       try{
         const detector = await prepareBarcodeDetector();
-        if(!detector) return showMsg("Barcode-Foto wird von diesem Browser nicht unterstützt. Bitte Nummer manuell eingeben.");
-        const bitmap = await createImageBitmap(file);
-        const results = await detector.detect(bitmap);
-        bitmap.close?.();
-        if(!results.length) return showMsg("Auf dem Foto wurde kein Barcode erkannt. Bitte näher und schärfer fotografieren.");
-        findInventoryByBarcode(results[0].rawValue);
+        if(detector){
+          const bitmap = await createImageBitmap(file);
+          const results = await detector.detect(bitmap);
+          bitmap.close?.();
+          if(!results.length) return showMsg("Auf dem Foto wurde kein Barcode erkannt. Bitte näher und schärfer fotografieren.");
+          findInventoryByBarcode(results[0].rawValue);
+        }else{
+          const reader = prepareZxingReader();
+          if(!reader) return showMsg("Der Barcode-Scanner konnte nicht geladen werden. Bitte Nummer manuell eingeben.");
+          const imageUrl = URL.createObjectURL(file);
+          try{
+            const result = await reader.decodeFromImageUrl(imageUrl);
+            findInventoryByBarcode(result.getText());
+          }finally{ URL.revokeObjectURL(imageUrl); }
+        }
       }catch(err){ console.error(err); showMsg("Barcode-Foto konnte nicht gelesen werden."); }
       finally{ $("barcodeImage").value = ""; }
     }
@@ -2580,12 +2621,21 @@
       if(!file) return;
       try{
         const detector = await prepareBarcodeDetector();
-        if(!detector) return showMsg("Barcode-Scan wird von diesem Browser nicht unterstützt. Bitte Nummer manuell eingeben.");
-        const bitmap = await createImageBitmap(file);
-        const results = await detector.detect(bitmap);
-        bitmap.close?.();
-        if(!results.length) return showMsg("Auf dem Bild wurde kein Barcode erkannt. Bitte näher und schärfer fotografieren.");
-        const code = safe(results[0].rawValue).replace(/\s/g,"");
+        let rawValue = "";
+        if(detector){
+          const bitmap = await createImageBitmap(file);
+          const results = await detector.detect(bitmap);
+          bitmap.close?.();
+          if(!results.length) return showMsg("Auf dem Bild wurde kein Barcode erkannt. Bitte näher und schärfer fotografieren.");
+          rawValue = results[0].rawValue;
+        }else{
+          const reader = prepareZxingReader();
+          if(!reader) return showMsg("Der Barcode-Scanner konnte nicht geladen werden. Bitte Nummer manuell eingeben.");
+          const imageUrl = URL.createObjectURL(file);
+          try{ rawValue = (await reader.decodeFromImageUrl(imageUrl)).getText(); }
+          finally{ URL.revokeObjectURL(imageUrl); }
+        }
+        const code = safe(rawValue).replace(/\s/g,"");
         $("invBarcode").value = code;
         const existing = inventoryCache.find(item => safe(item.barcode).replace(/\s/g,"") === code);
         $("invBarcodeStatus").innerHTML = existing
