@@ -360,6 +360,8 @@
     .menuCatBtn{white-space:nowrap;border:1px solid #2a435f;background:#12243a;color:#cbd5e1;border-radius:999px;padding:9px 13px;cursor:pointer}
     .menuCatBtn.active{background:#7f1d1d;border-color:#ef4444;color:#fff}
     .menuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .menuCategorySection{grid-column:1/-1;margin-top:8px}
+    .menuCategoryTitle{margin:0 0 10px;padding:10px 13px;border-left:4px solid var(--green);border-radius:8px;background:#0b1b2e;font-size:20px}
     .menuItem{padding:15px;border:1px solid var(--line);border-radius:16px;background:#102239;display:flex;flex-direction:column;gap:8px}
     .menuItemHead{display:flex;align-items:flex-start;gap:10px}
     .menuItemName{font-weight:900;font-size:16px;line-height:1.25}
@@ -1264,6 +1266,17 @@
               </div>
             </div>
 
+            <div class="item noPrint" style="margin-bottom:14px">
+              <div class="row">
+                <div><strong>Kunden-Speisekarte</strong><div class="tiny muted">Ein QR-Code für Restaurant und To Go – ohne Anmeldung.</div></div>
+                <a class="btn right" href="./speisekarte.html" target="_blank" rel="noopener">Kundenansicht öffnen</a>
+              </div>
+              <div class="row" style="margin-top:12px;align-items:center">
+                <img src="./speisekarte-qr.svg" alt="QR-Code zur Kunden-Speisekarte" style="width:150px;height:150px;background:#fff;border-radius:12px;padding:8px" />
+                <div class="tiny muted">Diesen QR-Code kannst du ausdrucken und auf den Tischen platzieren.</div>
+              </div>
+            </div>
+
             <div class="menuToolbar noPrint">
               <input id="menuSearch" class="input" type="search" placeholder="Gericht oder Zutat suchen …" />
               <select id="menuCategoryFilter" class="select" aria-label="Kategorie"></select>
@@ -1932,7 +1945,7 @@
       $("menuCount").textContent = `${rows.length} Position${rows.length === 1 ? "" : "en"}`;
       document.querySelectorAll("[data-menu-category]").forEach(btn => btn.classList.toggle("active", btn.dataset.menuCategory === activeMenuCategory));
       $("menuCategoryFilter").value = activeMenuCategory;
-      $("restaurantMenuList").innerHTML = rows.length ? rows.map(item => `
+      const renderRestaurantCard = item => `
         <article class="menuItem">
           <div class="menuItemHead">
             <div>
@@ -1947,7 +1960,13 @@
             ${item.allergens ? `<span class="allergenBadge">Allergene: ${htmlEscape(item.allergens)}</span>` : ""}
             ${isAdmin() ? `<span class="right noPrint"><button class="smallBtn smallBlue" type="button" data-menu-edit="${htmlEscape(item.id)}">Edit</button><button class="smallBtn smallRed" type="button" data-menu-delete="${htmlEscape(item.id)}">Löschen</button></span>` : ""}
           </div>
-        </article>`).join("") : `<div class="menuEmpty">Keine passenden Einträge gefunden.</div>`;
+        </article>`;
+      $("restaurantMenuList").innerHTML = rows.length ? (activeMenuCategory === "Alle"
+        ? MENU_CATEGORIES.map(category => {
+            const categoryRows = rows.filter(item => item.category === category);
+            return categoryRows.length ? `<section class="menuCategorySection"><h3 class="menuCategoryTitle">${htmlEscape(category)}</h3><div class="menuGrid">${categoryRows.map(renderRestaurantCard).join("")}</div></section>` : "";
+          }).join("")
+        : rows.map(renderRestaurantCard).join("")) : `<div class="menuEmpty">Keine passenden Einträge gefunden.</div>`;
     }
 
     function clearMenuForm(){
@@ -2060,7 +2079,7 @@
       $("toGoMenuCount").textContent = `${rows.length} Position${rows.length === 1 ? "" : "en"}`;
       $("toGoMenuCategoryFilter").value = activeToGoMenuCategory;
       document.querySelectorAll("[data-togo-category]").forEach(btn => btn.classList.toggle("active", btn.dataset.togoCategory === activeToGoMenuCategory));
-      $("toGoMenuList").innerHTML = rows.length ? rows.map(item => `
+      const renderToGoCard = item => `
         <article class="menuItem">
           <div class="menuItemHead">
             <div><div class="tiny muted">${htmlEscape(item.category || "")}</div><div class="menuItemName">${htmlEscape(item.name || "-")}</div></div>
@@ -2072,7 +2091,13 @@
             ${item.allergens ? `<span class="allergenBadge">Allergene: ${htmlEscape(item.allergens)}</span>` : ""}
             ${isAdmin() ? `<span class="right noPrint"><button class="smallBtn smallBlue" type="button" data-togo-edit="${htmlEscape(item.id)}">Edit</button><button class="smallBtn smallRed" type="button" data-togo-delete="${htmlEscape(item.id)}">Löschen</button></span>` : ""}
           </div>
-        </article>`).join("") : `<div class="menuEmpty">Keine passenden Einträge gefunden.</div>`;
+        </article>`;
+      $("toGoMenuList").innerHTML = rows.length ? (activeToGoMenuCategory === "Alle"
+        ? TO_GO_CATEGORIES.map(category => {
+            const categoryRows = rows.filter(item => item.category === category);
+            return categoryRows.length ? `<section class="menuCategorySection"><h3 class="menuCategoryTitle">${htmlEscape(category)}</h3><div class="menuGrid">${categoryRows.map(renderToGoCard).join("")}</div></section>` : "";
+          }).join("")
+        : rows.map(renderToGoCard).join("")) : `<div class="menuEmpty">Keine passenden Einträge gefunden.</div>`;
     }
 
     function clearToGoMenuForm(){
