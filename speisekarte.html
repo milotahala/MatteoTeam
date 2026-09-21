@@ -26,7 +26,9 @@
     <footer class="footer">Alle Preise in Euro · Pizzeria Ristorante Matteo GmbH</footer>
   </main>
   <script type="module">
-    const state={mode:"restaurant",category:"Alle",restaurant:[],togo:[],restaurantCategories:[],togoCategories:[]};
+    const requestedMode=new URLSearchParams(location.search).get("karte");
+    const lockedMode=requestedMode==="restaurant"||requestedMode==="togo"?requestedMode:"";
+    const state={mode:lockedMode||"restaurant",category:"Alle",restaurant:[],togo:[],restaurantCategories:[],togoCategories:[]};
     const esc=value=>String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
     const norm=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     const euro=value=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(Number(value||0));
@@ -45,6 +47,10 @@
       state.togoCategories=readArray(source,"const TO_GO_CATEGORIES =","const DEFAULT_TO_GO_MENU");
       state.togo=readArray(source,"const DEFAULT_TO_GO_MENU =","const $ =");
       await applyPublicOverrides();
+      if(lockedMode){
+        document.querySelector(".tabs").style.display="none";
+        document.querySelector(".hero .muted").textContent=lockedMode==="restaurant"?"Speisekarte Restaurant":"Speisekarte To Go";
+      }
       render();
     }
 
