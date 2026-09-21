@@ -325,6 +325,13 @@
     .supplierOrderTable .input,.supplierOrderTable .select{padding:10px;min-height:42px}
     .supplierOrderActions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
     .orderHistoryCard{padding:14px;border:1px solid var(--line);border-radius:15px;background:#102239;margin-bottom:9px}
+    .orderHistoryCard summary{cursor:pointer;list-style:none}
+    .orderHistoryCard summary::-webkit-details-marker{display:none}
+    .orderHistoryCard[open] summary{padding-bottom:12px;border-bottom:1px solid var(--line)}
+    .orderHistoryDetails{padding-top:12px}
+    .orderHistoryItems{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+    .orderHistoryItems th,.orderHistoryItems td{padding:7px;border:1px solid var(--line);text-align:left;vertical-align:top}
+    .orderHistoryItems th{background:#0c1c30}
     .pill{
       display:inline-flex;align-items:center;gap:6px;padding:6px 10px;
       border-radius:999px;font-size:12px;font-weight:800
@@ -1109,7 +1116,7 @@
             </div>
 
             <div class="item" style="margin-top:14px">
-              <div class="row"><strong>Gespeicherte Bestellungen</strong><button id="btnReloadSupplierOrders" class="ghost right" type="button">Aktualisieren</button></div>
+              <div class="row"><strong>Gespeicherte Bestellungen</strong><div class="right row"><button id="btnReloadSupplierOrders" class="ghost" type="button">Aktualisieren</button><button id="btnDeleteAllSupplierOrders" class="btnWarn adminOnly" type="button">Alle löschen</button></div></div>
               <div class="divider"></div>
               <div id="supplierOrderHistory" class="muted">Noch keine Bestellungen.</div>
             </div>
@@ -2984,6 +2991,7 @@
           setTimeout(() => URL.revokeObjectURL(url), 30000);
           await addDoc(collection(db, "supplierOrders"), order);
           await loadSupplierOrders();
+          resetSupplierOrderForm();
           showMsg("PDF wurde gespeichert. Bitte in Mail an " + email + " anhängen.");
           return;
         }
@@ -2995,10 +3003,45 @@
         await sharePromise;
         await addDoc(collection(db, "supplierOrders"), order);
         await loadSupplierOrders();
+        resetSupplierOrderForm();
       }catch(err){
         if(err?.name === "AbortError") return;
         console.error(err);
         showMsg("Bestellung konnte nicht vorbereitet werden: " + (err?.message || "Unbekannter Fehler"));
+      }
+    }
+
+    function supplierOrderDate(value){
+      const date = value?.toDate ? value.toDate() : value ? new Date(value) : null;
+      if(!date || Number.isNaN(date.getTime())) return "Datum nicht verfügbar";
+      return date.toLocaleString("de-DE", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"});
+    }
+
+    function supplierOrderHistoryTable(order){
+      const items = Array.isArray(order.items) ? order.items : [];
+      if(!items.length) return order.other ? `<div class="tiny" style="white-space:pre-wrap">${htmlEscape(order.other)}</div>` : `<div class="tiny muted">Keine Artikel gespeichert.</div>`;
+      const vegetable = order.type === "gemuese";
+      const headings = vegetable
+        ? `<th>Nr.</th><th>Artikel</th><th>Kiste/Sack</th><th>Kilo</th><th>Stück/Bund</th>`
+        : `<th>Nr.</th><th>Artikel</th><th>Bezeichnung</th><th>Stück</th><th>Karton</th>`;
+      const rows = items.map(item => vegetable
+        ? `<tr><td>${htmlEscape(item.nr ?? "")}</td><td>${htmlEscape(item.name || "")}</td><td>${htmlEscape(item.crate || "-")}</td><td>${htmlEscape(item.kilo || "-")}</td><td>${htmlEscape(item.bundle || "-")}</td></tr>`
+        : `<tr><td>${htmlEscape(item.nr ?? "")}</td><td>${htmlEscape(item.article || "")}</td><td>${htmlEscape(item.name || "")}</td><td>${htmlEscape(item.piece || "-")}</td><td>${htmlEscape(item.carton || "-")}</td></tr>`
+      ).join("");
+      return `<div class="tableWrap"><table class="orderHistoryItems"><thead><tr>${headings}</tr></thead><tbody>${rows}</tbody></table></div>${order.other ? `<div class="tiny" style="white-space:pre-wrap;margin-top:10px"><strong>Sonstiges:</strong><br>${htmlEscape(order.other)}</div>` : ""}`;
+    }
+
+    async function deleteAllSupplierOrders(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      if(!supplierOrderCache.length) return showMsg("Keine Bestellungen zum Löschen.");
+      if(!confirm(`Wirklich alle ${supplierOrderCache.length} gespeicherten Bestellungen löschen?`)) return;
+      try{
+        await Promise.all(supplierOrderCache.map(order => deleteDoc(doc(db, "supplierOrders", order.id))));
+        await loadSupplierOrders();
+        showMsg("Alle gespeicherten Bestellungen wurden gelöscht.");
+      }catch(err){
+        console.error(err);
+        showMsg("Bestellungen konnten nicht gelöscht werden: " + err.message);
       }
     }
 
@@ -3010,12 +3053,19 @@
           const bd = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
           return bd - ad;
         });
-        $("supplierOrderHistory").innerHTML = supplierOrderCache.length ? supplierOrderCache.slice(0,15).map(order => `
-          <div class="orderHistoryCard">
-            <div class="row"><strong>${htmlEscape(order.orderNumber || "Bestellung")}</strong><span class="pill ok right">${Number(order.items?.length || 0)} Artikel</span></div>
-            <div class="tiny muted" style="margin-top:7px">${htmlEscape(order.supplier || "-")} · ${htmlEscape(order.email || "-")}${order.deliveryDate ? ` · Lieferung ${htmlEscape(order.deliveryDate)}` : ""}</div>
-            <div class="tiny muted" style="margin-top:4px">Erstellt von ${htmlEscape(order.createdByName || "-")}</div>
-          </div>`).join("") : `<div class="muted">Noch keine Bestellungen.</div>`;
+        $("supplierOrderHistory").innerHTML = supplierOrderCache.length ? supplierOrderCache.map(order => `
+          <details class="orderHistoryCard">
+            <summary>
+              <div class="row"><strong>${htmlEscape(order.orderNumber || "Bestellung")}</strong><span class="pill ok right">${Number(order.items?.length || 0)} Artikel</span></div>
+              <div class="tiny muted" style="margin-top:7px">${supplierOrderDate(order.createdAt)} · ${htmlEscape(order.supplier || "-")}</div>
+              <div class="tiny muted" style="margin-top:4px">Antippen, um die Bestellung zu öffnen</div>
+            </summary>
+            <div class="orderHistoryDetails">
+              <div class="tiny muted">${htmlEscape(order.email || "-")}${order.deliveryDate ? ` · Lieferung ${htmlEscape(order.deliveryDate)}` : ""} · Erstellt von ${htmlEscape(order.createdByName || "-")}</div>
+              ${supplierOrderHistoryTable(order)}
+              ${order.note ? `<div class="tiny" style="margin-top:10px"><strong>Nachricht:</strong> ${htmlEscape(order.note)}</div>` : ""}
+            </div>
+          </details>`).join("") : `<div class="muted">Noch keine Bestellungen.</div>`;
       }catch(err){
         console.error(err);
         $("supplierOrderHistory").innerHTML = `<div class="muted">Bestellungen konnten nicht geladen werden.</div>`;
@@ -5378,6 +5428,7 @@ bruchCache.sort((a, b) => {
     $("btnPrintSupplierOrder").addEventListener("click", printSupplierOrder);
     $("btnSendSupplierOrder").addEventListener("click", sendSupplierOrder);
     $("btnReloadSupplierOrders").addEventListener("click", loadSupplierOrders);
+    $("btnDeleteAllSupplierOrders").addEventListener("click", deleteAllSupplierOrders);
 
     $("btnLoadWeekly").addEventListener("click", buildWeeklyTable);
     $("btnSaveWeekly").addEventListener("click", saveWeekly);
