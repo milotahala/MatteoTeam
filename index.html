@@ -4113,7 +4113,7 @@ bruchCache.sort((a, b) => {
       }
     }
 
-    function selectTable(number){
+    function selectTable(number, showOrder=false){
       const requestedTable = safe(number);
       const existing = orderCache.find(order => safe(order.table).toUpperCase() === requestedTable.toUpperCase() && order.status !== "closed");
       if(!canHandleTable(requestedTable, existing)) return showMsg("Dieser Tisch ist einer anderen Bedienung zugeordnet.");
@@ -4125,6 +4125,11 @@ bruchCache.sort((a, b) => {
       renderTables();
       renderOrderMenu();
       renderCurrentOrder();
+      if(showOrder){
+        const panel = document.querySelector(".orderPanel");
+        panel?.classList.remove("hidden");
+        setTimeout(() => panel?.scrollIntoView({behavior:"smooth",block:"start"}), 50);
+      }
     }
 
     function addOrderItem(menuId, sourceButton){
@@ -5846,7 +5851,7 @@ bruchCache.sort((a, b) => {
 
     $("tableGrid").addEventListener("click", event => {
       const button = event.target.closest("[data-table-name]");
-      if(button) selectTable(button.dataset.tableName);
+      if(button) selectTable(button.dataset.tableName, true);
     });
     function openCustomTable(){
       const tableName = safe($("customTableName").value);
@@ -5909,7 +5914,9 @@ bruchCache.sort((a, b) => {
         selectedOrderWaiterFilter = filter.dataset.waiterFilter;
         renderAdminWaiterOverview();
         renderTables();
-        $("tableOpenPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
+        const waiterOrders = orderCache.filter(order => order.status !== "closed" && (selectedOrderWaiterFilter === "all" || order.waiterId === selectedOrderWaiterFilter));
+        if(waiterOrders.length === 1) selectTable(waiterOrders[0].table, true);
+        else $("tableOpenPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
       }else if(assign){
         $("assignmentWaiter").value = assign.dataset.assignWaiter;
         $("assignmentDetails").open = true;
@@ -5922,7 +5929,7 @@ bruchCache.sort((a, b) => {
     });
     $("myWaiterTables").addEventListener("click", event => {
       const button = event.target.closest("[data-my-table]");
-      if(button) selectTable(button.dataset.myTable);
+      if(button) selectTable(button.dataset.myTable, true);
     });
     $("customerOrderList").addEventListener("click", event => {
       const accept = event.target.closest("[data-customer-accept]");
