@@ -466,6 +466,23 @@
     .orderStatus{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
     .orderStatus button{min-height:42px;border-radius:11px;border:1px solid #2a435f;background:#12243a;color:#fff;cursor:pointer}
     .orderStatus button.active{background:#14532d;border-color:#22c55e}
+    .waiterOverviewHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .waiterAdminCard{padding:14px;border:1px solid #2a435f;border-radius:16px;background:#0b1c30;margin-top:10px}
+    .waiterAdminCard.active{border-color:#2dd486;box-shadow:0 0 0 1px rgba(45,212,134,.2)}
+    .waiterIdentity{display:flex;align-items:center;gap:11px;min-width:0}
+    .waiterAvatar{width:44px;height:44px;flex:0 0 44px;border-radius:50%;display:grid;place-items:center;background:#314b72;color:#fff;font-size:20px;font-weight:950}
+    .waiterTableChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+    .waiterTableChip{display:inline-grid;place-items:center;min-width:38px;min-height:34px;padding:5px 9px;border-radius:10px;border:1px solid #16a96b;background:rgba(22,160,95,.22);color:#8af0bd;font-weight:900}
+    .waiterCardActions{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:7px;margin-top:11px}
+    .waiterCardActions button{min-height:42px;padding:8px;border-radius:11px}
+    .myTablesCard{padding:15px;border:1px solid #29435f;border-radius:17px;background:#0b1c30;margin-bottom:12px}
+    #viewOrders .sectionTitle{font-size:30px}
+    #viewOrders .menuCategories{display:flex;gap:7px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;scrollbar-width:none}
+    #viewOrders .menuCategories::-webkit-scrollbar{display:none}
+    #viewOrders .menuCategories .chip{flex:0 0 auto}
+    .orderMenuItem{position:relative;padding-right:52px;min-height:92px}
+    .orderMenuItem::after{content:"+";position:absolute;right:12px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#20c77b;color:#042417;font-size:25px;font-weight:950}
+    @media(max-width:520px){.waiterCardActions{grid-template-columns:1fr 1fr}.waiterCardActions .btnDanger{grid-column:1/-1}.waiterOverviewHead{align-items:flex-start;gap:8px}.waiterOverviewHead .ghost{padding:8px 10px}.waiterAvatar{width:40px;height:40px;flex-basis:40px}}
     @media (max-width:1100px){
       .authWrap,.grid2,.grid3{grid-template-columns:1fr}
       .stats{grid-template-columns:repeat(2,1fr)}
@@ -1394,8 +1411,8 @@
           <section id="viewOrders" class="view card hidden">
             <div class="row" style="margin-bottom:16px">
               <div>
-                <h2 class="sectionTitle">Bestellung & Tische</h2>
-                <div class="sectionSub" style="margin-bottom:0">Tisch wählen, Produkte hinzufügen und Bestellung an Küche senden.</div>
+                <h2 id="ordersPageTitle" class="sectionTitle">Bestellung & Tische</h2>
+                <div id="ordersPageSubtitle" class="sectionSub" style="margin-bottom:0">Kellner verwalten, Tische zuweisen und Bestellungen einsehen.</div>
               </div>
               <button id="btnReloadOrders" class="ghost right" type="button">Aktualisieren</button>
             </div>
@@ -1406,7 +1423,7 @@
               <div id="customerOrderList"><div class="tiny muted">Noch keine QR-Bestellungen.</div></div>
             </details>
 
-            <details class="item adminOnly" style="margin-bottom:14px">
+            <details id="assignmentDetails" class="item adminOnly" style="margin-bottom:14px">
               <summary><strong>👥 Kellner & Tische zuweisen</strong><div class="tiny muted">Kellner auswählen und Tische freigeben.</div></summary>
               <div class="divider"></div>
               <div class="field"><label class="label">Datum</label><input id="tableAssignmentDate" class="input" type="date" style="max-width:220px" /></div>
@@ -1422,6 +1439,7 @@
             <div class="orderLayout">
               <div>
                 <div id="adminWaiterOverview" class="item adminOnly" style="margin-bottom:14px"></div>
+                <div id="myWaiterTables" class="myTablesCard hidden"></div>
                 <div id="tableOpenPanel" class="item">
                   <div class="row" style="margin-bottom:12px"><strong id="tableOpenTitle">Tisch eingeben</strong><span id="openTablesBadge" class="pill warn right">0 offen</span></div>
                   <div class="tableOpenRow">
@@ -3835,11 +3853,25 @@ bruchCache.sort((a, b) => {
       if(!box || !isAdmin()) return;
       const open = orderCache.filter(order => order.status !== "closed");
       const waiterIds = [...new Set(tableAssignmentCache.filter(row => row.date === localDateKey()).map(row => row.waiterId).filter(Boolean))];
-      box.innerHTML = `<div class="row"><strong>Kellner & offene Tische</strong><button class="ghost right" type="button" data-waiter-filter="all">Alle</button></div><div class="divider"></div>${waiterIds.length ? waiterIds.map(id => {
-        const assignment = tableAssignmentCache.find(row => row.date === localDateKey() && row.waiterId === id);
+      box.innerHTML = `<div class="waiterOverviewHead"><div><strong>Kellner</strong><div class="tiny muted">Zugewiesene und offene Tische</div></div><button class="ghost" type="button" data-waiter-filter="all">Alle offenen Tische</button></div>${waiterIds.length ? waiterIds.map(id => {
+        const assignments = tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === id);
+        const assignment = assignments[0];
+        const allowedTables = assignments.filter(row => !row.allTables).map(row => row.table);
+        const allAllowed = assignments.some(row => row.allTables);
         const tables = open.filter(order => order.waiterId === id);
-        return `<button class="ghost" style="margin:4px;padding:9px 12px" type="button" data-waiter-filter="${htmlEscape(id)}"><strong>${htmlEscape(assignment?.waiterName || "-")}</strong> · ${tables.length ? tables.map(order => htmlEscape(order.table)).join(", ") : "keine offenen Tische"}</button>`;
+        const active = selectedOrderWaiterFilter === id ? " active" : "";
+        return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape((assignment?.waiterName || "?").slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(assignment?.waiterName || "-")}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<span class="pill ok right">Alle Tische</span>` : ""}</div><div class="waiterTableChips">${tables.length ? tables.map(order => `<span class="waiterTableChip">${htmlEscape(order.table)}</span>`).join("") : `<span class="tiny muted">Keine offenen Tische</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button><button class="btnDanger" type="button" data-delete-waiter-assignments="${htmlEscape(id)}">Löschen</button></div></article>`;
       }).join("") : `<span class="tiny muted">Noch keine Kellner zugewiesen.</span>`}`;
+    }
+
+    function renderMyWaiterTables(){
+      const box = $("myWaiterTables");
+      if(!box || isAdmin()) return box?.classList.add("hidden");
+      const rows = tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === currentUser?.uid);
+      const allAllowed = rows.some(row => row.allTables);
+      const tables = rows.filter(row => !row.allTables).map(row => row.table);
+      box.classList.toggle("hidden", !rows.length);
+      box.innerHTML = `<div class="row"><div><strong>🪑 Meine Tische (${allAllowed ? "Alle" : tables.length})</strong><div class="tiny muted">Nur meine zugewiesenen Tische</div></div></div><div class="waiterTableChips">${allAllowed ? `<span class="pill ok">Alle Tische freigegeben</span>` : tables.map(table => `<button class="waiterTableChip" type="button" data-my-table="${htmlEscape(table)}">${htmlEscape(table)}</button>`).join("")}</div>`;
     }
 
     async function saveTableAssignment(){
@@ -3914,6 +3946,7 @@ bruchCache.sort((a, b) => {
         tableAssignmentCache = snapshot.docs.map(item => ({id:item.id,...item.data()}));
         updateOrderAccessVisibility();
         renderTableAssignments();
+        renderMyWaiterTables();
         renderCustomerOrders();
       },error => console.error("Tischverteilung",error));
     }
@@ -3921,6 +3954,9 @@ bruchCache.sort((a, b) => {
     function updateOrderAccessVisibility(){
       const hasAccess = isAdmin() || tableAssignmentCache.some(row => row.date === localDateKey() && row.waiterId === currentUser?.uid);
       document.querySelectorAll('[data-view="viewOrders"],[data-dashboard-view="viewOrders"]').forEach(button => button.classList.toggle("hidden", !hasAccess));
+      $("ordersPageTitle").textContent = isAdmin() ? "Bestellung & Tische" : "Meine Tische";
+      $("ordersPageSubtitle").textContent = isAdmin() ? "Kellner verwalten, Tische zuweisen und Bestellungen einsehen." : "Deine zugewiesenen Tische und Bestellungen.";
+      $("btnReloadOrders").classList.toggle("hidden", !isAdmin());
       if(!hasAccess && !$("viewOrders").classList.contains("hidden")) openView("viewDashboard");
     }
 
@@ -5859,12 +5895,28 @@ bruchCache.sort((a, b) => {
       if(filter){ selectedOrderWaiterFilter = filter.dataset.waiterFilter; renderTables(); $("tableGrid")?.scrollIntoView({behavior:"smooth",block:"center"}); return; }
       if(button && isAdmin() && confirm("Tischzuordnung löschen?")) await deleteDoc(doc(db,"tableAssignments",button.dataset.assignmentDelete));
     });
-    $("adminWaiterOverview").addEventListener("click", event => {
+    $("adminWaiterOverview").addEventListener("click", async event => {
       const filter = event.target.closest("[data-waiter-filter]");
-      if(!filter) return;
-      selectedOrderWaiterFilter = filter.dataset.waiterFilter;
-      renderTables();
-      $("tableGrid")?.scrollIntoView({behavior:"smooth",block:"center"});
+      const assign = event.target.closest("[data-assign-waiter]");
+      const remove = event.target.closest("[data-delete-waiter-assignments]");
+      if(filter){
+        selectedOrderWaiterFilter = filter.dataset.waiterFilter;
+        renderAdminWaiterOverview();
+        renderTables();
+        $("tableOpenPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
+      }else if(assign){
+        $("assignmentWaiter").value = assign.dataset.assignWaiter;
+        $("assignmentDetails").open = true;
+        $("assignmentTable").focus();
+        $("assignmentDetails").scrollIntoView({behavior:"smooth",block:"start"});
+      }else if(remove && confirm("Alle Tischzuordnungen dieses Kellners löschen?")){
+        const rows = tableAssignmentCache.filter(row => row.date === assignmentDate() && row.waiterId === remove.dataset.deleteWaiterAssignments);
+        await Promise.all(rows.map(row => deleteDoc(doc(db,"tableAssignments",row.id))));
+      }
+    });
+    $("myWaiterTables").addEventListener("click", event => {
+      const button = event.target.closest("[data-my-table]");
+      if(button) selectTable(button.dataset.myTable);
     });
     $("customerOrderList").addEventListener("click", event => {
       const accept = event.target.closest("[data-customer-accept]");
