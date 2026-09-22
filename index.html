@@ -1445,11 +1445,6 @@
                 <div id="orderEditorControls" class="hidden">
                   <div class="field" style="margin-top:12px"><label class="label">Notiz für Küche / Service</label><textarea id="orderNote" class="textarea" placeholder="z. B. ohne Zwiebeln, extra scharf …"></textarea></div>
                   <div class="orderTotal"><span>Gesamt</span><span id="currentOrderTotal">0,00 €</span></div>
-                  <div class="orderStatus" style="margin-bottom:10px">
-                    <button type="button" data-order-status="new">Neu</button>
-                    <button type="button" data-order-status="kitchen">Küche</button>
-                    <button type="button" data-order-status="ready">Fertig</button>
-                  </div>
                   <div class="row">
                     <button id="btnSaveOrder" class="btn" type="button">Bestellung speichern</button>
                     <button id="btnCloseOrder" class="btnWarn right" type="button">Bezahlt / Schließen</button>
@@ -3863,8 +3858,8 @@ bruchCache.sort((a, b) => {
       const incoming = customerOrderCache.find(order => order.id === id);
       if(!incoming || incoming.status !== "pending" || !canHandleCustomerOrder(incoming)) return showMsg("Diese Bestellung kann nicht übernommen werden.");
       const existing = orderCache.find(order => normalizedTable(order.table) === normalizedTable(incoming.table) && order.status !== "closed");
-      const mergedItems = [...(existing?.items || []).map(item=>({...item}))];
-      (incoming.items || []).forEach(item => {const found=mergedItems.find(row=>row.menuId===item.menuId);if(found)found.qty=Number(found.qty||0)+Number(item.qty||0);else mergedItems.push({...item,qty:Number(item.qty||1)})});
+      const mergedItems = [...(existing?.items || []).map(item=>({...item,station:stationForItem(item)}))];
+      (incoming.items || []).forEach(item => {const normalized={...item,station:stationForItem(item),qty:Number(item.qty||1)};const found=mergedItems.find(row=>row.menuId===item.menuId);if(found)found.qty=Number(found.qty||0)+normalized.qty;else mergedItems.push(normalized)});
       const data={table:incoming.table,items:mergedItems,note:[existing?.note,incoming.note].filter(Boolean).join(" · "),status:existing?.status || "new",total:orderTotal(mergedItems),waiterId:currentUser.uid,waiterName:currentProfile.name || currentUser.email,updatedAt:serverTimestamp()};
       try{
         if(existing) await updateDoc(doc(db,"orders",existing.id),data); else await addDoc(collection(db,"orders"),{...data,createdAt:serverTimestamp()});
@@ -3884,10 +3879,27 @@ bruchCache.sort((a, b) => {
     }
 
     function orderStatusLabel(status){
-      if(status === "kitchen") return "Küche";
-      if(status === "ready") return "Fertig";
       if(status === "closed") return "Bezahlt";
       return "Neu";
+    }
+
+    const THEKE_CATEGORIES = new Set(["Softdrinks","Heiße Getränke","Bier","Longdrinks","Digestif","Offene Weine","Weißwein","Rotwein","Prosecco"]);
+    function stationForItem(item){
+      if(item.station) return item.station;
+      if(item.category === "Pizza" || item.category === "Mini-Pizza" || safe(item.menuId).includes("pizza")) return "Pizza";
+      if(THEKE_CATEGORIES.has(item.category)) return "Theke";
+      return "Küche";
+    }
+
+    function orderLineHtml(item,index){
+      return `<div class="orderLine">
+        <div><strong>${htmlEscape(item.name)}</strong><div class="tiny muted">${euro(item.price)} · ${euro(Number(item.price || 0) * Number(item.qty || 0))}</div></div>
+        <div class="orderQty">
+          <button type="button" data-order-minus="${index}">−</button>
+          <strong>${Number(item.qty || 0)}</strong>
+          <button type="button" data-order-plus="${index}">+</button>
+        </div>
+      </div>`;
     }
 
     function orderTotal(items = currentOrderItems){
@@ -3936,19 +3948,13 @@ bruchCache.sort((a, b) => {
       $("currentOrderStatus").className = `pill ${currentOrderState === "ready" ? "ok" : "warn"} right`;
       $("orderEditorControls").classList.remove("hidden");
       $("orderProductPicker").classList.remove("hidden");
-      $("currentOrderLines").innerHTML = currentOrderItems.length ? currentOrderItems.map((item, index) => `
-        <div class="orderLine">
-          <div><strong>${htmlEscape(item.name)}</strong><div class="tiny muted">${euro(item.price)} · ${euro(Number(item.price || 0) * Number(item.qty || 0))}</div></div>
-          <div class="orderQty">
-            <button type="button" data-order-minus="${index}">−</button>
-            <strong>${Number(item.qty || 0)}</strong>
-            <button type="button" data-order-plus="${index}">+</button>
-          </div>
-        </div>`).join("") : `<div class="muted">Noch keine Produkte hinzugefügt.</div>`;
+      $("currentOrderLines").innerHTML = currentOrderItems.length ? ["Pizza","Küche","Theke"].map(station => {
+        const rows = currentOrderItems.map((item,index)=>({item,index})).filter(row => stationForItem(row.item) === station);
+        return rows.length ? `<div class="item" style="margin-bottom:10px"><strong>${station}</strong><div class="divider"></div>${rows.map(row=>orderLineHtml(row.item,row.index)).join("")}</div>` : "";
+      }).join("") : `<div class="muted">Noch keine Produkte hinzugefügt.</div>`;
       $("currentOrderTotal").textContent = euro(orderTotal());
       const productCount = currentOrderItems.reduce((sum, item) => sum + Number(item.qty || 0), 0);
       $("orderCartSummary").textContent = `${productCount} ${productCount === 1 ? "Produkt" : "Produkte"} · ${euro(orderTotal())}`;
-      document.querySelectorAll("[data-order-status]").forEach(button => button.classList.toggle("active", button.dataset.orderStatus === currentOrderState));
     }
 
     async function loadOrders(){
@@ -3980,7 +3986,7 @@ bruchCache.sort((a, b) => {
       if(!menuItem) return;
       const existing = currentOrderItems.find(item => item.menuId === menuId);
       if(existing) existing.qty += 1;
-      else currentOrderItems.push({menuId:menuItem.id, name:menuItem.name, category:menuItem.category || "", price:Number(menuItem.price || 0), qty:1});
+      else currentOrderItems.push({menuId:menuItem.id, name:menuItem.name, category:menuItem.category || "", station:stationForItem(menuItem), price:Number(menuItem.price || 0), qty:1});
       renderCurrentOrder();
       if(sourceButton){
         sourceButton.classList.add("added");
@@ -4007,7 +4013,7 @@ bruchCache.sort((a, b) => {
       if(!currentOrderItems.length) return showMsg("Bitte mindestens ein Produkt hinzufügen.");
       const data = {
         table:selectedTable,
-        items:currentOrderItems,
+        items:currentOrderItems.map(item => ({...item,station:stationForItem(item)})),
         note:safe($("orderNote").value),
         status:currentOrderState,
         total:orderTotal(),
@@ -5714,10 +5720,6 @@ bruchCache.sort((a, b) => {
       if(minus) changeOrderQty(minus.dataset.orderMinus, -1);
       if(plus) changeOrderQty(plus.dataset.orderPlus, 1);
     });
-    document.querySelectorAll("[data-order-status]").forEach(button => button.addEventListener("click", () => {
-      currentOrderState = button.dataset.orderStatus;
-      renderCurrentOrder();
-    }));
     $("btnSaveOrder").addEventListener("click", saveOrder);
     $("btnCloseOrder").addEventListener("click", closeOrder);
     $("btnReloadOrders").addEventListener("click", loadOrders);
