@@ -663,7 +663,7 @@
           <button class="navBtn" data-view="viewDocuments" type="button"><i data-lucide="scan-line" aria-hidden="true"></i><span>Lieferanten</span></button>
           <button class="navBtn" data-view="viewSickLeave" type="button"><i data-lucide="heart-pulse" aria-hidden="true"></i><span>Krankmeldung</span></button>
           <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP <span id="haccpNavBadge" class="urgentBadge hidden">0</span></span></button>
-          <button class="navBtn" data-view="viewOrders" type="button"><i data-lucide="notebook-tabs" aria-hidden="true"></i><span>Bestellung</span></button>
+          <button class="navBtn" data-view="viewOrders" type="button"><i data-lucide="notebook-tabs" aria-hidden="true"></i><span>Bestellung <span id="customerOrderNavBadge" class="urgentBadge hidden">0</span></span></button>
           <button class="navBtn" data-view="viewRestaurantMenu" type="button"><i data-lucide="utensils" aria-hidden="true"></i><span>Speisekarte</span></button>
           <button class="navBtn" data-view="viewToGoMenu" type="button"><i data-lucide="pizza" aria-hidden="true"></i><span>To Go</span></button>
           <button class="navBtn" data-view="viewUrlaub" type="button"><i data-lucide="palmtree" aria-hidden="true"></i><span>Urlaub</span></button>
@@ -691,7 +691,7 @@
               <button class="dashboardApp" data-dashboard-view="viewDocuments" type="button"><span class="dashboardAppIcon"><i data-lucide="scan-line"></i></span><span>Lieferanten</span></button>
               <button class="dashboardApp" data-dashboard-view="viewSickLeave" type="button"><span class="dashboardAppIcon"><i data-lucide="heart-pulse"></i></span><span>Krankmeldung <span id="sickUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewHaccp" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-check"></i></span><span>HACCP <span id="haccpDashboardBadge" class="urgentBadge hidden">0 Offen</span></span></button>
-              <button class="dashboardApp" data-dashboard-view="viewOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="notebook-tabs"></i></span><span>Bestellung</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="notebook-tabs"></i></span><span>Bestellung <span id="customerOrderDashboardBadge" class="urgentBadge hidden">0</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewRestaurantMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="utensils"></i></span><span>Speisekarte</span></button>
               <button class="dashboardApp" data-dashboard-view="viewToGoMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="pizza"></i></span><span>To Go</span></button>
               <button class="dashboardApp" data-dashboard-view="viewUrlaub" type="button"><span class="dashboardAppIcon"><i data-lucide="palmtree"></i></span><span>Urlaub Antrag <span id="urlaubUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
@@ -1410,7 +1410,7 @@
               <div class="row"><div><strong>Tischverteilung pro Schicht</strong><div class="tiny muted">Jeder Tisch wird einer Bedienung zugeordnet.</div></div><input id="tableAssignmentDate" class="input right" type="date" style="max-width:170px" /></div>
               <div class="divider"></div>
               <div class="menuFormGrid">
-                <div class="field"><label class="label">Tisch</label><input id="assignmentTable" class="input" maxlength="30" placeholder="z. B. 12 oder Terrasse 3" /></div>
+                <div class="field"><label class="label">Tische (mit Komma trennen)</label><input id="assignmentTable" class="input" maxlength="300" placeholder="z. B. A, A1, B1, B2, C1, C2, C4, 60, 65" /></div>
                 <div class="field"><label class="label">Bedienung</label><select id="assignmentWaiter" class="select"></select></div>
               </div>
               <div class="row"><button id="btnSaveTableAssignment" class="btn" type="button">Zuordnung speichern</button><button id="btnOpenTableQr" class="ghost right" type="button">Test-Link öffnen</button></div>
@@ -1528,6 +1528,8 @@
     let tableAssignmentCache = [];
     let customerOrderUnsubscribe = null;
     let tableAssignmentUnsubscribe = null;
+    let customerOrderTimer = null;
+    let customerOrderAlertedIds = new Set();
     let selectedTable = "";
     let currentOrderItems = [];
     let currentOrderId = null;
@@ -3810,31 +3812,59 @@ bruchCache.sort((a, b) => {
 
     async function saveTableAssignment(){
       if(!isAdmin()) return showMsg("Nur Admin.");
-      const table = safe($("assignmentTable").value);
+      const tables = safe($("assignmentTable").value).split(/[,;\n]+/).map(normalizedTable).filter(Boolean);
       const waiterId = $("assignmentWaiter").value;
       const waiter = staffCache.find(person => (person.uid || person.id) === waiterId);
-      if(!table || !waiter) return showMsg("Bitte Tisch und Bedienung wählen.");
+      if(!tables.length || !waiter) return showMsg("Bitte Tische und Bedienung wählen.");
       const date = assignmentDate();
-      const id = `${date}_${normalizedTable(table).replace(/[^A-Z0-9]+/g,"-").replace(/^-|-$/g,"")}`;
-      await setDoc(doc(db,"tableAssignments",id),{date,table,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()});
+      await Promise.all([...new Set(tables)].map(table => {
+        const id = `${date}_${table.replace(/[^A-Z0-9]+/g,"-").replace(/^-|-$/g,"")}`;
+        return setDoc(doc(db,"tableAssignments",id),{date,table,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()});
+      }));
       $("assignmentTable").value = "";
-      showMsg(`Tisch ${table} wurde ${waiter.name || "der Bedienung"} zugeordnet.`);
+      showMsg(`${tables.length} Tische wurden ${waiter.name || "der Bedienung"} zugeordnet.`);
     }
 
+    function customerOrderAgeSeconds(order){
+      const created = order.createdAt?.toMillis?.() || Number(order.createdAt?.seconds || 0) * 1000 || Date.now();
+      return Math.max(0, Math.floor((Date.now() - created) / 1000));
+    }
+
+    function customerOrderIsOverdue(order){ return customerOrderAgeSeconds(order) >= 120; }
+
     function canHandleCustomerOrder(order){
-      if(isAdmin()) return true;
       const assignment = assignmentFor(order.table);
-      return assignment?.waiterId === currentUser?.uid;
+      if(assignment?.waiterId === currentUser?.uid) return true;
+      return isAdmin() && customerOrderIsOverdue(order);
     }
 
     function renderCustomerOrders(){
       const pending = customerOrderCache.filter(order => order.status === "pending" && canHandleCustomerOrder(order));
-      $("customerOrderBadge").textContent = `${pending.length} neu`;
+      const overdue = pending.filter(customerOrderIsOverdue);
+      $("customerOrderBadge").textContent = isAdmin() && overdue.length ? `${overdue.length} Alarm` : `${pending.length} neu`;
+      $("customerOrderBadge").className = `${isAdmin() && overdue.length ? "urgentBadge" : "pill warn"} right`;
+      [$("customerOrderNavBadge"),$("customerOrderDashboardBadge")].forEach(badge => {
+        if(!badge) return;
+        const count = isAdmin() ? overdue.length : pending.length;
+        badge.textContent = String(count);
+        badge.classList.toggle("hidden", count === 0);
+      });
       $("customerOrderList").innerHTML = pending.length ? pending.map(order => {
         const assignment = assignmentFor(order.table);
         const lines = (order.items || []).map(item => `${Number(item.qty || 0)}× ${htmlEscape(item.name || "-")}`).join(" · ");
-        return `<article class="item" style="margin-bottom:9px"><div class="row"><strong>Tisch ${htmlEscape(order.table || "-")}</strong><span class="pill warn">Wartet</span><strong class="right">${euro(order.total)}</strong></div><div class="tiny muted" style="margin-top:7px">${lines}</div>${order.note ? `<div class="tiny" style="margin-top:7px"><strong>Notiz:</strong> ${htmlEscape(order.note)}</div>` : ""}<div class="tiny muted" style="margin-top:7px">Bedienung: ${htmlEscape(assignment?.waiterName || "noch nicht zugeordnet")}</div><div class="row" style="margin-top:10px"><button class="btn" type="button" data-customer-accept="${htmlEscape(order.id)}">Bestätigen</button><button class="ghost right" type="button" data-customer-reject="${htmlEscape(order.id)}">Ablehnen</button></div></article>`;
-      }).join("") : `<div class="tiny muted">Keine neuen QR-Bestellungen für deine Tische.</div>`;
+        const seconds = customerOrderAgeSeconds(order);
+        const late = seconds >= 120;
+        const remaining = Math.max(0, 120 - seconds);
+        const timeText = late ? `Seit ${Math.floor(seconds / 60)} Min. unbestätigt` : `Noch ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2,"0")} bis Admin-Alarm`;
+        return `<article class="item" style="margin-bottom:9px"><div class="row"><strong>Tisch ${htmlEscape(order.table || "-")}</strong><span class="${late ? "urgentBadge" : "pill warn"}">${late ? "Admin-Alarm" : "Wartet"}</span><strong class="right">${euro(order.total)}</strong></div><div class="tiny muted" style="margin-top:7px">${lines}</div>${order.note ? `<div class="tiny" style="margin-top:7px"><strong>Notiz:</strong> ${htmlEscape(order.note)}</div>` : ""}<div class="tiny muted" style="margin-top:7px">Bedienung: ${htmlEscape(assignment?.waiterName || "noch nicht zugeordnet")} · ${timeText}</div><div class="row" style="margin-top:10px"><button class="btn" type="button" data-customer-accept="${htmlEscape(order.id)}">Bestätigen & senden</button><button class="ghost right" type="button" data-customer-reject="${htmlEscape(order.id)}">Ablehnen</button></div></article>`;
+      }).join("") : `<div class="tiny muted">${isAdmin() ? "Keine überfälligen QR-Bestellungen." : "Keine neuen QR-Bestellungen für deine Tische."}</div>`;
+
+      if(isAdmin()) overdue.forEach(order => {
+        if(customerOrderAlertedIds.has(order.id)) return;
+        customerOrderAlertedIds.add(order.id);
+        const assignment = assignmentFor(order.table);
+        playAdminAlert("QR-Bestellung nicht bestätigt", `${assignment?.waiterName || "Bedienung"}: Tisch ${order.table} wartet länger als 2 Minuten.`);
+      });
     }
 
     function startTableAssignments(){
@@ -3848,19 +3878,22 @@ bruchCache.sort((a, b) => {
 
     function startCustomerOrders(){
       customerOrderUnsubscribe?.();
+      if(customerOrderTimer) clearInterval(customerOrderTimer);
       customerOrderUnsubscribe = onSnapshot(collection(db,"customerOrders"),snapshot => {
         customerOrderCache = snapshot.docs.map(item => ({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
         renderCustomerOrders();
       },error => {console.error("QR-Bestellungen",error);showMsg("QR-Bestellungen konnten nicht geladen werden: "+error.message)});
+      customerOrderTimer = setInterval(renderCustomerOrders, 1000);
     }
 
     async function acceptCustomerOrder(id){
       const incoming = customerOrderCache.find(order => order.id === id);
       if(!incoming || incoming.status !== "pending" || !canHandleCustomerOrder(incoming)) return showMsg("Diese Bestellung kann nicht übernommen werden.");
       const existing = orderCache.find(order => normalizedTable(order.table) === normalizedTable(incoming.table) && order.status !== "closed");
+      const assignment = assignmentFor(incoming.table);
       const mergedItems = [...(existing?.items || []).map(item=>({...item,station:stationForItem(item)}))];
       (incoming.items || []).forEach(item => {const normalized={...item,station:stationForItem(item),qty:Number(item.qty||1)};const found=mergedItems.find(row=>row.menuId===item.menuId);if(found)found.qty=Number(found.qty||0)+normalized.qty;else mergedItems.push(normalized)});
-      const data={table:incoming.table,items:mergedItems,note:[existing?.note,incoming.note].filter(Boolean).join(" · "),status:existing?.status || "new",total:orderTotal(mergedItems),waiterId:currentUser.uid,waiterName:currentProfile.name || currentUser.email,updatedAt:serverTimestamp()};
+      const data={table:incoming.table,items:mergedItems,note:[existing?.note,incoming.note].filter(Boolean).join(" · "),status:existing?.status || "new",total:orderTotal(mergedItems),waiterId:assignment?.waiterId || currentUser.uid,waiterName:assignment?.waiterName || currentProfile.name || currentUser.email,updatedAt:serverTimestamp()};
       try{
         if(existing) await updateDoc(doc(db,"orders",existing.id),data); else await addDoc(collection(db,"orders"),{...data,createdAt:serverTimestamp()});
         await updateDoc(doc(db,"customerOrders",id),{status:"accepted",acceptedBy:currentUser.uid,acceptedByName:currentProfile.name || currentUser.email,acceptedAt:serverTimestamp(),updatedAt:serverTimestamp()});
@@ -3906,8 +3939,14 @@ bruchCache.sort((a, b) => {
       return items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0), 0);
     }
 
+    function canHandleTable(table, order=null){
+      if(isAdmin()) return true;
+      const assignment = assignmentFor(table);
+      return assignment?.waiterId === currentUser?.uid || order?.waiterId === currentUser?.uid;
+    }
+
     function renderTables(){
-      const openOrders = orderCache.filter(o => o.status !== "closed");
+      const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o));
       const openByTable = new Map(openOrders.map(o => [safe(o.table).toUpperCase(), o]));
       $("openTablesBadge").textContent = `${openByTable.size} offen`;
       $("tableGrid").innerHTML = openOrders.length ? openOrders
@@ -3970,8 +4009,10 @@ bruchCache.sort((a, b) => {
     }
 
     function selectTable(number){
-      selectedTable = safe(number);
-      const existing = orderCache.find(order => safe(order.table).toUpperCase() === selectedTable.toUpperCase() && order.status !== "closed");
+      const requestedTable = safe(number);
+      const existing = orderCache.find(order => safe(order.table).toUpperCase() === requestedTable.toUpperCase() && order.status !== "closed");
+      if(!canHandleTable(requestedTable, existing)) return showMsg("Dieser Tisch ist einer anderen Bedienung zugeordnet.");
+      selectedTable = requestedTable;
       currentOrderId = existing?.id || null;
       currentOrderItems = (existing?.items || []).map(item => ({...item, qty:Number(item.qty || 1)}));
       currentOrderState = existing?.status || "new";
@@ -4011,14 +4052,17 @@ bruchCache.sort((a, b) => {
     async function saveOrder(){
       if(!selectedTable) return showMsg("Bitte zuerst einen Tisch eingeben.");
       if(!currentOrderItems.length) return showMsg("Bitte mindestens ein Produkt hinzufügen.");
+      const existing = orderCache.find(order => order.id === currentOrderId);
+      if(!canHandleTable(selectedTable, existing)) return showMsg("Dieser Tisch ist einer anderen Bedienung zugeordnet.");
+      const assignment = assignmentFor(selectedTable);
       const data = {
         table:selectedTable,
         items:currentOrderItems.map(item => ({...item,station:stationForItem(item)})),
         note:safe($("orderNote").value),
         status:currentOrderState,
         total:orderTotal(),
-        waiterId:currentUser.uid,
-        waiterName:currentProfile.name || currentUser.email,
+        waiterId:assignment?.waiterId || existing?.waiterId || currentUser.uid,
+        waiterName:assignment?.waiterName || existing?.waiterName || currentProfile.name || currentUser.email,
         updatedAt:serverTimestamp()
       };
       try{
@@ -4038,6 +4082,8 @@ bruchCache.sort((a, b) => {
 
     async function closeOrder(){
       if(!currentOrderId) return showMsg("Diese Bestellung wurde noch nicht gespeichert.");
+      const existing = orderCache.find(order => order.id === currentOrderId);
+      if(!canHandleTable(selectedTable, existing)) return showMsg("Dieser Tisch ist einer anderen Bedienung zugeordnet.");
       if(!confirm(`${selectedTable} als bezahlt schließen?`)) return;
       try{
         await updateDoc(doc(db, "orders", currentOrderId), {status:"closed", closedAt:serverTimestamp(), updatedAt:serverTimestamp()});
@@ -5848,6 +5894,10 @@ bruchCache.sort((a, b) => {
           vacationNotificationUnsubscribe();
           vacationNotificationUnsubscribe = null;
         }
+        if(customerOrderUnsubscribe){ customerOrderUnsubscribe(); customerOrderUnsubscribe = null; }
+        if(tableAssignmentUnsubscribe){ tableAssignmentUnsubscribe(); tableAssignmentUnsubscribe = null; }
+        if(customerOrderTimer){ clearInterval(customerOrderTimer); customerOrderTimer = null; }
+        customerOrderAlertedIds.clear();
         closeVacationNotification();
         vacationNotificationReady = false;
         vacationPopupShown = false;
