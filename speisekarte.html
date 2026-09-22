@@ -68,7 +68,7 @@
     const lockedMode=requestedMode==="restaurant"||requestedMode==="togo"?requestedMode:"";
     const tableName=String(params.get("tisch")||"").trim().slice(0,30);
     const orderingEnabled=Boolean(tableName)&&lockedMode!=="togo";
-    const state={mode:lockedMode||"restaurant",category:"Alle",restaurant:[],togo:[],restaurantCategories:[],togoCategories:[],cart:[],db:null,submitting:false};
+    const state={mode:lockedMode||"restaurant",category:"Alle",restaurant:[],togo:[],restaurantCategories:[],togoCategories:[],cart:[],db:null,auth:null,submitting:false};
     const esc=value=>String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
     const norm=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     const euro=value=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(Number(value||0));
@@ -96,12 +96,18 @@
 
     async function applyPublicOverrides(){
       try{
-        const [{initializeApp},{getFirestore,collection,getDocs}]=await Promise.all([
+        const [{initializeApp},{getFirestore,collection,getDocs},{getAuth,setPersistence,browserLocalPersistence,signInAnonymously}]=await Promise.all([
           import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"),
-          import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js")
+          import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js"),
+          import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js")
         ]);
         const app=initializeApp({apiKey:"AIzaSyBTq_1aKrXLXq20714biUn7qDRBhIBZkMo",authDomain:"matteoteam-test.firebaseapp.com",projectId:"matteoteam-test",storageBucket:"matteoteam-test.firebasestorage.app",messagingSenderId:"1084486170913",appId:"1:1084486170913:web:d68cf328becefe226a6660"},"publicMenu");
         const db=getFirestore(app); state.db=db;
+        if(orderingEnabled){
+          state.auth=getAuth(app);
+          await setPersistence(state.auth,browserLocalPersistence);
+          if(!state.auth.currentUser) await signInAnonymously(state.auth);
+        }
         for(const [collectionName,key] of [["restaurantMenu","restaurant"],["toGoMenu","togo"]]){
           const snapshot=await getDocs(collection(db,collectionName));
           const overrides=snapshot.docs.map(d=>({id:d.id,...d.data()}));
@@ -147,6 +153,7 @@
     }
     async function submitOrder(){
       if(state.submitting||!state.cart.length||!state.db)return;
+      if(orderingEnabled&&!state.auth?.currentUser){alert("Die sichere Verbindung ist noch nicht bereit. Bitte laden Sie die Seite neu oder rufen Sie Ihre Bedienung.");return}
       state.submitting=true;const button=document.getElementById("sendOrder");button.disabled=true;button.textContent="Bestellung wird gesendet …";
       try{
         const {collection,addDoc,serverTimestamp}=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
