@@ -443,8 +443,10 @@
     @media(max-width:720px){.barcodeActions{grid-template-columns:1fr 1fr}.barcodeActions .field{grid-column:1/-1}.barcodeActions button{width:100%}}
     @media(max-width:820px){.closingKpis{grid-template-columns:repeat(2,1fr)}.closingGrid{grid-template-columns:1fr}}
     @media(max-width:760px){.taskFormGrid{grid-template-columns:minmax(0,1fr)}.taskCard .row .right{margin-left:0}}
-    .orderLayout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:14px;align-items:start}
-    .tableOpenRow{display:grid;grid-template-columns:1fr auto;gap:9px;margin-bottom:13px}
+    .orderLayout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:14px;align-items:start;min-width:0;max-width:100%}
+    .orderLayout>*{min-width:0;max-width:100%}
+    .tableOpenRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;margin-bottom:13px;min-width:0}
+    .tableOpenRow .input{min-width:0;width:100%}
     .tableGrid{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
     .tableGrid::-webkit-scrollbar{display:none}
     .tableBtn{min-width:120px;min-height:72px;border-radius:15px;border:1px solid #2a435f;background:#12243a;color:#fff;cursor:pointer;padding:9px;font-weight:900}
@@ -477,11 +479,14 @@
     .waiterCardActions button{min-height:42px;padding:8px;border-radius:11px}
     .myTablesCard{padding:15px;border:1px solid #29435f;border-radius:17px;background:#0b1c30;margin-bottom:12px}
     #viewOrders .sectionTitle{font-size:30px}
-    #viewOrders .menuCategories{display:flex;gap:7px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;scrollbar-width:none}
+    #viewOrders{min-width:0;max-width:100%;overflow:hidden}
+    #viewOrders .menuCategories{display:flex;gap:7px;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;padding-bottom:4px;scrollbar-width:none;width:100%;max-width:100%;min-width:0}
     #viewOrders .menuCategories::-webkit-scrollbar{display:none}
     #viewOrders .menuCategories .chip{flex:0 0 auto}
     .orderMenuItem{position:relative;padding-right:52px;min-height:92px}
     .orderMenuItem::after{content:"+";position:absolute;right:12px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#20c77b;color:#042417;font-size:25px;font-weight:950}
+    #adminWaiterOverview,#myWaiterTables,#tableOpenPanel,#orderProductPicker,.orderPanel{min-width:0;max-width:100%;overflow:hidden}
+    #orderMenuList{min-width:0;max-width:100%}
     @media(max-width:520px){.waiterCardActions{grid-template-columns:1fr 1fr}.waiterCardActions .btnDanger{grid-column:1/-1}.waiterOverviewHead{align-items:flex-start;gap:8px}.waiterOverviewHead .ghost{padding:8px 10px}.waiterAvatar{width:40px;height:40px;flex-basis:40px}}
     @media (max-width:1100px){
       .authWrap,.grid2,.grid3{grid-template-columns:1fr}
