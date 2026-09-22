@@ -296,6 +296,7 @@
     .weekTable input.shiftWork{border-color:#2563eb;background:rgba(37,99,235,.14);color:#bfdbfe}
     .weekTable input.shiftFree{border-color:#16a34a;background:rgba(22,163,74,.16);color:#86efac;font-weight:850}
     .weekTable input.shiftVacation{border-color:#d97706;background:rgba(217,119,6,.18);color:#fcd34d;font-weight:850}
+    .weekTable input.shiftSick{border-color:#ef4444;background:rgba(239,68,68,.18);color:#fecaca;font-weight:850}
     .weekTable input.shiftInvalid{border-color:#dc2626;background:rgba(220,38,38,.12);color:#fca5a5}
     .weekToolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .weekDateNav{display:grid;grid-template-columns:auto minmax(160px,1fr) auto;gap:7px;align-items:center}
@@ -3130,10 +3131,11 @@
 
     function styleWeekInput(input){
       const value = safe(input.value).toLowerCase();
-      input.classList.remove("shiftWork", "shiftFree", "shiftVacation", "shiftInvalid");
+      input.classList.remove("shiftWork", "shiftFree", "shiftVacation", "shiftSick", "shiftInvalid");
       if(!value) return;
       if(value === "frei" || value === "fre") input.classList.add("shiftFree");
       else if(value === "u" || value === "urlaub") input.classList.add("shiftVacation");
+      else if(value === "krank" || value === "k") input.classList.add("shiftSick");
       else input.classList.add("shiftWork");
     }
 
@@ -3180,7 +3182,7 @@
 
     function parseShiftHours(value){
       const raw = safe(value).toLowerCase().replace(/\s/g,"");
-      if(!raw || raw === "frei" || raw === "u") return { total:0, night:0, label: raw.toUpperCase() || "-" };
+      if(!raw || raw === "frei" || raw === "u" || raw === "krank" || raw === "k") return { total:0, night:0, label: raw === "krank" || raw === "k" ? "Krank" : (raw.toUpperCase() || "-") };
 
       const match = raw.match(/^(\d{1,2})(?::?(\d{2}))?-(\d{1,2})(?::?(\d{2}))?$/);
       if(!match) return { total:0, night:0, label:value || "-" };
@@ -4441,6 +4443,15 @@ bruchCache.sort((a, b) => {
           const bb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
           return bb - aa;
         });
+        if(isAdmin()){
+          const confirmedNotSynced = sickLeaveCache.filter(item =>
+            item.status === "confirmed" && !item.weeklyPlanSyncedAt && item.staffId && item.from && item.to
+          );
+          for(const item of confirmedNotSynced){
+            await syncSickLeaveToWeeklyPlan(item, false);
+            item.weeklyPlanSyncedAt = true;
+          }
+        }
         renderSickLeave();
       }catch(err){
         console.error(err);
@@ -4491,15 +4502,77 @@ bruchCache.sort((a, b) => {
       }
     }
 
+    async function syncSickLeaveToWeeklyPlan(item, markConfirmed=true){
+      if(!isAdmin() || !item?.id || !item.staffId || !item.from || !item.to) {
+        throw new Error("Ungültige Krankmeldung.");
+      }
+      if(item.to < item.from) throw new Error("Ungültiger Krankheitszeitraum.");
+
+      const daysByWeek = new Map();
+      let date = item.from;
+      let dayCount = 0;
+      while(date <= item.to){
+        if(++dayCount > 366) throw new Error("Der Krankheitszeitraum ist zu lang.");
+        const weekStart = weekKeyFrom(date);
+        const dayIndex = Math.round(
+          (new Date(date + "T12:00:00") - new Date(weekStart + "T12:00:00")) / 86400000
+        );
+        if(!daysByWeek.has(weekStart)) daysByWeek.set(weekStart, []);
+        daysByWeek.get(weekStart).push(dayIndex);
+        date = addDays(date, 1);
+      }
+
+      const weekRefs = [...daysByWeek.keys()].map(weekStart => ({
+        weekStart,
+        ref:doc(db, "weeklyPlans", weekStart)
+      }));
+      const sickRef = doc(db, "sickLeave", item.id);
+
+      await runTransaction(db, async transaction => {
+        const weekSnapshots = [];
+        for(const week of weekRefs){
+          weekSnapshots.push({week, snap:await transaction.get(week.ref)});
+        }
+
+        weekSnapshots.forEach(({week, snap}) => {
+          const entries = snap.exists() ? {...(snap.data().entries || {})} : {};
+          entries[item.staffId] = {...(entries[item.staffId] || {})};
+          daysByWeek.get(week.weekStart).forEach(dayIndex => {
+            entries[item.staffId][dayIndex] = "Krank";
+          });
+          transaction.set(week.ref, {
+            weekStart:week.weekStart,
+            entries,
+            updatedBy:currentUser.uid,
+            updatedAt:serverTimestamp()
+          }, {merge:true});
+        });
+
+        const sickUpdate = {
+          weeklyPlanSyncedAt:serverTimestamp(),
+          weeklyPlanSyncedBy:currentUser.uid
+        };
+        if(markConfirmed){
+          Object.assign(sickUpdate, {
+            status:"confirmed",
+            confirmedBy:currentUser.uid,
+            confirmedByName:currentProfile.name || currentUser.email,
+            confirmedAt:serverTimestamp()
+          });
+        }
+        transaction.set(sickRef, sickUpdate, {merge:true});
+      });
+    }
+
     async function confirmSickLeave(id){
       if(!isAdmin()) return;
+      const item = sickLeaveCache.find(row => row.id === id);
+      if(!item) return showMsg("Krankmeldung wurde nicht gefunden.");
       try{
-        await updateDoc(doc(db, "sickLeave", id), {
-          status:"confirmed", confirmedBy:currentUser.uid,
-          confirmedByName:currentProfile.name || currentUser.email,
-          confirmedAt:serverTimestamp()
-        });
+        await syncSickLeaveToWeeklyPlan(item, true);
         await loadSickLeave();
+        if(!$("viewWeekly").classList.contains("hidden")) await loadWeekly();
+        showMsg("Krankmeldung bestätigt und automatisch in den Wochenplan eingetragen.");
       }catch(err){
         console.error(err);
         showMsg("Krankmeldung konnte nicht bestätigt werden: " + err.message);
