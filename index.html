@@ -1400,7 +1400,7 @@
               <button id="btnReloadOrders" class="ghost right" type="button">Aktualisieren</button>
             </div>
 
-            <details id="customerOrderBox" class="item" style="margin-bottom:14px">
+            <details id="customerOrderBox" class="item hidden" style="margin-bottom:14px">
               <summary class="row"><div><strong>QR-Bestellungen</strong><div class="tiny muted">Neue Bestellungen der Gäste</div></div><span id="customerOrderBadge" class="pill warn right">0 neu</span></summary>
               <div class="divider"></div>
               <div id="customerOrderList"><div class="tiny muted">Noch keine QR-Bestellungen.</div></div>
@@ -1422,8 +1422,8 @@
             <div class="orderLayout">
               <div>
                 <div id="adminWaiterOverview" class="item adminOnly" style="margin-bottom:14px"></div>
-                <div class="item">
-                  <div class="row" style="margin-bottom:12px"><strong>Tisch eingeben</strong><span id="openTablesBadge" class="pill warn right">0 offen</span></div>
+                <div id="tableOpenPanel" class="item">
+                  <div class="row" style="margin-bottom:12px"><strong id="tableOpenTitle">Tisch eingeben</strong><span id="openTablesBadge" class="pill warn right">0 offen</span></div>
                   <div class="tableOpenRow">
                     <input id="customTableName" class="input" type="text" maxlength="30" placeholder="z. B. D1, A5 oder Terrasse 2" autocomplete="off" />
                     <button id="btnOpenCustomTable" class="btn" type="button">Tisch öffnen</button>
@@ -1534,7 +1534,7 @@
     let customerOrderTimer = null;
     let customerOrderAlertedIds = new Set();
     let selectedTable = "";
-    let selectedOrderWaiterFilter = "all";
+    let selectedOrderWaiterFilter = "none";
     let activeOrderCategory = "Alle";
     let currentOrderItems = [];
     let currentOrderId = null;
@@ -3878,7 +3878,10 @@ bruchCache.sort((a, b) => {
       const pending = customerOrderCache.filter(order => order.status === "pending" && canHandleCustomerOrder(order));
       const overdue = pending.filter(customerOrderIsOverdue);
       const customerOrderBox = $("customerOrderBox");
-      if(customerOrderBox && pending.length) customerOrderBox.open = true;
+      if(customerOrderBox){
+        customerOrderBox.classList.toggle("hidden", pending.length === 0);
+        if(pending.length) customerOrderBox.open = true;
+      }
       $("customerOrderBadge").textContent = isAdmin() && overdue.length ? `${overdue.length} Alarm` : `${pending.length} neu`;
       $("customerOrderBadge").className = `${isAdmin() && overdue.length ? "urgentBadge" : "pill warn"} right`;
       [$("customerOrderNavBadge"),$("customerOrderDashboardBadge")].forEach(badge => {
@@ -3991,6 +3994,18 @@ bruchCache.sort((a, b) => {
     }
 
     function renderTables(){
+      const tablePanel = $("tableOpenPanel");
+      if(isAdmin() && selectedOrderWaiterFilter === "none"){
+        tablePanel?.classList.add("hidden");
+        return;
+      }
+      tablePanel?.classList.remove("hidden");
+      if(isAdmin()){
+        const waiter = staffCache.find(person => (person.uid || person.id) === selectedOrderWaiterFilter);
+        $("tableOpenTitle").textContent = selectedOrderWaiterFilter === "all" ? "Alle offenen Tische" : `${waiter?.name || "Kellner"} · Tische`;
+      }else{
+        $("tableOpenTitle").textContent = "Meine Tische";
+      }
       const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o) && (!isAdmin() || selectedOrderWaiterFilter === "all" || o.waiterId === selectedOrderWaiterFilter));
       const openByTable = new Map(openOrders.map(o => [safe(o.table).toUpperCase(), o]));
       $("openTablesBadge").textContent = `${openByTable.size} offen`;
@@ -4103,14 +4118,15 @@ bruchCache.sort((a, b) => {
       const existing = orderCache.find(order => order.id === currentOrderId);
       if(!canHandleTable(selectedTable, existing)) return showMsg("Dieser Tisch ist einer anderen Bedienung zugeordnet.");
       const assignment = assignmentFor(selectedTable);
+      const selectedWaiter = isAdmin() && selectedOrderWaiterFilter !== "all" && selectedOrderWaiterFilter !== "none" ? staffCache.find(person => (person.uid || person.id) === selectedOrderWaiterFilter) : null;
       const data = {
         table:selectedTable,
         items:currentOrderItems.map(item => ({...item,station:stationForItem(item)})),
         note:safe($("orderNote").value),
         status:currentOrderState,
         total:orderTotal(),
-        waiterId:assignment?.waiterId || existing?.waiterId || currentUser.uid,
-        waiterName:assignment?.waiterName || existing?.waiterName || currentProfile.name || currentUser.email,
+        waiterId:assignment?.waiterId || existing?.waiterId || selectedWaiter?.uid || selectedWaiter?.id || currentUser.uid,
+        waiterName:assignment?.waiterName || existing?.waiterName || selectedWaiter?.name || selectedWaiter?.email || currentProfile.name || currentUser.email,
         updatedAt:serverTimestamp()
       };
       try{
@@ -5792,6 +5808,7 @@ bruchCache.sort((a, b) => {
     });
     function openCustomTable(){
       const tableName = safe($("customTableName").value);
+      if(isAdmin() && selectedOrderWaiterFilter === "none") return showMsg("Bitte zuerst einen Kellner auswählen.");
       if(!tableName) return showMsg("Bitte Tisch eingeben, z. B. D1.");
       selectTable(tableName);
       $("customTableName").value = "";
