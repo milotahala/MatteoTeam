@@ -4126,6 +4126,7 @@ bruchCache.sort((a, b) => {
       renderOrderMenu();
       renderCurrentOrder();
       if(showOrder){
+        $("orderProductPicker")?.classList.add("hidden");
         const panel = document.querySelector(".orderPanel");
         panel?.classList.remove("hidden");
         setTimeout(() => panel?.scrollIntoView({behavior:"smooth",block:"start"}), 50);
@@ -5877,11 +5878,13 @@ bruchCache.sort((a, b) => {
     });
     $("btnShowCurrentOrder").addEventListener("click", () => {
       const panel = document.querySelector(".orderPanel");
+      $("orderProductPicker")?.classList.add("hidden");
       panel?.classList.remove("hidden");
       panel?.scrollIntoView({behavior:"smooth", block:"start"});
     });
     $("btnHideCurrentOrder").addEventListener("click", () => {
       document.querySelector(".orderPanel")?.classList.add("hidden");
+      if(selectedTable) $("orderProductPicker")?.classList.remove("hidden");
       $("orderProductPicker")?.scrollIntoView({behavior:"smooth", block:"start"});
     });
     $("currentOrderLines").addEventListener("click", event => {
