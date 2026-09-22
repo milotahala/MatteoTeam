@@ -1400,22 +1400,23 @@
               <button id="btnReloadOrders" class="ghost right" type="button">Aktualisieren</button>
             </div>
 
-            <div class="item" style="margin-bottom:14px">
-              <div class="row"><div><strong>QR-Bestellungen</strong><div class="tiny muted">Neue Bestellungen der Gäste müssen zuerst von der zuständigen Bedienung bestätigt werden.</div></div><span id="customerOrderBadge" class="pill warn right">0 neu</span></div>
+            <details id="customerOrderBox" class="item" style="margin-bottom:14px">
+              <summary class="row"><div><strong>QR-Bestellungen</strong><div class="tiny muted">Neue Bestellungen der Gäste</div></div><span id="customerOrderBadge" class="pill warn right">0 neu</span></summary>
               <div class="divider"></div>
               <div id="customerOrderList"><div class="tiny muted">Noch keine QR-Bestellungen.</div></div>
-            </div>
+            </details>
 
-            <div class="item adminOnly" style="margin-bottom:14px">
-              <div class="row"><div><strong>Tischverteilung pro Schicht</strong><div class="tiny muted">Jeder Tisch wird einer Bedienung zugeordnet.</div></div><input id="tableAssignmentDate" class="input right" type="date" style="max-width:170px" /></div>
+            <details class="item adminOnly" style="margin-bottom:14px">
+              <summary><strong>Tischverteilung bearbeiten</strong><div class="tiny muted">Nur öffnen, wenn Tische neu verteilt werden.</div></summary>
               <div class="divider"></div>
+              <div class="field"><label class="label">Datum</label><input id="tableAssignmentDate" class="input" type="date" style="max-width:220px" /></div>
               <div class="menuFormGrid">
                 <div class="field"><label class="label">Tische (mit Komma trennen)</label><input id="assignmentTable" class="input" maxlength="300" placeholder="z. B. A, A1, B1, B2, C1, C2, C4, 60, 65" /></div>
                 <div class="field"><label class="label">Bedienung</label><select id="assignmentWaiter" class="select"></select></div>
               </div>
               <div class="row"><button id="btnSaveTableAssignment" class="btn" type="button">Zuordnung speichern</button><button id="btnOpenTableQr" class="ghost right" type="button">Test-Link öffnen</button></div>
               <div id="tableAssignmentList" style="margin-top:12px"></div>
-            </div>
+            </details>
 
             <div class="orderLayout">
               <div>
@@ -1438,8 +1439,8 @@
                 </div>
               </div>
 
-              <aside class="orderPanel">
-                <div class="row"><strong id="currentOrderTitle">Tisch wählen</strong><span id="currentOrderStatus" class="pill warn right">Neu</span></div>
+              <aside class="orderPanel hidden">
+                <div class="row"><strong id="currentOrderTitle">Tisch wählen</strong><span id="currentOrderStatus" class="pill warn">Neu</span><button id="btnHideCurrentOrder" class="ghost right" type="button">Schließen</button></div>
                 <div class="divider"></div>
                 <div id="currentOrderLines" class="muted">Bitte zuerst einen Tisch auswählen.</div>
                 <div id="orderEditorControls" class="hidden">
@@ -3807,7 +3808,13 @@ bruchCache.sort((a, b) => {
     function renderTableAssignments(){
       const date = assignmentDate();
       const rows = tableAssignmentCache.filter(row => row.date === date).sort((a,b) => safe(a.table).localeCompare(safe(b.table),"de",{numeric:true}));
-      $("tableAssignmentList").innerHTML = rows.length ? rows.map(row => `<div class="row item" style="margin-bottom:7px"><strong>Tisch ${htmlEscape(row.table)}</strong><span class="right">${htmlEscape(row.waiterName || "-")}</span><button class="ghost" type="button" data-assignment-delete="${htmlEscape(row.id)}">Löschen</button></div>`).join("") : `<div class="tiny muted">Für diesen Tag sind noch keine Tische verteilt.</div>`;
+      const grouped = new Map();
+      rows.forEach(row => {
+        const key = row.waiterId || row.waiterName || "-";
+        if(!grouped.has(key)) grouped.set(key,{name:row.waiterName || "-",rows:[]});
+        grouped.get(key).rows.push(row);
+      });
+      $("tableAssignmentList").innerHTML = rows.length ? [...grouped.values()].map(group => `<div class="item" style="margin-bottom:7px"><strong>${htmlEscape(group.name)}</strong><div class="tiny muted" style="margin-top:7px">${group.rows.map(row => `<button class="ghost" style="padding:6px 9px;margin:3px" type="button" data-assignment-delete="${htmlEscape(row.id)}" title="Zuordnung löschen">${htmlEscape(row.table)} ×</button>`).join("")}</div></div>`).join("") : `<div class="tiny muted">Für diesen Tag sind noch keine Tische verteilt.</div>`;
     }
 
     async function saveTableAssignment(){
@@ -3841,6 +3848,8 @@ bruchCache.sort((a, b) => {
     function renderCustomerOrders(){
       const pending = customerOrderCache.filter(order => order.status === "pending" && canHandleCustomerOrder(order));
       const overdue = pending.filter(customerOrderIsOverdue);
+      const customerOrderBox = $("customerOrderBox");
+      if(customerOrderBox && pending.length) customerOrderBox.open = true;
       $("customerOrderBadge").textContent = isAdmin() && overdue.length ? `${overdue.length} Alarm` : `${pending.length} neu`;
       $("customerOrderBadge").className = `${isAdmin() && overdue.length ? "urgentBadge" : "pill warn"} right`;
       [$("customerOrderNavBadge"),$("customerOrderDashboardBadge")].forEach(badge => {
@@ -3976,6 +3985,7 @@ bruchCache.sort((a, b) => {
 
     function renderCurrentOrder(){
       if(!selectedTable){
+        document.querySelector(".orderPanel")?.classList.add("hidden");
         $("currentOrderTitle").textContent = "Tisch wählen";
         $("currentOrderLines").innerHTML = "Bitte zuerst einen Tisch auswählen.";
         $("orderEditorControls").classList.add("hidden");
@@ -5758,7 +5768,13 @@ bruchCache.sort((a, b) => {
       if(button) addOrderItem(button.dataset.orderAdd, button);
     });
     $("btnShowCurrentOrder").addEventListener("click", () => {
-      document.querySelector(".orderPanel")?.scrollIntoView({behavior:"smooth", block:"start"});
+      const panel = document.querySelector(".orderPanel");
+      panel?.classList.remove("hidden");
+      panel?.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+    $("btnHideCurrentOrder").addEventListener("click", () => {
+      document.querySelector(".orderPanel")?.classList.add("hidden");
+      $("orderProductPicker")?.scrollIntoView({behavior:"smooth", block:"start"});
     });
     $("currentOrderLines").addEventListener("click", event => {
       const minus = event.target.closest("[data-order-minus]");
