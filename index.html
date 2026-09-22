@@ -1400,6 +1400,23 @@
               <button id="btnReloadOrders" class="ghost right" type="button">Aktualisieren</button>
             </div>
 
+            <div class="item" style="margin-bottom:14px">
+              <div class="row"><div><strong>QR-Bestellungen</strong><div class="tiny muted">Neue Bestellungen der Gäste müssen zuerst von der zuständigen Bedienung bestätigt werden.</div></div><span id="customerOrderBadge" class="pill warn right">0 neu</span></div>
+              <div class="divider"></div>
+              <div id="customerOrderList"><div class="tiny muted">Noch keine QR-Bestellungen.</div></div>
+            </div>
+
+            <div class="item adminOnly" style="margin-bottom:14px">
+              <div class="row"><div><strong>Tischverteilung pro Schicht</strong><div class="tiny muted">Jeder Tisch wird einer Bedienung zugeordnet.</div></div><input id="tableAssignmentDate" class="input right" type="date" style="max-width:170px" /></div>
+              <div class="divider"></div>
+              <div class="menuFormGrid">
+                <div class="field"><label class="label">Tisch</label><input id="assignmentTable" class="input" maxlength="30" placeholder="z. B. 12 oder Terrasse 3" /></div>
+                <div class="field"><label class="label">Bedienung</label><select id="assignmentWaiter" class="select"></select></div>
+              </div>
+              <div class="row"><button id="btnSaveTableAssignment" class="btn" type="button">Zuordnung speichern</button><button id="btnOpenTableQr" class="ghost right" type="button">Test-Link öffnen</button></div>
+              <div id="tableAssignmentList" style="margin-top:12px"></div>
+            </div>
+
             <div class="orderLayout">
               <div>
                 <div class="item">
@@ -1512,6 +1529,10 @@
     let restaurantMenuCache = [];
     let activeMenuCategory = "Alle";
     let orderCache = [];
+    let customerOrderCache = [];
+    let tableAssignmentCache = [];
+    let customerOrderUnsubscribe = null;
+    let tableAssignmentUnsubscribe = null;
     let selectedTable = "";
     let currentOrderItems = [];
     let currentOrderId = null;
@@ -3771,6 +3792,97 @@ bruchCache.sort((a, b) => {
       w.focus();
     }
 
+    function assignmentDate(){ return $("tableAssignmentDate")?.value || localDateKey(); }
+
+    function normalizedTable(value){ return safe(value).toUpperCase().replace(/\s+/g," "); }
+
+    function assignmentFor(table, date=localDateKey()){
+      return tableAssignmentCache.find(row => row.date === date && normalizedTable(row.table) === normalizedTable(table));
+    }
+
+    function populateAssignmentWaiters(){
+      const select = $("assignmentWaiter");
+      if(!select) return;
+      const serviceStaff = staffCache.filter(person => person.status !== "deleted" && (person.department === "Service" || person.role === "admin" || person.role === "superadmin"));
+      select.innerHTML = serviceStaff.map(person => `<option value="${htmlEscape(person.uid || person.id)}">${htmlEscape(person.name || person.email || "-")}</option>`).join("");
+    }
+
+    function renderTableAssignments(){
+      const date = assignmentDate();
+      const rows = tableAssignmentCache.filter(row => row.date === date).sort((a,b) => safe(a.table).localeCompare(safe(b.table),"de",{numeric:true}));
+      $("tableAssignmentList").innerHTML = rows.length ? rows.map(row => `<div class="row item" style="margin-bottom:7px"><strong>Tisch ${htmlEscape(row.table)}</strong><span class="right">${htmlEscape(row.waiterName || "-")}</span><button class="ghost" type="button" data-assignment-delete="${htmlEscape(row.id)}">Löschen</button></div>`).join("") : `<div class="tiny muted">Für diesen Tag sind noch keine Tische verteilt.</div>`;
+    }
+
+    async function saveTableAssignment(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const table = safe($("assignmentTable").value);
+      const waiterId = $("assignmentWaiter").value;
+      const waiter = staffCache.find(person => (person.uid || person.id) === waiterId);
+      if(!table || !waiter) return showMsg("Bitte Tisch und Bedienung wählen.");
+      const date = assignmentDate();
+      const id = `${date}_${normalizedTable(table).replace(/[^A-Z0-9]+/g,"-").replace(/^-|-$/g,"")}`;
+      await setDoc(doc(db,"tableAssignments",id),{date,table,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()});
+      $("assignmentTable").value = "";
+      showMsg(`Tisch ${table} wurde ${waiter.name || "der Bedienung"} zugeordnet.`);
+    }
+
+    function canHandleCustomerOrder(order){
+      if(isAdmin()) return true;
+      const assignment = assignmentFor(order.table);
+      return assignment?.waiterId === currentUser?.uid;
+    }
+
+    function renderCustomerOrders(){
+      const pending = customerOrderCache.filter(order => order.status === "pending" && canHandleCustomerOrder(order));
+      $("customerOrderBadge").textContent = `${pending.length} neu`;
+      $("customerOrderList").innerHTML = pending.length ? pending.map(order => {
+        const assignment = assignmentFor(order.table);
+        const lines = (order.items || []).map(item => `${Number(item.qty || 0)}× ${htmlEscape(item.name || "-")}`).join(" · ");
+        return `<article class="item" style="margin-bottom:9px"><div class="row"><strong>Tisch ${htmlEscape(order.table || "-")}</strong><span class="pill warn">Wartet</span><strong class="right">${euro(order.total)}</strong></div><div class="tiny muted" style="margin-top:7px">${lines}</div>${order.note ? `<div class="tiny" style="margin-top:7px"><strong>Notiz:</strong> ${htmlEscape(order.note)}</div>` : ""}<div class="tiny muted" style="margin-top:7px">Bedienung: ${htmlEscape(assignment?.waiterName || "noch nicht zugeordnet")}</div><div class="row" style="margin-top:10px"><button class="btn" type="button" data-customer-accept="${htmlEscape(order.id)}">Bestätigen</button><button class="ghost right" type="button" data-customer-reject="${htmlEscape(order.id)}">Ablehnen</button></div></article>`;
+      }).join("") : `<div class="tiny muted">Keine neuen QR-Bestellungen für deine Tische.</div>`;
+    }
+
+    function startTableAssignments(){
+      tableAssignmentUnsubscribe?.();
+      tableAssignmentUnsubscribe = onSnapshot(collection(db,"tableAssignments"),snapshot => {
+        tableAssignmentCache = snapshot.docs.map(item => ({id:item.id,...item.data()}));
+        renderTableAssignments();
+        renderCustomerOrders();
+      },error => console.error("Tischverteilung",error));
+    }
+
+    function startCustomerOrders(){
+      customerOrderUnsubscribe?.();
+      customerOrderUnsubscribe = onSnapshot(collection(db,"customerOrders"),snapshot => {
+        customerOrderCache = snapshot.docs.map(item => ({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+        renderCustomerOrders();
+      },error => {console.error("QR-Bestellungen",error);showMsg("QR-Bestellungen konnten nicht geladen werden: "+error.message)});
+    }
+
+    async function acceptCustomerOrder(id){
+      const incoming = customerOrderCache.find(order => order.id === id);
+      if(!incoming || incoming.status !== "pending" || !canHandleCustomerOrder(incoming)) return showMsg("Diese Bestellung kann nicht übernommen werden.");
+      const existing = orderCache.find(order => normalizedTable(order.table) === normalizedTable(incoming.table) && order.status !== "closed");
+      const mergedItems = [...(existing?.items || []).map(item=>({...item}))];
+      (incoming.items || []).forEach(item => {const found=mergedItems.find(row=>row.menuId===item.menuId);if(found)found.qty=Number(found.qty||0)+Number(item.qty||0);else mergedItems.push({...item,qty:Number(item.qty||1)})});
+      const data={table:incoming.table,items:mergedItems,note:[existing?.note,incoming.note].filter(Boolean).join(" · "),status:existing?.status || "new",total:orderTotal(mergedItems),waiterId:currentUser.uid,waiterName:currentProfile.name || currentUser.email,updatedAt:serverTimestamp()};
+      try{
+        if(existing) await updateDoc(doc(db,"orders",existing.id),data); else await addDoc(collection(db,"orders"),{...data,createdAt:serverTimestamp()});
+        await updateDoc(doc(db,"customerOrders",id),{status:"accepted",acceptedBy:currentUser.uid,acceptedByName:currentProfile.name || currentUser.email,acceptedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+        await loadOrders();
+        selectTable(incoming.table);
+        showMsg(`QR-Bestellung für Tisch ${incoming.table} wurde übernommen.`);
+      }catch(error){console.error(error);showMsg("Bestellung konnte nicht übernommen werden: "+error.message)}
+    }
+
+    async function rejectCustomerOrder(id){
+      const incoming = customerOrderCache.find(order => order.id === id);
+      if(!incoming || !canHandleCustomerOrder(incoming)) return;
+      if(!confirm(`QR-Bestellung für Tisch ${incoming.table} ablehnen?`)) return;
+      await updateDoc(doc(db,"customerOrders",id),{status:"rejected",rejectedBy:currentUser.uid,rejectedByName:currentProfile.name || currentUser.email,rejectedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      showMsg("QR-Bestellung wurde abgelehnt.");
+    }
+
     function orderStatusLabel(status){
       if(status === "kitchen") return "Küche";
       if(status === "ready") return "Fertig";
@@ -5378,10 +5490,14 @@ bruchCache.sort((a, b) => {
       $("sickFrom").value = localDateKey();
       $("sickTo").value = localDateKey();
       $("dailyClosingDate").value = localDateKey();
+      $("tableAssignmentDate").value = localDateKey();
       await loadSupplierProfiles();
       resetSupplierOrderForm();
 
       await loadStaff();
+      populateAssignmentWaiters();
+      startTableAssignments();
+      startCustomerOrders();
       populateTaskAssignees();
       await loadInventory();
       await loadSupplierOrders();
@@ -5605,6 +5721,24 @@ bruchCache.sort((a, b) => {
     $("btnSaveOrder").addEventListener("click", saveOrder);
     $("btnCloseOrder").addEventListener("click", closeOrder);
     $("btnReloadOrders").addEventListener("click", loadOrders);
+    $("btnSaveTableAssignment").addEventListener("click", saveTableAssignment);
+    $("tableAssignmentDate").addEventListener("change", renderTableAssignments);
+    $("btnOpenTableQr").addEventListener("click", () => {
+      const table = safe($("assignmentTable").value);
+      if(!table) return showMsg("Bitte zuerst einen Tisch eingeben.");
+      window.open(`./speisekarte.html?karte=restaurant&tisch=${encodeURIComponent(table)}`,"_blank","noopener");
+    });
+    $("tableAssignmentList").addEventListener("click", async event => {
+      const button = event.target.closest("[data-assignment-delete]");
+      if(!button || !isAdmin() || !confirm("Tischzuordnung löschen?")) return;
+      await deleteDoc(doc(db,"tableAssignments",button.dataset.assignmentDelete));
+    });
+    $("customerOrderList").addEventListener("click", event => {
+      const accept = event.target.closest("[data-customer-accept]");
+      const reject = event.target.closest("[data-customer-reject]");
+      if(accept) acceptCustomerOrder(accept.dataset.customerAccept);
+      if(reject) rejectCustomerOrder(reject.dataset.customerReject);
+    });
     $("btnSaveAnnouncement").addEventListener("click", saveAnnouncement);
     $("announcementText").addEventListener("keydown", event => {
       if(event.key === "Enter" && (event.ctrlKey || event.metaKey)){
