@@ -159,8 +159,8 @@
         const {collection,addDoc,serverTimestamp}=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
         const order={table:tableName,items:state.cart.map(row=>({...row})),note:document.getElementById("customerNote").value.trim(),total:cartTotal(),status:"pending",source:"customer-qr",createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
         await addDoc(collection(state.db,"customerOrders"),order);
-        document.querySelector(".modalCard").innerHTML=`<div class="success"><div class="successMark">✓</div><h2>Bestellung gesendet</h2><p>Ihre Bestellung für <strong>Tisch ${esc(tableName)}</strong> wartet auf die Bestätigung der Bedienung.</p><div class="paymentHint">Die Bezahlung erfolgt bei Ihrer Bedienung.</div><button class="sendOrder" type="button" style="margin-top:18px" onclick="document.getElementById('cartModal').classList.add('hidden')">Schließen</button><button class="close" type="button" style="width:100%;margin:10px 0 0" onclick="location.reload()">Weitere Bestellung</button></div>`;
         state.cart=[];renderCart();
+        document.querySelector(".modalCard").innerHTML=`<div class="success"><div class="successMark">✓</div><h2>Bestellung gesendet</h2><p>Ihre Bestellung für <strong>Tisch ${esc(tableName)}</strong> wartet auf die Bestätigung der Bedienung.</p><div class="paymentHint">Die Bezahlung erfolgt bei Ihrer Bedienung.</div><button class="sendOrder" type="button" style="margin-top:18px" onclick="document.getElementById('cartModal').classList.add('hidden')">Schließen</button><button class="close" type="button" style="width:100%;margin:10px 0 0" onclick="location.reload()">Weitere Bestellung</button></div>`;
       }catch(error){console.error(error);alert("Die Bestellung konnte nicht gesendet werden. Bitte rufen Sie Ihre Bedienung.");button.disabled=false;button.textContent="Kostenpflichtig bestellen"}
       finally{state.submitting=false}
     }
