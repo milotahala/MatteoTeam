@@ -1407,19 +1407,21 @@
             </details>
 
             <details class="item adminOnly" style="margin-bottom:14px">
-              <summary><strong>Tischverteilung bearbeiten</strong><div class="tiny muted">Nur öffnen, wenn Tische neu verteilt werden.</div></summary>
+              <summary><strong>👥 Kellner & Tische zuweisen</strong><div class="tiny muted">Kellner auswählen und Tische freigeben.</div></summary>
               <div class="divider"></div>
               <div class="field"><label class="label">Datum</label><input id="tableAssignmentDate" class="input" type="date" style="max-width:220px" /></div>
               <div class="menuFormGrid">
                 <div class="field"><label class="label">Tische (mit Komma trennen)</label><input id="assignmentTable" class="input" maxlength="300" placeholder="z. B. A, A1, B1, B2, C1, C2, C4, 60, 65" /></div>
                 <div class="field"><label class="label">Bedienung</label><select id="assignmentWaiter" class="select"></select></div>
               </div>
+              <label class="row item" style="margin-bottom:12px"><input id="assignmentAllTables" type="checkbox" /> <strong>Alle Tische freigeben</strong><span class="tiny muted right">Kellner darf jede Tischnummer öffnen</span></label>
               <div class="row"><button id="btnSaveTableAssignment" class="btn" type="button">Zuordnung speichern</button><button id="btnOpenTableQr" class="ghost right" type="button">Test-Link öffnen</button></div>
               <div id="tableAssignmentList" style="margin-top:12px"></div>
             </details>
 
             <div class="orderLayout">
               <div>
+                <div id="adminWaiterOverview" class="item adminOnly" style="margin-bottom:14px"></div>
                 <div class="item">
                   <div class="row" style="margin-bottom:12px"><strong>Tisch eingeben</strong><span id="openTablesBadge" class="pill warn right">0 offen</span></div>
                   <div class="tableOpenRow">
@@ -1433,8 +1435,8 @@
                   <button id="btnShowCurrentOrder" class="orderCartJump" type="button"><span>Bestellung ansehen</span><span id="orderCartSummary">0 Produkte · 0,00 €</span></button>
                   <div class="menuToolbar" style="margin-bottom:10px">
                     <input id="orderMenuSearch" class="input" type="search" placeholder="Gericht oder Getränk suchen …" />
-                    <select id="orderMenuCategory" class="select" aria-label="Kategorie"></select>
                   </div>
+                  <div id="orderCategoryChips" class="menuCategories" style="margin-bottom:12px"></div>
                   <div id="orderMenuList" class="orderMenuGrid"></div>
                 </div>
               </div>
@@ -1532,6 +1534,8 @@
     let customerOrderTimer = null;
     let customerOrderAlertedIds = new Set();
     let selectedTable = "";
+    let selectedOrderWaiterFilter = "all";
+    let activeOrderCategory = "Alle";
     let currentOrderItems = [];
     let currentOrderId = null;
     let currentOrderState = "new";
@@ -3798,6 +3802,10 @@ bruchCache.sort((a, b) => {
       return tableAssignmentCache.find(row => row.date === date && normalizedTable(row.table) === normalizedTable(table));
     }
 
+    function allTablesPermission(waiterId, date=localDateKey()){
+      return tableAssignmentCache.find(row => row.date === date && row.allTables === true && row.waiterId === waiterId);
+    }
+
     function populateAssignmentWaiters(){
       const select = $("assignmentWaiter");
       if(!select) return;
@@ -3811,25 +3819,46 @@ bruchCache.sort((a, b) => {
       const grouped = new Map();
       rows.forEach(row => {
         const key = row.waiterId || row.waiterName || "-";
-        if(!grouped.has(key)) grouped.set(key,{name:row.waiterName || "-",rows:[]});
+        if(!grouped.has(key)) grouped.set(key,{id:row.waiterId,name:row.waiterName || "-",rows:[]});
         grouped.get(key).rows.push(row);
       });
-      $("tableAssignmentList").innerHTML = rows.length ? [...grouped.values()].map(group => `<div class="item" style="margin-bottom:7px"><strong>${htmlEscape(group.name)}</strong><div class="tiny muted" style="margin-top:7px">${group.rows.map(row => `<button class="ghost" style="padding:6px 9px;margin:3px" type="button" data-assignment-delete="${htmlEscape(row.id)}" title="Zuordnung löschen">${htmlEscape(row.table)} ×</button>`).join("")}</div></div>`).join("") : `<div class="tiny muted">Für diesen Tag sind noch keine Tische verteilt.</div>`;
+      $("tableAssignmentList").innerHTML = rows.length ? [...grouped.values()].map(group => {
+        const allRow = group.rows.find(row => row.allTables);
+        const tableRows = group.rows.filter(row => !row.allTables);
+        return `<div class="item" style="margin-bottom:7px"><div class="row"><strong>${htmlEscape(group.name)}</strong><button class="btn right" type="button" data-waiter-filter="${htmlEscape(group.id)}">Offene Tische ansehen</button></div><div class="tiny muted" style="margin-top:7px">${allRow ? `<button class="ghost" style="padding:6px 9px;margin:3px" type="button" data-assignment-delete="${htmlEscape(allRow.id)}">Alle Tische ×</button>` : ""}${tableRows.map(row => `<button class="ghost" style="padding:6px 9px;margin:3px" type="button" data-assignment-delete="${htmlEscape(row.id)}" title="Zuordnung löschen">${htmlEscape(row.table)} ×</button>`).join("")}</div></div>`;
+      }).join("") : `<div class="tiny muted">Für diesen Tag sind noch keine Tische verteilt.</div>`;
+      renderAdminWaiterOverview();
+    }
+
+    function renderAdminWaiterOverview(){
+      const box = $("adminWaiterOverview");
+      if(!box || !isAdmin()) return;
+      const open = orderCache.filter(order => order.status !== "closed");
+      const waiterIds = [...new Set(tableAssignmentCache.filter(row => row.date === localDateKey()).map(row => row.waiterId).filter(Boolean))];
+      box.innerHTML = `<div class="row"><strong>Kellner & offene Tische</strong><button class="ghost right" type="button" data-waiter-filter="all">Alle</button></div><div class="divider"></div>${waiterIds.length ? waiterIds.map(id => {
+        const assignment = tableAssignmentCache.find(row => row.date === localDateKey() && row.waiterId === id);
+        const tables = open.filter(order => order.waiterId === id);
+        return `<button class="ghost" style="margin:4px;padding:9px 12px" type="button" data-waiter-filter="${htmlEscape(id)}"><strong>${htmlEscape(assignment?.waiterName || "-")}</strong> · ${tables.length ? tables.map(order => htmlEscape(order.table)).join(", ") : "keine offenen Tische"}</button>`;
+      }).join("") : `<span class="tiny muted">Noch keine Kellner zugewiesen.</span>`}`;
     }
 
     async function saveTableAssignment(){
       if(!isAdmin()) return showMsg("Nur Admin.");
       const tables = safe($("assignmentTable").value).split(/[,;\n]+/).map(normalizedTable).filter(Boolean);
+      const allowAll = $("assignmentAllTables").checked;
       const waiterId = $("assignmentWaiter").value;
       const waiter = staffCache.find(person => (person.uid || person.id) === waiterId);
-      if(!tables.length || !waiter) return showMsg("Bitte Tische und Bedienung wählen.");
+      if((!tables.length && !allowAll) || !waiter) return showMsg("Bitte Tische eingeben oder Alle Tische wählen.");
       const date = assignmentDate();
-      await Promise.all([...new Set(tables)].map(table => {
+      const writes = [...new Set(tables)].map(table => {
         const id = `${date}_${table.replace(/[^A-Z0-9]+/g,"-").replace(/^-|-$/g,"")}`;
         return setDoc(doc(db,"tableAssignments",id),{date,table,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()});
-      }));
+      });
+      if(allowAll) writes.push(setDoc(doc(db,"tableAssignments",`${date}_ALL_${waiterId}`),{date,table:"*",allTables:true,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()}));
+      await Promise.all(writes);
       $("assignmentTable").value = "";
-      showMsg(`${tables.length} Tische wurden ${waiter.name || "der Bedienung"} zugeordnet.`);
+      $("assignmentAllTables").checked = false;
+      showMsg(allowAll ? `${waiter.name || "Bedienung"} darf jetzt alle Tische öffnen.` : `${tables.length} Tische wurden ${waiter.name || "der Bedienung"} zugeordnet.`);
     }
 
     function customerOrderAgeSeconds(order){
@@ -3880,9 +3909,16 @@ bruchCache.sort((a, b) => {
       tableAssignmentUnsubscribe?.();
       tableAssignmentUnsubscribe = onSnapshot(collection(db,"tableAssignments"),snapshot => {
         tableAssignmentCache = snapshot.docs.map(item => ({id:item.id,...item.data()}));
+        updateOrderAccessVisibility();
         renderTableAssignments();
         renderCustomerOrders();
       },error => console.error("Tischverteilung",error));
+    }
+
+    function updateOrderAccessVisibility(){
+      const hasAccess = isAdmin() || tableAssignmentCache.some(row => row.date === localDateKey() && row.waiterId === currentUser?.uid);
+      document.querySelectorAll('[data-view="viewOrders"],[data-dashboard-view="viewOrders"]').forEach(button => button.classList.toggle("hidden", !hasAccess));
+      if(!hasAccess && !$("viewOrders").classList.contains("hidden")) openView("viewDashboard");
     }
 
     function startCustomerOrders(){
@@ -3951,11 +3987,11 @@ bruchCache.sort((a, b) => {
     function canHandleTable(table, order=null){
       if(isAdmin()) return true;
       const assignment = assignmentFor(table);
-      return assignment?.waiterId === currentUser?.uid || order?.waiterId === currentUser?.uid;
+      return assignment?.waiterId === currentUser?.uid || order?.waiterId === currentUser?.uid || Boolean(allTablesPermission(currentUser?.uid));
     }
 
     function renderTables(){
-      const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o));
+      const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o) && (!isAdmin() || selectedOrderWaiterFilter === "all" || o.waiterId === selectedOrderWaiterFilter));
       const openByTable = new Map(openOrders.map(o => [safe(o.table).toUpperCase(), o]));
       $("openTablesBadge").textContent = `${openByTable.size} offen`;
       $("tableGrid").innerHTML = openOrders.length ? openOrders
@@ -3969,7 +4005,8 @@ bruchCache.sort((a, b) => {
 
     function renderOrderMenu(){
       const search = menuSearchText($("orderMenuSearch").value);
-      const category = $("orderMenuCategory").value || "Alle";
+      const category = activeOrderCategory;
+      $("orderCategoryChips").innerHTML = ["Alle", ...MENU_CATEGORIES].map(name => `<button class="chip${name === category ? " active" : ""}" type="button" data-order-category="${htmlEscape(name)}">${htmlEscape(name)}</button>`).join("");
       const rows = restaurantMenuCache.filter(item => {
         const categoryMatch = category === "Alle" || item.category === category;
         const textMatch = !search || menuSearchText([item.name,item.category,item.description].join(" ")).includes(search);
@@ -4011,6 +4048,7 @@ bruchCache.sort((a, b) => {
         const qs = await getDocs(collection(db, "orders"));
         orderCache = qs.docs.map(d => ({id:d.id, ...d.data()}));
         renderTables();
+        renderAdminWaiterOverview();
         if(selectedTable) selectTable(selectedTable);
       }catch(err){
         console.error(err);
@@ -5571,7 +5609,8 @@ bruchCache.sort((a, b) => {
       await loadBruch();
       await loadRestaurantMenu();
       await loadToGoMenu();
-      $("orderMenuCategory").innerHTML = ["Alle", ...MENU_CATEGORIES].map(category => `<option value="${htmlEscape(category)}">${htmlEscape(category)}</option>`).join("");
+      activeOrderCategory = "Alle";
+      renderOrderMenu();
       await loadOrders();
       startAnnouncementChat();
       startTasks();
@@ -5762,7 +5801,12 @@ bruchCache.sort((a, b) => {
       if(event.key === "Enter") openCustomTable();
     });
     $("orderMenuSearch").addEventListener("input", renderOrderMenu);
-    $("orderMenuCategory").addEventListener("change", renderOrderMenu);
+    $("orderCategoryChips").addEventListener("click", event => {
+      const button = event.target.closest("[data-order-category]");
+      if(!button) return;
+      activeOrderCategory = button.dataset.orderCategory;
+      renderOrderMenu();
+    });
     $("orderMenuList").addEventListener("click", event => {
       const button = event.target.closest("[data-order-add]");
       if(button) addOrderItem(button.dataset.orderAdd, button);
@@ -5794,8 +5838,16 @@ bruchCache.sort((a, b) => {
     });
     $("tableAssignmentList").addEventListener("click", async event => {
       const button = event.target.closest("[data-assignment-delete]");
-      if(!button || !isAdmin() || !confirm("Tischzuordnung löschen?")) return;
-      await deleteDoc(doc(db,"tableAssignments",button.dataset.assignmentDelete));
+      const filter = event.target.closest("[data-waiter-filter]");
+      if(filter){ selectedOrderWaiterFilter = filter.dataset.waiterFilter; renderTables(); $("tableGrid")?.scrollIntoView({behavior:"smooth",block:"center"}); return; }
+      if(button && isAdmin() && confirm("Tischzuordnung löschen?")) await deleteDoc(doc(db,"tableAssignments",button.dataset.assignmentDelete));
+    });
+    $("adminWaiterOverview").addEventListener("click", event => {
+      const filter = event.target.closest("[data-waiter-filter]");
+      if(!filter) return;
+      selectedOrderWaiterFilter = filter.dataset.waiterFilter;
+      renderTables();
+      $("tableGrid")?.scrollIntoView({behavior:"smooth",block:"center"});
     });
     $("customerOrderList").addEventListener("click", event => {
       const accept = event.target.closest("[data-customer-accept]");
