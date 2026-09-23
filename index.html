@@ -1473,7 +1473,13 @@
                 <div class="field"><label class="label">Bedienung</label><select id="assignmentWaiter" class="select"></select></div>
               </div>
               <label class="row item" style="margin-bottom:12px"><input id="assignmentAllTables" type="checkbox" /> <strong>Alle Tische freigeben</strong><span class="tiny muted right">Kellner darf jede Tischnummer öffnen</span></label>
-              <div class="row"><button id="btnSaveTableAssignment" class="btn" type="button">Zuordnung speichern</button><button id="btnOpenTableQr" class="ghost right" type="button">QR für Tisch drucken</button></div>
+              <div class="row"><button id="btnSaveTableAssignment" class="btn" type="button">Zuordnung speichern</button><button id="btnOpenTableQr" class="ghost right" type="button">QR für Tisch anzeigen</button></div>
+              <div id="tableQrPreview" class="item hidden" style="margin-top:12px;text-align:center">
+                <strong id="tableQrTitle"></strong>
+                <div style="margin:12px auto;max-width:360px;background:white;padding:12px;border-radius:12px"><img id="tableQrImage" alt="QR-Code für den Tisch" style="display:block;width:100%;height:auto;aspect-ratio:1" /></div>
+                <div class="tiny muted">QR-Code gedrückt halten, um das Bild zu sichern, oder einen Screenshot zum Drucken machen.</div>
+                <button id="btnCloseTableQr" class="ghost" type="button" style="margin-top:12px">Schließen</button>
+              </div>
               <div id="tableAssignmentList" style="margin-top:12px"></div>
             </details>
 
@@ -6138,11 +6144,12 @@ bruchCache.sort((a, b) => {
       if(!validOrderTable(table) || table.includes("/") || table.includes(",")) return showMsg("Bitte genau einen Haupttisch eingeben, z. B. A oder 80.");
       const url = new URL(`./speisekarte.html?karte=restaurant&tisch=${encodeURIComponent(table)}`,location.href).href;
       const qr = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=18&data=${encodeURIComponent(url)}`;
-      const windowRef = window.open("","_blank");
-      if(!windowRef) return showMsg("Bitte Pop-ups für das Drucken erlauben.");
-      windowRef.document.write(`<!doctype html><html lang="de"><meta charset="utf-8"><title>Matteo · Tisch ${htmlEscape(table)}</title><style>body{font-family:Arial,sans-serif;text-align:center;color:#161616;margin:36px}h1{font-size:34px}img{width:min(80vw,380px);height:auto}p{font-size:18px}.print{padding:12px 18px;border:0;border-radius:8px;background:#161616;color:white;font-size:17px}@media print{.print{display:none}}</style><h1>MATTEO · Tisch ${htmlEscape(table)}</h1><img src="${qr}" alt="QR-Code für Tisch ${htmlEscape(table)}"><p>Speisekarte öffnen und bestellen</p><button class="print" onclick="window.print()">Drucken</button></html>`);
-      windowRef.document.close();
+      $("tableQrTitle").textContent = `MATTEO · Tisch ${table}`;
+      $("tableQrImage").src = qr;
+      $("tableQrPreview").classList.remove("hidden");
+      $("tableQrPreview").scrollIntoView({behavior:"smooth",block:"center"});
     });
+    $("btnCloseTableQr").addEventListener("click", () => $("tableQrPreview").classList.add("hidden"));
     $("tableAssignmentList").addEventListener("click", async event => {
       const button = event.target.closest("[data-assignment-delete]");
       const filter = event.target.closest("[data-waiter-filter]");
