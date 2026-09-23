@@ -3930,7 +3930,7 @@ bruchCache.sort((a, b) => {
         const tables = open.filter(order => order.waiterId === id || assignments.some(row => !row.allTables && normalizedTable(row.table) === normalizedTable(order.table)));
         const active = selectedOrderWaiterFilter === id ? " active" : "";
         const shownTables = [...new Set([...allowedTables, ...tables.map(order => order.table)].map(normalizedTable))];
-        return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape(name.slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(name)}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<button class="ghost right" type="button" data-assignment-delete="${htmlEscape(assignments.find(row => row.allTables)?.id || "")}" title="Freigabe löschen">Alle Tische ×</button>` : ""}</div><div class="waiterTableChips">${shownTables.length ? shownTables.map(table => { const assigned = assignments.find(row => !row.allTables && normalizedTable(row.table) === table); return assigned ? `<button class="waiterTableChip" type="button" data-assignment-delete="${htmlEscape(assigned.id)}" title="Zuordnung löschen">${htmlEscape(table)} ×</button>` : `<span class="waiterTableChip" title="Offene Bestellung">${htmlEscape(table)} · offen</span>`; }).join("") : `<span class="tiny muted">Noch keine Tische zugewiesen</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button><button class="btnDanger" type="button" data-hide-waiter="${htmlEscape(id)}">Ausblenden</button></div></article>`;
+        return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape(name.slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(name)}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<button class="ghost right" type="button" data-assignment-delete="${htmlEscape(assignments.find(row => row.allTables)?.id || "")}" title="Freigabe löschen">Alle Tische ×</button>` : ""}</div><div class="waiterTableChips">${shownTables.length ? shownTables.map(table => { const assigned = assignments.find(row => !row.allTables && normalizedTable(row.table) === table); const isOpen = tables.some(order => normalizedTable(order.table) === table); return isOpen ? `<button class="waiterTableChip" type="button" data-delete-open-table="${htmlEscape(table)}" title="Bestellung löschen (mit Bestätigung)">${htmlEscape(table)} · offen ×</button>` : assigned ? `<button class="waiterTableChip" type="button" data-assignment-delete="${htmlEscape(assigned.id)}" title="Zuordnung löschen">${htmlEscape(table)} ×</button>` : ""; }).join("") : `<span class="tiny muted">Noch keine Tische zugewiesen</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button><button class="btnDanger" type="button" data-hide-waiter="${htmlEscape(id)}">Ausblenden</button></div></article>`;
       }).join("") : `<span class="tiny muted">Noch keine Kellner zugewiesen.</span>`}`;
     }
 
@@ -4169,25 +4169,26 @@ bruchCache.sort((a, b) => {
       $("btnDeleteTableOrders").classList.toggle("hidden", !order);
     }
 
-    async function deleteAdminTableOrders(){
-      if(!isAdmin() || !adminViewedTable) return;
-      const table = adminViewedTable;
+    async function deleteAdminTableOrders(tableName=adminViewedTable, sourceButton=$("btnDeleteTableOrders")){
+      if(!isAdmin() || !tableName) return;
+      const table = tableName;
       const orders = orderCache.filter(row => row.status !== "closed" && normalizedTable(row.table) === normalizedTable(table));
       if(!orders.length) return showMsg("Dieser Tisch hat keine offene Bestellung.");
       if(!confirm(`Tisch ${table} und ${orders.length === 1 ? "seine Bestellung" : `seine ${orders.length} Bestellungen`} endgültig löschen?\n\nOK = Ja, Abbrechen = Nein`)) return;
-      const button = $("btnDeleteTableOrders");
+      const button = sourceButton;
       button.disabled = true;
       try{
         const batch = writeBatch(db);
         orders.forEach(order => batch.delete(doc(db,"orders",order.id)));
         await batch.commit();
-        adminViewedTable = "";
+        if(normalizedTable(adminViewedTable) === normalizedTable(table)) adminViewedTable = "";
         if(normalizedTable(selectedTable) === normalizedTable(table)){
           selectedTable = "";
           currentOrderId = null;
           currentOrderItems = [];
         }
         renderTables();
+        renderAdminWaiterOverview();
         showMsg(`Tisch ${table} wurde gelöscht.`);
       }catch(error){ console.error(error); showMsg("Tisch konnte nicht gelöscht werden: " + error.message); }
       finally{ button.disabled = false; }
@@ -6021,7 +6022,7 @@ bruchCache.sort((a, b) => {
       renderTables();
       $("tableOpenPanel").scrollIntoView({behavior:"smooth",block:"start"});
     });
-    $("btnDeleteTableOrders").addEventListener("click", deleteAdminTableOrders);
+    $("btnDeleteTableOrders").addEventListener("click", () => deleteAdminTableOrders());
     $("btnBackToWaiters").addEventListener("click", () => {
       adminViewedTable = "";
       selectedOrderWaiterFilter = "none";
@@ -6109,12 +6110,15 @@ bruchCache.sort((a, b) => {
       if(button) await deleteTableAssignment(button.dataset.assignmentDelete);
     });
     $("adminWaiterOverview").addEventListener("click", async event => {
+      const deleteOpen = event.target.closest("[data-delete-open-table]");
       const remove = event.target.closest("[data-assignment-delete]");
       const hide = event.target.closest("[data-hide-waiter]");
       const restore = event.target.closest("[data-restore-waiter]");
       const filter = event.target.closest("[data-waiter-filter]");
       const assign = event.target.closest("[data-assign-waiter]");
-      if(remove){
+      if(deleteOpen){
+        await deleteAdminTableOrders(deleteOpen.dataset.deleteOpenTable, deleteOpen);
+      }else if(remove){
         await deleteTableAssignment(remove.dataset.assignmentDelete);
       }else if(hide){
         await setWaiterHidden(hide.dataset.hideWaiter, true);
