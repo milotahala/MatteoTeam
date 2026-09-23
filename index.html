@@ -447,6 +447,12 @@
     .orderLayout>*{min-width:0;max-width:100%}
     .tableOpenRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;margin-bottom:13px;min-width:0}
     .tableOpenRow .input{min-width:0;width:100%}
+    .tableKeypad{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:-3px 0 13px}
+    .tableKeypad button{min-height:53px;padding:4px;border:1px solid #315574;border-radius:12px;background:#17344f;color:#fff;font-size:21px;font-weight:850;cursor:pointer}
+    .tableKeypad button:active{background:#20b979;color:#052318}
+    .tableKeypad .keyDelete{background:#312535;color:#ffb4b4;font-size:16px}
+    .tableKeypad .keyClear{background:#2a3245;color:#e5edfc;font-size:14px}
+    .orderPickerBack{margin-bottom:9px}
     .tableGrid{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
     .tableGrid::-webkit-scrollbar{display:none}
     .tableBtn{min-width:120px;min-height:72px;border-radius:15px;border:1px solid #2a435f;background:#12243a;color:#fff;cursor:pointer;padding:9px;font-weight:900}
@@ -1481,6 +1487,11 @@
                     <input id="customTableName" class="input" type="text" maxlength="30" placeholder="z. B. D1, A5 oder Terrasse 2" autocomplete="off" />
                     <button id="btnOpenCustomTable" class="btn" type="button">Tisch öffnen</button>
                   </div>
+                  <div id="tableKeypad" class="tableKeypad" aria-label="Tischnummer eingeben">
+                    <button type="button" data-table-key="1">1</button><button type="button" data-table-key="2">2</button><button type="button" data-table-key="3">3</button><button type="button" data-table-key="4">4</button><button type="button" data-table-key="5">5</button>
+                    <button type="button" data-table-key="6">6</button><button type="button" data-table-key="7">7</button><button type="button" data-table-key="8">8</button><button type="button" data-table-key="9">9</button><button type="button" data-table-key="0">0</button>
+                    <button type="button" data-table-key="A">A</button><button type="button" data-table-key="B">B</button><button type="button" data-table-key="C">C</button><button type="button" data-table-key="delete" class="keyDelete" aria-label="Letztes Zeichen löschen">⌫</button><button type="button" data-table-key="clear" class="keyClear">Löschen</button>
+                  </div>
                   <div class="tiny muted" style="margin-bottom:8px">Offene Tische:</div>
                   <div id="tableGrid" class="tableGrid"></div>
                 </div>
@@ -1490,6 +1501,7 @@
                   <div id="adminTableItems" class="adminOrderItems" style="margin-top:12px"></div>
                 </div>
                 <div id="orderProductPicker" class="item hidden">
+                  <button id="btnOrderBackToTables" class="ghost orderPickerBack" type="button">← Tische</button>
                   <button id="btnShowCurrentOrder" class="orderCartJump" type="button"><span>Bestellung ansehen</span><span id="orderCartSummary">0 Produkte · 0,00 €</span></button>
                   <div class="menuToolbar" style="margin-bottom:10px">
                     <input id="orderMenuSearch" class="input" type="search" placeholder="Gericht oder Getränk suchen …" />
@@ -4110,6 +4122,7 @@ bruchCache.sort((a, b) => {
         return;
       }
       tablePanel?.classList.remove("hidden");
+      tablePanel?.classList.toggle("hidden", !isAdmin() && Boolean(selectedTable));
       if(isAdmin()){
         const waiter = staffCache.find(person => (person.uid || person.id) === selectedOrderWaiterFilter);
         $("tableOpenTitle").textContent = selectedOrderWaiterFilter === "all" ? "Alle offenen Tische" : `${waiter?.name || "Kellner"} · Tische`;
@@ -4226,6 +4239,8 @@ bruchCache.sort((a, b) => {
         const panel = document.querySelector(".orderPanel");
         panel?.classList.remove("hidden");
         setTimeout(() => panel?.scrollIntoView({behavior:"smooth",block:"start"}), 50);
+      }else if(!isAdmin()){
+        $("orderProductPicker")?.scrollIntoView({behavior:"smooth",block:"start"});
       }
     }
 
@@ -5980,6 +5995,23 @@ bruchCache.sort((a, b) => {
       $("customTableName").value = "";
     }
     $("btnOpenCustomTable").addEventListener("click", openCustomTable);
+    $("tableKeypad").addEventListener("click", event => {
+      const key = event.target.closest("[data-table-key]")?.dataset.tableKey;
+      if(!key) return;
+      const input = $("customTableName");
+      if(key === "clear") input.value = "";
+      else if(key === "delete") input.value = input.value.slice(0,-1);
+      else input.value = (input.value + key).slice(0,30);
+    });
+    $("btnOrderBackToTables").addEventListener("click", () => {
+      selectedTable = "";
+      currentOrderId = null;
+      currentOrderItems = [];
+      $("orderProductPicker").classList.add("hidden");
+      document.querySelector(".orderPanel")?.classList.add("hidden");
+      renderTables();
+      $("tableOpenPanel").scrollIntoView({behavior:"smooth",block:"start"});
+    });
     $("customTableName").addEventListener("keydown", event => {
       if(event.key === "Enter") openCustomTable();
     });
