@@ -6052,13 +6052,6 @@ bruchCache.sort((a, b) => {
         $("adminTableDetail").scrollIntoView({behavior:"smooth",block:"start"});
       }else openTableOrSections(button.dataset.tableName);
     });
-    $("myWaiterTables").addEventListener("click", event => {
-      const button = event.target.closest("[data-my-table]");
-      if(!button) return;
-      expandedBaseTable = normalizedTable(button.dataset.myTable);
-      renderTables();
-      $("tableOpenPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
-    });
     $("btnBackToTables").addEventListener("click", () => {
       adminViewedTable = "";
       renderTables();
