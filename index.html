@@ -3868,12 +3868,14 @@ bruchCache.sort((a, b) => {
       if(!box || !isAdmin()) return;
       box.classList.toggle("hidden", selectedOrderWaiterFilter !== "none");
       const open = orderCache.filter(order => order.status !== "closed");
+      const hiddenWaiterIds = currentProfile?.hiddenWaiterIds || [];
       const waiterIds = [...new Set([
         ...staffCache.filter(person => person.status !== "deleted" && (safe(person.department).toLowerCase() === "service" || person.role === "admin" || person.role === "superadmin")).map(person => person.uid || person.id),
         ...tableAssignmentCache.filter(row => row.date === localDateKey()).map(row => row.waiterId),
         ...open.map(order => order.waiterId)
-      ].filter(Boolean))];
-      box.innerHTML = `<div class="waiterOverviewHead"><div><strong>Kellner</strong><div class="tiny muted">Kellner wählen und Tische ansehen</div></div><button class="ghost" type="button" data-waiter-filter="all">Alle offenen Tische</button></div><button class="btn" type="button" data-add-waiter="1" style="margin-top:12px;width:100%">+ Kellner hinzufügen / Tische zuweisen</button>${waiterIds.length ? waiterIds.map(id => {
+      ].filter(Boolean))].filter(id => !hiddenWaiterIds.includes(id));
+      const hiddenStaff = staffCache.filter(person => person.status !== "deleted" && hiddenWaiterIds.includes(person.uid || person.id));
+      box.innerHTML = `<div class="waiterOverviewHead"><div><strong>Kellner</strong><div class="tiny muted">Kellner wählen und Tische ansehen</div></div><button class="ghost" type="button" data-waiter-filter="all">Alle offenen Tische</button></div><button class="btn" type="button" data-add-waiter="1" style="margin-top:12px;width:100%">+ Kellner hinzufügen / Tische zuweisen</button>${hiddenStaff.length ? `<div class="row" style="margin-top:12px"><select id="hiddenWaiterSelect" class="select" style="flex:1;min-width:0" aria-label="Ausgeblendeten Kellner auswählen">${hiddenStaff.map(person => `<option value="${htmlEscape(person.uid || person.id)}">${htmlEscape(person.name || person.email || "-")}</option>`).join("")}</select><button class="ghost" type="button" data-restore-waiter="1">Wieder anzeigen</button></div>` : ""}${waiterIds.length ? waiterIds.map(id => {
         const assignments = tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === id);
         const assignment = assignments[0];
         const person = staffCache.find(row => (row.uid || row.id) === id);
@@ -3883,8 +3885,19 @@ bruchCache.sort((a, b) => {
         const tables = open.filter(order => order.waiterId === id || assignments.some(row => !row.allTables && normalizedTable(row.table) === normalizedTable(order.table)));
         const active = selectedOrderWaiterFilter === id ? " active" : "";
         const shownTables = [...new Set([...allowedTables, ...tables.map(order => order.table)].map(normalizedTable))];
-        return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape(name.slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(name)}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<span class="pill ok right">Alle Tische</span>` : ""}</div><div class="waiterTableChips">${shownTables.length ? shownTables.map(table => `<span class="waiterTableChip">${htmlEscape(table)}</span>`).join("") : `<span class="tiny muted">Noch keine Tische zugewiesen</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button>${assignments.length ? `<button class="btnDanger" type="button" data-delete-waiter-assignments="${htmlEscape(id)}">Löschen</button>` : ""}</div></article>`;
+        return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape(name.slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(name)}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<span class="pill ok right">Alle Tische</span>` : ""}</div><div class="waiterTableChips">${shownTables.length ? shownTables.map(table => `<span class="waiterTableChip">${htmlEscape(table)}</span>`).join("") : `<span class="tiny muted">Noch keine Tische zugewiesen</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button><button class="btnDanger" type="button" data-hide-waiter="${htmlEscape(id)}">Ausblenden</button></div></article>`;
       }).join("") : `<span class="tiny muted">Noch keine Kellner zugewiesen.</span>`}`;
+    }
+
+    async function setWaiterHidden(waiterId, hidden){
+      if(!isAdmin() || !waiterId) return;
+      const ids = new Set(currentProfile?.hiddenWaiterIds || []);
+      if(hidden) ids.add(waiterId); else ids.delete(waiterId);
+      try{
+        await updateDoc(doc(db,"users",currentUser.uid),{hiddenWaiterIds:[...ids]});
+        currentProfile.hiddenWaiterIds = [...ids];
+        renderAdminWaiterOverview();
+      }catch(error){ console.error(error); showMsg("Kellnerliste konnte nicht gespeichert werden: " + error.message); }
     }
 
     function renderMyWaiterTables(){
@@ -5965,10 +5978,15 @@ bruchCache.sort((a, b) => {
     });
     $("adminWaiterOverview").addEventListener("click", async event => {
       const add = event.target.closest("[data-add-waiter]");
+      const hide = event.target.closest("[data-hide-waiter]");
+      const restore = event.target.closest("[data-restore-waiter]");
       const filter = event.target.closest("[data-waiter-filter]");
       const assign = event.target.closest("[data-assign-waiter]");
-      const remove = event.target.closest("[data-delete-waiter-assignments]");
-      if(add){
+      if(hide){
+        await setWaiterHidden(hide.dataset.hideWaiter, true);
+      }else if(restore){
+        await setWaiterHidden($("hiddenWaiterSelect")?.value, false);
+      }else if(add){
         $("assignmentDetails").open = true;
         $("assignmentWaiter").focus();
         $("assignmentDetails").scrollIntoView({behavior:"smooth",block:"start"});
@@ -5985,9 +6003,6 @@ bruchCache.sort((a, b) => {
         $("assignmentDetails").open = true;
         $("assignmentTable").focus();
         $("assignmentDetails").scrollIntoView({behavior:"smooth",block:"start"});
-      }else if(remove && confirm("Alle Tischzuordnungen dieses Kellners löschen?")){
-        const rows = tableAssignmentCache.filter(row => row.date === assignmentDate() && row.waiterId === remove.dataset.deleteWaiterAssignments);
-        await Promise.all(rows.map(row => deleteDoc(doc(db,"tableAssignments",row.id))));
       }
     });
     $("myWaiterTables").addEventListener("click", event => {
