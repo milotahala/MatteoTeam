@@ -453,7 +453,7 @@
     .tableKeypad .keyDelete{background:#312535;color:#ffb4b4;font-size:16px}
     .tableKeypad .keyClear{background:#2a3245;color:#e5edfc;font-size:14px}
     .orderPickerBack{margin-bottom:9px}
-    .tableGrid{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+    .tableGrid{display:flex;flex-wrap:wrap;gap:9px;padding-bottom:4px}
     .tableGrid::-webkit-scrollbar{display:none}
     .tableBtn{min-width:120px;min-height:72px;border-radius:15px;border:1px solid #2a435f;background:#12243a;color:#fff;cursor:pointer;padding:9px;font-weight:900}
     .tableBtn small{display:block;margin-top:4px;color:var(--muted);font-weight:700}
@@ -1473,7 +1473,7 @@
                 <div class="field"><label class="label">Bedienung</label><select id="assignmentWaiter" class="select"></select></div>
               </div>
               <label class="row item" style="margin-bottom:12px"><input id="assignmentAllTables" type="checkbox" /> <strong>Alle Tische freigeben</strong><span class="tiny muted right">Kellner darf jede Tischnummer öffnen</span></label>
-              <div class="row"><button id="btnSaveTableAssignment" class="btn" type="button">Zuordnung speichern</button><button id="btnOpenTableQr" class="ghost right" type="button">Test-Link öffnen</button></div>
+              <div class="row"><button id="btnSaveTableAssignment" class="btn" type="button">Zuordnung speichern</button><button id="btnOpenTableQr" class="ghost right" type="button">QR für Tisch drucken</button></div>
               <div id="tableAssignmentList" style="margin-top:12px"></div>
             </details>
 
@@ -1484,7 +1484,7 @@
                   <button id="btnBackToWaiters" class="ghost adminOnly" type="button" style="margin-bottom:12px">← Zurück zu Kellnern</button>
                   <div class="row" style="margin-bottom:12px"><strong id="tableOpenTitle">Tisch eingeben</strong><span id="openTablesBadge" class="pill warn right">0 offen</span></div>
                   <div class="tableOpenRow">
-                    <input id="customTableName" class="input" type="text" maxlength="30" placeholder="z. B. D1, A5 oder Terrasse 2" autocomplete="off" />
+                    <input id="customTableName" class="input" type="text" maxlength="30" placeholder="z. B. A/1 oder 80/2" autocomplete="off" />
                     <button id="btnOpenCustomTable" class="btn" type="button">Tisch öffnen</button>
                   </div>
                   <div id="tableKeypad" class="tableKeypad" aria-label="Tischnummer eingeben">
@@ -3875,8 +3875,23 @@ bruchCache.sort((a, b) => {
 
     function normalizedTable(value){ return safe(value).toUpperCase().replace(/\s+/g," "); }
 
+    function baseTable(value){ return normalizedTable(value).split("/")[0]; }
+    function validOrderTable(value){ return /^[A-Z0-9][A-Z0-9 -]{0,28}(?:\/[1-9][0-9]?)?$/.test(normalizedTable(value)); }
+    function tableSections(table){
+      const base = baseTable(table);
+      const used = orderCache.filter(row => row.status !== "closed" && baseTable(row.table) === base).map(row => normalizedTable(row.table));
+      const sections = [...new Set(used.filter(name => name.startsWith(`${base}/`)))];
+      return [...sections,...Array.from({length:6},(_,i)=>`${base}/${i+1}`).filter(name=>!sections.includes(name))];
+    }
+    let expandedBaseTable = "";
+    function openTableOrSections(table){
+      if(normalizedTable(table).includes("/") || orderCache.some(row => row.status !== "closed" && normalizedTable(row.table) === normalizedTable(table))){ selectTable(table,true); return; }
+      expandedBaseTable = normalizedTable(table);
+      renderTables();
+    }
+
     function assignmentFor(table, date=localDateKey()){
-      return tableAssignmentCache.find(row => row.date === date && !row.allTables && row.table?.replace(/(\d)\.(?=\d)/g,"$1,").split(",").some(part => normalizedTable(part) === normalizedTable(table)));
+      return tableAssignmentCache.find(row => row.date === date && !row.allTables && row.table?.replace(/(\d)\.(?=\d)/g,"$1,").split(",").some(part => normalizedTable(part) === baseTable(table)));
     }
 
     function allTablesPermission(waiterId, date=localDateKey()){
@@ -3927,7 +3942,7 @@ bruchCache.sort((a, b) => {
         const name = person?.name || assignment?.waiterName || open.find(order => order.waiterId === id)?.waiterName || "-";
         const allowedTables = assignments.filter(row => !row.allTables).flatMap(row => row.table.replace(/(\d)\.(?=\d)/g,"$1,").split(",").map(normalizedTable));
         const allAllowed = Boolean(allTablesPermission(id));
-        const tables = open.filter(order => order.waiterId === id || assignments.some(row => !row.allTables && normalizedTable(row.table) === normalizedTable(order.table)));
+        const tables = open.filter(order => order.waiterId === id || assignments.some(row => !row.allTables && normalizedTable(row.table) === baseTable(order.table)));
         const active = selectedOrderWaiterFilter === id ? " active" : "";
         const shownTables = [...new Set([...allowedTables, ...tables.map(order => order.table)].map(normalizedTable))];
         return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape(name.slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(name)}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<button class="ghost right" type="button" data-assignment-delete="${htmlEscape(assignments.find(row => row.allTables)?.id || "")}" title="Freigabe löschen">Alle Tische ×</button>` : ""}</div><div class="waiterTableChips">${shownTables.length ? shownTables.map(table => { const assigned = assignments.find(row => !row.allTables && normalizedTable(row.table) === table); const isOpen = tables.some(order => normalizedTable(order.table) === table); return isOpen ? `<button class="waiterTableChip" type="button" data-delete-open-table="${htmlEscape(table)}" title="Bestellung löschen (mit Bestätigung)">${htmlEscape(table)} · offen ×</button>` : assigned ? `<button class="waiterTableChip" type="button" data-assignment-delete="${htmlEscape(assigned.id)}" title="Zuordnung löschen">${htmlEscape(table)} ×</button>` : ""; }).join("") : `<span class="tiny muted">Noch keine Tische zugewiesen</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button><button class="btnDanger" type="button" data-hide-waiter="${htmlEscape(id)}">Ausblenden</button></div></article>`;
@@ -3952,12 +3967,13 @@ bruchCache.sort((a, b) => {
       const allAllowed = rows.some(row => row.allTables);
       const tables = rows.filter(row => !row.allTables).map(row => row.table);
       box.classList.toggle("hidden", !rows.length);
-      box.innerHTML = `<div class="row"><div><strong>🪑 Meine Tische (${allAllowed ? "Alle" : tables.length})</strong><div class="tiny muted">Nur meine zugewiesenen Tische</div></div></div><div class="waiterTableChips">${allAllowed ? `<span class="pill ok">Alle Tische freigegeben</span>` : tables.map(table => `<button class="waiterTableChip" type="button" data-my-table="${htmlEscape(table)}">${htmlEscape(table)}</button>`).join("")}</div>`;
+      box.innerHTML = `<div class="row"><div><strong>🪑 Meine Tische (${allAllowed ? "Alle" : tables.length})</strong><div class="tiny muted">Bereich wählen: z. B. A/1 oder 80/2</div></div></div><div class="waiterTableChips">${allAllowed ? `<span class="pill ok">Alle Tische freigegeben</span>` : tables.map(table => `<button class="waiterTableChip" type="button" data-my-table="${htmlEscape(table)}">${htmlEscape(table)} · Bereiche</button>`).join("")}</div>`;
     }
 
     async function saveTableAssignment(){
       if(!isAdmin()) return showMsg("Nur Admin.");
       const tables = safe($("assignmentTable").value).replace(/(\d)\.(?=\d)/g,"$1,").split(/[,;\n]+/).map(normalizedTable).filter(Boolean);
+      if(tables.some(table => !validOrderTable(table) || table.includes("/"))) return showMsg("Bitte nur Haupttische zuweisen, z. B. A oder 80. Untertische erstellt die Bedienung.");
       const allowAll = $("assignmentAllTables").checked;
       const waiterId = $("assignmentWaiter").value;
       const waiter = staffCache.find(person => (person.uid || person.id) === waiterId);
@@ -4003,6 +4019,7 @@ bruchCache.sort((a, b) => {
     }
 
     function renderCustomerOrders(){
+      const selectedSections = new Map([...$("customerOrderList").querySelectorAll("[data-customer-section]")].map(select=>[select.dataset.customerSection,select.value]));
       const pending = customerOrderCache.filter(order => order.status === "pending" && canHandleCustomerOrder(order));
       const overdue = pending.filter(customerOrderIsOverdue);
       const customerOrderBox = $("customerOrderBox");
@@ -4025,8 +4042,9 @@ bruchCache.sort((a, b) => {
         const late = seconds >= 120;
         const remaining = Math.max(0, 120 - seconds);
         const timeText = late ? `Seit ${Math.floor(seconds / 60)} Min. unbestätigt` : `Noch ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2,"0")} bis Admin-Alarm`;
-        return `<article class="item" style="margin-bottom:9px"><div class="row"><strong>Tisch ${htmlEscape(order.table || "-")}</strong><span class="${late ? "urgentBadge" : "pill warn"}">${late ? "Admin-Alarm" : "Wartet"}</span><strong class="right">${euro(order.total)}</strong></div><div class="tiny muted" style="margin-top:7px">${lines}</div>${order.note ? `<div class="tiny" style="margin-top:7px"><strong>Notiz:</strong> ${htmlEscape(order.note)}</div>` : ""}<div class="tiny muted" style="margin-top:7px">Bedienung: ${htmlEscape(assignment?.waiterName || "noch nicht zugeordnet")} · ${timeText}</div><div class="row" style="margin-top:10px"><button class="btn" type="button" data-customer-accept="${htmlEscape(order.id)}">Bestätigen & senden</button><button class="ghost right" type="button" data-customer-reject="${htmlEscape(order.id)}">Ablehnen</button></div></article>`;
+        return `<article class="item" style="margin-bottom:9px"><div class="row"><strong>Tisch ${htmlEscape(order.table || "-")} · noch ohne Bereich</strong><span class="${late ? "urgentBadge" : "pill warn"}">${late ? "Admin-Alarm" : "Wartet"}</span><strong class="right">${euro(order.total)}</strong></div><div class="tiny muted" style="margin-top:7px">${lines}</div>${order.note ? `<div class="tiny" style="margin-top:7px"><strong>Notiz:</strong> ${htmlEscape(order.note)}</div>` : ""}<div class="tiny muted" style="margin-top:7px">Bedienung: ${htmlEscape(assignment?.waiterName || "noch nicht zugeordnet")} · ${timeText}</div><div class="row" style="margin-top:10px"><label class="field" style="flex:1;min-width:135px"><span class="label">Bereich auswählen</span><select class="select" data-customer-section="${htmlEscape(order.id)}"><option value="">Bitte wählen</option>${tableSections(order.table).map(section=>`<option value="${htmlEscape(section)}">${htmlEscape(section)}</option>`).join("")}</select></label><button class="btn" type="button" data-customer-accept="${htmlEscape(order.id)}">Bestätigen & senden</button><button class="ghost right" type="button" data-customer-reject="${htmlEscape(order.id)}">Ablehnen</button></div></article>`;
       }).join("") : `<div class="tiny muted">${isAdmin() ? "Keine überfälligen QR-Bestellungen." : "Keine neuen QR-Bestellungen für deine Tische."}</div>`;
+      $("customerOrderList").querySelectorAll("[data-customer-section]").forEach(select => { if(selectedSections.has(select.dataset.customerSection)) select.value = selectedSections.get(select.dataset.customerSection); });
 
       if(isAdmin()) overdue.forEach(order => {
         if(customerOrderAlertedIds.has(order.id)) return;
@@ -4066,20 +4084,31 @@ bruchCache.sort((a, b) => {
       customerOrderTimer = setInterval(renderCustomerOrders, 1000);
     }
 
-    async function acceptCustomerOrder(id){
+    async function acceptCustomerOrder(id, section){
       const incoming = customerOrderCache.find(order => order.id === id);
       if(!incoming || incoming.status !== "pending" || !canHandleCustomerOrder(incoming)) return showMsg("Diese Bestellung kann nicht übernommen werden.");
-      const existing = orderCache.find(order => normalizedTable(order.table) === normalizedTable(incoming.table) && order.status !== "closed");
+      if(!section || baseTable(section) !== normalizedTable(incoming.table) || !/^\/[1-9][0-9]?$/.test(section.slice(baseTable(section).length))) return showMsg("Bitte zuerst den Bereich des Gastes wählen.");
+      const existing = orderCache.find(order => normalizedTable(order.table) === section && order.status !== "closed");
       const assignment = assignmentFor(incoming.table);
-      const mergedItems = [...(existing?.items || []).map(item=>({...item,station:stationForItem(item)}))];
-      (incoming.items || []).forEach(item => {const normalized={...item,station:stationForItem(item),qty:Number(item.qty||1)};const found=mergedItems.find(row=>row.menuId===item.menuId);if(found)found.qty=Number(found.qty||0)+normalized.qty;else mergedItems.push(normalized)});
-      const data={table:incoming.table,items:mergedItems,note:[existing?.note,incoming.note].filter(Boolean).join(" · "),status:existing?.status || "new",total:orderTotal(mergedItems),waiterId:assignment?.waiterId || currentUser.uid,waiterName:assignment?.waiterName || currentProfile.name || currentUser.email,updatedAt:serverTimestamp()};
       try{
-        if(existing) await updateDoc(doc(db,"orders",existing.id),data); else await addDoc(collection(db,"orders"),{...data,createdAt:serverTimestamp()});
-        await updateDoc(doc(db,"customerOrders",id),{status:"accepted",acceptedBy:currentUser.uid,acceptedByName:currentProfile.name || currentUser.email,acceptedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+        const incomingRef = doc(db,"customerOrders",id);
+        const orderRef = existing ? doc(db,"orders",existing.id) : doc(collection(db,"orders"));
+        await runTransaction(db, async transaction => {
+          const freshIncoming = await transaction.get(incomingRef);
+          const freshOrder = existing ? await transaction.get(orderRef) : null;
+          if(!freshIncoming.exists() || freshIncoming.data().status !== "pending") throw new Error("Diese QR-Bestellung wurde bereits bearbeitet. Bitte aktualisieren.");
+          if(freshOrder && (!freshOrder.exists() || freshOrder.data().status === "closed")) throw new Error("Der Bereich wurde inzwischen geschlossen. Bitte aktualisieren.");
+          const source = freshIncoming.data();
+          const previous = freshOrder?.data();
+          const mergedItems = [...(previous?.items || []).map(item=>({...item,station:stationForItem(item)}))];
+          (source.items || []).forEach(item => {const normalized={...item,station:stationForItem(item),qty:Number(item.qty||1)};const found=mergedItems.find(row=>row.menuId===item.menuId);if(found)found.qty=Number(found.qty||0)+normalized.qty;else mergedItems.push(normalized)});
+          const data={table:section,baseTable:normalizedTable(incoming.table),items:mergedItems,note:[previous?.note,source.note].filter(Boolean).join(" · "),status:previous?.status || "new",total:orderTotal(mergedItems),waiterId:assignment?.waiterId || currentUser.uid,waiterName:assignment?.waiterName || currentProfile.name || currentUser.email,updatedAt:serverTimestamp()};
+          transaction.set(orderRef,existing ? data : {...data,createdAt:serverTimestamp()},{merge:!!existing});
+          transaction.update(incomingRef,{status:"accepted",section,orderId:orderRef.id,acceptedBy:currentUser.uid,acceptedByName:currentProfile.name || currentUser.email,acceptedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+        });
         await loadOrders();
-        selectTable(incoming.table);
-        showMsg(`QR-Bestellung für Tisch ${incoming.table} wurde übernommen.`);
+        selectTable(section);
+        showMsg(`QR-Bestellung für ${section} wurde übernommen.`);
       }catch(error){console.error(error);showMsg("Bestellung konnte nicht übernommen werden: "+error.message)}
     }
 
@@ -4122,6 +4151,7 @@ bruchCache.sort((a, b) => {
     function canHandleTable(table, order=null){
       if(isAdmin()) return true;
       const assignment = assignmentFor(table);
+      if(assignment) return assignment.waiterId === currentUser?.uid;
       if(order?.waiterId && order.waiterId !== currentUser?.uid) return false;
       return assignment?.waiterId === currentUser?.uid || (!assignment && Boolean(allTablesPermission(currentUser?.uid)));
     }
@@ -4147,17 +4177,19 @@ bruchCache.sort((a, b) => {
         $("tableOpenTitle").textContent = "Meine Tische";
       }
       const assignments = isAdmin() && selectedOrderWaiterFilter !== "all" ? tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === selectedOrderWaiterFilter && !row.allTables).flatMap(row => row.table.replace(/(\d)\.(?=\d)/g,"$1,").split(",").map(table => ({...row,table:normalizedTable(table)}))) : [];
-      const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o) && (!isAdmin() || selectedOrderWaiterFilter === "all" || o.waiterId === selectedOrderWaiterFilter || assignments.some(row => normalizedTable(row.table) === normalizedTable(o.table))));
+      const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o) && (!isAdmin() || selectedOrderWaiterFilter === "all" || o.waiterId === selectedOrderWaiterFilter || assignments.some(row => normalizedTable(row.table) === baseTable(o.table))));
       const openByTable = new Map(openOrders.map(o => [normalizedTable(o.table), o]));
       const tableNames = new Map(openOrders.map(o => [normalizedTable(o.table), safe(o.table)]));
+      if(!isAdmin()) tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === currentUser?.uid && !row.allTables).forEach(row => { const base=normalizedTable(row.table); if(base && !tableNames.has(base)) tableNames.set(base,base); });
       $("openTablesBadge").textContent = `${openByTable.size} offen`;
       $("tableGrid").innerHTML = tableNames.size ? [...tableNames.values()]
         .sort((a,b) => a.localeCompare(b, "de", {numeric:true}))
         .map(tableName => {
           const order = openByTable.get(normalizedTable(tableName));
           const classes = ["tableBtn", "open", selectedTable.toUpperCase() === tableName.toUpperCase() ? "selected" : ""].filter(Boolean).join(" ");
-          return `<button class="${classes}" type="button" data-table-name="${htmlEscape(tableName)}">${htmlEscape(tableName)}<small>${order ? `${htmlEscape(orderStatusLabel(order.status))} · ${euro(order.total)}` : "Keine Bestellung"}</small></button>`;
+          return `<button class="${classes}" type="button" data-table-name="${htmlEscape(tableName)}">${htmlEscape(tableName)}<small>${order ? `${htmlEscape(orderStatusLabel(order.status))} · ${euro(order.total)}` : "Bereiche öffnen"}</small></button>`;
         }).join("") : `<div class="tiny muted">Keine offenen Tische.</div>`;
+      if(expandedBaseTable && canHandleTable(expandedBaseTable)) $("tableGrid").innerHTML += `<div class="item" style="flex:0 0 100%"><strong>Tisch ${htmlEscape(expandedBaseTable)} · Bereich wählen</strong><div class="waiterTableChips" style="margin-top:10px">${tableSections(expandedBaseTable).map(section=>`<button class="waiterTableChip" type="button" data-table-section="${htmlEscape(section)}">${htmlEscape(section)}</button>`).join("")}</div></div>`;
     }
 
     function renderAdminTableDetail(){
@@ -4265,7 +4297,8 @@ bruchCache.sort((a, b) => {
     }
 
     function selectTable(number, showOrder=false){
-      const requestedTable = safe(number);
+      const requestedTable = normalizedTable(number);
+      if(!validOrderTable(requestedTable)) return showMsg("Bitte einen gültigen Tisch eingeben, z. B. A/1 oder 80/2.");
       const existing = orderCache.find(order => normalizedTable(order.table) === normalizedTable(requestedTable) && order.status !== "closed");
       if(!canHandleTable(requestedTable, existing)) return showMsg("Dieser Tisch ist einer anderen Bedienung zugeordnet.");
       selectedTable = requestedTable;
@@ -6007,6 +6040,8 @@ bruchCache.sort((a, b) => {
     });
 
     $("tableGrid").addEventListener("click", event => {
+      const section = event.target.closest("[data-table-section]");
+      if(section){ selectTable(section.dataset.tableSection,true); return; }
       const button = event.target.closest("[data-table-name]");
       if(!button) return;
       if(isAdmin()){
@@ -6015,7 +6050,14 @@ bruchCache.sort((a, b) => {
         document.querySelector(".orderPanel")?.classList.add("hidden");
         renderTables();
         $("adminTableDetail").scrollIntoView({behavior:"smooth",block:"start"});
-      }else selectTable(button.dataset.tableName, true);
+      }else openTableOrSections(button.dataset.tableName);
+    });
+    $("myWaiterTables").addEventListener("click", event => {
+      const button = event.target.closest("[data-my-table]");
+      if(!button) return;
+      expandedBaseTable = normalizedTable(button.dataset.myTable);
+      renderTables();
+      $("tableOpenPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
     });
     $("btnBackToTables").addEventListener("click", () => {
       adminViewedTable = "";
@@ -6034,7 +6076,7 @@ bruchCache.sort((a, b) => {
       const tableName = safe($("customTableName").value);
       if(isAdmin() && selectedOrderWaiterFilter === "none") return showMsg("Bitte zuerst einen Kellner auswählen.");
       if(!tableName) return showMsg("Bitte Tisch eingeben, z. B. D1.");
-      selectTable(tableName);
+      openTableOrSections(tableName);
       $("customTableName").value = "";
     }
     $("btnOpenCustomTable").addEventListener("click", openCustomTable);
@@ -6099,9 +6141,14 @@ bruchCache.sort((a, b) => {
     $("btnSaveTableAssignment").addEventListener("click", saveTableAssignment);
     $("tableAssignmentDate").addEventListener("change", renderTableAssignments);
     $("btnOpenTableQr").addEventListener("click", () => {
-      const table = safe($("assignmentTable").value);
-      if(!table) return showMsg("Bitte zuerst einen Tisch eingeben.");
-      window.open(`./speisekarte.html?karte=restaurant&tisch=${encodeURIComponent(table)}`,"_blank","noopener");
+      const table = normalizedTable($("assignmentTable").value);
+      if(!validOrderTable(table) || table.includes("/") || table.includes(",")) return showMsg("Bitte genau einen Haupttisch eingeben, z. B. A oder 80.");
+      const url = new URL(`./speisekarte.html?karte=restaurant&tisch=${encodeURIComponent(table)}`,location.href).href;
+      const qr = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=18&data=${encodeURIComponent(url)}`;
+      const windowRef = window.open("","_blank");
+      if(!windowRef) return showMsg("Bitte Pop-ups für das Drucken erlauben.");
+      windowRef.document.write(`<!doctype html><html lang="de"><meta charset="utf-8"><title>Matteo · Tisch ${htmlEscape(table)}</title><style>body{font-family:Arial,sans-serif;text-align:center;color:#161616;margin:36px}h1{font-size:34px}img{width:min(80vw,380px);height:auto}p{font-size:18px}.print{padding:12px 18px;border:0;border-radius:8px;background:#161616;color:white;font-size:17px}@media print{.print{display:none}}</style><h1>MATTEO · Tisch ${htmlEscape(table)}</h1><img src="${qr}" alt="QR-Code für Tisch ${htmlEscape(table)}"><p>Speisekarte öffnen und bestellen</p><button class="print" onclick="window.print()">Drucken</button></html>`);
+      windowRef.document.close();
     });
     $("tableAssignmentList").addEventListener("click", async event => {
       const button = event.target.closest("[data-assignment-delete]");
@@ -6142,7 +6189,7 @@ bruchCache.sort((a, b) => {
     $("customerOrderList").addEventListener("click", event => {
       const accept = event.target.closest("[data-customer-accept]");
       const reject = event.target.closest("[data-customer-reject]");
-      if(accept) acceptCustomerOrder(accept.dataset.customerAccept);
+      if(accept) acceptCustomerOrder(accept.dataset.customerAccept, document.querySelector(`[data-customer-section="${CSS.escape(accept.dataset.customerAccept)}"]`)?.value);
       if(reject) rejectCustomerOrder(reject.dataset.customerReject);
     });
     $("btnSaveAnnouncement").addEventListener("click", saveAnnouncement);
