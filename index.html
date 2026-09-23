@@ -3891,7 +3891,7 @@ bruchCache.sort((a, b) => {
     }
     let expandedBaseTable = "";
     function openTableOrSections(table){
-      if(normalizedTable(table).includes("/") || orderCache.some(row => row.status !== "closed" && normalizedTable(row.table) === normalizedTable(table))){ selectTable(table,true); return; }
+      if(normalizedTable(table).includes("/") || orderCache.some(row => row.status !== "closed" && normalizedTable(row.table) === normalizedTable(table))){ selectTable(table); return; }
       expandedBaseTable = normalizedTable(table);
       renderTables();
     }
@@ -4321,6 +4321,7 @@ bruchCache.sort((a, b) => {
         panel?.classList.remove("hidden");
         setTimeout(() => panel?.scrollIntoView({behavior:"smooth",block:"start"}), 50);
       }else if(!isAdmin()){
+        document.querySelector(".orderPanel")?.classList.add("hidden");
         $("orderProductPicker")?.scrollIntoView({behavior:"smooth",block:"start"});
       }
     }
@@ -6047,7 +6048,7 @@ bruchCache.sort((a, b) => {
 
     $("tableGrid").addEventListener("click", event => {
       const section = event.target.closest("[data-table-section]");
-      if(section){ selectTable(section.dataset.tableSection,true); return; }
+      if(section){ selectTable(section.dataset.tableSection); return; }
       const button = event.target.closest("[data-table-name]");
       if(!button) return;
       if(isAdmin()){
