@@ -1553,7 +1553,7 @@
       getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
-      getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp, query, where, arrayUnion, onSnapshot, runTransaction
+      getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc, serverTimestamp, query, where, arrayUnion, onSnapshot, runTransaction, writeBatch
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     import {
       getStorage, ref as storageRef, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject
@@ -3875,10 +3875,11 @@ bruchCache.sort((a, b) => {
     function normalizedTable(value){ return safe(value).toUpperCase().replace(/\s+/g," "); }
 
     function assignmentFor(table, date=localDateKey()){
-      return tableAssignmentCache.find(row => row.date === date && normalizedTable(row.table) === normalizedTable(table));
+      return tableAssignmentCache.find(row => row.date === date && !row.allTables && row.table?.replace(/(\d)\.(?=\d)/g,"$1,").split(",").some(part => normalizedTable(part) === normalizedTable(table)));
     }
 
     function allTablesPermission(waiterId, date=localDateKey()){
+      if(tableAssignmentCache.some(row => row.date === date && row.waiterId === waiterId && !row.allTables)) return null;
       return tableAssignmentCache.find(row => row.date === date && row.allTables === true && row.waiterId === waiterId);
     }
 
@@ -3923,8 +3924,8 @@ bruchCache.sort((a, b) => {
         const assignment = assignments[0];
         const person = staffCache.find(row => (row.uid || row.id) === id);
         const name = person?.name || assignment?.waiterName || open.find(order => order.waiterId === id)?.waiterName || "-";
-        const allowedTables = assignments.filter(row => !row.allTables).map(row => row.table);
-        const allAllowed = assignments.some(row => row.allTables);
+        const allowedTables = assignments.filter(row => !row.allTables).flatMap(row => row.table.replace(/(\d)\.(?=\d)/g,"$1,").split(",").map(normalizedTable));
+        const allAllowed = Boolean(allTablesPermission(id));
         const tables = open.filter(order => order.waiterId === id || assignments.some(row => !row.allTables && normalizedTable(row.table) === normalizedTable(order.table)));
         const active = selectedOrderWaiterFilter === id ? " active" : "";
         const shownTables = [...new Set([...allowedTables, ...tables.map(order => order.table)].map(normalizedTable))];
@@ -3955,18 +3956,23 @@ bruchCache.sort((a, b) => {
 
     async function saveTableAssignment(){
       if(!isAdmin()) return showMsg("Nur Admin.");
-      const tables = safe($("assignmentTable").value).split(/[,;\n]+/).map(normalizedTable).filter(Boolean);
+      const tables = safe($("assignmentTable").value).replace(/(\d)\.(?=\d)/g,"$1,").split(/[,;\n]+/).map(normalizedTable).filter(Boolean);
       const allowAll = $("assignmentAllTables").checked;
       const waiterId = $("assignmentWaiter").value;
       const waiter = staffCache.find(person => (person.uid || person.id) === waiterId);
       if((!tables.length && !allowAll) || !waiter) return showMsg("Bitte Tische eingeben oder Alle Tische wählen.");
       const date = assignmentDate();
-      const writes = [...new Set(tables)].map(table => {
-        const id = `${date}_${table.replace(/[^A-Z0-9]+/g,"-").replace(/^-|-$/g,"")}`;
-        return setDoc(doc(db,"tableAssignments",id),{date,table,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()});
+      const batch = writeBatch(db);
+      const nextIds = new Set(allowAll ? [`${date}_ALL_${waiterId}`] : [...new Set(tables)].map(table => `${date}_${table.replace(/[^A-Z0-9]+/g,"-").replace(/^-|-$/g,"")}`));
+      tableAssignmentCache.filter(row => row.date === date && row.waiterId === waiterId).forEach(row => {
+        if(!nextIds.has(row.id)) batch.delete(doc(db,"tableAssignments",row.id));
       });
-      if(allowAll) writes.push(setDoc(doc(db,"tableAssignments",`${date}_ALL_${waiterId}`),{date,table:"*",allTables:true,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()}));
-      await Promise.all(writes);
+      if(!allowAll) [...new Set(tables)].forEach(table => {
+        const id = `${date}_${table.replace(/[^A-Z0-9]+/g,"-").replace(/^-|-$/g,"")}`;
+        batch.set(doc(db,"tableAssignments",id),{date,table,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()});
+      });
+      if(allowAll) batch.set(doc(db,"tableAssignments",`${date}_ALL_${waiterId}`),{date,table:"*",allTables:true,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()});
+      await batch.commit();
       $("assignmentTable").value = "";
       $("assignmentAllTables").checked = false;
       $("assignmentDetails").open = false;
@@ -4106,7 +4112,7 @@ bruchCache.sort((a, b) => {
     function canHandleTable(table, order=null){
       if(isAdmin()) return true;
       const assignment = assignmentFor(table);
-      return assignment?.waiterId === currentUser?.uid || order?.waiterId === currentUser?.uid || Boolean(allTablesPermission(currentUser?.uid));
+      return assignment?.waiterId === currentUser?.uid || Boolean(allTablesPermission(currentUser?.uid));
     }
 
     function renderTables(){
@@ -4129,7 +4135,7 @@ bruchCache.sort((a, b) => {
       }else{
         $("tableOpenTitle").textContent = "Meine Tische";
       }
-      const assignments = isAdmin() && selectedOrderWaiterFilter !== "all" ? tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === selectedOrderWaiterFilter && !row.allTables) : [];
+      const assignments = isAdmin() && selectedOrderWaiterFilter !== "all" ? tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === selectedOrderWaiterFilter && !row.allTables).flatMap(row => row.table.replace(/(\d)\.(?=\d)/g,"$1,").split(",").map(table => ({...row,table:normalizedTable(table)}))) : [];
       const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o) && (!isAdmin() || selectedOrderWaiterFilter === "all" || o.waiterId === selectedOrderWaiterFilter || assignments.some(row => normalizedTable(row.table) === normalizedTable(o.table))));
       const openByTable = new Map(openOrders.map(o => [normalizedTable(o.table), o]));
       const tableNames = new Map(openOrders.map(o => [normalizedTable(o.table), safe(o.table)]));
