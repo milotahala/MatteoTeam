@@ -1499,6 +1499,7 @@
                   <button id="btnBackToTables" class="ghost" type="button" style="margin-bottom:12px">← Zurück zu Tischen</button>
                   <div class="row"><strong id="adminTableTitle"></strong><span id="adminTableTotal" class="right"></span></div>
                   <div id="adminTableItems" class="adminOrderItems" style="margin-top:12px"></div>
+                  <button id="btnDeleteTableOrders" class="btnDanger" type="button" style="margin-top:14px">Tisch löschen</button>
                 </div>
                 <div id="orderProductPicker" class="item hidden">
                   <button id="btnOrderBackToTables" class="ghost orderPickerBack" type="button">← Tische</button>
@@ -4165,6 +4166,31 @@ bruchCache.sort((a, b) => {
       $("adminTableTitle").textContent = `Tisch ${adminViewedTable}`;
       $("adminTableTotal").textContent = order ? euro(order.total) : "";
       $("adminTableItems").innerHTML = order ? `${(order.items || []).map(item => `<div class="orderLine"><span><strong>${Number(item.qty || 0)} × ${htmlEscape(item.name || "-")}</strong></span><span>${euro(Number(item.qty || 0) * Number(item.price || 0))}</span></div>`).join("")}${order.note ? `<div class="tiny muted" style="margin-top:10px">${htmlEscape(order.note)}</div>` : ""}` : `<div class="muted">Für diesen Tisch gibt es noch keine Bestellung.</div>`;
+      $("btnDeleteTableOrders").classList.toggle("hidden", !order);
+    }
+
+    async function deleteAdminTableOrders(){
+      if(!isAdmin() || !adminViewedTable) return;
+      const table = adminViewedTable;
+      const orders = orderCache.filter(row => row.status !== "closed" && normalizedTable(row.table) === normalizedTable(table));
+      if(!orders.length) return showMsg("Dieser Tisch hat keine offene Bestellung.");
+      if(!confirm(`Tisch ${table} und ${orders.length === 1 ? "seine Bestellung" : `seine ${orders.length} Bestellungen`} endgültig löschen?\n\nOK = Ja, Abbrechen = Nein`)) return;
+      const button = $("btnDeleteTableOrders");
+      button.disabled = true;
+      try{
+        const batch = writeBatch(db);
+        orders.forEach(order => batch.delete(doc(db,"orders",order.id)));
+        await batch.commit();
+        adminViewedTable = "";
+        if(normalizedTable(selectedTable) === normalizedTable(table)){
+          selectedTable = "";
+          currentOrderId = null;
+          currentOrderItems = [];
+        }
+        renderTables();
+        showMsg(`Tisch ${table} wurde gelöscht.`);
+      }catch(error){ console.error(error); showMsg("Tisch konnte nicht gelöscht werden: " + error.message); }
+      finally{ button.disabled = false; }
     }
 
     function renderOrderMenu(){
@@ -5995,6 +6021,7 @@ bruchCache.sort((a, b) => {
       renderTables();
       $("tableOpenPanel").scrollIntoView({behavior:"smooth",block:"start"});
     });
+    $("btnDeleteTableOrders").addEventListener("click", deleteAdminTableOrders);
     $("btnBackToWaiters").addEventListener("click", () => {
       adminViewedTable = "";
       selectedOrderWaiterFilter = "none";
