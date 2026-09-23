@@ -1474,7 +1474,7 @@
               </div>
               <label class="row item" style="margin-bottom:12px"><input id="assignmentAllTables" type="checkbox" /> <strong>Alle Tische freigeben</strong><span class="tiny muted right">Kellner darf jede Tischnummer öffnen</span></label>
               <div class="row"><button id="btnSaveTableAssignment" class="btn" type="button">Zuordnung speichern</button><button id="btnOpenTableQr" class="ghost right" type="button">Test-Link öffnen</button></div>
-              <div id="tableAssignmentList" class="hidden"></div>
+              <div id="tableAssignmentList" style="margin-top:12px"></div>
             </details>
 
             <div class="orderLayout">
@@ -3929,7 +3929,7 @@ bruchCache.sort((a, b) => {
         const tables = open.filter(order => order.waiterId === id || assignments.some(row => !row.allTables && normalizedTable(row.table) === normalizedTable(order.table)));
         const active = selectedOrderWaiterFilter === id ? " active" : "";
         const shownTables = [...new Set([...allowedTables, ...tables.map(order => order.table)].map(normalizedTable))];
-        return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape(name.slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(name)}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<span class="pill ok right">Alle Tische</span>` : ""}</div><div class="waiterTableChips">${shownTables.length ? shownTables.map(table => `<span class="waiterTableChip">${htmlEscape(table)}</span>`).join("") : `<span class="tiny muted">Noch keine Tische zugewiesen</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button><button class="btnDanger" type="button" data-hide-waiter="${htmlEscape(id)}">Ausblenden</button></div></article>`;
+        return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape(name.slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(name)}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<button class="ghost right" type="button" data-assignment-delete="${htmlEscape(assignments.find(row => row.allTables)?.id || "")}" title="Freigabe löschen">Alle Tische ×</button>` : ""}</div><div class="waiterTableChips">${shownTables.length ? shownTables.map(table => { const assigned = assignments.find(row => !row.allTables && normalizedTable(row.table) === table); return assigned ? `<button class="waiterTableChip" type="button" data-assignment-delete="${htmlEscape(assigned.id)}" title="Zuordnung löschen">${htmlEscape(table)} ×</button>` : `<span class="waiterTableChip" title="Offene Bestellung">${htmlEscape(table)} · offen</span>`; }).join("") : `<span class="tiny muted">Noch keine Tische zugewiesen</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button><button class="btnDanger" type="button" data-hide-waiter="${htmlEscape(id)}">Ausblenden</button></div></article>`;
       }).join("") : `<span class="tiny muted">Noch keine Kellner zugewiesen.</span>`}`;
     }
 
@@ -3960,7 +3960,7 @@ bruchCache.sort((a, b) => {
       const allowAll = $("assignmentAllTables").checked;
       const waiterId = $("assignmentWaiter").value;
       const waiter = staffCache.find(person => (person.uid || person.id) === waiterId);
-      if((!tables.length && !allowAll) || !waiter) return showMsg("Bitte Tische eingeben oder Alle Tische wählen.");
+      if(!waiter) return showMsg("Bitte Bedienung wählen.");
       const date = assignmentDate();
       const batch = writeBatch(db);
       const nextIds = new Set(allowAll ? [`${date}_ALL_${waiterId}`] : [...new Set(tables)].map(table => `${date}_${table.replace(/[^A-Z0-9]+/g,"-").replace(/^-|-$/g,"")}`));
@@ -3972,11 +3972,20 @@ bruchCache.sort((a, b) => {
         batch.set(doc(db,"tableAssignments",id),{date,table,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()});
       });
       if(allowAll) batch.set(doc(db,"tableAssignments",`${date}_ALL_${waiterId}`),{date,table:"*",allTables:true,waiterId,waiterName:waiter.name || waiter.email,updatedAt:serverTimestamp()});
-      await batch.commit();
+      try{ await batch.commit(); }
+      catch(error){ console.error(error); return showMsg("Zuordnung konnte nicht gespeichert werden: " + error.message); }
       $("assignmentTable").value = "";
       $("assignmentAllTables").checked = false;
       $("assignmentDetails").open = false;
-      showMsg(allowAll ? `${waiter.name || "Bedienung"} darf jetzt alle Tische öffnen.` : `${tables.length} Tische wurden ${waiter.name || "der Bedienung"} zugeordnet.`);
+      showMsg(allowAll ? `${waiter.name || "Bedienung"} darf jetzt alle Tische öffnen.` : tables.length ? `${tables.length} Tische wurden ${waiter.name || "der Bedienung"} zugeordnet.` : `Alle Zuordnungen für ${waiter.name || "die Bedienung"} wurden entfernt.`);
+    }
+
+    async function deleteTableAssignment(id){
+      if(!isAdmin() || !id) return;
+      const row = tableAssignmentCache.find(item => item.id === id);
+      if(!row || !confirm(`${row.allTables ? "Freigabe für alle Tische" : `Tisch ${row.table}`} bei ${row.waiterName || "Bedienung"} entfernen?`)) return;
+      try{ await deleteDoc(doc(db,"tableAssignments",id)); }
+      catch(error){ console.error(error); showMsg("Tisch konnte nicht entfernt werden: " + error.message); }
     }
 
     function customerOrderAgeSeconds(order){
@@ -6070,14 +6079,17 @@ bruchCache.sort((a, b) => {
       const button = event.target.closest("[data-assignment-delete]");
       const filter = event.target.closest("[data-waiter-filter]");
       if(filter){ selectedOrderWaiterFilter = filter.dataset.waiterFilter; adminViewedTable = ""; renderAdminWaiterOverview(); renderTables(); $("tableOpenPanel")?.scrollIntoView({behavior:"smooth",block:"start"}); return; }
-      if(button && isAdmin() && confirm("Tischzuordnung löschen?")) await deleteDoc(doc(db,"tableAssignments",button.dataset.assignmentDelete));
+      if(button) await deleteTableAssignment(button.dataset.assignmentDelete);
     });
     $("adminWaiterOverview").addEventListener("click", async event => {
+      const remove = event.target.closest("[data-assignment-delete]");
       const hide = event.target.closest("[data-hide-waiter]");
       const restore = event.target.closest("[data-restore-waiter]");
       const filter = event.target.closest("[data-waiter-filter]");
       const assign = event.target.closest("[data-assign-waiter]");
-      if(hide){
+      if(remove){
+        await deleteTableAssignment(remove.dataset.assignmentDelete);
+      }else if(hide){
         await setWaiterHidden(hide.dataset.hideWaiter, true);
       }else if(restore){
         await setWaiterHidden($("hiddenWaiterSelect")?.value, false);
