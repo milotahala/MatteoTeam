@@ -1474,7 +1474,6 @@
             <div class="orderLayout">
               <div>
                 <div id="adminWaiterOverview" class="item adminOnly" style="margin-bottom:14px"></div>
-                <div id="myWaiterTables" class="myTablesCard hidden"></div>
                 <div id="tableOpenPanel" class="item">
                   <button id="btnBackToWaiters" class="ghost adminOnly" type="button" style="margin-bottom:12px">← Zurück zu Kellnern</button>
                   <div class="row" style="margin-bottom:12px"><strong id="tableOpenTitle">Tisch eingeben</strong><span id="openTablesBadge" class="pill warn right">0 offen</span></div>
@@ -6058,10 +6057,6 @@ bruchCache.sort((a, b) => {
         $("assignmentTable").focus();
         $("assignmentDetails").scrollIntoView({behavior:"smooth",block:"start"});
       }
-    });
-    $("myWaiterTables").addEventListener("click", event => {
-      const button = event.target.closest("[data-my-table]");
-      if(button) selectTable(button.dataset.myTable, true);
     });
     $("customerOrderList").addEventListener("click", event => {
       const accept = event.target.closest("[data-customer-accept]");
