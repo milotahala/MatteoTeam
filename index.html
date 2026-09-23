@@ -500,6 +500,23 @@
     .orderMenuItem::after{content:"+";position:absolute;right:12px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#20c77b;color:#042417;font-size:25px;font-weight:950}
     #adminWaiterOverview,#myWaiterTables,#tableOpenPanel,#orderProductPicker,.orderPanel{min-width:0;max-width:100%;overflow:hidden}
     #orderMenuList{min-width:0;max-width:100%}
+    .orderModeTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}
+    .orderModeTabs button{min-height:49px;border:1px solid #35516b;border-radius:12px;background:#13263d;color:#e8f3ff;font-weight:850;cursor:pointer}
+    .orderModeTabs button.active{background:#22b873;color:#061e15;border-color:#55e3a6}
+    .orderPickerLayout{display:grid;grid-template-columns:minmax(125px,190px) minmax(0,1fr);gap:10px;align-items:start}
+    #viewOrders .orderPickerLayout .menuCategories{display:flex;flex-direction:column;gap:7px;overflow:visible;max-height:510px;overflow-y:auto}
+    #viewOrders .orderPickerLayout .chip{width:100%;min-height:48px;white-space:normal;text-align:left;border-radius:11px;font-size:13px;font-weight:800}
+    #viewOrders .orderMenuGrid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:510px}
+    #viewOrders .orderMenuItem{min-height:72px;padding:10px 43px 10px 11px}
+    #viewOrders .orderMenuItem::after{width:29px;height:29px;right:8px;font-size:21px}
+    @media(max-width:600px){
+      .orderPickerLayout{grid-template-columns:104px minmax(0,1fr);gap:7px}
+      #viewOrders .orderPickerLayout .menuCategories{max-height:62vh}
+      #viewOrders .orderPickerLayout .chip{min-height:44px;padding:7px;font-size:12px}
+      #viewOrders .orderMenuGrid{grid-template-columns:1fr;max-height:62vh}
+      #viewOrders .orderMenuItem{font-size:13px;min-height:62px}
+      #viewOrders .orderMenuItem small{font-size:11px}
+    }
     @media(max-width:520px){.waiterCardActions{grid-template-columns:1fr 1fr}.waiterCardActions .btnDanger{grid-column:1/-1}.waiterOverviewHead{align-items:flex-start;gap:8px}.waiterOverviewHead .ghost{padding:8px 10px}.waiterAvatar{width:40px;height:40px;flex-basis:40px}}
     @media (max-width:1100px){
       .authWrap,.grid2,.grid3{grid-template-columns:1fr}
@@ -1478,8 +1495,11 @@
                   <div class="menuToolbar" style="margin-bottom:10px">
                     <input id="orderMenuSearch" class="input" type="search" placeholder="Gericht oder Getränk suchen …" />
                   </div>
-                  <div id="orderCategoryChips" class="menuCategories" style="margin-bottom:12px"></div>
-                  <div id="orderMenuList" class="orderMenuGrid"></div>
+                  <div id="orderModeTabs" class="orderModeTabs" aria-label="Produktgruppe"></div>
+                  <div class="orderPickerLayout">
+                    <div id="orderCategoryChips" class="menuCategories" aria-label="Kategorien"></div>
+                    <div id="orderMenuList" class="orderMenuGrid"></div>
+                  </div>
                 </div>
               </div>
 
@@ -1580,6 +1600,7 @@
     let selectedOrderWaiterFilter = "none";
     let adminViewedTable = "";
     let activeOrderCategory = "Alle";
+    let activeOrderMode = "Speisen";
     let currentOrderItems = [];
     let currentOrderId = null;
     let currentOrderState = "new";
@@ -4122,14 +4143,20 @@ bruchCache.sort((a, b) => {
     function renderOrderMenu(){
       const search = menuSearchText($("orderMenuSearch").value);
       const category = activeOrderCategory;
-      $("orderCategoryChips").innerHTML = ["Alle", ...MENU_CATEGORIES].map(name => `<button class="chip${name === category ? " active" : ""}" type="button" data-order-category="${htmlEscape(name)}">${htmlEscape(name)}</button>`).join("");
-      const rows = restaurantMenuCache.filter(item => {
+      const drinkCategories = MENU_CATEGORIES.filter(name => THEKE_CATEGORIES.has(name));
+      const categories = activeOrderMode === "Getränke" ? drinkCategories : activeOrderMode === "To Go" ? [...new Set(toGoMenuCache.map(item => item.category).filter(Boolean))] : MENU_CATEGORIES.filter(name => !THEKE_CATEGORIES.has(name));
+      $("orderModeTabs").innerHTML = ["Speisen","Getränke","To Go"].map(name => `<button class="${name === activeOrderMode ? "active" : ""}" type="button" data-order-mode="${name}" aria-pressed="${name === activeOrderMode}">${name}</button>`).join("");
+      $("orderCategoryChips").innerHTML = ["Alle", ...categories].map(name => `<button class="chip${name === category ? " active" : ""}" type="button" data-order-category="${htmlEscape(name)}">${htmlEscape(name)}</button>`).join("");
+      const source = activeOrderMode === "To Go" ? toGoMenuCache : restaurantMenuCache;
+      const rows = source.filter(item => {
+        if(activeOrderMode === "Getränke" && !THEKE_CATEGORIES.has(item.category)) return false;
+        if(activeOrderMode === "Speisen" && THEKE_CATEGORIES.has(item.category)) return false;
         const categoryMatch = category === "Alle" || item.category === category;
         const textMatch = !search || menuSearchText([item.name,item.category,item.description].join(" ")).includes(search);
         return categoryMatch && textMatch;
       });
       $("orderMenuList").innerHTML = rows.length ? rows.map(item => `
-        <button class="orderMenuItem" type="button" data-order-add="${htmlEscape(item.id)}">
+        <button class="orderMenuItem" type="button" data-order-add="${htmlEscape(item.id)}" data-order-source="${activeOrderMode === "To Go" ? "togo" : "restaurant"}">
           <strong>${htmlEscape(item.name)}</strong>
           <small class="muted">${htmlEscape(item.category || "")}</small>
           <span>${euro(item.price)}</span>
@@ -4204,11 +4231,13 @@ bruchCache.sort((a, b) => {
     }
 
     function addOrderItem(menuId, sourceButton){
-      const menuItem = restaurantMenuCache.find(item => item.id === menuId);
+      const isToGo = sourceButton?.dataset.orderSource === "togo";
+      const menuItem = (isToGo ? toGoMenuCache : restaurantMenuCache).find(item => item.id === menuId);
       if(!menuItem) return;
-      const existing = currentOrderItems.find(item => item.menuId === menuId);
+      const uniqueId = isToGo ? `togo:${menuId}` : menuId;
+      const existing = currentOrderItems.find(item => item.menuId === uniqueId);
       if(existing) existing.qty += 1;
-      else currentOrderItems.push({menuId:menuItem.id, name:menuItem.name, category:menuItem.category || "", station:stationForItem(menuItem), price:Number(menuItem.price || 0), qty:1});
+      else currentOrderItems.push({menuId:uniqueId, name:menuItem.name, category:menuItem.category || "", station:stationForItem(menuItem), price:Number(menuItem.price || 0), qty:1});
       renderCurrentOrder();
       if(sourceButton){
         sourceButton.classList.add("added");
@@ -5956,6 +5985,13 @@ bruchCache.sort((a, b) => {
       if(event.key === "Enter") openCustomTable();
     });
     $("orderMenuSearch").addEventListener("input", renderOrderMenu);
+    $("orderModeTabs").addEventListener("click", event => {
+      const button = event.target.closest("[data-order-mode]");
+      if(!button) return;
+      activeOrderMode = button.dataset.orderMode;
+      activeOrderCategory = "Alle";
+      renderOrderMenu();
+    });
     $("orderCategoryChips").addEventListener("click", event => {
       const button = event.target.closest("[data-order-category]");
       if(!button) return;
