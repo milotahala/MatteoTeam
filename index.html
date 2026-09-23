@@ -4121,7 +4121,8 @@ bruchCache.sort((a, b) => {
     function canHandleTable(table, order=null){
       if(isAdmin()) return true;
       const assignment = assignmentFor(table);
-      return assignment?.waiterId === currentUser?.uid || Boolean(allTablesPermission(currentUser?.uid));
+      if(order?.waiterId && order.waiterId !== currentUser?.uid) return false;
+      return assignment?.waiterId === currentUser?.uid || (!assignment && Boolean(allTablesPermission(currentUser?.uid)));
     }
 
     function renderTables(){
@@ -4148,7 +4149,6 @@ bruchCache.sort((a, b) => {
       const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o) && (!isAdmin() || selectedOrderWaiterFilter === "all" || o.waiterId === selectedOrderWaiterFilter || assignments.some(row => normalizedTable(row.table) === normalizedTable(o.table))));
       const openByTable = new Map(openOrders.map(o => [normalizedTable(o.table), o]));
       const tableNames = new Map(openOrders.map(o => [normalizedTable(o.table), safe(o.table)]));
-      assignments.forEach(row => tableNames.set(normalizedTable(row.table), safe(row.table)));
       $("openTablesBadge").textContent = `${openByTable.size} offen`;
       $("tableGrid").innerHTML = tableNames.size ? [...tableNames.values()]
         .sort((a,b) => a.localeCompare(b, "de", {numeric:true}))
@@ -4239,7 +4239,7 @@ bruchCache.sort((a, b) => {
 
     function selectTable(number, showOrder=false){
       const requestedTable = safe(number);
-      const existing = orderCache.find(order => safe(order.table).toUpperCase() === requestedTable.toUpperCase() && order.status !== "closed");
+      const existing = orderCache.find(order => normalizedTable(order.table) === normalizedTable(requestedTable) && order.status !== "closed");
       if(!canHandleTable(requestedTable, existing)) return showMsg("Dieser Tisch ist einer anderen Bedienung zugeordnet.");
       selectedTable = requestedTable;
       currentOrderId = existing?.id || null;
