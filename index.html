@@ -6087,15 +6087,20 @@ bruchCache.sort((a, b) => {
       else if(key === "delete") input.value = input.value.slice(0,-1);
       else input.value = (input.value + key).slice(0,30);
     });
-    $("btnOrderBackToTables").addEventListener("click", () => {
+    function backToOrderTables(){
+      const saved = orderCache.find(row => row.id === currentOrderId);
+      const changed = JSON.stringify(currentOrderItems) !== JSON.stringify((saved?.items || []).map(item => ({...item,qty:Number(item.qty || 1)}))) || safe($("orderNote").value) !== safe(saved?.note);
+      if(changed && !confirm("Nicht gespeicherte Änderungen verwerfen und zu den Tischen zurückkehren?")) return;
       selectedTable = "";
       currentOrderId = null;
       currentOrderItems = [];
+      $("orderNote").value = "";
       $("orderProductPicker").classList.add("hidden");
       document.querySelector(".orderPanel")?.classList.add("hidden");
       renderTables();
       $("tableOpenPanel").scrollIntoView({behavior:"smooth",block:"start"});
-    });
+    }
+    $("btnOrderBackToTables").addEventListener("click", backToOrderTables);
     $("customTableName").addEventListener("keydown", event => {
       if(event.key === "Enter") openCustomTable();
     });
@@ -6123,11 +6128,7 @@ bruchCache.sort((a, b) => {
       panel?.classList.remove("hidden");
       panel?.scrollIntoView({behavior:"smooth", block:"start"});
     });
-    $("btnHideCurrentOrder").addEventListener("click", () => {
-      document.querySelector(".orderPanel")?.classList.add("hidden");
-      if(selectedTable) $("orderProductPicker")?.classList.remove("hidden");
-      $("orderProductPicker")?.scrollIntoView({behavior:"smooth", block:"start"});
-    });
+    $("btnHideCurrentOrder").addEventListener("click", backToOrderTables);
     $("currentOrderLines").addEventListener("click", event => {
       const minus = event.target.closest("[data-order-minus]");
       const plus = event.target.closest("[data-order-plus]");
