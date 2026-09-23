@@ -468,6 +468,16 @@
     .orderQty{display:flex;gap:5px;align-items:center}
     .orderQty button{width:30px;height:30px;border:0;border-radius:9px;background:#1e3a56;color:#fff;cursor:pointer;font-weight:900}
     .orderTotal{display:flex;justify-content:space-between;align-items:center;font-size:20px;font-weight:950;padding:15px 0}
+    @media(max-width:600px){
+      #viewOrders .orderPanel{position:static;padding:11px;border-radius:13px}
+      #viewOrders .orderPanel .item{padding:9px;margin-bottom:6px!important}
+      #viewOrders .orderPanel .divider{margin:8px 0}
+      #viewOrders .orderLine{padding:6px 0;font-size:14px;line-height:1.25}
+      #viewOrders .orderLine .tiny{font-size:11px}
+      #viewOrders .orderQty button{width:34px;height:34px}
+      #viewOrders #orderNote{min-height:65px;height:65px}
+      #viewOrders .orderTotal{padding:9px 0;font-size:17px}
+    }
     .orderStatus{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
     .orderStatus button{min-height:42px;border-radius:11px;border:1px solid #2a435f;background:#12243a;color:#fff;cursor:pointer}
     .orderStatus button.active{background:#14532d;border-color:#22c55e}
@@ -1559,6 +1569,7 @@
     let restaurantMenuCache = [];
     let activeMenuCategory = "Alle";
     let orderCache = [];
+    let orderUnsubscribe = null;
     let customerOrderCache = [];
     let tableAssignmentCache = [];
     let customerOrderUnsubscribe = null;
@@ -3873,7 +3884,7 @@ bruchCache.sort((a, b) => {
         ...staffCache.filter(person => person.status !== "deleted" && (safe(person.department).toLowerCase() === "service" || person.role === "admin" || person.role === "superadmin")).map(person => person.uid || person.id),
         ...tableAssignmentCache.filter(row => row.date === localDateKey()).map(row => row.waiterId),
         ...open.map(order => order.waiterId)
-      ].filter(Boolean))].filter(id => !hiddenWaiterIds.includes(id));
+      ].filter(Boolean))].filter(id => !hiddenWaiterIds.includes(id) || open.some(order => order.waiterId === id));
       const hiddenStaff = staffCache.filter(person => person.status !== "deleted" && hiddenWaiterIds.includes(person.uid || person.id));
       box.innerHTML = `<div class="waiterOverviewHead"><div><strong>Kellner</strong><div class="tiny muted">Kellner wählen und Tische ansehen</div></div><button class="ghost" type="button" data-waiter-filter="all">Alle offenen Tische</button></div>${hiddenStaff.length ? `<div class="row" style="margin-top:12px"><select id="hiddenWaiterSelect" class="select" style="flex:1;min-width:0" aria-label="Ausgeblendeten Kellner auswählen">${hiddenStaff.map(person => `<option value="${htmlEscape(person.uid || person.id)}">${htmlEscape(person.name || person.email || "-")}</option>`).join("")}</select><button class="ghost" type="button" data-restore-waiter="1">Wieder anzeigen</button></div>` : ""}${waiterIds.length ? waiterIds.map(id => {
         const assignments = tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === id);
@@ -4161,6 +4172,17 @@ bruchCache.sort((a, b) => {
       }
     }
 
+    function startOrders(){
+      orderUnsubscribe?.();
+      orderUnsubscribe = onSnapshot(collection(db, "orders"), snapshot => {
+        orderCache = snapshot.docs.map(d => ({id:d.id, ...d.data()}));
+        renderTables();
+        renderAdminWaiterOverview();
+        if(adminViewedTable) renderAdminTableDetail();
+        if(selectedTable && !currentOrderItems.length) selectTable(selectedTable);
+      }, err => { console.error("Bestellungen", err); showMsg("Bestellungen konnten nicht aktualisiert werden: " + err.message); });
+    }
+
     function selectTable(number, showOrder=false){
       const requestedTable = safe(number);
       const existing = orderCache.find(order => safe(order.table).toUpperCase() === requestedTable.toUpperCase() && order.status !== "closed");
@@ -4221,8 +4243,8 @@ bruchCache.sort((a, b) => {
         note:safe($("orderNote").value),
         status:currentOrderState,
         total:orderTotal(),
-        waiterId:assignment?.waiterId || existing?.waiterId || selectedWaiter?.uid || selectedWaiter?.id || currentUser.uid,
-        waiterName:assignment?.waiterName || existing?.waiterName || selectedWaiter?.name || selectedWaiter?.email || currentProfile.name || currentUser.email,
+        waiterId:existing?.waiterId || (isAdmin() ? (selectedWaiter?.uid || selectedWaiter?.id || assignment?.waiterId) : currentUser.uid) || currentUser.uid,
+        waiterName:existing?.waiterName || (isAdmin() ? (selectedWaiter?.name || selectedWaiter?.email || assignment?.waiterName) : (currentProfile.name || currentUser.email)) || currentProfile.name || currentUser.email,
         updatedAt:serverTimestamp()
       };
       try{
@@ -5724,6 +5746,7 @@ bruchCache.sort((a, b) => {
       activeOrderCategory = "Alle";
       renderOrderMenu();
       await loadOrders();
+      startOrders();
       startAnnouncementChat();
       startTasks();
       await loadDocuments();
