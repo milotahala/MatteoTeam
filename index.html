@@ -3842,7 +3842,7 @@ bruchCache.sort((a, b) => {
     function populateAssignmentWaiters(){
       const select = $("assignmentWaiter");
       if(!select) return;
-      const serviceStaff = staffCache.filter(person => person.status !== "deleted" && (person.department === "Service" || person.role === "admin" || person.role === "superadmin"));
+      const serviceStaff = staffCache.filter(person => person.status !== "deleted");
       select.innerHTML = serviceStaff.map(person => `<option value="${htmlEscape(person.uid || person.id)}">${htmlEscape(person.name || person.email || "-")}</option>`).join("");
     }
 
@@ -3868,15 +3868,22 @@ bruchCache.sort((a, b) => {
       if(!box || !isAdmin()) return;
       box.classList.toggle("hidden", selectedOrderWaiterFilter !== "none");
       const open = orderCache.filter(order => order.status !== "closed");
-      const waiterIds = [...new Set(tableAssignmentCache.filter(row => row.date === localDateKey()).map(row => row.waiterId).filter(Boolean))];
-      box.innerHTML = `<div class="waiterOverviewHead"><div><strong>Kellner</strong><div class="tiny muted">Zugewiesene und offene Tische</div></div><button class="ghost" type="button" data-waiter-filter="all">Alle offenen Tische</button></div>${waiterIds.length ? waiterIds.map(id => {
+      const waiterIds = [...new Set([
+        ...staffCache.filter(person => person.status !== "deleted" && (safe(person.department).toLowerCase() === "service" || person.role === "admin" || person.role === "superadmin")).map(person => person.uid || person.id),
+        ...tableAssignmentCache.filter(row => row.date === localDateKey()).map(row => row.waiterId),
+        ...open.map(order => order.waiterId)
+      ].filter(Boolean))];
+      box.innerHTML = `<div class="waiterOverviewHead"><div><strong>Kellner</strong><div class="tiny muted">Kellner wählen und Tische ansehen</div></div><button class="ghost" type="button" data-waiter-filter="all">Alle offenen Tische</button></div><button class="btn" type="button" data-add-waiter="1" style="margin-top:12px;width:100%">+ Kellner hinzufügen / Tische zuweisen</button>${waiterIds.length ? waiterIds.map(id => {
         const assignments = tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === id);
         const assignment = assignments[0];
+        const person = staffCache.find(row => (row.uid || row.id) === id);
+        const name = person?.name || assignment?.waiterName || open.find(order => order.waiterId === id)?.waiterName || "-";
         const allowedTables = assignments.filter(row => !row.allTables).map(row => row.table);
         const allAllowed = assignments.some(row => row.allTables);
         const tables = open.filter(order => order.waiterId === id || assignments.some(row => !row.allTables && normalizedTable(row.table) === normalizedTable(order.table)));
         const active = selectedOrderWaiterFilter === id ? " active" : "";
-        return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape((assignment?.waiterName || "?").slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(assignment?.waiterName || "-")}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<span class="pill ok right">Alle Tische</span>` : ""}</div><div class="waiterTableChips">${tables.length ? tables.map(order => `<span class="waiterTableChip">${htmlEscape(order.table)}</span>`).join("") : `<span class="tiny muted">Keine offenen Tische</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button><button class="btnDanger" type="button" data-delete-waiter-assignments="${htmlEscape(id)}">Löschen</button></div></article>`;
+        const shownTables = [...new Set([...allowedTables, ...tables.map(order => order.table)].map(normalizedTable))];
+        return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape(name.slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(name)}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<span class="pill ok right">Alle Tische</span>` : ""}</div><div class="waiterTableChips">${shownTables.length ? shownTables.map(table => `<span class="waiterTableChip">${htmlEscape(table)}</span>`).join("") : `<span class="tiny muted">Noch keine Tische zugewiesen</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button>${assignments.length ? `<button class="btnDanger" type="button" data-delete-waiter-assignments="${htmlEscape(id)}">Löschen</button>` : ""}</div></article>`;
       }).join("") : `<span class="tiny muted">Noch keine Kellner zugewiesen.</span>`}`;
     }
 
@@ -5957,10 +5964,15 @@ bruchCache.sort((a, b) => {
       if(button && isAdmin() && confirm("Tischzuordnung löschen?")) await deleteDoc(doc(db,"tableAssignments",button.dataset.assignmentDelete));
     });
     $("adminWaiterOverview").addEventListener("click", async event => {
+      const add = event.target.closest("[data-add-waiter]");
       const filter = event.target.closest("[data-waiter-filter]");
       const assign = event.target.closest("[data-assign-waiter]");
       const remove = event.target.closest("[data-delete-waiter-assignments]");
-      if(filter){
+      if(add){
+        $("assignmentDetails").open = true;
+        $("assignmentWaiter").focus();
+        $("assignmentDetails").scrollIntoView({behavior:"smooth",block:"start"});
+      }else if(filter){
         selectedOrderWaiterFilter = filter.dataset.waiterFilter;
         adminViewedTable = "";
         $("orderProductPicker").classList.add("hidden");
