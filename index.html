@@ -462,6 +462,9 @@
     .orderMenuItem span{display:block;color:#86efac;margin-top:5px;font-weight:900}
     .orderCartJump{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;background:linear-gradient(135deg,#14532d,#16a05f);color:#fff;border:0;border-radius:13px;padding:13px 15px;cursor:pointer;font-weight:900}
     .orderLine{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px 0;border-bottom:1px solid var(--line)}
+    .adminOrderItems{font-size:13px;line-height:1.4}
+    .adminOrderItems .orderLine{padding:7px 0}
+    .adminOrderItems .orderLine strong{font-size:13px}
     .orderQty{display:flex;gap:5px;align-items:center}
     .orderQty button{width:30px;height:30px;border:0;border-radius:9px;background:#1e3a56;color:#fff;cursor:pointer;font-weight:900}
     .orderTotal{display:flex;justify-content:space-between;align-items:center;font-size:20px;font-weight:950;padding:15px 0}
@@ -1446,6 +1449,7 @@
                 <div id="adminWaiterOverview" class="item adminOnly" style="margin-bottom:14px"></div>
                 <div id="myWaiterTables" class="myTablesCard hidden"></div>
                 <div id="tableOpenPanel" class="item">
+                  <button id="btnBackToWaiters" class="ghost adminOnly" type="button" style="margin-bottom:12px">← Zurück zu Kellnern</button>
                   <div class="row" style="margin-bottom:12px"><strong id="tableOpenTitle">Tisch eingeben</strong><span id="openTablesBadge" class="pill warn right">0 offen</span></div>
                   <div class="tableOpenRow">
                     <input id="customTableName" class="input" type="text" maxlength="30" placeholder="z. B. D1, A5 oder Terrasse 2" autocomplete="off" />
@@ -1453,6 +1457,11 @@
                   </div>
                   <div class="tiny muted" style="margin-bottom:8px">Offene Tische:</div>
                   <div id="tableGrid" class="tableGrid"></div>
+                </div>
+                <div id="adminTableDetail" class="item adminOnly hidden">
+                  <button id="btnBackToTables" class="ghost" type="button" style="margin-bottom:12px">← Zurück zu Tischen</button>
+                  <div class="row"><strong id="adminTableTitle"></strong><span id="adminTableTotal" class="right"></span></div>
+                  <div id="adminTableItems" class="adminOrderItems" style="margin-top:12px"></div>
                 </div>
                 <div id="orderProductPicker" class="item hidden">
                   <button id="btnShowCurrentOrder" class="orderCartJump" type="button"><span>Bestellung ansehen</span><span id="orderCartSummary">0 Produkte · 0,00 €</span></button>
@@ -1558,6 +1567,7 @@
     let customerOrderAlertedIds = new Set();
     let selectedTable = "";
     let selectedOrderWaiterFilter = "none";
+    let adminViewedTable = "";
     let activeOrderCategory = "Alle";
     let currentOrderItems = [];
     let currentOrderId = null;
@@ -3856,6 +3866,7 @@ bruchCache.sort((a, b) => {
     function renderAdminWaiterOverview(){
       const box = $("adminWaiterOverview");
       if(!box || !isAdmin()) return;
+      box.classList.toggle("hidden", selectedOrderWaiterFilter !== "none");
       const open = orderCache.filter(order => order.status !== "closed");
       const waiterIds = [...new Set(tableAssignmentCache.filter(row => row.date === localDateKey()).map(row => row.waiterId).filter(Boolean))];
       box.innerHTML = `<div class="waiterOverviewHead"><div><strong>Kellner</strong><div class="tiny muted">Zugewiesene und offene Tische</div></div><button class="ghost" type="button" data-waiter-filter="all">Alle offenen Tische</button></div>${waiterIds.length ? waiterIds.map(id => {
@@ -3863,7 +3874,7 @@ bruchCache.sort((a, b) => {
         const assignment = assignments[0];
         const allowedTables = assignments.filter(row => !row.allTables).map(row => row.table);
         const allAllowed = assignments.some(row => row.allTables);
-        const tables = open.filter(order => order.waiterId === id);
+        const tables = open.filter(order => order.waiterId === id || assignments.some(row => !row.allTables && normalizedTable(row.table) === normalizedTable(order.table)));
         const active = selectedOrderWaiterFilter === id ? " active" : "";
         return `<article class="waiterAdminCard${active}"><div class="row"><div class="waiterIdentity"><span class="waiterAvatar">${htmlEscape((assignment?.waiterName || "?").slice(0,1).toUpperCase())}</span><div><strong>${htmlEscape(assignment?.waiterName || "-")}</strong><div class="tiny muted">${tables.length} ${tables.length === 1 ? "offener Tisch" : "offene Tische"} · ${allAllowed ? "alle erlaubt" : `${allowedTables.length} zugewiesen`}</div></div></div>${allAllowed ? `<span class="pill ok right">Alle Tische</span>` : ""}</div><div class="waiterTableChips">${tables.length ? tables.map(order => `<span class="waiterTableChip">${htmlEscape(order.table)}</span>`).join("") : `<span class="tiny muted">Keine offenen Tische</span>`}</div><div class="waiterCardActions"><button class="btn" type="button" data-waiter-filter="${htmlEscape(id)}">Öffnen</button><button class="ghost" type="button" data-assign-waiter="${htmlEscape(id)}">Tische zuweisen</button><button class="btnDanger" type="button" data-delete-waiter-assignments="${htmlEscape(id)}">Löschen</button></div></article>`;
       }).join("") : `<span class="tiny muted">Noch keine Kellner zugewiesen.</span>`}`;
@@ -4037,8 +4048,14 @@ bruchCache.sort((a, b) => {
 
     function renderTables(){
       const tablePanel = $("tableOpenPanel");
+      $("adminTableDetail")?.classList.toggle("hidden", !isAdmin() || !adminViewedTable);
       if(isAdmin() && selectedOrderWaiterFilter === "none"){
         tablePanel?.classList.add("hidden");
+        return;
+      }
+      if(isAdmin() && adminViewedTable){
+        tablePanel?.classList.add("hidden");
+        renderAdminTableDetail();
         return;
       }
       tablePanel?.classList.remove("hidden");
@@ -4048,16 +4065,27 @@ bruchCache.sort((a, b) => {
       }else{
         $("tableOpenTitle").textContent = "Meine Tische";
       }
-      const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o) && (!isAdmin() || selectedOrderWaiterFilter === "all" || o.waiterId === selectedOrderWaiterFilter));
-      const openByTable = new Map(openOrders.map(o => [safe(o.table).toUpperCase(), o]));
+      const assignments = isAdmin() && selectedOrderWaiterFilter !== "all" ? tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === selectedOrderWaiterFilter && !row.allTables) : [];
+      const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o) && (!isAdmin() || selectedOrderWaiterFilter === "all" || o.waiterId === selectedOrderWaiterFilter || assignments.some(row => normalizedTable(row.table) === normalizedTable(o.table))));
+      const openByTable = new Map(openOrders.map(o => [normalizedTable(o.table), o]));
+      const tableNames = new Map(openOrders.map(o => [normalizedTable(o.table), safe(o.table)]));
+      assignments.forEach(row => tableNames.set(normalizedTable(row.table), safe(row.table)));
       $("openTablesBadge").textContent = `${openByTable.size} offen`;
-      $("tableGrid").innerHTML = openOrders.length ? openOrders
-        .sort((a,b) => safe(a.table).localeCompare(safe(b.table), "de", {numeric:true}))
-        .map(order => {
-          const tableName = safe(order.table);
+      $("tableGrid").innerHTML = tableNames.size ? [...tableNames.values()]
+        .sort((a,b) => a.localeCompare(b, "de", {numeric:true}))
+        .map(tableName => {
+          const order = openByTable.get(normalizedTable(tableName));
           const classes = ["tableBtn", "open", selectedTable.toUpperCase() === tableName.toUpperCase() ? "selected" : ""].filter(Boolean).join(" ");
-          return `<button class="${classes}" type="button" data-table-name="${htmlEscape(tableName)}">${htmlEscape(tableName)}<small>${htmlEscape(orderStatusLabel(order.status))} · ${euro(order.total)}</small></button>`;
+          return `<button class="${classes}" type="button" data-table-name="${htmlEscape(tableName)}">${htmlEscape(tableName)}<small>${order ? `${htmlEscape(orderStatusLabel(order.status))} · ${euro(order.total)}` : "Keine Bestellung"}</small></button>`;
         }).join("") : `<div class="tiny muted">Keine offenen Tische.</div>`;
+    }
+
+    function renderAdminTableDetail(){
+      if(!adminViewedTable || !isAdmin()) return;
+      const order = orderCache.find(row => row.status !== "closed" && normalizedTable(row.table) === normalizedTable(adminViewedTable));
+      $("adminTableTitle").textContent = `Tisch ${adminViewedTable}`;
+      $("adminTableTotal").textContent = order ? euro(order.total) : "";
+      $("adminTableItems").innerHTML = order ? `${(order.items || []).map(item => `<div class="orderLine"><span><strong>${Number(item.qty || 0)} × ${htmlEscape(item.name || "-")}</strong></span><span>${euro(Number(item.qty || 0) * Number(item.price || 0))}</span></div>`).join("")}${order.note ? `<div class="tiny muted" style="margin-top:10px">${htmlEscape(order.note)}</div>` : ""}` : `<div class="muted">Für diesen Tisch gibt es noch keine Bestellung.</div>`;
     }
 
     function renderOrderMenu(){
@@ -5852,7 +5880,26 @@ bruchCache.sort((a, b) => {
 
     $("tableGrid").addEventListener("click", event => {
       const button = event.target.closest("[data-table-name]");
-      if(button) selectTable(button.dataset.tableName, true);
+      if(!button) return;
+      if(isAdmin()){
+        adminViewedTable = button.dataset.tableName;
+        $("orderProductPicker").classList.add("hidden");
+        document.querySelector(".orderPanel")?.classList.add("hidden");
+        renderTables();
+        $("adminTableDetail").scrollIntoView({behavior:"smooth",block:"start"});
+      }else selectTable(button.dataset.tableName, true);
+    });
+    $("btnBackToTables").addEventListener("click", () => {
+      adminViewedTable = "";
+      renderTables();
+      $("tableOpenPanel").scrollIntoView({behavior:"smooth",block:"start"});
+    });
+    $("btnBackToWaiters").addEventListener("click", () => {
+      adminViewedTable = "";
+      selectedOrderWaiterFilter = "none";
+      renderAdminWaiterOverview();
+      renderTables();
+      $("adminWaiterOverview").scrollIntoView({behavior:"smooth",block:"start"});
     });
     function openCustomTable(){
       const tableName = safe($("customTableName").value);
@@ -5906,7 +5953,7 @@ bruchCache.sort((a, b) => {
     $("tableAssignmentList").addEventListener("click", async event => {
       const button = event.target.closest("[data-assignment-delete]");
       const filter = event.target.closest("[data-waiter-filter]");
-      if(filter){ selectedOrderWaiterFilter = filter.dataset.waiterFilter; renderTables(); $("tableGrid")?.scrollIntoView({behavior:"smooth",block:"center"}); return; }
+      if(filter){ selectedOrderWaiterFilter = filter.dataset.waiterFilter; adminViewedTable = ""; renderAdminWaiterOverview(); renderTables(); $("tableOpenPanel")?.scrollIntoView({behavior:"smooth",block:"start"}); return; }
       if(button && isAdmin() && confirm("Tischzuordnung löschen?")) await deleteDoc(doc(db,"tableAssignments",button.dataset.assignmentDelete));
     });
     $("adminWaiterOverview").addEventListener("click", async event => {
@@ -5915,11 +5962,12 @@ bruchCache.sort((a, b) => {
       const remove = event.target.closest("[data-delete-waiter-assignments]");
       if(filter){
         selectedOrderWaiterFilter = filter.dataset.waiterFilter;
+        adminViewedTable = "";
+        $("orderProductPicker").classList.add("hidden");
+        document.querySelector(".orderPanel")?.classList.add("hidden");
         renderAdminWaiterOverview();
         renderTables();
-        const waiterOrders = orderCache.filter(order => order.status !== "closed" && (selectedOrderWaiterFilter === "all" || order.waiterId === selectedOrderWaiterFilter));
-        if(waiterOrders.length === 1) selectTable(waiterOrders[0].table, true);
-        else $("tableOpenPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
+        $("tableOpenPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
       }else if(assign){
         $("assignmentWaiter").value = assign.dataset.assignWaiter;
         $("assignmentDetails").open = true;
