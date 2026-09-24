@@ -4048,7 +4048,7 @@ bruchCache.sort((a, b) => {
         const late = seconds >= 120;
         const remaining = Math.max(0, 120 - seconds);
         const timeText = late ? `Seit ${Math.floor(seconds / 60)} Min. unbestätigt` : `Noch ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2,"0")} bis Admin-Alarm`;
-        return `<article class="item" style="margin-bottom:9px"><div class="row"><strong>Tisch ${htmlEscape(order.table || "-")} · noch ohne Bereich</strong><span class="${late ? "urgentBadge" : "pill warn"}">${late ? "Admin-Alarm" : "Wartet"}</span><strong class="right">${euro(order.total)}</strong></div><div class="tiny muted" style="margin-top:7px">${lines}</div>${order.note ? `<div class="tiny" style="margin-top:7px"><strong>Notiz:</strong> ${htmlEscape(order.note)}</div>` : ""}<div class="tiny muted" style="margin-top:7px">Bedienung: ${htmlEscape(assignment?.waiterName || "noch nicht zugeordnet")} · ${timeText}</div><div class="row" style="margin-top:10px"><label class="field" style="flex:1;min-width:135px"><span class="label">Bereich auswählen</span><select class="select" data-customer-section="${htmlEscape(order.id)}"><option value="">Bitte wählen</option>${tableSections(order.table).map(section=>`<option value="${htmlEscape(section)}">${htmlEscape(section)}</option>`).join("")}</select></label><button class="btn" type="button" data-customer-accept="${htmlEscape(order.id)}">Bestätigen & senden</button><button class="ghost right" type="button" data-customer-reject="${htmlEscape(order.id)}">Ablehnen</button></div></article>`;
+        return `<article class="item" data-customer-order="${htmlEscape(order.id)}" style="margin-bottom:9px"><div class="row"><strong>Tisch ${htmlEscape(order.table || "-")} · noch ohne Bereich</strong><span class="${late ? "urgentBadge" : "pill warn"}">${late ? "Admin-Alarm" : "Wartet"}</span><strong class="right">${euro(order.total)}</strong></div><div class="tiny muted" style="margin-top:7px">${lines}</div>${order.note ? `<div class="tiny" style="margin-top:7px"><strong>Notiz:</strong> ${htmlEscape(order.note)}</div>` : ""}<div class="tiny muted" style="margin-top:7px">Bedienung: ${htmlEscape(assignment?.waiterName || "noch nicht zugeordnet")} · <span data-customer-time>${timeText}</span></div><div class="row" style="margin-top:10px"><label class="field" style="flex:1;min-width:135px"><span class="label">Bereich auswählen</span><select class="select" data-customer-section="${htmlEscape(order.id)}"><option value="">Bitte wählen</option>${tableSections(order.table).map(section=>`<option value="${htmlEscape(section)}">${htmlEscape(section)}</option>`).join("")}</select></label><button class="btn" type="button" data-customer-accept="${htmlEscape(order.id)}">Bestätigen & senden</button><button class="ghost right" type="button" data-customer-reject="${htmlEscape(order.id)}">Ablehnen</button></div></article>`;
       }).join("") : `<div class="tiny muted">${isAdmin() ? "Keine überfälligen QR-Bestellungen." : "Keine neuen QR-Bestellungen für deine Tische."}</div>`;
       $("customerOrderList").querySelectorAll("[data-customer-section]").forEach(select => { if(selectedSections.has(select.dataset.customerSection)) select.value = selectedSections.get(select.dataset.customerSection); });
 
@@ -4057,6 +4057,22 @@ bruchCache.sort((a, b) => {
         customerOrderAlertedIds.add(order.id);
         const assignment = assignmentFor(order.table);
         playAdminAlert("QR-Bestellung nicht bestätigt", `${assignment?.waiterName || "Bedienung"}: Tisch ${order.table} wartet länger als 2 Minuten.`);
+      });
+    }
+
+    function tickCustomerOrders(){
+      const visible = customerOrderCache.filter(order => order.status === "pending" && canHandleCustomerOrder(order));
+      const cards = [...$("customerOrderList").querySelectorAll("[data-customer-order]")];
+      if(cards.length !== visible.length || cards.some((card,index) => card.dataset.customerOrder !== visible[index].id)){
+        renderCustomerOrders();
+        return;
+      }
+      cards.forEach((card,index) => {
+        const seconds = customerOrderAgeSeconds(visible[index]);
+        const remaining = Math.max(0,120-seconds);
+        card.querySelector("[data-customer-time]").textContent = seconds >= 120
+          ? `Seit ${Math.floor(seconds / 60)} Min. unbestätigt`
+          : `Noch ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2,"0")} bis Admin-Alarm`;
       });
     }
 
@@ -4087,7 +4103,7 @@ bruchCache.sort((a, b) => {
         customerOrderCache = snapshot.docs.map(item => ({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
         renderCustomerOrders();
       },error => {console.error("QR-Bestellungen",error);showMsg("QR-Bestellungen konnten nicht geladen werden: "+error.message)});
-      customerOrderTimer = setInterval(renderCustomerOrders, 1000);
+      customerOrderTimer = setInterval(tickCustomerOrders, 1000);
     }
 
     async function acceptCustomerOrder(id, section){
