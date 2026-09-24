@@ -410,6 +410,9 @@
     .closingRow{padding:10px 12px;border-radius:12px;background:#0b1c30;border:1px solid var(--line)}
     .barcodePanel{margin:14px 0;border-color:#315d8e;background:linear-gradient(135deg,#102239,#0d2940)}
     .barcodeActions{display:grid;grid-template-columns:1fr auto auto;gap:9px;align-items:end}
+    .barcodePanel.staffScanMode .barcodeActions{display:block}
+    .barcodePanel.staffScanMode #btnStartBarcode{width:100%;min-height:54px}
+    .barcodePanel.staffScanMode.fallbackNeeded .barcodeManualFallback.hiddenByRole{display:block!important;margin-top:9px}
     .barcodeVideoWrap{position:relative;overflow:hidden;border-radius:16px;background:#02060b;margin-top:12px;aspect-ratio:4/3}
     .barcodeVideoWrap video{width:100%;height:100%;object-fit:cover}
     .barcodeFrame{position:absolute;left:12%;right:12%;top:32%;height:36%;border:3px solid var(--green);border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
@@ -1092,16 +1095,16 @@
             <div class="item barcodePanel">
               <div class="row"><div><strong id="barcodePanelTitle">Produkt entnehmen</strong><div id="barcodePanelDescription" class="tiny muted">Barcode scannen, Menge eintragen und Verbrauch buchen.</div></div><span id="barcodeSupport" class="pill right">Bereit</span></div>
               <div class="divider"></div>
-              <div class="row" style="margin-bottom:12px">
+              <div class="row adminOnly" style="margin-bottom:12px">
                 <button id="btnBarcodeModeOut" class="tabBtn active" type="button">Produkt entnehmen</button>
                 <button id="btnBarcodeModeIn" class="tabBtn adminOnly" type="button">Produkt einlegen</button>
               </div>
               <div class="barcodeActions">
-                <div class="field" style="margin:0"><label class="label">Barcode manuell</label><input id="barcodeManual" class="input" inputmode="numeric" autocomplete="off" placeholder="EAN eingeben" /></div>
-                <button id="btnFindBarcode" class="ghost" type="button">Suchen</button>
-                <button id="btnStartBarcode" class="btn" type="button">Kamera öffnen</button>
+                <div class="field adminOnly barcodeManualFallback" style="margin:0"><label class="label">Barcode manuell</label><input id="barcodeManual" class="input" inputmode="numeric" autocomplete="off" placeholder="EAN eingeben" /></div>
+                <button id="btnFindBarcode" class="ghost adminOnly barcodeManualFallback" type="button">Suchen</button>
+                <button id="btnStartBarcode" class="btn" type="button">Barcode scannen</button>
               </div>
-              <div class="row" style="margin-top:9px"><label class="ghost" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><i data-lucide="image-plus"></i> Barcode-Foto wählen<input id="barcodeImage" class="hidden" type="file" accept="image/*" capture="environment" /></label><button id="btnStopBarcode" class="btnDanger hidden" type="button">Kamera schließen</button></div>
+              <div class="row" style="margin-top:9px"><label class="ghost adminOnly" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><i data-lucide="image-plus"></i> Barcode-Foto wählen<input id="barcodeImage" class="hidden" type="file" accept="image/*" capture="environment" /></label><button id="btnStopBarcode" class="btnDanger hidden" type="button">Kamera schließen</button></div>
               <div id="barcodeCameraHome"><div id="barcodeVideoWrap" class="barcodeVideoWrap hidden"><video id="barcodeVideo" playsinline muted></video><div class="barcodeFrame"></div></div></div>
               <div id="barcodeResult" class="barcodeResult muted">Noch kein Barcode gescannt.</div>
               <div id="staffConsumptionForm" class="hidden" style="margin-top:12px">
@@ -2280,6 +2283,8 @@
       document.querySelectorAll(".adminOnly").forEach(el => {
         el.classList.toggle("hiddenByRole", !isAdmin());
       });
+      $("viewInventory")?.querySelector(".barcodePanel")?.classList.toggle("staffScanMode", !isAdmin());
+      if(!isAdmin()) setBarcodeMovementMode("out");
       const staffNav = document.querySelector('[data-view="viewStaff"]');
       if(staffNav) staffNav.classList.toggle("hiddenByRole", !isAdmin());
       const personalClockMonth = $("timeClockPersonalMonthPanel");
@@ -2673,7 +2678,10 @@
         const detector = await prepareBarcodeDetector();
         if(!detector){
           const reader = prepareZxingReader();
-          if(!reader) return showMsg("Der Barcode-Scanner konnte nicht geladen werden. Bitte Internetverbindung prüfen oder die Nummer manuell eingeben.");
+          if(!reader){
+            if(target === "movement") $("viewInventory").querySelector(".barcodePanel").classList.add("fallbackNeeded");
+            return showMsg("Der Barcode-Scanner konnte nicht geladen werden. Bitte die Nummer manuell eingeben.");
+          }
           const video = $("barcodeVideo");
           $("barcodeVideoWrap").classList.remove("hidden");
           $("btnStopBarcode").classList.remove("hidden");
@@ -2704,6 +2712,7 @@
         scanBarcodeFrame();
       }catch(err){
         stopBarcodeCamera();
+        if(target === "movement") $("viewInventory").querySelector(".barcodePanel").classList.add("fallbackNeeded");
         console.error(err); showMsg("Kamera konnte nicht geöffnet werden. Bitte Kamerazugriff erlauben oder Barcode manuell eingeben.");
       }
     }
@@ -2786,6 +2795,7 @@
       if(barcodeMovementMode === "in" && !isAdmin()) return showMsg("Nur Admin kann Produkte einlegen.");
       const incoming = barcodeMovementMode === "in";
       const itemRef = doc(db,"inventory",item.id);
+      const usageRef = doc(collection(db,"inventoryUsage"));
       try{
         const newStock = await runTransaction(db, async transaction=>{
           const snapshot = await transaction.get(itemRef);
@@ -2794,12 +2804,12 @@
           if(!incoming && qty>currentStock) throw new Error(`Nicht genügend Bestand. Verfügbar: ${currentStock} ${item.unit||""}`);
           const nextStock = currentStock + (incoming ? qty : -qty);
           transaction.update(itemRef,{stock:nextStock,lastUsageDate:localDateKey(),updatedAt:serverTimestamp()});
+          transaction.set(usageRef,{
+            itemId:item.id,itemName:item.name,barcode:item.barcode||"",qty,type:incoming?"in":"out",unit:item.unit||"",
+            date:localDateKey(),stockAfter:nextStock,createdBy:currentUser.uid,
+            createdByName:currentProfile.name||currentUser.email,source:incoming?"adminBarcodeIn":"staffBarcode",createdAt:serverTimestamp()
+          });
           return nextStock;
-        });
-        await addDoc(collection(db,"inventoryUsage"),{
-          itemId:item.id,itemName:item.name,barcode:item.barcode||"",qty,type:incoming?"in":"out",unit:item.unit||"",
-          date:localDateKey(),stockAfter:newStock,createdBy:currentUser.uid,
-          createdByName:currentProfile.name||currentUser.email,source:incoming?"adminBarcodeIn":"staffBarcode",createdAt:serverTimestamp()
         });
         await loadInventory();
         $("staffConsumptionQty").value="";
