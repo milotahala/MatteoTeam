@@ -299,9 +299,6 @@
     .weekToolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .weekDateNav{display:grid;grid-template-columns:auto minmax(160px,1fr) auto;gap:7px;align-items:center}
     .weekArrow{width:44px;min-height:48px;border:1px solid #2b4563;border-radius:12px;background:#12243a;color:#fff;cursor:pointer;font-size:20px}
-    .inventoryStats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-    .inventoryStat{padding:14px;border-radius:16px;background:#102239;border:1px solid var(--line)}
-    .inventoryStat .value{font-size:24px;font-weight:950;margin-top:5px}
     .inventoryToolbar{display:grid;grid-template-columns:1fr 220px;gap:10px;margin:14px 0}
     .inventoryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
     .inventoryCard{padding:16px;border-radius:18px;background:linear-gradient(145deg,#10243b,#0c1c30);border:1px solid #29435f}
@@ -570,7 +567,6 @@
       .weekToolbar .btn,.weekToolbar .ghost{width:100%}
       .weekTable{min-width:850px}
       .weekTable th:first-child,.weekTable td:first-child{width:145px;min-width:145px}
-      .inventoryStats{grid-template-columns:1fr 1fr}
       .inventoryToolbar{grid-template-columns:1fr}
       .inventoryGrid{grid-template-columns:1fr}
       .supplierOrderHead{grid-template-columns:1fr}
@@ -1039,13 +1035,6 @@
             <h2 class="sectionTitle">Inventar & Warenwirtschaft</h2>
             <div class="sectionSub">Bestände, Wareneingänge, Verbrauch und Mindestbestand verwalten.</div>
 
-            <div class="inventoryStats adminOnly">
-              <div class="inventoryStat"><div class="tiny muted">Produkte</div><div id="inventoryStatProducts" class="value">0</div></div>
-              <div class="inventoryStat"><div class="tiny muted">Niedriger Bestand</div><div id="inventoryStatLow" class="value" style="color:#fca5a5">0</div></div>
-              <div class="inventoryStat"><div class="tiny muted">Nicht auf Lager</div><div id="inventoryStatEmpty" class="value" style="color:#f87171">0</div></div>
-              <div class="inventoryStat"><div class="tiny muted">Lagerwert</div><div id="inventoryStatValue" class="value">0,00 €</div></div>
-            </div>
-
             <div class="grid2">
               <div class="item adminOnly">
                 <strong>Produkt anlegen / bearbeiten</strong>
@@ -1056,9 +1045,11 @@
                   <label class="label">Barcode / EAN</label>
                   <input id="invBarcode" class="input" inputmode="numeric" autocomplete="off" placeholder="Scannen oder Nummer eingeben" />
                   <div class="row" style="margin-top:9px;gap:9px">
-                    <label class="btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer"><i data-lucide="camera"></i> Kamera öffnen<input id="invBarcodeCamera" class="hidden" type="file" accept="image/*" capture="environment" /></label>
+                    <button id="btnScanNewProductBarcode" class="btn" type="button">Barcode scannen</button>
                     <label class="ghost" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer"><i data-lucide="image-plus"></i> Barcode-Foto wählen<input id="invBarcodeImage" class="hidden" type="file" accept="image/*" /></label>
                   </div>
+                  <div id="newProductBarcodeVideoSlot"></div>
+                  <button id="btnStopNewProductBarcode" class="ghost hidden" type="button" style="margin-top:8px">Kamera schließen</button>
                   <div id="invBarcodeStatus" class="tiny muted" style="margin-top:7px">Noch kein Barcode gescannt.</div>
                 </div>
                 <div class="menuFormGrid">
@@ -1111,7 +1102,7 @@
                 <button id="btnStartBarcode" class="btn" type="button">Kamera öffnen</button>
               </div>
               <div class="row" style="margin-top:9px"><label class="ghost" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><i data-lucide="image-plus"></i> Barcode-Foto wählen<input id="barcodeImage" class="hidden" type="file" accept="image/*" capture="environment" /></label><button id="btnStopBarcode" class="btnDanger hidden" type="button">Kamera schließen</button></div>
-              <div id="barcodeVideoWrap" class="barcodeVideoWrap hidden"><video id="barcodeVideo" playsinline muted></video><div class="barcodeFrame"></div></div>
+              <div id="barcodeCameraHome"><div id="barcodeVideoWrap" class="barcodeVideoWrap hidden"><video id="barcodeVideo" playsinline muted></video><div class="barcodeFrame"></div></div></div>
               <div id="barcodeResult" class="barcodeResult muted">Noch kein Barcode gescannt.</div>
               <div id="staffConsumptionForm" class="hidden" style="margin-top:12px">
                 <div class="row">
@@ -1121,12 +1112,6 @@
                 </div>
                 <div id="staffConsumptionHint" class="tiny muted" style="margin-top:8px"></div>
               </div>
-            </div>
-
-            <div class="item adminOnly">
-              <div class="row"><strong>Letzte Lagerentnahmen</strong><span class="pill right">Historie</span></div>
-              <div class="divider"></div>
-              <div id="inventoryUsageHistory" class="closingList"><div class="tiny muted">Noch keine Entnahmen.</div></div>
             </div>
 
             <div class="inventoryToolbar adminOnly">
@@ -2493,31 +2478,12 @@
       });
 
       renderInventory();
-      if(isAdmin()) await loadInventoryUsageHistory();
-    }
-
-    async function loadInventoryUsageHistory(){
-      const wrap=$("inventoryUsageHistory");
-      if(!wrap) return;
-      try{
-        const qs=await getDocs(collection(db,"inventoryUsage"));
-        const rows=qs.docs.map(d=>({id:d.id,...d.data()})).filter(row=>row.type==="out").sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0)).slice(0,30);
-        wrap.innerHTML=rows.length?rows.map(row=>`<div class="closingRow row"><div><strong>${htmlEscape(row.itemName||"Produkt")}</strong><div class="tiny muted">${htmlEscape(row.createdByName||"-")} · ${htmlEscape(taskDate(row.createdAt))}</div></div><div class="right" style="text-align:right"><span class="pill warn">−${Number(row.qty||0).toFixed(2)} ${htmlEscape(row.unit||"")}</span>${row.stockAfter!==undefined?`<div class="tiny muted" style="margin-top:4px">Rest: ${Number(row.stockAfter).toFixed(2)}</div>`:""}</div></div>`).join(""):`<div class="tiny muted">Noch keine Entnahmen.</div>`;
-      }catch(err){console.error(err);wrap.innerHTML=`<div class="tiny muted">Historie konnte nicht geladen werden.</div>`;}
     }
 
     function renderInventory(){
       const wrap = $("inventoryList");
       const search = menuSearchText($("inventorySearch").value);
       const category = $("inventoryCategoryFilter").value || "Alle";
-      const lowCount = inventoryCache.filter(item => Number(item.stock || 0) <= Number(item.minStock || 0)).length;
-      const emptyCount = inventoryCache.filter(item => Number(item.stock || 0) <= 0).length;
-      const totalValue = inventoryCache.reduce((sum, item) => sum + Number(item.stock || 0) * Number(item.lastPrice || 0), 0);
-      $("inventoryStatProducts").textContent = String(inventoryCache.length);
-      $("inventoryStatLow").textContent = String(lowCount);
-      $("inventoryStatEmpty").textContent = String(emptyCount);
-      $("inventoryStatValue").textContent = euro(totalValue);
-
       const rows = inventoryCache.filter(item => {
         const itemCategory = item.category || "Sonstige";
         const categoryMatch = category === "Alle" || itemCategory === category;
@@ -2680,14 +2646,30 @@
         const video = $("barcodeVideo");
         if(detector && video.readyState >= 2){
           const results = await detector.detect(video);
-          if(results.length){ findInventoryByBarcode(results[0].rawValue); return; }
+          if(results.length){ handleScannedInventoryBarcode(results[0].rawValue); return; }
         }
       }catch(err){ console.error("Barcode scan",err); }
       barcodeFrameRequest = requestAnimationFrame(scanBarcodeFrame);
     }
 
-    async function startBarcodeCamera(){
+    let barcodeScanTarget = "movement";
+    function handleScannedInventoryBarcode(rawValue){
+      if(barcodeScanTarget === "product"){
+        const code = safe(rawValue).replace(/\s/g,"");
+        stopBarcodeCamera();
+        $("invBarcode").value = code;
+        const existing = inventoryCache.find(item => safe(item.barcode).replace(/\s/g,"") === code);
+        $("invBarcodeStatus").innerHTML = existing
+          ? `<span style="color:var(--orange)">Barcode gehört bereits zu ${htmlEscape(existing.name||"einem Produkt")}.</span>`
+          : `<span style="color:var(--green)">Barcode erkannt: ${htmlEscape(code)}</span>`;
+      }else findInventoryByBarcode(rawValue);
+    }
+
+    async function startBarcodeCamera(target = "movement"){
       try{
+        stopBarcodeCamera();
+        barcodeScanTarget = target;
+        $(target === "product" ? "newProductBarcodeVideoSlot" : "barcodeCameraHome").appendChild($("barcodeVideoWrap"));
         const detector = await prepareBarcodeDetector();
         if(!detector){
           const reader = prepareZxingReader();
@@ -2695,15 +2677,17 @@
           const video = $("barcodeVideo");
           $("barcodeVideoWrap").classList.remove("hidden");
           $("btnStopBarcode").classList.remove("hidden");
-          $("btnStartBarcode").classList.add("hidden");
+          $("btnStopNewProductBarcode").classList.toggle("hidden", target !== "product");
+          $(target === "product" ? "btnScanNewProductBarcode" : "btnStartBarcode").classList.add("hidden");
           $("barcodeSupport").textContent = "Kamera aktiv";
+          if(target === "product") $("invBarcodeStatus").textContent = "Barcode in den Rahmen halten …";
           barcodeZxingControls = await reader.decodeFromConstraints(
             {video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false},
             video,
             (result, error, controls) => {
               if(!result) return;
               barcodeZxingControls = controls;
-              findInventoryByBarcode(result.getText());
+              handleScannedInventoryBarcode(result.getText());
             }
           );
           return;
@@ -2713,10 +2697,13 @@
         await $("barcodeVideo").play();
         $("barcodeVideoWrap").classList.remove("hidden");
         $("btnStopBarcode").classList.remove("hidden");
-        $("btnStartBarcode").classList.add("hidden");
+        $("btnStopNewProductBarcode").classList.toggle("hidden", target !== "product");
+        $(target === "product" ? "btnScanNewProductBarcode" : "btnStartBarcode").classList.add("hidden");
         $("barcodeSupport").textContent = "Kamera aktiv";
+        if(target === "product") $("invBarcodeStatus").textContent = "Barcode in den Rahmen halten …";
         scanBarcodeFrame();
       }catch(err){
+        stopBarcodeCamera();
         console.error(err); showMsg("Kamera konnte nicht geöffnet werden. Bitte Kamerazugriff erlauben oder Barcode manuell eingeben.");
       }
     }
@@ -2732,8 +2719,11 @@
       barcodeStream = null;
       if($("barcodeVideo")) $("barcodeVideo").srcObject = null;
       $("barcodeVideoWrap")?.classList.add("hidden");
+      $("barcodeCameraHome")?.appendChild($("barcodeVideoWrap"));
       $("btnStopBarcode")?.classList.add("hidden");
+      $("btnStopNewProductBarcode")?.classList.add("hidden");
       $("btnStartBarcode")?.classList.remove("hidden");
+      $("btnScanNewProductBarcode")?.classList.remove("hidden");
       if($("barcodeSupport")) $("barcodeSupport").textContent = "Bereit";
     }
 
@@ -2778,12 +2768,8 @@
           try{ rawValue = (await reader.decodeFromImageUrl(imageUrl)).getText(); }
           finally{ URL.revokeObjectURL(imageUrl); }
         }
-        const code = safe(rawValue).replace(/\s/g,"");
-        $("invBarcode").value = code;
-        const existing = inventoryCache.find(item => safe(item.barcode).replace(/\s/g,"") === code);
-        $("invBarcodeStatus").innerHTML = existing
-          ? `<span style="color:var(--orange)">Barcode gehört bereits zu ${htmlEscape(existing.name||"einem Produkt")}.</span>`
-          : `<span style="color:var(--green)">Barcode erkannt: ${htmlEscape(code)}</span>`;
+        barcodeScanTarget = "product";
+        handleScannedInventoryBarcode(rawValue);
       }catch(err){
         console.error(err);
         showMsg("Barcode konnte nicht gelesen werden.");
@@ -5965,10 +5951,11 @@ bruchCache.sort((a, b) => {
     $("btnBarcodeModeOut").addEventListener("click", () => setBarcodeMovementMode("out"));
     $("btnBarcodeModeIn").addEventListener("click", () => setBarcodeMovementMode("in"));
     $("barcodeManual").addEventListener("keydown", event => { if(event.key === "Enter") findInventoryByBarcode(event.target.value); });
-    $("btnStartBarcode").addEventListener("click", startBarcodeCamera);
+    $("btnStartBarcode").addEventListener("click", () => startBarcodeCamera("movement"));
+    $("btnScanNewProductBarcode").addEventListener("click", () => startBarcodeCamera("product"));
     $("btnStopBarcode").addEventListener("click", stopBarcodeCamera);
+    $("btnStopNewProductBarcode").addEventListener("click", stopBarcodeCamera);
     $("barcodeImage").addEventListener("change", event => scanBarcodeImage(event.target.files?.[0]));
-    $("invBarcodeCamera").addEventListener("change", event => scanNewProductBarcodeImage(event.target.files?.[0], "invBarcodeCamera"));
     $("invBarcodeImage").addEventListener("change", event => scanNewProductBarcodeImage(event.target.files?.[0], "invBarcodeImage"));
     $("btnBookConsumption").addEventListener("click", bookStaffConsumption);
     $("staffConsumptionQty").addEventListener("keydown", event=>{if(event.key==="Enter") bookStaffConsumption();});
