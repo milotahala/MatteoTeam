@@ -181,22 +181,20 @@
     .statIcon svg{width:17px;height:17px}
     .dashboardHead{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
     .dashboardDate{margin-left:auto;color:var(--muted);font-size:13px}
-    .dashboardApps{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:20px 12px;padding:18px 8px 8px;border-radius:24px;background:linear-gradient(145deg,rgba(16,34,57,.82),rgba(8,24,42,.5));border:1px solid rgba(66,191,245,.1)}
-    .dashboardApp{min-height:116px;border:0;background:transparent;color:#fff;cursor:pointer;padding:8px 5px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;text-align:center;font-weight:850}
-    .dashboardApp:hover{background:rgba(255,255,255,.04);border-radius:18px}
-    .dashboardAppIcon{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,#15945c,#2dd486);box-shadow:0 10px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.25)}
-    .dashboardAppIcon svg{width:32px;height:32px;stroke-width:2.2}
-    .dashboardApp:nth-child(2) .dashboardAppIcon{background:linear-gradient(145deg,#2563eb,#42bff5)}
-    .dashboardApp:nth-child(3) .dashboardAppIcon{background:linear-gradient(145deg,#b45309,#f59e0b)}
-    .dashboardApp:nth-child(4) .dashboardAppIcon{background:linear-gradient(145deg,#7c3aed,#a78bfa)}
-    .dashboardApp:nth-child(5) .dashboardAppIcon{background:linear-gradient(145deg,#be123c,#fb7185)}
-    .dashboardApp:nth-child(6) .dashboardAppIcon{background:linear-gradient(145deg,#0f766e,#2dd4bf)}
-    .dashboardApp:nth-child(7) .dashboardAppIcon{background:linear-gradient(145deg,#9a3412,#fb923c)}
-    .dashboardApp:nth-child(8) .dashboardAppIcon{background:linear-gradient(145deg,#4338ca,#818cf8)}
-    .dashboardApp:nth-child(9) .dashboardAppIcon{background:linear-gradient(145deg,#4d7c0f,#a3e635)}
-    .dashboardApp:nth-child(10) .dashboardAppIcon{background:linear-gradient(145deg,#0369a1,#38bdf8)}
-    .dashboardApp:nth-child(11) .dashboardAppIcon{background:linear-gradient(145deg,#a21caf,#e879f9)}
-    .dashboardApp:nth-child(12) .dashboardAppIcon{background:linear-gradient(145deg,#b91c1c,#f87171)}
+    /* Matteo dashboard: restrained slate cards and locally rendered pictograms. */
+    #viewDashboard{background:#111e29;border-color:#30404d;color:#f6f3f0}
+    #viewDashboard .sectionSub{color:#b8c0c9}
+    .dashboardApps{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px;padding:0;background:transparent;border:0}
+    .dashboardApp{min-height:134px;border:1px solid #334451;border-radius:20px;background:#1d2d39;color:#f6f3f0;cursor:pointer;padding:15px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;font-weight:750;line-height:1.2;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+    .dashboardApp:hover,.dashboardApp:focus-visible{background:#263947;border-color:#a32632;outline:none}
+    .dashboardAppIcon{width:64px;height:64px;flex:0 0 64px;border-radius:17px;display:grid;place-items:center;color:#fff;background:#61252d}
+    .dashboardAppIcon svg{width:34px;height:34px;stroke-width:1.8;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    #appShell:has(#viewDashboard:not(.hidden)) .topbar{background:#111e29;border-color:#30404d;border-top:3px solid #a32632}
+    #appShell:has(#viewDashboard:not(.hidden)) .sidebar{background:#111e29;border-color:#30404d}
+    #appShell:has(#viewDashboard:not(.hidden)) .navBtn.active{background:#74242e;box-shadow:none}
+    #appShell:has(#viewDashboard:not(.hidden)) .brand{background:#fff;color:#9b1f2b;border-radius:50%;overflow:hidden}
+    .brand img{width:100%;height:100%;object-fit:cover}
+    body:has(#viewDashboard:not(.hidden)){background:#101923}
     .clockNow{font-size:48px;font-weight:950;letter-spacing:-.04em;text-align:center;margin:8px 0 2px}
     .clockDate{text-align:center;color:var(--muted);margin-bottom:18px}
     .clockActions{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:620px;margin:0 auto}
@@ -589,10 +587,10 @@
       .title{font-size:16px}
       .subtitle{max-width:145px}
       .view{padding:14px}
-      .dashboardApps{grid-template-columns:repeat(3,minmax(82px,1fr));gap:16px 7px;padding:17px 5px 10px}
-      .dashboardApp{min-height:105px;padding:5px 2px;font-size:12px;line-height:1.25}
-      .dashboardAppIcon{width:62px;height:62px}
-      .dashboardAppIcon svg{width:28px;height:28px}
+      .dashboardApps{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:0}
+      .dashboardApp{min-height:116px;padding:10px 3px;font-size:11px;line-height:1.2;border-radius:15px;gap:8px;overflow-wrap:anywhere}
+      .dashboardAppIcon{width:52px;height:52px;flex-basis:52px;border-radius:14px}
+      .dashboardAppIcon svg{width:27px;height:27px}
       .clockSummary{grid-template-columns:1fr 1fr}
       .clockSummary .item:first-child{grid-column:1/-1}
       .clockTableHint{display:block}
@@ -692,7 +690,7 @@
     <section id="appShell" class="hidden">
       <div class="topbar card">
         <div class="brandWrap">
-          <div class="brand">MT</div>
+          <div class="brand"><img src="./icons/icon-192.png?v=2" alt="Matteo" /></div>
           <div>
             <div class="title">MatteoTeam PRO</div>
             <div class="subtitle" id="userInfoTop">...</div>
@@ -738,22 +736,22 @@
               <div id="dashboardDate" class="dashboardDate"></div>
             </div>
             <div class="dashboardApps">
-              <button class="dashboardApp" data-dashboard-view="viewWeekly" type="button"><span class="dashboardAppIcon"><i data-lucide="calendar-days"></i></span><span>Wochenplan</span></button>
-              <button class="dashboardApp" data-dashboard-view="viewStaff" type="button"><span class="dashboardAppIcon"><i data-lucide="users"></i></span><span>Mitarbeiter</span></button>
-              <button class="dashboardApp" data-dashboard-view="viewInventory" type="button"><span class="dashboardAppIcon"><i data-lucide="package"></i></span><span>Inventar</span></button>
-              <button class="dashboardApp" data-dashboard-view="viewSupplierOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="shopping-cart"></i></span><span>Bestellliste</span></button>
-              <button class="dashboardApp" data-dashboard-view="viewTimeClock" type="button"><span class="dashboardAppIcon"><i data-lucide="timer"></i></span><span>Stempeluhr <span id="timeClockDashboardBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
-              <button class="dashboardApp" data-dashboard-view="viewAnnouncements" type="button"><span class="dashboardAppIcon"><i data-lucide="bell"></i></span><span>Mitteilungen <span id="announcementUnreadBadge" class="noticeBadge hidden">0</span></span></button>
-              <button class="dashboardApp" data-dashboard-view="viewTasks" type="button"><span class="dashboardAppIcon"><i data-lucide="list-checks"></i></span><span>Aufgaben <span id="taskDashboardBadge" class="urgentBadge hidden">0 Offen</span></span></button>
-              <button class="dashboardApp adminOnly" data-dashboard-view="viewDailyClosing" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-check"></i></span><span>Tagesabschluss</span></button>
-              <button class="dashboardApp" data-dashboard-view="viewDocuments" type="button"><span class="dashboardAppIcon"><i data-lucide="scan-line"></i></span><span>Lieferanten</span></button>
-              <button class="dashboardApp" data-dashboard-view="viewSickLeave" type="button"><span class="dashboardAppIcon"><i data-lucide="heart-pulse"></i></span><span>Krankmeldung <span id="sickUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
-              <button class="dashboardApp" data-dashboard-view="viewHaccp" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-check"></i></span><span>HACCP <span id="haccpDashboardBadge" class="urgentBadge hidden">0 Offen</span></span></button>
-              <button class="dashboardApp" data-dashboard-view="viewOrders" type="button"><span class="dashboardAppIcon"><i data-lucide="notebook-tabs"></i></span><span>Bestellung <span id="customerOrderDashboardBadge" class="urgentBadge hidden">0</span></span></button>
-              <button class="dashboardApp" data-dashboard-view="viewRestaurantMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="utensils"></i></span><span>Speisekarte</span></button>
-              <button class="dashboardApp" data-dashboard-view="viewToGoMenu" type="button"><span class="dashboardAppIcon"><i data-lucide="pizza"></i></span><span>To Go</span></button>
-              <button class="dashboardApp" data-dashboard-view="viewUrlaub" type="button"><span class="dashboardAppIcon"><i data-lucide="palmtree"></i></span><span>Urlaub Antrag <span id="urlaubUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
-              <button class="dashboardApp" data-dashboard-view="viewBruch" type="button"><span class="dashboardAppIcon"><i data-lucide="clipboard-list"></i></span><span>Bruchliste</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewWeekly" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></span><span>Wochenplan</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewStaff" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>Mitarbeiter</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewInventory" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="m12 2 9 5-9 5-9-5 9-5ZM3 7v10l9 5 9-5V7M12 12v10"/></svg></span><span>Inventar</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewSupplierOrders" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.5 14h13l2-10H6"/></svg></span><span>Bestellliste</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewTimeClock" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="13" r="9"/><path d="M12 8v5l3 2M9 2h6"/></svg></span><span>Stempeluhr <span id="timeClockDashboardBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
+              <button class="dashboardApp" data-dashboard-view="viewAnnouncements" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></svg></span><span>Mitteilungen <span id="announcementUnreadBadge" class="noticeBadge hidden">0</span></span></button>
+              <button class="dashboardApp" data-dashboard-view="viewTasks" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="m3 6 2 2 3-3M12 7h9M3 13l2 2 3-3M12 14h9M3 20l2 2 3-3M12 21h9"/></svg></span><span>Aufgaben <span id="taskDashboardBadge" class="urgentBadge hidden">0 Offen</span></span></button>
+              <button class="dashboardApp adminOnly" data-dashboard-view="viewDailyClosing" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2M8 14l3 3 5-6"/></svg></span><span>Tagesabschluss</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewDocuments" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M4 12h16M7 9h10M7 15h10"/></svg></span><span>Lieferanten</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewSickLeave" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/><path d="M3 12h5l2-3 3 6 2-3h6"/></svg></span><span>Krankmeldung <span id="sickUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
+              <button class="dashboardApp" data-dashboard-view="viewHaccp" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2M8 14l3 3 5-6"/></svg></span><span>HACCP <span id="haccpDashboardBadge" class="urgentBadge hidden">0 Offen</span></span></button>
+              <button class="dashboardApp" data-dashboard-view="viewOrders" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4M2 7h3M2 12h3M2 17h3"/></svg></span><span>Bestellung <span id="customerOrderDashboardBadge" class="urgentBadge hidden">0</span></span></button>
+              <button class="dashboardApp" data-dashboard-view="viewRestaurantMenu" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M4 3v7a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-4 3-4 8 0 10h3V3"/></svg></span><span>Speisekarte</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewToGoMenu" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 22 2 3c6-3 14-3 20 0L12 22ZM5 9c4-2 10-2 14 0"/><circle cx="10" cy="12" r="1"/><circle cx="15" cy="8" r="1"/></svg></span><span>To Go</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewUrlaub" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 22c1-5 1-10 0-14M12 8c-3-4-6-4-9-2 4 0 6 2 9 2ZM12 8c3-4 6-4 9-2-4 0-6 2-9 2ZM12 8c-3 0-5 2-6 5 3-2 5-2 6-5ZM12 8c3 0 5 2 6 5-3-2-5-2-6-5Z"/></svg></span><span>Urlaub Antrag <span id="urlaubUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
+              <button class="dashboardApp" data-dashboard-view="viewBruch" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2M9 10h6M9 14h6M9 18h4"/></svg></span><span>Bruchliste</span></button>
             </div>
             <div class="hidden" aria-hidden="true"><span id="statStaff">0</span><span id="statInventory">0</span><span id="statUrlaub">0</span><span id="statHaccp">0/3</span><span id="haccpTodayBadge"></span><span id="dashHaccpList"></span><span id="dashUrlaubList"></span></div>
           </section>
