@@ -3443,7 +3443,7 @@ ${lastHoursPayload.details.join("\n")}`;
         const done=haccpSectionComplete(sectionKey,section);
         const devices=definition.devices.map(([key,label,target])=>`<div class="haccpDevice"><strong>${label}</strong><div class="tiny muted">${target}</div><div class="haccpDeviceRow"><div><label class="label">Temperatur °C</label><input class="input" type="number" step="0.1" inputmode="decimal" data-haccp-temp="${sectionKey}:${key}" value="${htmlEscape(section.temperatures?.[key]?.value??"")}" /></div><label class="haccpCheck"><input type="checkbox" data-haccp-device-clean="${sectionKey}:${key}" ${section.temperatures?.[key]?.clean===true?"checked":""}/> ✅ Sauber</label></div></div>`).join("");
         const cleaning=definition.cleaning.map(([key,label])=>`<label class="haccpCheck"><input type="checkbox" data-haccp-clean="${sectionKey}:${key}" ${section.cleaning?.[key]===true?"checked":""}/> ✅ ${label}</label>`).join("");
-        return `<article class="haccpSection ${done?"complete":"incomplete"}" data-haccp-section="${sectionKey}"><div class="row"><div><strong>${definition.title}</strong><div class="tiny muted">Verantwortlich: ${definition.responsibility}</div></div><span class="pill ${done?"ok":"warn"} right">${done?"Komplett":"Offen"}</span></div>${devices?`<div class="haccpDeviceGrid">${devices}</div>`:""}<div class="haccpCleaning">${cleaning}</div><div class="field" style="margin-top:12px"><label class="label">Bemerkung / Abweichung / Defekt</label><textarea class="textarea" data-haccp-note="${sectionKey}" placeholder="Optional, z. B. Temperatur zu hoch – Maßnahme notieren">${htmlEscape(section.note||"")}</textarea></div><div class="haccpResponsible">${section.completedByName?`Zuletzt kontrolliert von <strong>${htmlEscape(section.completedByName)}</strong> · ${htmlEscape(taskDate(section.completedAt))}`:"Noch nicht bestätigt."}</div></article>`;
+        return `<article class="haccpSection ${done?"complete":"incomplete"}" data-haccp-section="${sectionKey}"><div class="row"><div><strong>${definition.title}</strong><div class="tiny muted">Verantwortlich: ${definition.responsibility}</div></div><span class="pill ${done?"ok":"warn"} right">${done?"Komplett":"Offen"}</span></div>${devices?`<div class="haccpDeviceGrid">${devices}</div>`:""}<div class="haccpCleaning">${cleaning}</div><div class="field" style="margin-top:12px"><label class="label">Bemerkung / Abweichung / Defekt</label><textarea class="textarea" data-haccp-note="${sectionKey}" placeholder="Optional, z. B. Temperatur zu hoch – Maßnahme notieren">${htmlEscape(section.note||"")}</textarea></div><div class="haccpResponsible">${section.completedByName?`Zuletzt kontrolliert von <strong>${htmlEscape(section.completedByName)}</strong> · ${htmlEscape(taskDate(section.completedAt))}`:"Noch nicht bestätigt."}</div><button class="btn" type="button" data-haccp-confirm="${sectionKey}" style="margin-top:12px;width:100%">${done?"Kontrolle erneut speichern":"Kontrolle bestätigen"}</button></article>`;
       }).join(""):`<div class="item muted">Deinem Mitarbeiterbereich ist noch keine HACCP-Verantwortung zugeordnet. Bitte Admin informieren.</div>`;
       const allDone=Object.keys(HACCP_SECTIONS).filter(key=>haccpSectionDone(data[key])).length;
       $("haccpDaySummary").innerHTML=`<div class="row"><strong>Tagesstatus</strong><span class="pill ${allDone===3?"ok":"warn"} right">${allDone}/3 komplett</span></div><div class="tiny muted" style="margin-top:6px">Küche, Pizza/Keller und Service müssen täglich vollständig bestätigt werden.</div>`;
@@ -3471,6 +3471,23 @@ ${lastHoursPayload.details.join("\n")}`;
       const incomplete=allowed.filter(key=>!payload[key].complete);
       await loadHaccp(); await loadDashboard();
       showMsg(incomplete.length?`Gespeichert, aber ${incomplete.length} Bereich(e) sind noch nicht vollständig.`:"HACCP vollständig gespeichert.");
+    }
+
+    async function confirmHaccpSection(sectionKey,button){
+      if(!haccpAllowedSections().includes(sectionKey)) return showMsg("Keine HACCP-Verantwortung für diesen Bereich.");
+      const section=collectHaccpSection(sectionKey);
+      if(!section.complete) return showMsg("Bitte alle Temperaturen eintragen und alle Kontrollen abhaken.");
+      button.disabled=true;
+      try{
+        const date=$("haccpDate").value||todayStr();
+        await setDoc(doc(db,"haccpDaily",date),{date,[sectionKey]:section,updatedBy:currentUser.uid,updatedAt:serverTimestamp()},{merge:true});
+        await loadHaccp(); await loadDashboard();
+        showMsg("Kontrolle bestätigt und gespeichert.");
+      }catch(err){
+        console.error("HACCP confirmation error",err);
+        button.disabled=false;
+        showMsg("Speichern fehlgeschlagen: "+err.message);
+      }
     }
 
     async function loadHaccp(){
@@ -6003,6 +6020,10 @@ bruchCache.sort((a, b) => {
 
     $("btnLoadHaccp").addEventListener("click", loadHaccp);
     $("btnSaveHaccp").addEventListener("click", saveHaccp);
+    $("haccpSections").addEventListener("click",event=>{
+      const button=event.target.closest("[data-haccp-confirm]");
+      if(button) confirmHaccpSection(button.dataset.haccpConfirm,button);
+    });
     $("btnPrintMonthHaccp").addEventListener("click", printMonthHaccp);
 
     $("btnSubmitUrlaub").addEventListener("click", submitUrlaub);
