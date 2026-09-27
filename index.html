@@ -181,14 +181,23 @@
     .statIcon svg{width:17px;height:17px}
     .dashboardHead{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
     .dashboardDate{margin-left:auto;color:var(--muted);font-size:13px}
-    /* Matteo dashboard: restrained slate cards and locally rendered pictograms. */
-    #viewDashboard{background:#111e29;border-color:#30404d;color:#f6f3f0}
-    #viewDashboard .sectionSub{color:#b8c0c9}
+    /* Matteo dashboard concept 06: distinct color for each module. */
+    #viewDashboard{background:#0b1423;border-color:#304767;color:#f6f3f0}
+    #viewDashboard .sectionSub{color:#a8b7c6}
     .dashboardApps{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px;padding:0;background:transparent;border:0}
-    .dashboardApp{min-height:134px;border:1px solid #334451;border-radius:20px;background:#1d2d39;color:#f6f3f0;cursor:pointer;padding:15px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;font-weight:750;line-height:1.2;box-shadow:0 8px 24px rgba(0,0,0,.12)}
-    .dashboardApp:hover,.dashboardApp:focus-visible{background:#263947;border-color:#a32632;outline:none}
-    .dashboardAppIcon{width:64px;height:64px;flex:0 0 64px;border-radius:17px;display:grid;place-items:center;color:#fff;background:#61252d}
+    .dashboardApp{--tile:#f05d63;min-height:134px;border:0;border-radius:20px;background:var(--tile);color:#101b2d;cursor:pointer;padding:15px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;font-weight:800;line-height:1.2;box-shadow:0 8px 24px rgba(0,0,0,.18);transition:transform .16s,filter .16s}
+    .dashboardApp:nth-child(9n + 2){--tile:#e3b259}
+    .dashboardApp:nth-child(9n + 3){--tile:#4d98ed}
+    .dashboardApp:nth-child(9n + 4){--tile:#37bea3}
+    .dashboardApp:nth-child(9n + 5){--tile:#ee8461}
+    .dashboardApp:nth-child(9n + 6){--tile:#9f7aeb}
+    .dashboardApp:nth-child(9n + 7){--tile:#51b8b5}
+    .dashboardApp:nth-child(9n + 8){--tile:#f080a5}
+    .dashboardApp:nth-child(9n + 9){--tile:#82a7f3}
+    .dashboardApp:hover,.dashboardApp:focus-visible{filter:brightness(1.09);transform:translateY(-2px);outline:2px solid #fff;outline-offset:2px}
+    .dashboardAppIcon{width:64px;height:64px;flex:0 0 64px;border-radius:17px;display:grid;place-items:center;color:#17263c;background:#fff}
     .dashboardAppIcon svg{width:34px;height:34px;stroke-width:1.8;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .dashboardApp .urgentBadge,.dashboardApp .noticeBadge{color:#fff;background:#8d1930}
     #appShell:has(#viewDashboard:not(.hidden)) .topbar{background:#111e29;border-color:#30404d;border-top:3px solid #a32632}
     #appShell:has(#viewDashboard:not(.hidden)) .sidebar{background:#111e29;border-color:#30404d}
     #appShell:has(#viewDashboard:not(.hidden)) .navBtn.active{background:#74242e;box-shadow:none}
