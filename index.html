@@ -204,6 +204,27 @@
     #appShell:has(#viewDashboard:not(.hidden)) .brand{background:#fff;color:#9b1f2b;border-radius:50%;overflow:hidden}
     .brand img{width:100%;height:100%;object-fit:cover}
     body:has(#viewDashboard:not(.hidden)){background:#101923}
+    /* Interior concept 09: clear section headers and layered blue panels. */
+    .view.card:not(#viewDashboard){background:#111b30;border-color:#435878;color:#f6f8ff}
+    .view.card:not(#viewDashboard) > .sectionTitle,
+    .view.card:not(#viewDashboard) > .row:first-child:has(.sectionTitle){
+      background:#1b2d4c;border:1px solid #405477;border-radius:19px;
+      padding:16px 18px;margin-bottom:16px
+    }
+    .view.card:not(#viewDashboard) > .sectionTitle{margin-bottom:5px}
+    .view.card:not(#viewDashboard) > .sectionSub{padding:0 4px;margin-bottom:18px}
+    .view.card:not(#viewDashboard) > .row:first-child:has(.sectionTitle) .sectionSub{margin-bottom:0;color:#b5c5dc}
+    .view.card:not(#viewDashboard) .item{background:#1b2943;border-color:#405578;border-radius:19px}
+    .view.card:not(#viewDashboard) .input,
+    .view.card:not(#viewDashboard) .select,
+    .view.card:not(#viewDashboard) .textarea{background:#202e49;border-color:#536988;color:#f7faff}
+    .view.card:not(#viewDashboard) .input:focus,
+    .view.card:not(#viewDashboard) .select:focus,
+    .view.card:not(#viewDashboard) .textarea:focus{border-color:#ec4659;box-shadow:0 0 0 3px rgba(236,70,89,.2)}
+    .view.card:not(#viewDashboard) .btn{background:linear-gradient(135deg,#eb4657,#ac263d);color:#fff}
+    .view.card:not(#viewDashboard) .label{color:#b8c8df;font-weight:700}
+    .view.card:not(#viewDashboard) .divider{background:#405575}
+    #viewSupplierOrders > .row:first-child .pill.ok{background:#e0e9ff;color:#1b2a48}
     .clockNow{font-size:48px;font-weight:950;letter-spacing:-.04em;text-align:center;margin:8px 0 2px}
     .clockDate{text-align:center;color:var(--muted);margin-bottom:18px}
     .clockActions{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:620px;margin:0 auto}
