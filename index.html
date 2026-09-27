@@ -983,7 +983,7 @@
 
             <div class="grid2">
               <div class="item adminOnly">
-                <strong>Add / Edit Staff</strong>
+                <strong id="staffFormTitle">Add Staff</strong>
                 <div class="divider"></div>
                 <input id="staffEditId" type="hidden" />
                 <div class="field">
@@ -2371,6 +2371,9 @@
       $("staffPassword").value = "";
       $("staffPasswordField").classList.add("hidden");
       openView("viewStaff");
+      $("staffFormTitle").textContent = "Edit Staff: " + (s.name || s.email || "");
+      $("btnSaveStaff").textContent = "Save Changes";
+      $("staffFormTitle").scrollIntoView({behavior:"smooth", block:"start"});
     };
 
     window.removeStaff = async (id) => {
@@ -2433,6 +2436,8 @@
 
     function clearStaffForm(){
       $("staffEditId").value = "";
+      $("staffFormTitle").textContent = "Add Staff";
+      $("btnSaveStaff").textContent = "Save Staff";
       $("staffName").value = "";
       $("staffEmail").value = "";
       $("staffDepartment").value = "Service";
