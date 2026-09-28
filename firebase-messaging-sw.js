@@ -14,10 +14,14 @@ firebase.messaging();
 
 self.addEventListener("notificationclick", event => {
   event.notification.close();
+  const targetUrl = event.notification?.data?.url || "./";
   event.waitUntil(clients.matchAll({type:"window", includeUncontrolled:true}).then(list => {
     for(const client of list){
-      if("focus" in client) return client.focus();
+      if("focus" in client){
+        client.postMessage({type:"MATTEO_NOTIFICATION_OPEN",url:targetUrl});
+        return client.focus();
+      }
     }
-    return clients.openWindow("./#stempeluhr");
+    return clients.openWindow(targetUrl);
   }));
 });
