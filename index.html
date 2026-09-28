@@ -1687,8 +1687,8 @@
       const controls = $("pushNotificationControls");
       if(!controls) return;
       const dashboardApps = document.querySelector("#viewDashboard .dashboardApps");
-      if(dashboardApps && controls.parentElement !== $("viewDashboard")){
-        dashboardApps.insertAdjacentElement("afterend", controls);
+      if(dashboardApps){
+        dashboardApps.insertAdjacentElement("beforebegin", controls);
       }
       controls.classList.remove("hidden");
       try{
@@ -1753,11 +1753,23 @@
       }
     }
 
-    function playNotificationTone(){
+    let notificationAudioContext = null;
+    function unlockNotificationAudio(){
       try{
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if(!AudioCtx) return;
-        const audio = new AudioCtx();
+        if(!notificationAudioContext) notificationAudioContext = new AudioCtx();
+        if(notificationAudioContext.state === "suspended") notificationAudioContext.resume().catch(() => {});
+      }catch(err){ console.warn("Audio aktivieren", err); }
+    }
+    document.addEventListener("pointerdown", unlockNotificationAudio, {passive:true});
+    document.addEventListener("touchstart", unlockNotificationAudio, {passive:true});
+
+    function playNotificationTone(){
+      try{
+        unlockNotificationAudio();
+        const audio = notificationAudioContext;
+        if(!audio || audio.state !== "running") return;
         const gain = audio.createGain();
         gain.gain.setValueAtTime(.24, audio.currentTime);
         gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + .75);
@@ -1770,7 +1782,6 @@
         });
         gain.connect(audio.destination);
         navigator.vibrate?.([220,100,220]);
-        setTimeout(() => audio.close?.(), 1200);
       }catch(err){ console.warn("Benachrichtigungston", err); }
     }
 
