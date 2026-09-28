@@ -1644,6 +1644,9 @@
     let timeClockLocationBusy = false;
     let timeClockAdminUnsubscribe = null;
     let announcementUnsubscribe = null;
+    let weeklyPlanNotificationUnsubscribe = null;
+    let announcementNotificationReady = false;
+    let knownAnnouncementIds = new Set();
     let timeClockAdminTimer = null;
     let timeClockQrTimer = null;
     let timeClockQrRecord = null;
@@ -1682,7 +1685,11 @@
 
     async function preparePushMessaging(){
       const controls = $("pushNotificationControls");
-      if(!controls || !isSuperAdmin()) return;
+      if(!controls) return;
+      const dashboardApps = document.querySelector("#viewDashboard .dashboardApps");
+      if(dashboardApps && controls.parentElement !== $("viewDashboard")){
+        dashboardApps.insertAdjacentElement("afterend", controls);
+      }
       controls.classList.remove("hidden");
       try{
         if(!(await isMessagingSupported()) || !("serviceWorker" in navigator)){
@@ -1721,7 +1728,6 @@
     }
 
     async function enablePushNotifications(){
-      if(!isSuperAdmin()) return showMsg("Nur SuperAdmin.");
       try{
         $("btnEnablePushNotifications").disabled = true;
         if(!messaging || !messagingRegistration) await preparePushMessaging();
@@ -1730,18 +1736,63 @@
         const token = await getToken(messaging, {vapidKey:WEB_PUSH_VAPID_KEY, serviceWorkerRegistration:messagingRegistration});
         if(!token) throw new Error("Für dieses Gerät konnte kein Push-Token erstellt werden.");
         await setDoc(doc(db, "fcmTokens", `${currentUser.uid}_${pushDeviceId()}`), {
-          uid:currentUser.uid, token, role:"superadmin", active:true,
+          uid:currentUser.uid, token, role:currentProfile.role || "staff",
+          department:currentProfile.department || "", active:true,
           userAgent:navigator.userAgent, updatedAt:serverTimestamp()
         }, {merge:true});
         $("pushNotificationStatus").textContent = "Aktiviert – Alarme kommen auch bei geschlossener App.";
         $("btnEnablePushNotifications").textContent = "Aktiv";
-        showMsg("Push-Benachrichtigungen wurden aktiviert.");
+        notifyTeamEvent("MatteoTeam", "Benachrichtigungen und Ton sind aktiviert.", {force:true});
+        showMsg("Benachrichtigungen wurden aktiviert.");
       }catch(err){
         console.error("Push activation", err);
         $("pushNotificationStatus").textContent = err.message;
         showMsg(err.message);
       }finally{
         $("btnEnablePushNotifications").disabled = false;
+      }
+    }
+
+    function playNotificationTone(){
+      try{
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if(!AudioCtx) return;
+        const audio = new AudioCtx();
+        const gain = audio.createGain();
+        gain.gain.setValueAtTime(.24, audio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + .75);
+        [784, 988].forEach((frequency,index) => {
+          const oscillator = audio.createOscillator();
+          oscillator.frequency.value = frequency;
+          oscillator.connect(gain);
+          oscillator.start(audio.currentTime + index * .16);
+          oscillator.stop(audio.currentTime + .55 + index * .16);
+        });
+        gain.connect(audio.destination);
+        navigator.vibrate?.([220,100,220]);
+        setTimeout(() => audio.close?.(), 1200);
+      }catch(err){ console.warn("Benachrichtigungston", err); }
+    }
+
+    async function notifyTeamEvent(title, body, options={}){
+      if(!currentUser && !options.force) return;
+      playNotificationTone();
+      if(Notification.permission === "granted"){
+        try{
+          const registration = messagingRegistration || await navigator.serviceWorker?.getRegistration();
+          if(registration){
+            await registration.showNotification(title, {
+              body,
+              icon:"./icons/icon-192.png?v=2",
+              badge:"./icons/icon-192.png?v=2",
+              tag:options.tag || `matteoteam-${Date.now()}`,
+              renotify:true,
+              data:{url:options.url || "./"}
+            });
+          }else{
+            new Notification(title,{body,icon:"./icons/icon-192.png?v=2"});
+          }
+        }catch(err){ console.warn("Lokale Benachrichtigung",err); }
       }
     }
 
@@ -3297,6 +3348,26 @@
       await buildWeeklyTable();
     }
 
+    function startWeeklyPlanNotifications(){
+      weeklyPlanNotificationUnsubscribe?.();
+      const weekStart = weekKeyFrom(todayStr());
+      const seenKey = `matteoWeeklyPlanSeen:${currentUser.uid}:${weekStart}`;
+      weeklyPlanNotificationUnsubscribe = onSnapshot(doc(db,"weeklyPlans",weekStart), snapshot => {
+        if(!snapshot.exists()) return;
+        const data = snapshot.data();
+        const updated = data.updatedAt?.toMillis ? data.updatedAt.toMillis() : 0;
+        const seen = Number(localStorage.getItem(seenKey) || 0);
+        if(updated > seen && data.updatedBy !== currentUser.uid){
+          notifyTeamEvent(
+            "Neuer Wochenplan",
+            `Der Wochenplan ab ${weekStart.split("-").reverse().join(".")} wurde aktualisiert.`,
+            {tag:`wochenplan-${weekStart}`,url:"./#wochenplan"}
+          );
+        }
+        if(updated) localStorage.setItem(seenKey,String(updated));
+      }, err => console.warn("Wochenplan-Benachrichtigung",err));
+    }
+
     async function saveWeekly(){
       if(!isAdmin()) return showMsg("Nur Admin.");
       const weekStart = weekKeyFrom($("weekPicker").value || todayStr());
@@ -4514,12 +4585,36 @@ bruchCache.sort((a, b) => {
 
     function startAnnouncementChat(){
       if(announcementUnsubscribe) announcementUnsubscribe();
+      announcementNotificationReady = false;
+      knownAnnouncementIds = new Set();
       announcementUnsubscribe = onSnapshot(collection(db, "announcements"), snapshot => {
+        const previousIds = knownAnnouncementIds;
         announcementCache = snapshot.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => {
           const aa = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
           const bb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
           return aa - bb;
         });
+        knownAnnouncementIds = new Set(announcementCache.map(item => item.id));
+        const unread = announcementCache.filter(item => !(item.readBy || []).includes(currentUser.uid));
+        if(!announcementNotificationReady){
+          announcementNotificationReady = true;
+          if(unread.length){
+            notifyTeamEvent(
+              "Neue Mitteilung",
+              unread.length === 1 ? (unread[0].text || "Neue Nachricht vom Matteo Team.") : `${unread.length} ungelesene Mitteilungen.`,
+              {tag:"matteoteam-mitteilungen",url:"./#mitteilungen"}
+            );
+          }
+        }else{
+          const newest = announcementCache.filter(item => !previousIds.has(item.id) && item.authorId !== currentUser.uid).at(-1);
+          if(newest){
+            notifyTeamEvent(
+              newest.important ? "Wichtige Mitteilung" : "Neue Mitteilung",
+              `${newest.authorName || "Matteo Team"}: ${newest.text || "Neue Nachricht"}`,
+              {tag:`mitteilung-${newest.id}`,url:"./#mitteilungen"}
+            );
+          }
+        }
         renderAnnouncements();
         const list = $("announcementList");
         requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
@@ -5876,7 +5971,11 @@ bruchCache.sort((a, b) => {
         const noticeKey=`haccpNotice:${today}:${currentUser.uid}`;
         if(sessionStorage.getItem(noticeKey)!=="shown"){
           sessionStorage.setItem(noticeKey,"shown");
-          setTimeout(()=>showMsg(`HACCP Erinnerung: ${missingRelevant} Kontrolle(n) für deinen Bereich sind heute noch offen.`),500);
+          setTimeout(()=>notifyTeamEvent(
+            "HACCP Erinnerung",
+            `${missingRelevant} Kontrolle(n) für deinen Bereich sind heute noch offen.`,
+            {tag:`haccp-${today}-${currentUser.uid}`,url:"./#haccp"}
+          ),500);
         }
       }
 
@@ -5936,6 +6035,7 @@ bruchCache.sort((a, b) => {
       await loadOrders();
       startOrders();
       startAnnouncementChat();
+      startWeeklyPlanNotifications();
       startTasks();
       await loadDocuments();
       await loadSickLeave();
@@ -6357,6 +6457,12 @@ bruchCache.sort((a, b) => {
           announcementUnsubscribe();
           announcementUnsubscribe = null;
         }
+        if(weeklyPlanNotificationUnsubscribe){
+          weeklyPlanNotificationUnsubscribe();
+          weeklyPlanNotificationUnsubscribe = null;
+        }
+        announcementNotificationReady = false;
+        knownAnnouncementIds.clear();
         if(taskUnsubscribe){
           taskUnsubscribe();
           taskUnsubscribe = null;
