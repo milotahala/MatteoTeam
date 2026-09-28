@@ -1703,6 +1703,7 @@
         $("pushNotificationStatus").textContent = permission === "granted" ? "Aktiviert – Alarme kommen auch bei geschlossener App." : permission === "denied" ? "In den iPhone-Einstellungen blockiert." : "Noch nicht aktiviert.";
         $("btnEnablePushNotifications").textContent = permission === "granted" ? "Erneut registrieren" : "Benachrichtigungen aktivieren";
         onMessage(messaging, payload => {
+        if(payload.data?.type === "announcement") return; // Firestore listener already alerts while the app is open.
         const title = payload.notification?.title || "MatteoTeam Alarm";
         const body = payload.notification?.body || "Neue wichtige Meldung.";
         showMsg(`${title}: ${body}`);
