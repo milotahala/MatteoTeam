@@ -2979,9 +2979,31 @@
       return `${prefix}-${date}-${time}`;
     }
 
-    function resetSupplierOrderForm(){
+    function supplierDraftKey(type = $("supplierOrderType").value){
+      return `matteo:supplier-draft:${currentUser?.uid || "guest"}:${type}`;
+    }
+
+    function saveSupplierOrderDraft(){
+      try{
+        const type = $("supplierOrderType").value;
+        localStorage.setItem(supplierDraftKey(type), JSON.stringify({
+          quantities:supplierOrderQuantities,
+          name:$("supplierOrderName").value,
+          email:$("supplierOrderEmail").value,
+          deliveryDate:$("supplierOrderDeliveryDate").value,
+          orderNumber:$("supplierOrderNumber").value,
+          note:$("supplierOrderNote").value,
+          other:$("supplierOrderOther").value
+        }));
+      }catch(err){ console.warn("Bestellentwurf konnte nicht lokal gespeichert werden", err); }
+    }
+
+    function resetSupplierOrderForm(restore = false){
       supplierOrderQuantities = {};
       const type = $("supplierOrderType").value || "arasco";
+      if(!restore){
+        try{ localStorage.removeItem(supplierDraftKey(type)); }catch(err){ console.warn(err); }
+      }
       const profile = supplierProfiles[type];
       $("supplierOrderName").value = profile?.name || "";
       $("supplierOrderEmail").value = profile?.email || "";
@@ -2991,6 +3013,17 @@
       $("supplierOrderOther").value = "";
       $("supplierOrderSearch").value = "";
       $("supplierOrderSelectedOnly").checked = false;
+      if(restore){
+        try{
+          const draft = JSON.parse(localStorage.getItem(supplierDraftKey(type)) || "null");
+          if(draft && typeof draft === "object"){
+            supplierOrderQuantities = draft.quantities && typeof draft.quantities === "object" ? draft.quantities : {};
+            for(const [field,id] of Object.entries({name:"supplierOrderName",email:"supplierOrderEmail",deliveryDate:"supplierOrderDeliveryDate",orderNumber:"supplierOrderNumber",note:"supplierOrderNote",other:"supplierOrderOther"})){
+              if(typeof draft[field] === "string") $(id).value = draft[field];
+            }
+          }
+        }catch(err){ console.warn("Bestellentwurf konnte nicht geladen werden", err); }
+      }
       renderSupplierOrderRows();
     }
 
@@ -6045,7 +6078,7 @@ bruchCache.sort((a, b) => {
       $("dailyClosingDate").value = localDateKey();
       $("tableAssignmentDate").value = localDateKey();
       await loadSupplierProfiles();
-      resetSupplierOrderForm();
+      resetSupplierOrderForm(true);
 
       await loadStaff();
       populateAssignmentWaiters();
@@ -6159,7 +6192,10 @@ bruchCache.sort((a, b) => {
     });
     $("supplierOrderSearch").addEventListener("input", renderSupplierOrderRows);
     $("supplierOrderSelectedOnly").addEventListener("change", renderSupplierOrderRows);
-    $("supplierOrderType").addEventListener("change", resetSupplierOrderForm);
+    $("supplierOrderType").addEventListener("change", () => resetSupplierOrderForm(true));
+    for(const id of ["supplierOrderName","supplierOrderEmail","supplierOrderDeliveryDate","supplierOrderNote","supplierOrderOther"]){
+      $(id).addEventListener("input", saveSupplierOrderDraft);
+    }
     $("btnSaveSupplierProfile").addEventListener("click", saveSupplierProfile);
     $("supplierOrderRows").addEventListener("input", event => {
       const input = event.target.closest("[data-supplier-article]");
@@ -6167,6 +6203,7 @@ bruchCache.sort((a, b) => {
       const article = input.dataset.supplierArticle;
       supplierOrderQuantities[article] ||= {};
       supplierOrderQuantities[article][input.dataset.supplierField] = input.value;
+      saveSupplierOrderDraft();
     });
     $("btnClearSupplierOrder").addEventListener("click", () => {
       if(confirm("Bestellliste wirklich leeren?")) resetSupplierOrderForm();
