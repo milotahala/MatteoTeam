@@ -1122,6 +1122,9 @@
                   <button id="btnSaveInventory" class="btn" type="button">Produkt speichern</button>
                   <button id="btnClearInventory" class="ghost" type="button">Leeren</button>
                 </div>
+                <div class="divider"></div>
+                <button id="btnImportArascoInventory" class="ghost" type="button">Arasco-Produkte aus Bestellliste übernehmen</button>
+                <div class="tiny muted" style="margin-top:7px">Neue Artikel mit Bestand 0 übernehmen. Bestehende Produkte und Bestände bleiben erhalten.</div>
               </div>
 
               <div id="inventoryMovementPanel" class="item adminOnly">
@@ -2624,7 +2627,7 @@
           <div class="row"><div><div class="tiny muted">${htmlEscape(item.category || "Sonstige")}</div><strong>${htmlEscape(item.name || "-")}</strong></div><span class="pill ${low ? "danger" : "ok"} right">${stock <= 0 ? "Leer" : low ? "Nachbestellen" : "OK"}</span></div>
           <div class="stockBar"><span style="width:${percent}%"></span></div>
           <div class="row"><strong>${stock.toFixed(2)} ${htmlEscape(item.unit || "")}</strong><span class="right tiny muted">Min. ${minimum.toFixed(2)} · Pack ${Number(item.packSize || 0).toFixed(2)}</span></div>
-          <div class="tiny muted" style="margin-top:9px">Lieferant: ${htmlEscape(item.supplier || "-")} · Preis: ${euro(item.lastPrice || 0)} · Wert: ${euro(stock * Number(item.lastPrice || 0))}${item.barcode ? ` · EAN: ${htmlEscape(item.barcode)}` : ""}</div>
+          <div class="tiny muted" style="margin-top:9px">Lieferant: ${htmlEscape(item.supplier || "-")}${item.article ? ` · Arasco-Nr.: ${htmlEscape(item.article)}` : ""} · Preis: ${euro(item.lastPrice || 0)} · Wert: ${euro(stock * Number(item.lastPrice || 0))}${item.barcode ? ` · EAN: ${htmlEscape(item.barcode)}` : ""}</div>
           ${isAdmin() ? `<div class="row" style="margin-top:12px"><button class="smallBtn smallBlue" type="button" onclick="window.editInventory('${item.id}')">Bearbeiten</button><button class="smallBtn smallRed" type="button" onclick="window.removeInventory('${item.id}')">Löschen</button></div>` : ""}
         </article>`;
       }).join("") : `<div class="item muted">Keine passenden Produkte.</div>`;
@@ -2680,6 +2683,33 @@
       await loadInventory();
       await loadDashboard();
       showMsg("Inventory gespeichert.");
+    }
+
+    async function importArascoInventory(){
+      if(!isAdmin()) return showMsg("Nur Admin.");
+      const button = $("btnImportArascoInventory");
+      button.disabled = true;
+      try{
+        await loadInventory();
+        const existingArticles = new Set(inventoryCache.map(item => safe(item.article).trim()).filter(Boolean));
+        const existingNames = new Set(inventoryCache.map(item => menuSearchText(item.name || "")));
+        const missing = ARASCO_PRODUCTS.filter(product => !existingArticles.has(product.article) && !existingNames.has(menuSearchText(product.name)));
+        if(!missing.length) return showMsg("Alle Arasco-Produkte sind bereits im Inventar.");
+        if(!confirm(`${missing.length} Arasco-Produkte mit Bestand 0 ins Inventar übernehmen? Bestehende Produkte werden nicht verändert.`)) return;
+        const batch = writeBatch(db);
+        for(const product of missing){
+          batch.set(doc(db,"inventory",`arasco-${product.article}`),{
+            name:product.name, article:product.article, supplier:"Arasco Deutschland GmbH",
+            category:"Sonstige",unit:"Stk",packSize:0,stock:0,minStock:0,lastPrice:0,barcode:"",
+            updatedAt:serverTimestamp()
+          });
+        }
+        await batch.commit();
+        await loadInventory();
+        await loadDashboard();
+        showMsg(`${missing.length} Arasco-Produkte wurden angelegt. Mengen, Barcode, Kategorie und Preise können jetzt bearbeitet werden.`);
+      }catch(err){ console.error(err); showMsg("Arasco-Produkte konnten nicht übernommen werden: " + err.message); }
+      finally{ button.disabled = false; }
     }
 
     function clearInventoryForm(){
@@ -6180,6 +6210,7 @@ bruchCache.sort((a, b) => {
     $("btnClearStaff").addEventListener("click", clearStaffForm);
 
     $("btnSaveInventory").addEventListener("click", saveInventory);
+    $("btnImportArascoInventory").addEventListener("click", importArascoInventory);
     $("btnClearInventory").addEventListener("click", clearInventoryForm);
     $("btnApplyUsage").addEventListener("click", applyInventoryUsage);
     $("inventorySearch").addEventListener("input", renderInventory);
