@@ -991,6 +991,7 @@
               <div class="row"><div><strong>Mitarbeiter-Status</strong><div class="tiny muted">Alle Mitarbeiter: grün = aktiv, grau = nicht eingestempelt</div></div><button id="btnReloadActiveClocks" class="ghost right" type="button">Aktualisieren</button></div>
               <div id="pushNotificationControls" class="hidden" style="margin-top:12px;padding:12px;border:1px solid #29435f;border-radius:14px;background:#0b1a2b">
                 <div class="row"><div><strong>Alarm-Benachrichtigungen</strong><div id="pushNotificationStatus" class="tiny muted">Noch nicht aktiviert.</div></div><button id="btnEnablePushNotifications" class="btn right" type="button">Benachrichtigungen aktivieren</button></div>
+                <div class="row" style="margin-top:8px"><button id="btnTestNotificationTone" class="ghost" type="button">Ton testen / aktivieren</button><span id="notificationToneStatus" class="tiny muted">Für Mitteilungen bei geöffneter App.</span></div>
               </div>
               <div class="divider"></div>
               <div id="activeTimeClockList" class="muted">Mitarbeiter werden geladen…</div>
@@ -1700,7 +1701,7 @@
         messagingRegistration = await navigator.serviceWorker.register("./firebase-messaging-sw.js");
         messaging = getMessaging(app);
         const permission = Notification.permission;
-        $("pushNotificationStatus").textContent = permission === "granted" ? "Aktiviert – Alarme kommen auch bei geschlossener App." : permission === "denied" ? "In den iPhone-Einstellungen blockiert." : "Noch nicht aktiviert.";
+        $("pushNotificationStatus").textContent = permission === "granted" ? "Push registriert. Mitteilungen außerhalb der App benötigen Serveraktivierung." : permission === "denied" ? "In den iPhone-Einstellungen blockiert." : "Noch nicht aktiviert.";
         $("btnEnablePushNotifications").textContent = permission === "granted" ? "Erneut registrieren" : "Benachrichtigungen aktivieren";
         onMessage(messaging, payload => {
         if(payload.data?.type === "announcement") return; // Firestore listener already alerts while the app is open.
@@ -1741,7 +1742,7 @@
           department:currentProfile.department || "", active:true,
           userAgent:navigator.userAgent, updatedAt:serverTimestamp()
         }, {merge:true});
-        $("pushNotificationStatus").textContent = "Aktiviert – Alarme kommen auch bei geschlossener App.";
+        $("pushNotificationStatus").textContent = "Push registriert. Mitteilungen außerhalb der App benötigen Serveraktivierung.";
         $("btnEnablePushNotifications").textContent = "Aktiv";
         notifyTeamEvent("MatteoTeam", "Benachrichtigungen und Ton sind aktiviert.", {force:true});
         showMsg("Benachrichtigungen wurden aktiviert.");
@@ -1755,22 +1756,22 @@
     }
 
     let notificationAudioContext = null;
-    function unlockNotificationAudio(){
+    async function unlockNotificationAudio(){
       try{
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if(!AudioCtx) return;
+        if(!AudioCtx) return false;
         if(!notificationAudioContext) notificationAudioContext = new AudioCtx();
-        if(notificationAudioContext.state === "suspended") notificationAudioContext.resume().catch(() => {});
-      }catch(err){ console.warn("Audio aktivieren", err); }
+        if(notificationAudioContext.state === "suspended") await notificationAudioContext.resume();
+        return notificationAudioContext.state === "running";
+      }catch(err){ console.warn("Audio aktivieren", err); return false; }
     }
     document.addEventListener("pointerdown", unlockNotificationAudio, {passive:true});
     document.addEventListener("touchstart", unlockNotificationAudio, {passive:true});
 
-    function playNotificationTone(){
+    async function playNotificationTone(){
       try{
-        unlockNotificationAudio();
+        if(!(await unlockNotificationAudio())) return false;
         const audio = notificationAudioContext;
-        if(!audio || audio.state !== "running") return;
         const gain = audio.createGain();
         gain.gain.setValueAtTime(.24, audio.currentTime);
         gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + .75);
@@ -1783,7 +1784,14 @@
         });
         gain.connect(audio.destination);
         navigator.vibrate?.([220,100,220]);
-      }catch(err){ console.warn("Benachrichtigungston", err); }
+        return true;
+      }catch(err){ console.warn("Benachrichtigungston", err); return false; }
+    }
+    async function testNotificationTone(){
+      const played = await playNotificationTone();
+      $("notificationToneStatus").textContent = played
+        ? "Ton abgespielt. Falls nichts zu hören ist: Medienlautstärke prüfen."
+        : "Ton blockiert. App öffnen, Taste erneut drücken und Lautstärke prüfen.";
     }
 
     async function notifyTeamEvent(title, body, options={}){
@@ -6442,6 +6450,7 @@ bruchCache.sort((a, b) => {
     $("timeClockAdminStaff").addEventListener("change", renderAdminTimeClockMonth);
     $("timeClockAdminMonth").addEventListener("change", renderAdminTimeClockMonth);
     $("btnEnablePushNotifications").addEventListener("click", enablePushNotifications);
+    $("btnTestNotificationTone").addEventListener("click", testNotificationTone);
     $("activeTimeClockList").addEventListener("click", event => {
       const button = event.target.closest("[data-force-clock-out-user]");
       if(button) forceClockOut(button.dataset.forceClockOutUser);
