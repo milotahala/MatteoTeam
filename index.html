@@ -1014,6 +1014,7 @@
                 <input id="timeClockAdminMonth" class="input" type="month" />
               </div>
               <button id="btnLoadAdminTimeClockMonth" class="ghost" type="button" style="width:100%;margin-top:8px">Monatsstunden anzeigen</button>
+              <div class="row" style="margin-top:8px"><button id="btnClockActualHours" class="ghost" type="button">Stempeluhr + Differenz</button><button id="btnClockPlannedHours" class="ghost" type="button">Stunden laut Plan</button></div>
               <button id="btnAddAdminTimeClock" class="btn" type="button" style="width:100%;margin-top:8px">Vergessene Stunden hinzufügen</button>
               <div class="row" style="margin:14px 0 8px"><strong>Gesamt</strong><span id="timeClockAdminMonthTotal" class="pill ok right">0:00 Std.</span></div>
               <div id="timeClockAdminMonthHistory" class="muted">Bitte Mitarbeiter auswählen.</div>
@@ -5837,15 +5838,20 @@ bruchCache.sort((a, b) => {
       return candidates.sort((a,b) => normalizedEmployeeIdentity(a.name || a.email).length - normalizedEmployeeIdentity(b.name || b.email).length);
     }
 
-    function timeClockMonthTable(rows, sickDays, allowEdit=false){
+    function timeClockMonthTable(rows, sickDays, allowEdit=false, plannedDays=null){
       const rowByDate = new Map(rows.map(row => [row.date, row]));
-      const dates = [...new Set([...rows.map(row => row.date), ...sickDays])].sort().reverse();
+      const dates = [...new Set([...rows.map(row => row.date), ...sickDays, ...Object.keys(plannedDays || {})])].sort().reverse();
       if(!dates.length) return `<div class="muted">Keine Buchungen in diesem Monat.</div>`;
       const actionHead = allowEdit ? `<th>Aktion</th>` : "";
+      const comparisonHead = plannedDays ? `<th>Plan</th><th>Differenz</th>` : "";
       const body = dates.map(date => {
         const row = rowByDate.get(date);
+        const planned = plannedDays?.[date];
+        const plannedMinutes = planned?.minutes || 0;
         if(!row){
-          return `<tr class="clockSickRow"><td class="clockDateCell">${htmlEscape(formatClockDate(date))}</td><td colspan="${allowEdit ? 6 : 5}"><span class="pill danger">Krank</span> Krank gemeldet</td></tr>`;
+          if(sickDays.includes(date)) return `<tr class="clockSickRow"><td class="clockDateCell">${htmlEscape(formatClockDate(date))}</td><td colspan="${(plannedDays ? 7 : 5) + (allowEdit ? 1 : 0)}"><span class="pill danger">Krank</span> Krank gemeldet</td></tr>`;
+          const diff = date < localDateKey() ? `−${formatMinutes(plannedMinutes)}` : "Offen";
+          return `<tr><td class="clockDateCell">${htmlEscape(formatClockDate(date))}</td><td colspan="5">Keine Buchung</td><td>${htmlEscape(planned.label)} · ${formatMinutes(plannedMinutes)}</td><td>${diff}</td>${allowEdit ? "<td>–</td>" : ""}</tr>`;
         }
         const sessions = (row.sessions || []).filter(session => session.in);
         const gross = sessionsMinutes(sessions);
@@ -5856,10 +5862,34 @@ bruchCache.sort((a, b) => {
         const end = lastSession?.out ? formatClockTime(lastSession.out) : "…";
         const bookings = sessions.map(session => `${formatClockTime(session.in)}–${session.out ? formatClockTime(session.out) : "…"}`).join(" · ") || "Keine Zeiten";
         const sickBadge = sickDays.includes(row.date) ? ` <span class="pill danger">Krank</span>` : "";
+        const difference = net - plannedMinutes;
+        const comparison = plannedDays ? `<td>${planned ? `${htmlEscape(planned.label)} · ${formatMinutes(plannedMinutes)}` : "Kein Plan"}</td><td>${sessions.some(session => !session.out) ? "Läuft" : `${difference > 0 ? "+" : difference < 0 ? "−" : "±"}${formatMinutes(Math.abs(difference))}`}</td>` : "";
         const action = allowEdit ? `<td><button class="smallBtn smallBlue" type="button" data-clock-edit="${htmlEscape(row.id)}">Bearbeiten</button></td>` : "";
-        return `<tr><td class="clockDateCell">${htmlEscape(formatClockDate(row.date))}${sickBadge}</td><td>${htmlEscape(start)}</td><td>${htmlEscape(end)}</td><td class="clockBookings">${htmlEscape(bookings)}</td><td>${pause ? `${pause} Min.` : "–"}</td><td class="clockNetCell">${htmlEscape(formatMinutes(net))}</td>${action}</tr>`;
+        return `<tr><td class="clockDateCell">${htmlEscape(formatClockDate(row.date))}${sickBadge}</td><td>${htmlEscape(start)}</td><td>${htmlEscape(end)}</td><td class="clockBookings">${htmlEscape(bookings)}</td><td>${pause ? `${pause} Min.` : "–"}</td><td class="clockNetCell">${htmlEscape(formatMinutes(net))}</td>${comparison}${action}</tr>`;
       }).join("");
-      return `<div class="clockTableHint">↔ Tabelle nach links oder rechts schieben</div><div class="clockMonthTableWrap"><table class="clockMonthTable"><thead><tr><th>Datum</th><th>Arbeitsbeginn</th><th>Arbeitsende</th><th>Buchungen</th><th>Pause</th><th>Arbeitszeit</th>${actionHead}</tr></thead><tbody>${body}</tbody></table></div>`;
+      return `<div class="clockTableHint">↔ Tabelle nach links oder rechts schieben</div><div class="clockMonthTableWrap"><table class="clockMonthTable"><thead><tr><th>Datum</th><th>Arbeitsbeginn</th><th>Arbeitsende</th><th>Buchungen</th><th>Pause</th><th>Arbeitszeit</th>${comparisonHead}${actionHead}</tr></thead><tbody>${body}</tbody></table></div>`;
+    }
+
+    async function plannedClockDays(userId, month){
+      const first = `${month}-01`;
+      const last = `${month}-${String(new Date(Number(month.slice(0,4)), Number(month.slice(5,7)), 0).getDate()).padStart(2,"0")}`;
+      const weeks = new Set();
+      for(let date = first; date <= last; date = addDays(date, 1)) weeks.add(weekKeyFrom(date));
+      const snapshots = await Promise.all([...weeks].map(week => getDoc(doc(db, "weeklyPlans", week))));
+      const days = {};
+      snapshots.forEach((snapshot, index) => {
+        const week = [...weeks][index];
+        const entries = snapshot.exists() ? snapshot.data().entries?.[userId] || {} : {};
+        for(let i=0;i<7;i++){
+          const date = addDays(week, i);
+          if(date < first || date > last) continue;
+          const raw = safe(entries[i]);
+          if(!raw) continue;
+          const parsed = parseShiftHours(raw);
+          if(parsed.total > 0) days[date] = {label:raw, minutes:Math.round(parsed.total * 60)};
+        }
+      });
+      return days;
     }
 
     function renderActiveTimeClocks(){
@@ -5923,16 +5953,33 @@ bruchCache.sort((a, b) => {
       });
     }
 
-    function renderAdminTimeClockMonth(){
+    let adminClockDisplayMode = "actual";
+    async function renderAdminTimeClockMonth(){
       if(!isAdmin()) return;
       const userId = $("timeClockAdminStaff").value;
       const month = $("timeClockAdminMonth").value || localDateKey().slice(0,7);
       if(!userId) return;
+      const target = $("timeClockAdminMonthHistory");
+      try{
+        const plannedDays = await plannedClockDays(userId, month);
+        if(userId !== $("timeClockAdminStaff").value || month !== $("timeClockAdminMonth").value) return;
       const rows = activeTimeClockCache.filter(row => row.userId === userId && safe(row.date).startsWith(month)).sort((a,b) => safe(b.date).localeCompare(safe(a.date)));
       const total = rows.reduce((sum,row) => sum + netWorkMinutes(row.sessions || []), 0);
       $("timeClockAdminMonthTotal").textContent = formatMinutes(total);
       const sickDays = sickDaysForUser(userId, month);
-      $("timeClockAdminMonthHistory").innerHTML = timeClockMonthTable(rows, sickDays, true);
+      const plannedTotal = Object.entries(plannedDays).reduce((sum,[date,shift]) => sum + (sickDays.includes(date) ? 0 : shift.minutes), 0);
+      if(adminClockDisplayMode === "plan"){
+        $("timeClockAdminMonthTotal").textContent = formatMinutes(plannedTotal);
+        const planRows = Object.entries(plannedDays).sort(([a],[b]) => b.localeCompare(a)).map(([date,shift]) => `<tr><td>${htmlEscape(formatClockDate(date))}</td><td>${htmlEscape(shift.label)}</td><td>${formatMinutes(shift.minutes)}</td></tr>`).join("");
+        target.innerHTML = `<div class="clockMonthTableWrap"><table class="clockMonthTable"><thead><tr><th>Datum</th><th>Schicht laut Plan</th><th>Stunden laut Plan</th></tr></thead><tbody>${planRows || '<tr><td colspan="3">Kein Dienst geplant.</td></tr>'}</tbody></table></div>`;
+        return;
+      }
+      const finishedRows = rows.filter(row => !(row.sessions || []).some(session => session.in && !session.out));
+      const closedTotal = finishedRows.reduce((sum,row) => sum + netWorkMinutes(row.sessions || []), 0);
+      const elapsedPlan = Object.entries(plannedDays).reduce((sum,[date,shift]) => sum + (date < localDateKey() && !sickDays.includes(date) || finishedRows.some(row => row.date === date) ? shift.minutes : 0), 0);
+      const diff = closedTotal - elapsedPlan;
+      target.innerHTML = `<div class="item" style="margin-bottom:10px"><strong>Wochenplan (Monat): ${formatMinutes(plannedTotal)}</strong> · Stempeluhr (abgeschlossen): ${formatMinutes(closedTotal)} · Differenz bisher: ${diff > 0 ? "+" : diff < 0 ? "−" : "±"}${formatMinutes(Math.abs(diff))}</div>` + timeClockMonthTable(rows, sickDays, true, plannedDays);
+      }catch(err){ console.error(err); target.textContent = "Wochenplan-Vergleich konnte nicht geladen werden: " + err.message; }
     }
 
     function formatClockDate(date){
@@ -6536,6 +6583,8 @@ bruchCache.sort((a, b) => {
     $("btnReloadActiveClocks").addEventListener("click", renderActiveTimeClocks);
     $("btnRefreshTimeClockQr").addEventListener("click", () => refreshTimeClockQr(true));
     $("btnLoadAdminTimeClockMonth").addEventListener("click", renderAdminTimeClockMonth);
+    $("btnClockActualHours").addEventListener("click", () => { adminClockDisplayMode = "actual"; renderAdminTimeClockMonth(); });
+    $("btnClockPlannedHours").addEventListener("click", () => { adminClockDisplayMode = "plan"; renderAdminTimeClockMonth(); });
     $("btnAddAdminTimeClock").addEventListener("click", () => saveAdminClockTimes());
     $("timeClockAdminStaff").addEventListener("change", renderAdminTimeClockMonth);
     $("timeClockAdminMonth").addEventListener("change", renderAdminTimeClockMonth);
