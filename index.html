@@ -490,6 +490,7 @@
     .tableKeypad{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:-3px 0 13px}
     .tableKeypad button{min-height:53px;padding:4px;border:1px solid #315574;border-radius:12px;background:#17344f;color:#fff;font-size:21px;font-weight:850;cursor:pointer}
     .tableKeypad button:active{background:#20b979;color:#052318}
+    .tableKeypad button:disabled{opacity:.28;cursor:not-allowed}
     .tableKeypad .keyDelete{background:#312535;color:#ffb4b4;font-size:16px}
     .tableKeypad .keyClear{background:#2a3245;color:#e5edfc;font-size:14px}
     .orderPickerBack{margin-bottom:9px}
@@ -4415,11 +4416,30 @@ bruchCache.sort((a, b) => {
     }
 
     function canHandleTable(table, order=null){
-      if(isAdmin()) return true;
+      if(isAdmin()){
+        if(selectedOrderWaiterFilter === "all") return true;
+        if(selectedOrderWaiterFilter === "none") return false;
+        const assignment = assignmentFor(table);
+        if(assignment) return assignment.waiterId === selectedOrderWaiterFilter;
+        if(order?.waiterId) return order.waiterId === selectedOrderWaiterFilter;
+        return Boolean(allTablesPermission(selectedOrderWaiterFilter));
+      }
       const assignment = assignmentFor(table);
       if(assignment) return assignment.waiterId === currentUser?.uid;
       if(order?.waiterId && order.waiterId !== currentUser?.uid) return false;
       return assignment?.waiterId === currentUser?.uid || (!assignment && Boolean(allTablesPermission(currentUser?.uid)));
+    }
+
+    function updateTableKeypad(){
+      const waiterId = isAdmin() ? selectedOrderWaiterFilter : currentUser?.uid;
+      const unrestricted = isAdmin() && waiterId === "all" || Boolean(allTablesPermission(waiterId));
+      const bases = tableAssignmentCache.filter(row => row.date === localDateKey() && !row.allTables && row.waiterId === waiterId)
+        .flatMap(row => row.table.replace(/(\d)\.(?=\d)/g,"$1,").split(",").map(baseTable));
+      const typed = baseTable($("customTableName").value);
+      $("tableKeypad").querySelectorAll("[data-table-key]").forEach(button => {
+        const key = button.dataset.tableKey;
+        button.disabled = key !== "delete" && key !== "clear" && !unrestricted && !bases.some(base => base.startsWith(typed + key));
+      });
     }
 
     function renderTables(){
@@ -4436,6 +4456,7 @@ bruchCache.sort((a, b) => {
       }
       tablePanel?.classList.remove("hidden");
       tablePanel?.classList.toggle("hidden", !isAdmin() && Boolean(selectedTable));
+      updateTableKeypad();
       if(isAdmin()){
         const waiter = staffCache.find(person => (person.uid || person.id) === selectedOrderWaiterFilter);
         $("tableOpenTitle").textContent = selectedOrderWaiterFilter === "all" ? "Alle offenen Tische" : `${waiter?.name || "Kellner"} · Tische`;
@@ -6495,17 +6516,25 @@ bruchCache.sort((a, b) => {
       const tableName = safe($("customTableName").value);
       if(isAdmin() && selectedOrderWaiterFilter === "none") return showMsg("Bitte zuerst einen Kellner auswählen.");
       if(!tableName) return showMsg("Bitte Tisch eingeben, z. B. D1.");
+      if(!validOrderTable(tableName)) return showMsg("Bitte einen gültigen Tisch eingeben, z. B. A oder 80.");
+      const existing = orderCache.find(row => normalizedTable(row.table) === normalizedTable(tableName) && row.status !== "closed");
+      if(!canHandleTable(tableName, existing)) return showMsg("Dieser Tisch ist diesem Kellner nicht zugeordnet.");
       openTableOrSections(tableName);
       $("customTableName").value = "";
+      updateTableKeypad();
     }
     $("btnOpenCustomTable").addEventListener("click", openCustomTable);
+    $("customTableName").addEventListener("input", updateTableKeypad);
     $("tableKeypad").addEventListener("click", event => {
-      const key = event.target.closest("[data-table-key]")?.dataset.tableKey;
+      const button = event.target.closest("[data-table-key]");
+      if(button?.disabled) return;
+      const key = button?.dataset.tableKey;
       if(!key) return;
       const input = $("customTableName");
       if(key === "clear") input.value = "";
       else if(key === "delete") input.value = input.value.slice(0,-1);
       else input.value = (input.value + key).slice(0,30);
+      updateTableKeypad();
     });
     function backToOrderTables(){
       const saved = orderCache.find(row => row.id === currentOrderId);
