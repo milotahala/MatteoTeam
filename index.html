@@ -498,8 +498,11 @@
     .tableBtn{min-width:120px;min-height:72px;border-radius:15px;border:1px solid #2a435f;background:#12243a;color:#fff;cursor:pointer;padding:9px;font-weight:900}
     .tableBtn small{display:block;margin-top:4px;color:var(--muted);font-weight:700}
     .tableBtn.open{background:rgba(245,158,11,.14);border-color:#f59e0b}
-    .tableBtn.selected{background:linear-gradient(135deg,#138452,#22b873);border-color:transparent;color:#04150e;box-shadow:0 8px 22px rgba(34,184,115,.22)}
-    .tableBtn.selected small{color:#083d28}
+    .tableBtn.tableEmpty{background:#4a1820;border-color:#ef4444;color:#fff}
+    .tableBtn.tablePending{background:#6b4a0b;border-color:#fbbf24;color:#fff}
+    .tableBtn.tableAccepted{background:#104c36;border-color:#2dd486;color:#fff}
+    .tableBtn.tableEmpty small,.tableBtn.tablePending small,.tableBtn.tableAccepted small{color:#f2f7f5}
+    .tableBtn.selected{outline:3px solid #fff;outline-offset:2px;box-shadow:0 8px 22px rgba(0,0,0,.3)}
     .orderPanel{position:sticky;top:98px;padding:17px;border:1px solid var(--line);border-radius:18px;background:#0a192b}
     .orderMenuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:520px;overflow:auto;padding-right:3px}
     .orderMenuItem{border:1px solid #29435f;background:#102239;color:#fff;border-radius:13px;padding:12px;text-align:left;cursor:pointer}
@@ -1650,6 +1653,7 @@
     let tableAssignmentUnsubscribe = null;
     let customerOrderTimer = null;
     let customerOrderAlertedIds = new Set();
+    let customerServiceNotifiedIds = new Set();
     let selectedTable = "";
     let selectedOrderWaiterFilter = "none";
     let adminViewedTable = "";
@@ -4252,8 +4256,9 @@ bruchCache.sort((a, b) => {
 
     function renderCustomerOrders(){
       const selectedSections = new Map([...$("customerOrderList").querySelectorAll("[data-customer-section]")].map(select=>[select.dataset.customerSection,select.value]));
-      const pending = customerOrderCache.filter(order => order.status === "pending" && canHandleCustomerOrder(order));
+      const pending = customerOrderCache.filter(order => order.status === "pending" && canHandleCustomerOrder(order) && (order.source !== "service-qr" || customerOrderAgeSeconds(order) < 600));
       const overdue = pending.filter(customerOrderIsOverdue);
+      renderTables();
       const customerOrderBox = $("customerOrderBox");
       if(customerOrderBox){
         customerOrderBox.classList.toggle("hidden", pending.length === 0);
@@ -4269,6 +4274,10 @@ bruchCache.sort((a, b) => {
       });
       $("customerOrderList").innerHTML = pending.length ? pending.map(order => {
         const assignment = assignmentFor(order.table);
+        if(order.source === "service-qr"){
+          const request = order.requestType === "bill" ? "🧾 Rechnung bitte" : "🙋 Bedienung rufen";
+          return `<article class="item" data-customer-order="${htmlEscape(order.id)}" style="margin-bottom:9px"><div class="row"><strong>Tisch ${htmlEscape(order.table || "-")} · ${request}</strong><span class="${customerOrderIsOverdue(order) ? "urgentBadge" : "pill warn"} right">${customerOrderIsOverdue(order) ? "Admin-Alarm" : "Neue Anfrage"}</span></div><div class="tiny muted" style="margin-top:7px">Bedienung: ${htmlEscape(assignment?.waiterName || "noch nicht zugeordnet")} · <span data-customer-time>${Math.floor(customerOrderAgeSeconds(order)/60)} Min. her</span></div></article>`;
+        }
         const lines = (order.items || []).map(item => `${Number(item.qty || 0)}× ${htmlEscape(item.name || "-")}`).join(" · ");
         const seconds = customerOrderAgeSeconds(order);
         const late = seconds >= 120;
@@ -4282,12 +4291,12 @@ bruchCache.sort((a, b) => {
         if(customerOrderAlertedIds.has(order.id)) return;
         customerOrderAlertedIds.add(order.id);
         const assignment = assignmentFor(order.table);
-        playAdminAlert("QR-Bestellung nicht bestätigt", `${assignment?.waiterName || "Bedienung"}: Tisch ${order.table} wartet länger als 2 Minuten.`);
+        playAdminAlert(order.source === "service-qr" ? "Tischruf" : "QR-Bestellung nicht bestätigt", `${assignment?.waiterName || "Bedienung"}: Tisch ${order.table} wartet länger als 2 Minuten.`);
       });
     }
 
     function tickCustomerOrders(){
-      const visible = customerOrderCache.filter(order => order.status === "pending" && canHandleCustomerOrder(order));
+      const visible = customerOrderCache.filter(order => order.status === "pending" && canHandleCustomerOrder(order) && (order.source !== "service-qr" || customerOrderAgeSeconds(order) < 600));
       const cards = [...$("customerOrderList").querySelectorAll("[data-customer-order]")];
       if(cards.length !== visible.length || cards.some((card,index) => card.dataset.customerOrder !== visible[index].id)){
         renderCustomerOrders();
@@ -4295,6 +4304,7 @@ bruchCache.sort((a, b) => {
       }
       cards.forEach((card,index) => {
         const seconds = customerOrderAgeSeconds(visible[index]);
+        if(visible[index].source === "service-qr") { card.querySelector("[data-customer-time]").textContent = `${Math.floor(seconds/60)} Min. her`; return; }
         const remaining = Math.max(0,120-seconds);
         card.querySelector("[data-customer-time]").textContent = seconds >= 120
           ? `Seit ${Math.floor(seconds / 60)} Min. unbestätigt`
@@ -4328,6 +4338,11 @@ bruchCache.sort((a, b) => {
       customerOrderUnsubscribe = onSnapshot(collection(db,"customerOrders"),snapshot => {
         customerOrderCache = snapshot.docs.map(item => ({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
         renderCustomerOrders();
+        customerOrderCache.filter(row => row.source === "service-qr" && row.status === "pending" && customerOrderAgeSeconds(row) < 600 && assignmentFor(row.table)?.waiterId === currentUser?.uid).forEach(row => {
+          if(customerServiceNotifiedIds.has(row.id)) return;
+          customerServiceNotifiedIds.add(row.id);
+          notifyTeamEvent(`Tisch ${row.table}`, row.requestType === "bill" ? "Rechnung bitte" : "Bedienung wird gerufen", {tag:`tischruf-${row.id}`,url:"./#bestellung"});
+        });
       },error => {console.error("QR-Bestellungen",error);showMsg("QR-Bestellungen konnten nicht geladen werden: "+error.message)});
       customerOrderTimer = setInterval(tickCustomerOrders, 1000);
     }
@@ -4426,16 +4441,22 @@ bruchCache.sort((a, b) => {
       }
       const assignments = isAdmin() && selectedOrderWaiterFilter !== "all" ? tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === selectedOrderWaiterFilter && !row.allTables).flatMap(row => row.table.replace(/(\d)\.(?=\d)/g,"$1,").split(",").map(table => ({...row,table:normalizedTable(table)}))) : [];
       const openOrders = orderCache.filter(o => o.status !== "closed" && canHandleTable(o.table, o) && (!isAdmin() || selectedOrderWaiterFilter === "all" || o.waiterId === selectedOrderWaiterFilter || assignments.some(row => normalizedTable(row.table) === baseTable(o.table))));
+      const pendingCustomerTables = new Set(customerOrderCache.filter(row => row.status === "pending" && row.source !== "service-qr").map(row => baseTable(row.table)));
       const openByTable = new Map(openOrders.map(o => [normalizedTable(o.table), o]));
       const tableNames = new Map(openOrders.map(o => [normalizedTable(o.table), safe(o.table)]));
+      customerOrderCache.filter(row => row.status === "pending" && row.source !== "service-qr" && canHandleTable(row.table) && (!isAdmin() || selectedOrderWaiterFilter === "all" || assignmentFor(row.table)?.waiterId === selectedOrderWaiterFilter)).forEach(row => {const base=baseTable(row.table);if(base&&!tableNames.has(base))tableNames.set(base,base)});
       if(!isAdmin()) tableAssignmentCache.filter(row => row.date === localDateKey() && row.waiterId === currentUser?.uid && !row.allTables).forEach(row => { const base=normalizedTable(row.table); if(base && !tableNames.has(base)) tableNames.set(base,base); });
+      tableAssignmentCache.filter(row => row.date === localDateKey() && !row.allTables && (isAdmin() ? selectedOrderWaiterFilter !== "all" && row.waiterId === selectedOrderWaiterFilter : row.waiterId === currentUser?.uid)).forEach(row => row.table.replace(/(\d)\.(?=\d)/g,"$1,").split(",").forEach(name => {const base=baseTable(name);if(base && !tableNames.has(base))tableNames.set(base,base)}));
       $("openTablesBadge").textContent = `${openByTable.size} offen`;
       $("tableGrid").innerHTML = tableNames.size ? [...tableNames.values()]
         .sort((a,b) => a.localeCompare(b, "de", {numeric:true}))
         .map(tableName => {
           const order = openByTable.get(normalizedTable(tableName));
-          const classes = ["tableBtn", "open", selectedTable.toUpperCase() === tableName.toUpperCase() ? "selected" : ""].filter(Boolean).join(" ");
-          return `<button class="${classes}" type="button" data-table-name="${htmlEscape(tableName)}">${htmlEscape(tableName)}<small>${order ? `${htmlEscape(orderStatusLabel(order.status))} · ${euro(order.total)}` : "Bereiche öffnen"}</small></button>`;
+          const waiting = pendingCustomerTables.has(baseTable(tableName));
+          const color = waiting ? "tablePending" : order ? "tableAccepted" : "tableEmpty";
+          const label = waiting ? "QR-Bestellung wartet" : order ? `${htmlEscape(orderStatusLabel(order.status))} · ${euro(order.total)}` : "Noch keine Bestellung";
+          const classes = ["tableBtn", color, selectedTable.toUpperCase() === tableName.toUpperCase() ? "selected" : ""].filter(Boolean).join(" ");
+          return `<button class="${classes}" type="button" data-table-name="${htmlEscape(tableName)}">${htmlEscape(tableName)}<small>${label}</small></button>`;
         }).join("") : `<div class="tiny muted">Keine offenen Tische.</div>`;
       if(expandedBaseTable && canHandleTable(expandedBaseTable)) $("tableGrid").innerHTML += `<div class="item" style="flex:0 0 100%"><strong>Tisch ${htmlEscape(expandedBaseTable)} · Bereich wählen</strong><div class="waiterTableChips" style="margin-top:10px">${tableSections(expandedBaseTable).map(section=>`<button class="waiterTableChip" type="button" data-table-section="${htmlEscape(section)}">${htmlEscape(section)}</button>`).join("")}</div></div>`;
     }
@@ -6711,6 +6732,7 @@ bruchCache.sort((a, b) => {
         if(tableAssignmentUnsubscribe){ tableAssignmentUnsubscribe(); tableAssignmentUnsubscribe = null; }
         if(customerOrderTimer){ clearInterval(customerOrderTimer); customerOrderTimer = null; }
         customerOrderAlertedIds.clear();
+        customerServiceNotifiedIds.clear();
         closeVacationNotification();
         vacationNotificationReady = false;
         vacationPopupShown = false;
