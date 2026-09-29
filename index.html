@@ -4416,14 +4416,7 @@ bruchCache.sort((a, b) => {
     }
 
     function canHandleTable(table, order=null){
-      if(isAdmin()){
-        if(selectedOrderWaiterFilter === "all") return true;
-        if(selectedOrderWaiterFilter === "none") return false;
-        const assignment = assignmentFor(table);
-        if(assignment) return assignment.waiterId === selectedOrderWaiterFilter;
-        if(order?.waiterId) return order.waiterId === selectedOrderWaiterFilter;
-        return Boolean(allTablesPermission(selectedOrderWaiterFilter));
-      }
+      if(isAdmin()) return true;
       const assignment = assignmentFor(table);
       if(assignment) return assignment.waiterId === currentUser?.uid;
       if(order?.waiterId && order.waiterId !== currentUser?.uid) return false;
@@ -4432,7 +4425,7 @@ bruchCache.sort((a, b) => {
 
     function updateTableKeypad(){
       const waiterId = isAdmin() ? selectedOrderWaiterFilter : currentUser?.uid;
-      const unrestricted = isAdmin() && waiterId === "all" || Boolean(allTablesPermission(waiterId));
+      const unrestricted = isAdmin() || Boolean(allTablesPermission(waiterId));
       const bases = tableAssignmentCache.filter(row => row.date === localDateKey() && !row.allTables && row.waiterId === waiterId)
         .flatMap(row => row.table.replace(/(\d)\.(?=\d)/g,"$1,").split(",").map(baseTable));
       const typed = baseTable($("customTableName").value);
@@ -6518,7 +6511,7 @@ bruchCache.sort((a, b) => {
       if(!tableName) return showMsg("Bitte Tisch eingeben, z. B. D1.");
       if(!validOrderTable(tableName)) return showMsg("Bitte einen gültigen Tisch eingeben, z. B. A oder 80.");
       const existing = orderCache.find(row => normalizedTable(row.table) === normalizedTable(tableName) && row.status !== "closed");
-      if(!canHandleTable(tableName, existing)) return showMsg("Dieser Tisch ist diesem Kellner nicht zugeordnet.");
+      if(!canHandleTable(tableName, existing)) return showMsg("Dieser Tisch ist dir nicht zugeordnet.");
       openTableOrSections(tableName);
       $("customTableName").value = "";
       updateTableKeypad();
