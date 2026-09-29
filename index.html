@@ -1015,6 +1015,8 @@
               </div>
               <button id="btnLoadAdminTimeClockMonth" class="ghost" type="button" style="width:100%;margin-top:8px">Monatsstunden anzeigen</button>
               <div class="row" style="margin-top:8px"><button id="btnClockActualHours" class="ghost" type="button">Stempeluhr + Differenz</button><button id="btnClockPlannedHours" class="ghost" type="button">Stunden laut Plan</button></div>
+              <button id="btnPrintEmployeeClock" class="ghost" type="button" style="width:100%;margin-top:8px">Stunden dieses Mitarbeiters drucken / PDF</button>
+              <button id="btnShareEmployeeClock" class="ghost" type="button" style="width:100%;margin-top:8px">Stunden dieses Mitarbeiters senden</button>
               <button id="btnAddAdminTimeClock" class="btn" type="button" style="width:100%;margin-top:8px">Vergessene Stunden hinzufügen</button>
               <div class="row" style="margin:14px 0 8px"><strong>Gesamt</strong><span id="timeClockAdminMonthTotal" class="pill ok right">0:00 Std.</span></div>
               <div id="timeClockAdminMonthHistory" class="muted">Bitte Mitarbeiter auswählen.</div>
@@ -5954,16 +5956,19 @@ bruchCache.sort((a, b) => {
     }
 
     let adminClockDisplayMode = "actual";
+    let adminClockShareData = null;
     async function renderAdminTimeClockMonth(){
       if(!isAdmin()) return;
       const userId = $("timeClockAdminStaff").value;
       const month = $("timeClockAdminMonth").value || localDateKey().slice(0,7);
       if(!userId) return;
       const target = $("timeClockAdminMonthHistory");
+      adminClockShareData = null;
       try{
         const plannedDays = await plannedClockDays(userId, month);
         if(userId !== $("timeClockAdminStaff").value || month !== $("timeClockAdminMonth").value) return;
       const rows = activeTimeClockCache.filter(row => row.userId === userId && safe(row.date).startsWith(month)).sort((a,b) => safe(b.date).localeCompare(safe(a.date)));
+      adminClockShareData = {userId, month, plannedDays, rows};
       const total = rows.reduce((sum,row) => sum + netWorkMinutes(row.sessions || []), 0);
       $("timeClockAdminMonthTotal").textContent = formatMinutes(total);
       const sickDays = sickDaysForUser(userId, month);
@@ -5980,6 +5985,71 @@ bruchCache.sort((a, b) => {
       const diff = closedTotal - elapsedPlan;
       target.innerHTML = `<div class="item" style="margin-bottom:10px"><strong>Wochenplan (Monat): ${formatMinutes(plannedTotal)}</strong> · Stempeluhr (abgeschlossen): ${formatMinutes(closedTotal)} · Differenz bisher: ${diff > 0 ? "+" : diff < 0 ? "−" : "±"}${formatMinutes(Math.abs(diff))}</div>` + timeClockMonthTable(rows, sickDays, true, plannedDays);
       }catch(err){ console.error(err); target.textContent = "Wochenplan-Vergleich konnte nicht geladen werden: " + err.message; }
+    }
+
+    async function printEmployeeClock(){
+      if(!isAdmin()) return;
+      const userId = $("timeClockAdminStaff").value;
+      const month = $("timeClockAdminMonth").value;
+      const staff = staffCache.find(item => item.id === userId);
+      if(!staff || !month) return showMsg("Bitte Mitarbeiter und Monat auswählen.");
+      const mode = adminClockDisplayMode;
+      const preview = window.open("", "_blank");
+      if(!preview) return showMsg("Druckvorschau wurde blockiert. Bitte Pop-ups für MatteoTeam erlauben.");
+      preview.document.write("<p style='font-family:Arial'>Druckvorschau wird geladen…</p>");
+      try{
+        const planned = await plannedClockDays(userId, month);
+        const rows = activeTimeClockCache.filter(row => row.userId === userId && safe(row.date).startsWith(month)).sort((a,b) => safe(b.date).localeCompare(safe(a.date)));
+        const sickDays = sickDaysForUser(userId, month);
+        const plannedTotal = Object.entries(planned).reduce((sum,[date,shift]) => sum + (sickDays.includes(date) ? 0 : shift.minutes), 0);
+        const actualTotal = rows.reduce((sum,row) => sum + netWorkMinutes(row.sessions || []), 0);
+        const planRows = Object.entries(planned).sort(([a],[b]) => b.localeCompare(a)).map(([date,shift]) => `<tr><td>${htmlEscape(formatClockDate(date))}</td><td>${htmlEscape(shift.label)}</td><td>${formatMinutes(shift.minutes)}</td></tr>`).join("");
+        const table = mode === "plan" ? `<table><thead><tr><th>Datum</th><th>Schicht laut Plan</th><th>Stunden laut Plan</th></tr></thead><tbody>${planRows || '<tr><td colspan="3">Kein Dienst geplant.</td></tr>'}</tbody></table>` : timeClockMonthTable(rows, sickDays, false, planned);
+        const summary = mode === "plan" ? `Stunden laut Plan: ${formatMinutes(plannedTotal)}` : `Stempeluhr: ${formatMinutes(actualTotal)} · Plan: ${formatMinutes(plannedTotal)}`;
+        preview.document.open();
+        preview.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stunden ${htmlEscape(staff.name || "Mitarbeiter")} ${htmlEscape(month)}</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#111;margin:0}.toolbar{padding:12px;background:#eef2f5;display:flex;gap:8px}.toolbar button{padding:10px 14px;border:1px solid #aaa;border-radius:6px;background:white;font-size:15px}.sheet{padding:10mm}h1{font-size:20px;margin:0 0 6px}.meta{font-size:13px;line-height:1.5;margin-bottom:14px}.clockMonthTableWrap{overflow:visible}.clockTableHint{display:none}table{border-collapse:collapse;width:100%;font-size:10px}th,td{border:1px solid #888;padding:5px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eee}tr{break-inside:avoid}@media print{.toolbar{display:none}.sheet{padding:0}}</style></head><body><div class="toolbar"><button onclick="window.print()">Drucken / Als PDF speichern</button><button onclick="window.close()">Schließen</button></div><div class="sheet"><h1>Pizzeria Ristorante Matteo GmbH · ${mode === "plan" ? "Stunden laut Plan" : "Stempeluhr und Wochenplan"}</h1><div class="meta"><strong>${htmlEscape(staff.name || staff.email || "Mitarbeiter")}</strong><br>Monat: ${htmlEscape(month)}<br>${htmlEscape(summary)}</div>${table}</div></body></html>`);
+        preview.document.close();
+      }catch(err){
+        console.error(err);
+        preview.close();
+        showMsg("Stunden konnten nicht für den Druck geladen werden: " + err.message);
+      }
+    }
+
+    async function shareEmployeeClock(){
+      if(!isAdmin()) return;
+      const userId = $("timeClockAdminStaff").value;
+      const month = $("timeClockAdminMonth").value;
+      const staff = staffCache.find(item => item.id === userId);
+      if(!staff || !month) return showMsg("Bitte Mitarbeiter und Monat auswählen.");
+      try{
+        if(adminClockShareData?.userId !== userId || adminClockShareData?.month !== month) return showMsg("Bitte zuerst Monatsstunden anzeigen und dann erneut Senden drücken.");
+        const planned = adminClockShareData.plannedDays;
+        const rows = [...adminClockShareData.rows].sort((a,b) => safe(a.date).localeCompare(safe(b.date)));
+        const title = `Stunden ${staff.name || staff.email} · ${month}`;
+        let lines;
+        if(adminClockDisplayMode === "plan"){
+          lines = Object.entries(planned).sort(([a],[b]) => a.localeCompare(b)).map(([date,shift]) => `${date}: ${shift.label} · ${formatMinutes(shift.minutes)}`);
+          const total = Object.values(planned).reduce((sum,shift) => sum + shift.minutes, 0);
+          lines.push(`Gesamt laut Plan: ${formatMinutes(total)}`);
+        }else{
+          lines = rows.map(row => {
+            const sessions = (row.sessions || []).filter(session => session.in);
+            const times = sessions.map(session => `${formatClockTime(session.in)}–${session.out ? formatClockTime(session.out) : "läuft"}`).join(", ");
+            const net = netWorkMinutes(sessions);
+            const scheduled = planned[row.date]?.minutes || 0;
+            const delta = net - scheduled;
+            return `${row.date}: ${times} · ${formatMinutes(net)} · Plan ${planned[row.date]?.label || "–"}${sessions.some(session => !session.out) ? "" : ` · Differenz ${delta > 0 ? "+" : delta < 0 ? "−" : "±"}${formatMinutes(Math.abs(delta))}`}`;
+          });
+          lines.push(`Gesamt Stempeluhr: ${formatMinutes(rows.reduce((sum,row) => sum + netWorkMinutes(row.sessions || []), 0))}`);
+        }
+        const text = `${title}\nPizzeria Ristorante Matteo GmbH\n\n${lines.join("\n")}`;
+        if(navigator.share) await navigator.share({title, text});
+        else if(navigator.clipboard?.writeText){ await navigator.clipboard.writeText(text); showMsg("Stunden kopiert. Du kannst sie jetzt in WhatsApp oder E-Mail einfügen."); }
+        else showMsg("Senden wird von diesem Gerät nicht unterstützt. Bitte Drucken / PDF verwenden.");
+      }catch(err){
+        if(err.name !== "AbortError") { console.error(err); showMsg("Stunden konnten nicht gesendet werden: " + err.message); }
+      }
     }
 
     function formatClockDate(date){
@@ -6585,6 +6655,8 @@ bruchCache.sort((a, b) => {
     $("btnLoadAdminTimeClockMonth").addEventListener("click", renderAdminTimeClockMonth);
     $("btnClockActualHours").addEventListener("click", () => { adminClockDisplayMode = "actual"; renderAdminTimeClockMonth(); });
     $("btnClockPlannedHours").addEventListener("click", () => { adminClockDisplayMode = "plan"; renderAdminTimeClockMonth(); });
+    $("btnPrintEmployeeClock").addEventListener("click", printEmployeeClock);
+    $("btnShareEmployeeClock").addEventListener("click", shareEmployeeClock);
     $("btnAddAdminTimeClock").addEventListener("click", () => saveAdminClockTimes());
     $("timeClockAdminStaff").addEventListener("change", renderAdminTimeClockMonth);
     $("timeClockAdminMonth").addEventListener("change", renderAdminTimeClockMonth);
