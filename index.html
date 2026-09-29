@@ -1548,6 +1548,7 @@
                   <button id="btnBackToTables" class="ghost" type="button" style="margin-bottom:12px">← Zurück zu Tischen</button>
                   <div class="row"><strong id="adminTableTitle"></strong><span id="adminTableTotal" class="right"></span></div>
                   <div id="adminTableItems" class="adminOrderItems" style="margin-top:12px"></div>
+                  <button id="btnAddToAdminTable" class="btn" type="button" style="margin-top:14px">Weitere Bestellung hinzufügen</button>
                   <button id="btnDeleteTableOrders" class="btnDanger" type="button" style="margin-top:14px">Tisch löschen</button>
                 </div>
                 <div id="orderProductPicker" class="item hidden">
@@ -4602,8 +4603,18 @@ bruchCache.sort((a, b) => {
         setTimeout(() => panel?.scrollIntoView({behavior:"smooth",block:"start"}), 50);
       }else if(!isAdmin()){
         document.querySelector(".orderPanel")?.classList.add("hidden");
+        $("orderProductPicker").classList.remove("hidden");
         $("orderProductPicker")?.scrollIntoView({behavior:"smooth",block:"start"});
       }
+    }
+
+    function openAdminOrderEditor(table){
+      adminViewedTable = "";
+      selectTable(table);
+      if(selectedTable !== normalizedTable(table)) return;
+      $("orderProductPicker").classList.remove("hidden");
+      document.querySelector(".orderPanel")?.classList.add("hidden");
+      $("orderProductPicker").scrollIntoView({behavior:"smooth",block:"start"});
     }
 
     function addOrderItem(menuId, sourceButton){
@@ -6485,6 +6496,7 @@ bruchCache.sort((a, b) => {
       const button = event.target.closest("[data-table-name]");
       if(!button) return;
       if(isAdmin()){
+        if(selectedOrderWaiterFilter === currentUser.uid){ openAdminOrderEditor(button.dataset.tableName); return; }
         adminViewedTable = button.dataset.tableName;
         $("orderProductPicker").classList.add("hidden");
         document.querySelector(".orderPanel")?.classList.add("hidden");
@@ -6498,6 +6510,7 @@ bruchCache.sort((a, b) => {
       $("tableOpenPanel").scrollIntoView({behavior:"smooth",block:"start"});
     });
     $("btnDeleteTableOrders").addEventListener("click", () => deleteAdminTableOrders());
+    $("btnAddToAdminTable").addEventListener("click", () => openAdminOrderEditor(adminViewedTable));
     $("btnBackToWaiters").addEventListener("click", () => {
       adminViewedTable = "";
       selectedOrderWaiterFilter = "none";
