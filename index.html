@@ -389,6 +389,8 @@
     .smallRed{background:#7f1d1d;color:#fee2e2}
     .smallBlue{background:#1e3a8a;color:#dbeafe}
     .adminOnly.hiddenByRole{display:none!important}
+    .hiddenByModule{display:none!important}
+    .ownerOnly.hiddenByRole{display:none!important}
     #viewBruch input,#viewBruch textarea{
       width:100%;min-height:48px;padding:12px 14px;border-radius:12px;
       border:1px solid #2b4563;background:#09182a;color:var(--text);outline:none
@@ -761,7 +763,7 @@
           <button class="navBtn" data-view="viewTimeClock" type="button"><i data-lucide="timer" aria-hidden="true"></i><span>Stempeluhr <span id="timeClockAlertBadge" class="urgentBadge hidden">0</span></span></button>
           <button class="navBtn" data-view="viewAnnouncements" type="button"><i data-lucide="bell" aria-hidden="true"></i><span>Mitteilungen</span></button>
           <button class="navBtn" data-view="viewTasks" type="button"><i data-lucide="list-checks" aria-hidden="true"></i><span>Aufgaben <span id="taskNavBadge" class="urgentBadge hidden">0</span></span></button>
-          <button class="navBtn adminOnly" data-view="viewDailyClosing" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>Tagesabschluss</span></button>
+          <button class="navBtn" data-view="viewDailyClosing" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>Tagesabschluss</span></button>
           <button class="navBtn" data-view="viewDocuments" type="button"><i data-lucide="scan-line" aria-hidden="true"></i><span>Lieferanten</span></button>
           <button class="navBtn" data-view="viewSickLeave" type="button"><i data-lucide="heart-pulse" aria-hidden="true"></i><span>Krankmeldung</span></button>
           <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP <span id="haccpNavBadge" class="urgentBadge hidden">0</span></span></button>
@@ -789,7 +791,7 @@
               <button class="dashboardApp" data-dashboard-view="viewTimeClock" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="13" r="9"/><path d="M12 8v5l3 2M9 2h6"/></svg></span><span>Stempeluhr <span id="timeClockDashboardBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewAnnouncements" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></svg></span><span>Mitteilungen <span id="announcementUnreadBadge" class="noticeBadge hidden">0</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewTasks" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="m3 6 2 2 3-3M12 7h9M3 13l2 2 3-3M12 14h9M3 20l2 2 3-3M12 21h9"/></svg></span><span>Aufgaben <span id="taskDashboardBadge" class="urgentBadge hidden">0 Offen</span></span></button>
-              <button class="dashboardApp adminOnly" data-dashboard-view="viewDailyClosing" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2M8 14l3 3 5-6"/></svg></span><span>Tagesabschluss</span></button>
+              <button class="dashboardApp" data-dashboard-view="viewDailyClosing" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2M8 14l3 3 5-6"/></svg></span><span>Tagesabschluss</span></button>
               <button class="dashboardApp" data-dashboard-view="viewDocuments" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M4 12h16M7 9h10M7 15h10"/></svg></span><span>Lieferanten</span></button>
               <button class="dashboardApp" data-dashboard-view="viewSickLeave" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/><path d="M3 12h5l2-3 3 6 2-3h6"/></svg></span><span>Krankmeldung <span id="sickUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewHaccp" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2M8 14l3 3 5-6"/></svg></span><span>HACCP <span id="haccpDashboardBadge" class="urgentBadge hidden">0 Offen</span></span></button>
@@ -1270,13 +1272,13 @@
                 <input id="haccpDate" class="input" type="date" style="max-width:180px" />
                 <button id="btnLoadHaccp" class="ghost" type="button">Anzeigen</button>
                 <button id="btnSaveHaccp" class="btn" type="button">Kontrolle speichern</button>
-                <button id="btnPrintMonthHaccp" class="btnWarn adminOnly" type="button">Monat drucken</button>
+                <button id="btnPrintMonthHaccp" class="btnWarn ownerOnly" type="button">Monat drucken</button>
               </div>
             </div>
             <div id="haccpDaySummary" class="item" style="margin-top:16px">Kontrollen werden geladen …</div>
             <div id="haccpSections" class="haccpSections"></div>
 
-            <div class="item adminOnly" style="margin-top:12px">
+            <div class="item ownerOnly" style="margin-top:12px">
               <strong>Verlauf der letzten 31 Tage</strong>
               <div class="divider"></div>
               <div id="haccpHistory"></div>
@@ -2119,7 +2121,27 @@
       alert(msg);
     }
 
+    // Temporary staff module allowlist; all remaining modules are owner-only.
+    const STAFF_MODULE_VIEWS = new Set([
+      "viewDashboard", "viewWeekly", "viewInventory", "viewTimeClock",
+      "viewAnnouncements", "viewTasks", "viewDailyClosing", "viewSickLeave",
+      "viewHaccp", "viewOrders", "viewRestaurantMenu", "viewToGoMenu",
+      "viewUrlaub", "viewBruch"
+    ]);
+
+    function canAccessModule(id){
+      return Boolean(currentProfile) && (isSuperAdmin() || STAFF_MODULE_VIEWS.has(id));
+    }
+
+    function renderModuleVisibility(){
+      document.querySelectorAll("[data-view],[data-dashboard-view]").forEach(button => {
+        const id = button.dataset.view || button.dataset.dashboardView;
+        button.classList.toggle("hiddenByModule", !canAccessModule(id));
+      });
+    }
+
     function openView(id){
+      if(!canAccessModule(id)) id = "viewDashboard";
       document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
       const view = document.getElementById(id);
       if(view) view.classList.remove("hidden");
@@ -2409,13 +2431,15 @@
     }
 
     function renderAdminVisibility(){
+      document.querySelectorAll(".ownerOnly").forEach(el => el.classList.toggle("hiddenByRole", !isSuperAdmin()));
       document.querySelectorAll(".adminOnly").forEach(el => {
         el.classList.toggle("hiddenByRole", !isAdmin());
       });
       $("viewInventory")?.querySelector(".barcodePanel")?.classList.toggle("staffScanMode", !isAdmin());
       if(!isAdmin()) setBarcodeMovementMode("out");
       const staffNav = document.querySelector('[data-view="viewStaff"]');
-      if(staffNav) staffNav.classList.toggle("hiddenByRole", !isAdmin());
+      if(staffNav) staffNav.classList.remove("hiddenByRole");
+      renderModuleVisibility();
       const personalClockMonth = $("timeClockPersonalMonthPanel");
       if(personalClockMonth) personalClockMonth.classList.toggle("hidden", isAdmin());
     }
@@ -3637,7 +3661,7 @@ ${lastHoursPayload.details.join("\n")}`;
     };
 
     function haccpAllowedSections(){
-      if(isAdmin()) return Object.keys(HACCP_SECTIONS);
+      if(isSuperAdmin()) return Object.keys(HACCP_SECTIONS);
       const department=safe(currentProfile?.department).toLowerCase();
       if(department.includes("küche")||department.includes("kuche")) return ["kitchen"];
       if(department.includes("pizza")) return ["pizza"];
@@ -4329,7 +4353,7 @@ bruchCache.sort((a, b) => {
     }
 
     function updateOrderAccessVisibility(){
-      const hasAccess = isAdmin() || tableAssignmentCache.some(row => row.date === localDateKey() && row.waiterId === currentUser?.uid);
+      const hasAccess = canAccessModule("viewOrders");
       document.querySelectorAll('[data-view="viewOrders"],[data-dashboard-view="viewOrders"]').forEach(button => button.classList.toggle("hidden", !hasAccess));
       $("ordersPageTitle").textContent = isAdmin() ? "Bestellung & Tische" : "Meine Tische";
       $("ordersPageSubtitle").textContent = isAdmin() ? "Kellner verwalten, Tische zuweisen und Bestellungen einsehen." : "Deine zugewiesenen Tische und Bestellungen.";
@@ -5011,7 +5035,7 @@ bruchCache.sort((a, b) => {
     }
 
     async function loadDailyClosing(){
-      if(!isAdmin()) return;
+      if(!canAccessModule("viewDailyClosing")) return;
       const date = $("dailyClosingDate").value || localDateKey();
       $("dailyClosingDate").value = date;
       $("dailyClosingStatus").innerHTML = `<span class="muted">Daten für ${htmlEscape(date.split("-").reverse().join("."))} werden geladen …</span>`;
@@ -6318,7 +6342,7 @@ bruchCache.sort((a, b) => {
       await handlePendingClockQr();
       await loadDashboard();
       await loadHours();
-      if(isAdmin()) await loadDailyClosing();
+      if(canAccessModule("viewDailyClosing")) await loadDailyClosing();
       window.lucide?.createIcons();
     }
 
