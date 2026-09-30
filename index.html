@@ -3702,10 +3702,31 @@ ${lastHoursPayload.details.join("\n")}`;
       return [obj.t1,obj.t2,obj.t3,obj.t4,obj.clean].map(v=>safe(v)).some(Boolean);
     }
 
+    function validHaccpTemperature(value){
+      const text = safe(value).replace(",", ".");
+      return /^-?\d+(?:\.\d+)?$/.test(text) && Number.isFinite(Number(text));
+    }
+
+    function haccpMissingFields(sectionKey, section){
+      const missing = [];
+      const definition = HACCP_SECTIONS[sectionKey];
+      definition.devices.forEach(([key, label]) => {
+        if(!validHaccpTemperature(section.temperatures?.[key]?.value))
+          missing.push({label:label + ": Temperatur", selector:`[data-haccp-temp="${sectionKey}:${key}"]`});
+        if(section.temperatures?.[key]?.clean !== true)
+          missing.push({label:label + ": Sauber", selector:`[data-haccp-device-clean="${sectionKey}:${key}"]`});
+      });
+      definition.cleaning.forEach(([key, label]) => {
+        if(section.cleaning?.[key] !== true)
+          missing.push({label, selector:`[data-haccp-clean="${sectionKey}:${key}"]`});
+      });
+      return missing;
+    }
+
     function haccpSectionComplete(sectionKey,section){
       const definition=HACCP_SECTIONS[sectionKey];
       if(!definition||!section) return false;
-      const tempsOk=definition.devices.every(([key])=>safe(section.temperatures?.[key]?.value)!==""&&section.temperatures?.[key]?.clean===true);
+      const tempsOk=definition.devices.every(([key])=>validHaccpTemperature(section.temperatures?.[key]?.value)&&section.temperatures?.[key]?.clean===true);
       const cleaningOk=definition.cleaning.every(([key])=>section.cleaning?.[key]===true);
       return tempsOk&&cleaningOk;
     }
@@ -3715,7 +3736,7 @@ ${lastHoursPayload.details.join("\n")}`;
       $("haccpSections").innerHTML=allowed.length?allowed.map(sectionKey=>{
         const definition=HACCP_SECTIONS[sectionKey],section=data[sectionKey]||{};
         const done=haccpSectionComplete(sectionKey,section);
-        const devices=definition.devices.map(([key,label,target])=>`<div class="haccpDevice"><strong>${label}</strong><div class="tiny muted">${target}</div><div class="haccpDeviceRow"><div><label class="label">Temperatur °C</label><input class="input" type="number" step="0.1" inputmode="decimal" data-haccp-temp="${sectionKey}:${key}" value="${htmlEscape(section.temperatures?.[key]?.value??"")}" /></div><label class="haccpCheck"><input type="checkbox" data-haccp-device-clean="${sectionKey}:${key}" ${section.temperatures?.[key]?.clean===true?"checked":""}/> ✅ Sauber</label></div></div>`).join("");
+        const devices=definition.devices.map(([key,label,target])=>`<div class="haccpDevice"><strong>${label}</strong><div class="tiny muted">${target}</div><div class="haccpDeviceRow"><div><label class="label">Temperatur °C</label><input class="input" type="text" inputmode="decimal" placeholder="z. B. 4,5 oder -18" data-haccp-temp="${sectionKey}:${key}" value="${htmlEscape(section.temperatures?.[key]?.value??"")}" /></div><label class="haccpCheck"><input type="checkbox" data-haccp-device-clean="${sectionKey}:${key}" ${section.temperatures?.[key]?.clean===true?"checked":""}/> ✅ Sauber</label></div></div>`).join("");
         const cleaning=definition.cleaning.map(([key,label])=>`<label class="haccpCheck"><input type="checkbox" data-haccp-clean="${sectionKey}:${key}" ${section.cleaning?.[key]===true?"checked":""}/> ✅ ${label}</label>`).join("");
         return `<article class="haccpSection ${done?"complete":"incomplete"}" data-haccp-section="${sectionKey}"><div class="row"><div><strong>${definition.title}</strong><div class="tiny muted">Verantwortlich: ${definition.responsibility}</div></div><span class="pill ${done?"ok":"warn"} right">${done?"Komplett":"Offen"}</span></div>${devices?`<div class="haccpDeviceGrid">${devices}</div>`:""}<div class="haccpCleaning">${cleaning}</div><div class="field" style="margin-top:12px"><label class="label">Bemerkung / Abweichung / Defekt</label><textarea class="textarea" data-haccp-note="${sectionKey}" placeholder="Optional, z. B. Temperatur zu hoch – Maßnahme notieren">${htmlEscape(section.note||"")}</textarea></div><div class="haccpResponsible">${section.completedByName?`Zuletzt kontrolliert von <strong>${htmlEscape(section.completedByName)}</strong> · ${htmlEscape(taskDate(section.completedAt))}`:"Noch nicht bestätigt."}</div><button class="btn" type="button" data-haccp-confirm="${sectionKey}" style="margin-top:12px;width:100%">${done?"Kontrolle erneut speichern":"Kontrolle bestätigen"}</button></article>`;
       }).join(""):`<div class="item muted">Deinem Mitarbeiterbereich ist noch keine HACCP-Verantwortung zugeordnet. Bitte Admin informieren.</div>`;
@@ -3728,7 +3749,7 @@ ${lastHoursPayload.details.join("\n")}`;
       HACCP_SECTIONS[sectionKey].devices.forEach(([key])=>{
         const value=document.querySelector(`[data-haccp-temp="${sectionKey}:${key}"]`)?.value??"";
         const clean=document.querySelector(`[data-haccp-device-clean="${sectionKey}:${key}"]`)?.checked===true;
-        temperatures[key]={value:safe(value),clean};
+        temperatures[key]={value:safe(value).replace(",", "."),clean};
       });
       HACCP_SECTIONS[sectionKey].cleaning.forEach(([key])=>{cleaning[key]=document.querySelector(`[data-haccp-clean="${sectionKey}:${key}"]`)?.checked===true;});
       const section={temperatures,cleaning,note:safe(document.querySelector(`[data-haccp-note="${sectionKey}"]`)?.value),completedBy:currentUser.uid,completedByName:currentProfile.name||currentUser.email,completedAt:serverTimestamp()};
@@ -3750,7 +3771,14 @@ ${lastHoursPayload.details.join("\n")}`;
     async function confirmHaccpSection(sectionKey,button){
       if(!haccpAllowedSections().includes(sectionKey)) return showMsg("Keine HACCP-Verantwortung für diesen Bereich.");
       const section=collectHaccpSection(sectionKey);
-      if(!section.complete) return showMsg("Bitte alle Temperaturen eintragen und alle Kontrollen abhaken.");
+      if(!section.complete){
+        const missing = haccpMissingFields(sectionKey, section);
+        showMsg("Noch nicht vollständig:\n" + missing.map(item => "• " + item.label).join("\n"));
+        const field = document.querySelector(missing[0]?.selector);
+        field?.scrollIntoView({behavior:"smooth", block:"center"});
+        field?.focus({preventScroll:true});
+        return;
+      }
       button.disabled=true;
       try{
         const date=$("haccpDate").value||todayStr();
