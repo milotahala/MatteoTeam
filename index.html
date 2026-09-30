@@ -2537,7 +2537,7 @@
       populateTaskAssignees();
       await buildWeeklyTable();
       await loadDashboard();
-      showMsg("Mitarbeiter gelöscht.");
+      showMsg("Mitarbeiter aus der Liste entfernt. Das Login bleibt bestehen; zum Wiederherstellen dieselbe E-Mail und das bisherige Passwort verwenden.");
     };
 
     async function saveStaff(){
@@ -2561,13 +2561,40 @@
           await updateDoc(doc(db, "users", id), data);
           showMsg("Mitarbeiter wurde aktualisiert.");
         }else{
-          const credential = await createUserWithEmailAndPassword(staffCreatorAuth, data.email, temporaryPassword);
+          let credential;
+          let restored = false;
+          try{
+            credential = await createUserWithEmailAndPassword(staffCreatorAuth, data.email, temporaryPassword);
+          }catch(createError){
+            if(createError.code !== "auth/email-already-in-use") throw createError;
+            // A removed staff profile does not delete its Firebase login.
+            // Verify the existing password and retain the original UID/history.
+            try{
+              credential = await signInWithEmailAndPassword(staffCreatorAuth, data.email, temporaryPassword);
+            }catch(loginError){
+              if(["auth/invalid-credential","auth/wrong-password","auth/user-not-found"].includes(loginError.code)){
+                return showMsg("Diese E-Mail hat noch ein Login. Zum Wiederherstellen bitte das bisherige Passwort im Passwortfeld eingeben. Ein neues temporäres Passwort funktioniert hier nicht.");
+              }
+              throw loginError;
+            }
+            const existingProfile = await getDoc(doc(db, "users", credential.user.uid));
+            if(existingProfile.exists()){
+              return showMsg("Dieser Mitarbeiter ist bereits in der Liste. Bitte mit Edit bearbeiten.");
+            }
+            if(credential.user.uid === currentUser.uid || credential.user.uid === SUPERADMIN_UID){
+              return showMsg("Das eigene oder das SuperAdmin-Konto kann hier nicht wiederhergestellt werden.");
+            }
+            restored = true;
+          }
           await setDoc(doc(db, "users", credential.user.uid), {
             ...data, uid:credential.user.uid, createdAt:serverTimestamp(), createdBy:currentUser.uid,
-            mustChangePassword:true
+            mustChangePassword:!restored,
+            ...(restored ? {restoredAt:serverTimestamp()} : {})
           });
           await signOut(staffCreatorAuth);
-          showMsg("Mitarbeiter wurde erstellt. Bitte temporäres Passwort sicher weitergeben.");
+          showMsg(restored
+            ? "Mitarbeiter wiederhergestellt. Die Anmeldung funktioniert weiterhin mit dem bisherigen Passwort."
+            : "Mitarbeiter wurde erstellt. Bitte temporäres Passwort sicher weitergeben.");
         }
         clearStaffForm();
         await loadStaff();
