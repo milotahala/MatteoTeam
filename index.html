@@ -6406,8 +6406,33 @@ bruchCache.sort((a, b) => {
       }
     });
 
+    let logoutInProgress = false;
+
+    function showSignedOutScreen(){
+      currentUser = null;
+      currentProfile = null;
+      $("appShell").classList.add("hidden");
+      $("authScreen").classList.remove("hidden");
+      $("loginPassword").value = "";
+      setAuthTab("login");
+    }
+
     $("btnLogout").addEventListener("click", async ()=>{
-      await signOut(auth);
+      if(logoutInProgress) return;
+      logoutInProgress = true;
+      $("btnLogout").disabled = true;
+      try{
+        await signOut(auth);
+        // Do not depend on camera/listener cleanup to reveal the login form.
+        showSignedOutScreen();
+        location.reload();
+      }catch(err){
+        console.error("Logout", err);
+        showMsg("Abmelden nicht möglich: " + err.message);
+      }finally{
+        logoutInProgress = false;
+        $("btnLogout").disabled = false;
+      }
     });
     $("btnChangePassword").addEventListener("click", changeOwnPassword);
     $("btnCloseVacationNotification").addEventListener("click", closeVacationNotification);
@@ -6788,6 +6813,7 @@ bruchCache.sort((a, b) => {
     onAuthStateChanged(auth, async (user)=>{
       currentUser = user || null;
       if(!user){
+        showSignedOutScreen();
         stopBarcodeCamera();
         stopGeofenceMonitor();
         if(timeClockQrTimer){ clearInterval(timeClockQrTimer); timeClockQrTimer = null; }
@@ -6836,6 +6862,7 @@ bruchCache.sort((a, b) => {
         $("authScreen").classList.add("hidden");
         $("appShell").classList.remove("hidden");
         await bootstrapApp();
+        if(!auth.currentUser || logoutInProgress) showSignedOutScreen();
       }catch(err){
         console.error(err);
         showMsg("Init Fehler: " + err.message);
