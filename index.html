@@ -469,6 +469,9 @@
     .haccpDevice{padding:12px;border:1px solid var(--line);border-radius:14px;background:#0b1c30}
     .haccpDeviceRow{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:end;margin-top:9px}
     .haccpDeviceRow .input{min-width:0}
+    .haccpTemperatureInput{display:flex;align-items:center;gap:8px}
+    .haccpTemperatureInput .input{flex:1;width:0}
+    .haccpTemperatureInput .ghost{flex:0 0 56px;min-height:48px;padding:8px;font-size:22px}
     .haccpCheck{display:flex;align-items:center;gap:8px;min-height:48px;padding:9px 12px;border:1px solid #2b4563;border-radius:12px;background:#09182a;cursor:pointer}
     .haccpCheck input{width:22px;height:22px;accent-color:var(--green)}
     .haccpCleaning{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
@@ -3702,8 +3705,17 @@ ${lastHoursPayload.details.join("\n")}`;
       return [obj.t1,obj.t2,obj.t3,obj.t4,obj.clean].map(v=>safe(v)).some(Boolean);
     }
 
+    function normalizeHaccpTemperature(value){
+      return safe(value).replace(/−/g, "-").replace(",", ".");
+    }
+
+    function toggleHaccpTemperatureSign(value){
+      const text = safe(value).replace(/−/g, "-");
+      return text.startsWith("-") ? text.slice(1) : "-" + text;
+    }
+
     function validHaccpTemperature(value){
-      const text = safe(value).replace(",", ".");
+      const text = normalizeHaccpTemperature(value);
       return /^-?\d+(?:\.\d+)?$/.test(text) && Number.isFinite(Number(text));
     }
 
@@ -3736,7 +3748,7 @@ ${lastHoursPayload.details.join("\n")}`;
       $("haccpSections").innerHTML=allowed.length?allowed.map(sectionKey=>{
         const definition=HACCP_SECTIONS[sectionKey],section=data[sectionKey]||{};
         const done=haccpSectionComplete(sectionKey,section);
-        const devices=definition.devices.map(([key,label,target])=>`<div class="haccpDevice"><strong>${label}</strong><div class="tiny muted">${target}</div><div class="haccpDeviceRow"><div><label class="label">Temperatur °C</label><input class="input" type="text" inputmode="decimal" placeholder="z. B. 4,5 oder -18" data-haccp-temp="${sectionKey}:${key}" value="${htmlEscape(section.temperatures?.[key]?.value??"")}" /></div><label class="haccpCheck"><input type="checkbox" data-haccp-device-clean="${sectionKey}:${key}" ${section.temperatures?.[key]?.clean===true?"checked":""}/> ✅ Sauber</label></div></div>`).join("");
+        const devices=definition.devices.map(([key,label,target])=>`<div class="haccpDevice"><strong>${label}</strong><div class="tiny muted">${target}</div><div class="haccpDeviceRow"><div><label class="label">Temperatur °C</label><div class="haccpTemperatureInput"><input class="input" type="text" inputmode="decimal" placeholder="z. B. 4,5 oder -18" data-haccp-temp="${sectionKey}:${key}" value="${htmlEscape(section.temperatures?.[key]?.value??"")}" /><button class="ghost" type="button" data-haccp-sign aria-label="Temperatur-Vorzeichen wechseln">+/−</button></div></div><label class="haccpCheck"><input type="checkbox" data-haccp-device-clean="${sectionKey}:${key}" ${section.temperatures?.[key]?.clean===true?"checked":""}/> ✅ Sauber</label></div></div>`).join("");
         const cleaning=definition.cleaning.map(([key,label])=>`<label class="haccpCheck"><input type="checkbox" data-haccp-clean="${sectionKey}:${key}" ${section.cleaning?.[key]===true?"checked":""}/> ✅ ${label}</label>`).join("");
         return `<article class="haccpSection ${done?"complete":"incomplete"}" data-haccp-section="${sectionKey}"><div class="row"><div><strong>${definition.title}</strong><div class="tiny muted">Verantwortlich: ${definition.responsibility}</div></div><span class="pill ${done?"ok":"warn"} right">${done?"Komplett":"Offen"}</span></div>${devices?`<div class="haccpDeviceGrid">${devices}</div>`:""}<div class="haccpCleaning">${cleaning}</div><div class="field" style="margin-top:12px"><label class="label">Bemerkung / Abweichung / Defekt</label><textarea class="textarea" data-haccp-note="${sectionKey}" placeholder="Optional, z. B. Temperatur zu hoch – Maßnahme notieren">${htmlEscape(section.note||"")}</textarea></div><div class="haccpResponsible">${section.completedByName?`Zuletzt kontrolliert von <strong>${htmlEscape(section.completedByName)}</strong> · ${htmlEscape(taskDate(section.completedAt))}`:"Noch nicht bestätigt."}</div><button class="btn" type="button" data-haccp-confirm="${sectionKey}" style="margin-top:12px;width:100%">${done?"Kontrolle erneut speichern":"Kontrolle bestätigen"}</button></article>`;
       }).join(""):`<div class="item muted">Deinem Mitarbeiterbereich ist noch keine HACCP-Verantwortung zugeordnet. Bitte Admin informieren.</div>`;
@@ -3749,7 +3761,7 @@ ${lastHoursPayload.details.join("\n")}`;
       HACCP_SECTIONS[sectionKey].devices.forEach(([key])=>{
         const value=document.querySelector(`[data-haccp-temp="${sectionKey}:${key}"]`)?.value??"";
         const clean=document.querySelector(`[data-haccp-device-clean="${sectionKey}:${key}"]`)?.checked===true;
-        temperatures[key]={value:safe(value).replace(",", "."),clean};
+        temperatures[key]={value:normalizeHaccpTemperature(value),clean};
       });
       HACCP_SECTIONS[sectionKey].cleaning.forEach(([key])=>{cleaning[key]=document.querySelector(`[data-haccp-clean="${sectionKey}:${key}"]`)?.checked===true;});
       const section={temperatures,cleaning,note:safe(document.querySelector(`[data-haccp-note="${sectionKey}"]`)?.value),completedBy:currentUser.uid,completedByName:currentProfile.name||currentUser.email,completedAt:serverTimestamp()};
@@ -6536,6 +6548,15 @@ bruchCache.sort((a, b) => {
     $("btnLoadHaccp").addEventListener("click", loadHaccp);
     $("btnSaveHaccp").addEventListener("click", saveHaccp);
     $("haccpSections").addEventListener("click",event=>{
+      const signButton=event.target.closest("[data-haccp-sign]");
+      if(signButton){
+        const input=signButton.closest(".haccpTemperatureInput").querySelector("[data-haccp-temp]");
+        input.value=toggleHaccpTemperatureSign(input.value);
+        input.dispatchEvent(new Event("input",{bubbles:true}));
+        input.focus();
+        input.setSelectionRange(input.value.length,input.value.length);
+        return;
+      }
       const button=event.target.closest("[data-haccp-confirm]");
       if(button) confirmHaccpSection(button.dataset.haccpConfirm,button);
     });
