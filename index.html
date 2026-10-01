@@ -456,7 +456,13 @@
     .barcodeActions{display:grid;grid-template-columns:1fr auto auto;gap:9px;align-items:end}
     .barcodePanel.staffScanMode .barcodeActions{display:block}
     .barcodePanel.staffScanMode #btnStartBarcode{width:100%;min-height:54px}
-    .barcodePanel.staffScanMode.fallbackNeeded .barcodeManualFallback.hiddenByRole{display:block!important;margin-top:9px}
+    /* Stock movements use scanning only. Keep legacy controls mounted for existing handlers. */
+    #inventoryMovementPanel,
+    #viewInventory .barcodeManualFallback,
+    #viewInventory .barcodePanel.staffScanMode.fallbackNeeded .barcodeManualFallback.hiddenByRole{display:none!important}
+    #viewInventory > .grid2{grid-template-columns:minmax(0,1fr)}
+    #viewInventory .barcodeActions{grid-template-columns:minmax(0,1fr)}
+    #viewInventory #btnStartBarcode{width:100%;min-height:54px}
     .barcodeVideoWrap{position:relative;overflow:hidden;border-radius:16px;background:#02060b;margin-top:12px;aspect-ratio:4/3}
     .barcodeVideoWrap video{width:100%;height:100%;object-fit:cover}
     .barcodeFrame{position:absolute;left:12%;right:12%;top:32%;height:36%;border:3px solid var(--green);border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
@@ -1140,7 +1146,7 @@
                 <div class="tiny muted" style="margin-top:7px">Neue Artikel mit Bestand 0 übernehmen. Bestehende Produkte und Bestände bleiben erhalten.</div>
               </div>
 
-              <div id="inventoryMovementPanel" class="item adminOnly">
+              <div id="inventoryMovementPanel" class="item adminOnly hidden" aria-hidden="true">
                 <strong>Lagerbewegung</strong>
                 <div class="divider"></div>
                 <div class="field"><label class="label">Date</label><input id="usageDate" class="input" type="date" /></div>
