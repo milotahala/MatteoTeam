@@ -1326,6 +1326,7 @@
             <div class="grid2">
                 <div class="item">
   <strong>Neuer Eintrag</strong>
+  <div class="field"><label class="label">Bereich</label><select id="bruchSector" class="select"></select></div>
   <div class="divider"></div>
 
   <div class="field">
@@ -1341,8 +1342,8 @@
   <div class="field">
     <label class="label">Menge</label>
     <div class="bruchQtyRow">
-      <input id="bruchQty" class="input" type="number" min="0" step="0.01" inputmode="decimal" placeholder="z. B. 3" />
-      <select id="bruchUnit" class="select" aria-label="Einheit"><option>Stück</option><option>kg</option></select>
+      <input id="bruchQty" class="input" type="text" inputmode="decimal" placeholder="z. B. 1.20 oder 1,20" />
+      <select id="bruchUnit" class="select" aria-label="Einheit"><option>Stück</option><option>kg</option><option>g</option></select>
     </div>
   </div>
 
@@ -4068,12 +4069,14 @@ ${lastHoursPayload.details.join("\n")}`;
 
     const date = elDate.value || todayStr();
     const product = (elProduct.value || "").trim();
-    const qty = Number(elQty.value || 0);
-    const unit = elUnit.value === "kg" ? "kg" : "Stück";
+    const qty = parseBruchQty(elQty.value);
+    const unit = ["kg","g"].includes(elUnit.value) ? elUnit.value : "Stück";
+    const sector = $("bruchSector").value;
+    if(!bruchAllowedSectors().includes(sector)) return showMsg("Bitte einen gültigen Bereich auswählen.");
     const reason = (elReason?.value || "").trim();
 
     if (!product) return showMsg("Produkt fehlt.");
-    if (qty <= 0) return showMsg("Menge fehlt.");
+    if (!Number.isFinite(qty) || qty <= 0) return showMsg("Bitte eine gültige Menge eingeben, z. B. 1.20 oder 1,20.");
     if (!reason) return showMsg("Bitte einen Grund auswählen.");
 
     const uid = currentUser?.uid || auth.currentUser?.uid;
@@ -4102,6 +4105,7 @@ await addDoc(collection(db, "bruchliste"), {
   product: product || "-",
   qty: qty || "0",
   unit,
+  sector,
   reason: reason || "-",
   byUid: user.uid,
   byName: userName || user.email || "Milot",
@@ -4120,8 +4124,32 @@ await addDoc(collection(db, "bruchliste"), {
   }
 }
 
+    const BRUCH_SECTORS = ["Küche", "Pizza", "Service", "Kasse"];
+    function bruchAllowedSectors(){
+      if(isAdmin()) return BRUCH_SECTORS;
+      const department = safe(currentProfile?.department).toLowerCase();
+      if(department.includes("küche") || department.includes("kuche")) return ["Küche"];
+      if(department.includes("pizza")) return ["Pizza"];
+      if(department.includes("service") || department.includes("kellner")) return ["Service"];
+      if(department.includes("kasse")) return ["Kasse"];
+      return [];
+    }
+    function parseBruchQty(value){
+      const text = String(value || "").trim().replace(",", ".");
+      return /^\d+(?:\.\d+)?$/.test(text) ? Number(text) : NaN;
+    }
+    function bruchEntrySector(entry){
+      if(BRUCH_SECTORS.includes(entry.sector)) return entry.sector;
+      const author = staffCache.find(person => (person.uid || person.id) === entry.byUid);
+      return BRUCH_SECTORS.includes(author?.department) ? author.department : "Nicht zugeordnet";
+    }
+    function bruchVisibleRows(){
+      const sector = $("bruchSector").value;
+      return bruchCache.filter(entry => bruchEntrySector(entry) === sector);
+    }
+
     function formatBruchQty(qty,unit){
-      return `${Number(qty||0).toLocaleString("de-DE",{minimumFractionDigits:0,maximumFractionDigits:2})} ${unit==="kg"?"kg":"Stück"}`;
+      return `${Number(qty||0).toLocaleString("de-DE",{minimumFractionDigits:0,maximumFractionDigits:2})} ${["kg","g"].includes(unit)?unit:"Stück"}`;
     }
 
     async function loadBruch(){
@@ -4133,7 +4161,7 @@ await addDoc(collection(db, "bruchliste"), {
     ...x,
     product: x.product || x.produkt || "-",
     qty: x.qty || x.menge || "0",
-    unit: x.unit === "kg" ? "kg" : "Stück",
+    unit: ["kg","g"].includes(x.unit) ? x.unit : "Stück",
     reason: x.reason || x.grund || "-",
     byName: x.byName || "Milot"
   };
@@ -4143,14 +4171,24 @@ bruchCache.sort((a, b) => {
   const dbb = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.date || 0);
   return dbb - da;
 });
-      const wrap = $("bruchList");
+      const select = $("bruchSector");
+      const selected = select.value;
+      const allowed = bruchAllowedSectors();
+      const sectors = isAdmin() ? [...allowed, "Nicht zugeordnet"] : allowed;
+      select.innerHTML = sectors.map(sector => `<option>${htmlEscape(sector)}</option>`).join("");
+      select.value = sectors.includes(selected) ? selected : (allowed.includes(currentProfile?.department) ? currentProfile.department : sectors[0] || "");
+      renderBruchList();
+    }
 
-      if(!bruchCache.length){
+    function renderBruchList(){
+      const wrap = $("bruchList");
+      const visible = bruchVisibleRows();
+      if(!visible.length){
         wrap.innerHTML = `<div class="tiny muted">Keine Einträge.</div>`;
         return;
       }
 
-     wrap.innerHTML = bruchCache.map(r => `
+     wrap.innerHTML = visible.map(r => `
   <div class="item">
     <div class="row">
       <strong>${htmlEscape(r.product || "-")}</strong>
@@ -4167,7 +4205,7 @@ bruchCache.sort((a, b) => {
     async function printMonthBruch(){
       if(!isAdmin()) return showMsg("Nur Admin.");
       const month = $("bruchMonth").value || monthStr();
-      const rows = bruchCache.filter(x => (x.date || "").startsWith(month)).sort((a,b)=> (a.date || "").localeCompare(b.date || ""));
+      const rows = bruchVisibleRows().filter(x => (x.date || "").startsWith(month)).sort((a,b)=> (a.date || "").localeCompare(b.date || ""));
 
       let html = `<html><head><title>Bruchliste ${month}</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>
         *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;color:#111}
@@ -4182,7 +4220,7 @@ bruchCache.sort((a, b) => {
       </style></head><body>
       <div class="toolbar"><button class="back" onclick="if(window.opener)window.opener.focus();window.close()">← Zurück</button><button class="print" onclick="window.print()">Drucken / Als PDF speichern</button></div>
       <div class="sheet">
-      <h2>Pizzeria Ristorante Matteo GmbH – Bruchliste ${month}</h2>
+      <h2>Pizzeria Ristorante Matteo GmbH – Bruchliste ${month} · ${htmlEscape($("bruchSector").value)}</h2>
       <table><thead><tr><th>Datum</th><th>Produkt</th><th>Menge</th><th>Grund</th><th>Von</th></tr></thead><tbody>`;
 
       rows.forEach(r => {
@@ -6564,6 +6602,7 @@ bruchCache.sort((a, b) => {
 
     $("btnSubmitUrlaub").addEventListener("click", submitUrlaub);
 
+    $("bruchSector").addEventListener("change", renderBruchList);
     $("btnSaveBruch").addEventListener("click", saveBruch);
     $("btnPrintMonthBruch").addEventListener("click", printMonthBruch);
 
