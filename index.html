@@ -1889,10 +1889,24 @@
       [111,"90139","TK Bindi 3687 Soufflé al"],[112,"90201","TK Debic Big Parisienne 16x550g"],[113,"90216","TK Artland Rinderhackfleisch 2 Kg"],[114,"90608","TK Garnelen 16/20 geschält"],[115,"90621","TK Schrimps 90-120 Blacktiger 1 Kg"],[116,"90638","TK Quadrifoglio Soufflé al Ciocc."],[117,"90702","TK Bonduelle Blattspinat Portion."],[118,"90713","TK Melzer Broccoli 20/40 2,5 Kg"],[119,"90739","TK Bonduelle Paprika rot/gelb"],[120,"90766","TK Orogel Auberginenscheiben"],[121,"90768","TK Orogel Zucchinischeiben"],[122,"90827","TK Hähncheninnenfilet Stücke"],[123,"91141","TK Effepi Tiramisu port. HALAL"],[124,"91202","TK Frutti di Mare 1 Kg"]
     ].map(([nr,article,name]) => ({nr,article,name}));
     const GEMUESE_PRODUCTS = [
-      "Champignons fein","Rucola","Salat gemischt 9er","Eisberg","Cherrytomaten, Schale","Strauchtomaten","Gurken",
-      "Paprika rot","Paprika gelb","Paprika grün","Zucchini","Aubergine","Möhren dick","Zitronen","Knoblauch frisch 5kg",
-      "Zwiebeln klein","Metzgerzwiebeln (groß)","Frühlingszwiebeln","Staudensellerie","Petersilie glatt","Basilikum im Topf","Radicchio Salat","Drillinge Kartoffeln"
-    ].map((name,index) => ({nr:index + 1, article:`G${String(index + 1).padStart(2,"0")}`, name}));
+      [1,"Champignons fein"],
+      [2,"Rucola"],
+      [4,"Eisberg"],
+      [6,"Strauchtomaten"],
+      [7,"Gurken"],
+      [8,"Paprika rot"],
+      [13,"Möhren dick"],
+      [14,"Zitronen"],
+      [15,"Knoblauch frisch 5kg"],
+      [17,"Metzgerzwiebeln (groß)"],
+      [19,"Staudensellerie"],
+      [20,"Petersilie glatt"],
+      [21,"Basilikum im Topf"],
+      [22,"Radicchio Salat"],
+      [23,"Drillinge Kartoffeln"],
+      [24,"Porree (Lauch)"],
+      [25,"Rote Zwiebeln"]
+    ].map(([id,name],index) => ({nr:index + 1, article:`G${String(id).padStart(2,"0")}`, name}));
     const DEFAULT_RESTAURANT_MENU = [
       {id:"vorspeisen-bruschetta",category:"Vorspeisen",name:"Bruschetta",description:"Geröstete Brotscheiben, belegt mit Tomate, Knoblauch und Zwiebeln",price:8.5,allergens:"I",vegetarian:true},
       {id:"vorspeisen-tomaten-mozzarella",category:"Vorspeisen",name:"Tomaten Mozzarella",description:"Frischer Blattsalat mit Tomaten und Mozzarella",price:8.5,allergens:"D",vegetarian:true},
