@@ -678,7 +678,18 @@
       .weekTable .departmentRow th{color:#000!important;background:#e5e7eb!important;border:1px solid #777}
     }
 
-  </style>
+  
+    /* Rezepte & Kalkulation */
+    .recipeToolbar{display:grid;grid-template-columns:minmax(0,1fr) 220px auto;gap:10px;margin:14px 0}
+    .recipeGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .recipeCard{padding:16px;border:1px solid #405578;border-radius:19px;background:#1b2943}
+    .recipeCardHead{display:flex;gap:12px;align-items:flex-start}.recipeEmoji{width:52px;height:52px;border-radius:15px;background:#fff;display:grid;place-items:center;font-size:29px;flex:0 0 52px}
+    .recipeMeta{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}.recipePill{padding:4px 9px;border-radius:999px;background:#263b5d;color:#dce9f7;font-size:12px;font-weight:800}
+    .recipeCost{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.recipeCost>div{padding:10px;border-radius:13px;background:#102239;border:1px solid #314968}.recipeCost small{display:block;color:var(--muted);margin-bottom:4px}.recipeCost strong{font-size:17px}
+    .ingredientRows{display:grid;gap:9px}.ingredientRow{display:grid;grid-template-columns:2fr .8fr .9fr 1.2fr auto;gap:8px;align-items:end;padding:10px;border:1px solid #405578;border-radius:15px;background:#17263e}.ingredientRow .field{margin:0}
+    .recipeDetails{margin-top:12px;padding-top:12px;border-top:1px solid #405578}.recipeDetails summary{cursor:pointer;font-weight:850;color:#fff}.recipeSteps{white-space:pre-wrap;line-height:1.55;color:#dce7f5}
+    @media(max-width:760px){.recipeToolbar{grid-template-columns:1fr}.recipeGrid{grid-template-columns:1fr}.recipeCost{grid-template-columns:repeat(2,1fr)}.ingredientRow{grid-template-columns:1fr 1fr}.ingredientRow .ingredientName,.ingredientRow .ingredientRemove{grid-column:1/-1}}
+</style>
 </head>
 <body>
   <div class="app">
@@ -782,6 +793,7 @@
           <button class="navBtn" data-view="viewRestaurantMenu" type="button"><i data-lucide="utensils" aria-hidden="true"></i><span>Speisekarte</span></button>
           <button class="navBtn" data-view="viewToGoMenu" type="button"><i data-lucide="pizza" aria-hidden="true"></i><span>To Go</span></button>
           <button class="navBtn" data-view="viewUrlaub" type="button"><i data-lucide="palmtree" aria-hidden="true"></i><span>Urlaub</span></button>
+          <button class="navBtn" data-view="viewRecipes" type="button"><i data-lucide="notebook-pen" aria-hidden="true"></i><span>Rezepte</span></button>
           <button class="navBtn" data-view="viewBruch" type="button"><i data-lucide="clipboard-list" aria-hidden="true"></i><span>Bruchliste</span></button>
         </aside>
 
@@ -810,9 +822,31 @@
               <button class="dashboardApp" data-dashboard-view="viewRestaurantMenu" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M4 3v7a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-4 3-4 8 0 10h3V3"/></svg></span><span>Speisekarte</span></button>
               <button class="dashboardApp" data-dashboard-view="viewToGoMenu" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 22 2 3c6-3 14-3 20 0L12 22ZM5 9c4-2 10-2 14 0"/><circle cx="10" cy="12" r="1"/><circle cx="15" cy="8" r="1"/></svg></span><span>To Go</span></button>
               <button class="dashboardApp" data-dashboard-view="viewUrlaub" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 22c1-5 1-10 0-14M12 8c-3-4-6-4-9-2 4 0 6 2 9 2ZM12 8c3-4 6-4 9-2-4 0-6 2-9 2ZM12 8c-3 0-5 2-6 5 3-2 5-2 6-5ZM12 8c3 0 5 2 6 5-3-2-5-2-6-5Z"/></svg></span><span>Urlaub Antrag <span id="urlaubUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
+              <button class="dashboardApp" data-dashboard-view="viewRecipes" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M9 7h7M9 11h7"/></svg></span><span>Rezepte & Kalkulation</span></button>
               <button class="dashboardApp" data-dashboard-view="viewBruch" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2M9 10h6M9 14h6M9 18h4"/></svg></span><span>Bruchliste</span></button>
             </div>
             <div class="hidden" aria-hidden="true"><span id="statStaff">0</span><span id="statInventory">0</span><span id="statUrlaub">0</span><span id="statHaccp">0/3</span><span id="haccpTodayBadge"></span><span id="dashHaccpList"></span><span id="dashUrlaubList"></span></div>
+          </section>
+
+          <section id="viewRecipes" class="view card hidden">
+            <div class="row"><div><h2 class="sectionTitle">🍝 Rezepte & Kalkulation</h2><div class="sectionSub">Standardrezepte, Portionen und Wareneinsatz zentral verwalten.</div></div><button id="btnNewRecipe" class="btn ownerOnly right" type="button">+ Neues Rezept</button></div>
+            <div class="recipeToolbar"><input id="recipeSearch" class="input" placeholder="Rezept oder Zutat suchen …" /><select id="recipeCategoryFilter" class="select"><option value="Alle">Alle Kategorien</option><option>Pasta & Soßen</option><option>Pizza</option><option>Küche</option><option>Dressing</option><option>Dessert</option><option>Sonstige</option></select><button id="btnReloadRecipes" class="ghost" type="button">Aktualisieren</button></div>
+            <div id="recipeEditor" class="item ownerOnly hidden">
+              <div class="row"><strong id="recipeEditorTitle">Neues Rezept</strong><span class="right pill ok">Nur SuperAdmin</span></div><div class="divider"></div>
+              <div class="grid2">
+                <div class="field"><label class="label">Rezeptname *</label><input id="recipeName" class="input" placeholder="z. B. Bolognese" /></div>
+                <div class="field"><label class="label">Kategorie</label><select id="recipeCategory" class="select"><option>Pasta & Soßen</option><option>Pizza</option><option>Küche</option><option>Dressing</option><option>Dessert</option><option>Sonstige</option></select></div>
+                <div class="field"><label class="label">Ergibt Portionen *</label><input id="recipeYield" class="input" inputmode="decimal" placeholder="20" /></div>
+                <div class="field"><label class="label">Verkaufspreis pro Portion (€)</label><input id="recipeSalePrice" class="input" inputmode="decimal" placeholder="14,50" /></div>
+                <div class="field"><label class="label">Allergene</label><input id="recipeAllergens" class="input" placeholder="z. B. Gluten, Milch, Sellerie" /></div>
+                <div class="field"><label class="label">Haltbarkeit / Lagerung</label><input id="recipeShelfLife" class="input" placeholder="z. B. 3 Tage, max. 4 °C" /></div>
+              </div>
+              <div class="row" style="margin:12px 0"><strong>Zutaten</strong><button id="btnAddIngredient" class="ghost right" type="button">+ Zutat</button></div>
+              <div id="recipeIngredientRows" class="ingredientRows"></div><div id="recipeCalculationPreview" class="recipeCost"></div>
+              <div class="field"><label class="label">Zubereitung</label><textarea id="recipeSteps" class="textarea" placeholder="Schritt für Schritt beschreiben …"></textarea></div>
+              <div class="row"><button id="btnSaveRecipe" class="btn" type="button">Rezept speichern</button><button id="btnCancelRecipe" class="ghost" type="button">Abbrechen</button></div>
+            </div>
+            <div id="recipeEmpty" class="item hidden">Noch keine Rezepte vorhanden.</div><div id="recipeList" class="recipeGrid"></div>
           </section>
 
           <section id="viewWeekly" class="view card hidden">
@@ -1653,6 +1687,8 @@
     let currentProfile = null;
     let staffCache = [];
     let inventoryCache = [];
+    let recipeCache = [];
+    let currentRecipeId = "";
     let barcodeStream = null;
     let barcodeFrameRequest = null;
     let barcodeDetector = null;
@@ -2152,7 +2188,7 @@
       "viewDashboard", "viewWeekly", "viewInventory", "viewTimeClock",
       "viewAnnouncements", "viewTasks", "viewDailyClosing", "viewSickLeave",
       "viewHaccp", "viewOrders", "viewRestaurantMenu", "viewToGoMenu",
-      "viewUrlaub", "viewBruch"
+      "viewUrlaub", "viewBruch", "viewRecipes"
     ]);
 
     function canAccessModule(id){
@@ -2209,6 +2245,24 @@
       $("menuCategory").innerHTML = MENU_CATEGORIES.map(c => `<option value="${htmlEscape(c)}">${htmlEscape(c)}</option>`).join("");
       $("menuCategoryChips").innerHTML = options.map(c => `<button class="menuCatBtn${c === activeMenuCategory ? " active" : ""}" type="button" data-menu-category="${htmlEscape(c)}">${htmlEscape(c)}</button>`).join("");
     }
+
+
+    function recipeNumber(value){const n=Number(String(value??"").replace(",", "."));return Number.isFinite(n)?n:0}
+    function ingredientCost(item){const q=recipeNumber(item.qty),p=recipeNumber(item.price);return(item.unit==="g"||item.unit==="ml")?q/1000*p:q*p}
+    function recipeTotals(recipe){const total=(recipe.ingredients||[]).reduce((sum,x)=>sum+ingredientCost(x),0),portions=Math.max(1,recipeNumber(recipe.yield)),perPortion=total/portions,sale=recipeNumber(recipe.salePrice);return{total,perPortion,sale,foodCost:sale>0?perPortion/sale*100:0,margin:Math.max(0,sale-perPortion)}}
+    function recipeIngredientRow(item={}){
+      const row=document.createElement("div");row.className="ingredientRow";
+      row.innerHTML=`<div class="field ingredientName"><label class="label">Zutat *</label><input class="input" data-recipe-field="name" value="${htmlEscape(item.name||"")}" placeholder="z. B. Rinderhackfleisch" /></div><div class="field"><label class="label">Menge</label><input class="input" data-recipe-field="qty" inputmode="decimal" value="${htmlEscape(item.qty??"")}" placeholder="2" /></div><div class="field"><label class="label">Einheit</label><select class="select" data-recipe-field="unit">${["g","kg","ml","l","Stk"].map(u=>`<option ${u===(item.unit||"g")?"selected":""}>${u}</option>`).join("")}</select></div><div class="field"><label class="label">Preis €/kg, l oder Stk</label><input class="input" data-recipe-field="price" inputmode="decimal" value="${htmlEscape(item.price??"")}" placeholder="8,90" /></div><button class="btnDanger ingredientRemove" data-remove-ingredient type="button">×</button>`;return row
+    }
+    function addRecipeIngredient(item={}){$("recipeIngredientRows").append(recipeIngredientRow(item));updateRecipeCalculation()}
+    function recipeFormIngredients(){return[...$("recipeIngredientRows").querySelectorAll(".ingredientRow")].map(row=>({name:safe(row.querySelector('[data-recipe-field="name"]').value),qty:recipeNumber(row.querySelector('[data-recipe-field="qty"]').value),unit:row.querySelector('[data-recipe-field="unit"]').value,price:recipeNumber(row.querySelector('[data-recipe-field="price"]').value)})).filter(x=>x.name)}
+    function updateRecipeCalculation(){const t=recipeTotals({ingredients:recipeFormIngredients(),yield:$("recipeYield")?.value,salePrice:$("recipeSalePrice")?.value});$("recipeCalculationPreview").innerHTML=`<div><small>Gesamtkosten</small><strong>${euro(t.total)}</strong></div><div><small>Kosten / Portion</small><strong>${euro(t.perPortion)}</strong></div><div><small>Deckungsbeitrag</small><strong>${euro(t.margin)}</strong></div><div><small>Wareneinsatz</small><strong>${t.foodCost.toFixed(1).replace(".",",")} %</strong></div>`}
+    function clearRecipeForm(){currentRecipeId="";["recipeName","recipeYield","recipeSalePrice","recipeAllergens","recipeShelfLife","recipeSteps"].forEach(id=>$(id).value="");$("recipeCategory").value="Pasta & Soßen";$("recipeIngredientRows").innerHTML="";addRecipeIngredient();$("recipeEditorTitle").textContent="Neues Rezept"}
+    function openRecipeEditor(recipe=null){if(!isSuperAdmin())return;clearRecipeForm();if(recipe){currentRecipeId=recipe.id;$("recipeEditorTitle").textContent="Rezept bearbeiten";$("recipeName").value=recipe.name||"";$("recipeCategory").value=recipe.category||"Pasta & Soßen";$("recipeYield").value=recipe.yield??"";$("recipeSalePrice").value=recipe.salePrice??"";$("recipeAllergens").value=recipe.allergens||"";$("recipeShelfLife").value=recipe.shelfLife||"";$("recipeSteps").value=recipe.steps||"";$("recipeIngredientRows").innerHTML="";(recipe.ingredients||[]).forEach(addRecipeIngredient);if(!(recipe.ingredients||[]).length)addRecipeIngredient()}$("recipeEditor").classList.remove("hidden");updateRecipeCalculation();$("recipeEditor").scrollIntoView({behavior:"smooth",block:"start"})}
+    async function loadRecipes(){try{const snap=await getDocs(collection(db,"recipes"));recipeCache=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>safe(a.name).localeCompare(safe(b.name),"de"));renderRecipes()}catch(err){console.error("Rezepte",err);$("recipeList").innerHTML='<div class="item">Rezepte konnten nicht geladen werden.</div>'}}
+    function renderRecipes(){const term=menuSearchText($("recipeSearch")?.value),cat=$("recipeCategoryFilter")?.value||"Alle",list=recipeCache.filter(r=>(!term||menuSearchText([r.name,r.category,r.allergens,...(r.ingredients||[]).map(x=>x.name)].join(" ")).includes(term))&&(cat==="Alle"||r.category===cat));$("recipeEmpty").classList.toggle("hidden",recipeCache.length>0);$("recipeList").innerHTML=list.map(r=>{const t=recipeTotals(r),ings=(r.ingredients||[]).map(x=>`<li>${htmlEscape(x.qty)} ${htmlEscape(x.unit)} · ${htmlEscape(x.name)}</li>`).join(""),numbers=isSuperAdmin()?`<div class="recipeCost"><div><small>Gesamt</small><strong>${euro(t.total)}</strong></div><div><small>Pro Portion</small><strong>${euro(t.perPortion)}</strong></div><div><small>Verkauf</small><strong>${euro(t.sale)}</strong></div><div><small>Wareneinsatz</small><strong>${t.foodCost.toFixed(1).replace(".",",")} %</strong></div></div>`:"",actions=isSuperAdmin()?`<div class="row"><button class="ghost" data-recipe-edit="${r.id}" type="button">Bearbeiten</button><button class="btnDanger" data-recipe-delete="${r.id}" type="button">Löschen</button></div>`:"";return`<article class="recipeCard"><div class="recipeCardHead"><div class="recipeEmoji">🍝</div><div><strong>${htmlEscape(r.name||"-")}</strong><div class="recipeMeta"><span class="recipePill">${htmlEscape(r.category||"Sonstige")}</span><span class="recipePill">${htmlEscape(r.yield||0)} Portionen</span></div></div></div>${numbers}<details class="recipeDetails"><summary>Rezept öffnen</summary><h4>Zutaten</h4><ul>${ings||"<li>Keine Zutaten</li>"}</ul>${r.allergens?`<p><strong>Allergene:</strong> ${htmlEscape(r.allergens)}</p>`:""}${r.shelfLife?`<p><strong>Haltbarkeit:</strong> ${htmlEscape(r.shelfLife)}</p>`:""}<h4>Zubereitung</h4><div class="recipeSteps">${htmlEscape(r.steps||"Noch keine Anleitung.")}</div></details>${actions}</article>`}).join("")}
+    async function saveRecipe(){if(!isSuperAdmin())return showMsg("Nur SuperAdmin kann Rezepte ändern.");const name=safe($("recipeName").value),yieldCount=recipeNumber($("recipeYield").value),ingredients=recipeFormIngredients();if(!name||yieldCount<=0)return showMsg("Bitte Rezeptname und Portionen eingeben.");if(!ingredients.length)return showMsg("Bitte mindestens eine Zutat eingeben.");const data={name,category:$("recipeCategory").value,yield:yieldCount,salePrice:recipeNumber($("recipeSalePrice").value),allergens:safe($("recipeAllergens").value),shelfLife:safe($("recipeShelfLife").value),steps:safe($("recipeSteps").value),ingredients,updatedAt:serverTimestamp(),updatedBy:currentUser.uid};try{if(currentRecipeId)await updateDoc(doc(db,"recipes",currentRecipeId),data);else await addDoc(collection(db,"recipes"),{...data,createdAt:serverTimestamp()});$("recipeEditor").classList.add("hidden");clearRecipeForm();await loadRecipes();showMsg("Rezept gespeichert.")}catch(err){console.error(err);showMsg("Rezept konnte nicht gespeichert werden: "+err.message)}}
+    async function deleteRecipe(id){if(!isSuperAdmin()||!confirm("Rezept wirklich löschen?"))return;try{await deleteDoc(doc(db,"recipes",id));await loadRecipes()}catch(err){console.error(err);showMsg("Löschen nicht möglich: "+err.message)}}
 
     async function loadRestaurantMenu(){
       let overrides = [];
@@ -6451,6 +6505,7 @@ bruchCache.sort((a, b) => {
       await loadUrlaub();
       startVacationNotifications();
       await loadBruch();
+      await loadRecipes();
       await loadRestaurantMenu();
       await loadToGoMenu();
       activeOrderCategory = "Alle";
@@ -6548,6 +6603,11 @@ bruchCache.sort((a, b) => {
     document.querySelectorAll("[data-dashboard-view]").forEach(button => {
       button.addEventListener("click", () => openView(button.dataset.dashboardView));
     });
+
+
+    $("btnNewRecipe").addEventListener("click",()=>openRecipeEditor());$("btnReloadRecipes").addEventListener("click",loadRecipes);$("recipeSearch").addEventListener("input",renderRecipes);$("recipeCategoryFilter").addEventListener("change",renderRecipes);$("btnAddIngredient").addEventListener("click",()=>addRecipeIngredient());$("btnSaveRecipe").addEventListener("click",saveRecipe);$("btnCancelRecipe").addEventListener("click",()=>$("recipeEditor").classList.add("hidden"));
+    $("recipeIngredientRows").addEventListener("input",updateRecipeCalculation);$("recipeIngredientRows").addEventListener("change",updateRecipeCalculation);$("recipeIngredientRows").addEventListener("click",event=>{const b=event.target.closest("[data-remove-ingredient]");if(!b)return;b.closest(".ingredientRow")?.remove();if(!$("recipeIngredientRows").children.length)addRecipeIngredient();updateRecipeCalculation()});$("recipeYield").addEventListener("input",updateRecipeCalculation);$("recipeSalePrice").addEventListener("input",updateRecipeCalculation);
+    $("recipeList").addEventListener("click",event=>{const e=event.target.closest("[data-recipe-edit]"),d=event.target.closest("[data-recipe-delete]");if(e)openRecipeEditor(recipeCache.find(x=>x.id===e.dataset.recipeEdit));if(d)deleteRecipe(d.dataset.recipeDelete)});
 
     $("btnSaveStaff").addEventListener("click", saveStaff);
     $("btnClearStaff").addEventListener("click", clearStaffForm);
