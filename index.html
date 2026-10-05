@@ -2138,6 +2138,22 @@
       {id:"togo-pasta-extra-4",category:"Pasta & Salat Extras",name:"Extras 4",description:"Krabben, Meeresfrüchte, luftgetrockneter Schinken oder Hähnchenbruststücke",price:4.5}
     ];
 
+    // Some Android browsers deny access even to the sessionStorage getter.
+    // Keep session-only state in memory when browser storage is unavailable.
+    const safeSessionStorage = (() => {
+      const memory = new Map();
+      return {
+        getItem(key){
+          if(memory.has(key)) return memory.get(key);
+          try{ return window.sessionStorage.getItem(key); }catch{ return null; }
+        },
+        setItem(key, value){
+          memory.set(key, String(value));
+          try{ window.sessionStorage.setItem(key, String(value)); }catch{}
+        }
+      };
+    })();
+
     const $ = (id) => document.getElementById(id);
 
     function todayStr(){
@@ -5644,7 +5660,8 @@ bruchCache.sort((a, b) => {
     async function handlePendingClockQr(){
       const token = new URLSearchParams(window.location.search).get("clockQr");
       if(!token) return;
-      const lastHandled = JSON.parse(sessionStorage.getItem("matteoClockQrHandled") || "null");
+      let lastHandled = null;
+      try{ lastHandled = JSON.parse(safeSessionStorage.getItem("matteoClockQrHandled") || "null"); }catch{}
       if(lastHandled?.token === token && Date.now() - Number(lastHandled.at || 0) < 30000) return;
       try{
         const snap = await getDoc(doc(db, "appSettings", "timeClockQr"));
@@ -5660,7 +5677,7 @@ bruchCache.sort((a, b) => {
           await clockIn(true);
           showMsg(`Willkommen, ${currentProfile.name || "Team"}!`);
         }
-        sessionStorage.setItem("matteoClockQrHandled", JSON.stringify({token, at:Date.now()}));
+        safeSessionStorage.setItem("matteoClockQrHandled", JSON.stringify({token, at:Date.now()}));
         const cleanUrl = new URL(window.location.href);
         cleanUrl.searchParams.delete("clockQr");
         history.replaceState({}, "", cleanUrl.toString());
@@ -6452,8 +6469,8 @@ bruchCache.sort((a, b) => {
 
       if(today===localDateKey()&&missingRelevant>0){
         const noticeKey=`haccpNotice:${today}:${currentUser.uid}`;
-        if(sessionStorage.getItem(noticeKey)!=="shown"){
-          sessionStorage.setItem(noticeKey,"shown");
+        if(safeSessionStorage.getItem(noticeKey)!=="shown"){
+          safeSessionStorage.setItem(noticeKey,"shown");
           setTimeout(()=>notifyTeamEvent(
             "HACCP Erinnerung",
             `${missingRelevant} Kontrolle(n) für deinen Bereich sind heute noch offen.`,
