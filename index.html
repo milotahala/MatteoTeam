@@ -258,15 +258,6 @@
     .clockMonthTable .clockBookings{white-space:normal;min-width:170px;color:var(--muted);line-height:1.45}
     .clockMonthTable .clockSickRow td{background:#2a1014;color:#fecaca}
     .clockTableHint{display:none;margin:0 0 8px;color:var(--muted);font-size:12px}
-    #viewTimeClock.staffClockView>.sectionSub,
-    #viewTimeClock.staffClockView>.clockNow,
-    #viewTimeClock.staffClockView>.clockDate,
-    #viewTimeClock.staffClockView>#timeClockScanHint,
-    #viewTimeClock.staffClockView>#timeClockQrPanel,
-    #viewTimeClock.staffClockView>.clockActions,
-    #viewTimeClock.staffClockView>#timeClockGeo,
-    #viewTimeClock.staffClockView #timeClockStatusCard,
-    #viewTimeClock.staffClockView #timeClockBreakCard{display:none!important}
     #viewTimeClock.staffClockView .clockSummary{grid-template-columns:1fr;max-width:620px;margin-top:8px}
     #viewTimeClock.staffClockView #timeClockTotalCard{grid-column:1/-1}
     .noticeCard{padding:16px;border-radius:16px;background:#102239;border:1px solid var(--line);margin-bottom:10px;cursor:pointer}
@@ -5652,7 +5643,7 @@ bruchCache.sort((a, b) => {
 
     async function handlePendingClockQr(){
       const token = new URLSearchParams(window.location.search).get("clockQr");
-      if(!token || isAdmin()) return;
+      if(!token) return;
       const lastHandled = JSON.parse(sessionStorage.getItem("matteoClockQrHandled") || "null");
       if(lastHandled?.token === token && Date.now() - Number(lastHandled.at || 0) < 30000) return;
       try{
@@ -5903,7 +5894,7 @@ bruchCache.sort((a, b) => {
 
     function renderTimeClock(){
       const now = new Date();
-      $("viewTimeClock").classList.toggle("staffClockView", !isAdmin());
+      $("viewTimeClock").classList.remove("staffClockView");
       $("timeClockNow").textContent = now.toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
       $("timeClockDate").textContent = now.toLocaleDateString("de-DE", {weekday:"long", day:"2-digit", month:"long", year:"numeric"});
       const sessions = timeClockRecord.sessions || [];
@@ -5912,7 +5903,7 @@ bruchCache.sort((a, b) => {
       $("timeClockEmployee").textContent = timeClockRecord.userName || currentProfile.name || currentUser.email;
       $("timeClockStatus").textContent = awayPeriod ? `Kurz raus seit ${formatClockTime(awayPeriod.startedAt)}` : (openSession ? `Seit ${formatClockTime(openSession.in)}` : "Nicht eingestempelt");
       const unavailable = !workplaceConfig || timeClockLocationBusy;
-      document.querySelector(".clockActions").classList.toggle("hidden", !isAdmin());
+      document.querySelector(".clockActions").classList.remove("hidden");
       $("btnClockIn").disabled = unavailable || Boolean(openSession);
       $("btnClockOut").disabled = unavailable || !openSession;
       $("btnClockAway").disabled = unavailable || !openSession || Boolean(awayPeriod);
