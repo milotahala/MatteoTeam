@@ -1242,7 +1242,7 @@
           <section id="viewSupplierOrders" class="view card hidden">
             <div class="row" style="margin-bottom:16px">
               <div><h2 class="sectionTitle">Bestellliste</h2><div class="sectionSub" style="margin-bottom:0">Lieferantenbestellung vorbereiten, speichern und in der E-Mail-App öffnen.</div></div>
-              <span class="pill ok right">Absender: milot@pizzeriamatteo.de</span>
+              <span class="pill ok right">Absender: milot.mu@ez-buero.de</span>
             </div>
 
             <div class="item adminOnly">
@@ -1272,7 +1272,7 @@
                 <button id="btnPrintSupplierOrder" class="ghost" type="button"><i data-lucide="printer"></i> Vorschau / PDF</button>
                 <button id="btnSendSupplierOrder" class="btn right" type="button"><i data-lucide="mail"></i> PDF per E-Mail</button>
               </div>
-              <div class="tiny muted" style="margin-top:10px">Die Bestellung wird als übersichtliche PDF-Tabelle erstellt. Wähle danach „Mail“, trage den Empfänger ein und prüfe den Absender milot@pizzeriamatteo.de.</div>
+              <div class="tiny muted" style="margin-top:10px">Die Bestellung wird als übersichtliche PDF-Tabelle erstellt. Wähle danach „Mail“, trage den Empfänger ein und prüfe den Absender milot.mu@ez-buero.de.</div>
             </div>
 
             <div class="item" style="margin-top:14px">
@@ -3292,7 +3292,7 @@
         ? `${item.nr || "-"} | ${item.name || "-"} | ${item.crate || "-"} | ${item.kilo || "-"} | ${item.bundle || "-"}`
         : `${item.nr || "-"} | ${item.article || "-"} | ${item.name || "-"} | ${item.piece || "-"} | ${item.carton || "-"}`
       ).join("\n");
-      return `Guten Tag,\n\nhiermit bestellen wir folgende Artikel:\n\n${heading}\n${separator}\n${itemLines}${order.other ? `\n\nSonstiges:\n${order.other}` : ""}\n\n${order.deliveryDate ? `Gewünschtes Lieferdatum: ${order.deliveryDate}\n` : ""}${order.note ? `Nachricht: ${order.note}\n` : ""}Bestellnummer: ${order.orderNumber}\nAbsender: milot@pizzeriamatteo.de\n\nMit freundlichen Grüßen\nPizzeria Ristorante Matteo GmbH`;
+      return `Guten Tag,\n\nhiermit bestellen wir folgende Artikel:\n\n${heading}\n${separator}\n${itemLines}${order.other ? `\n\nSonstiges:\n${order.other}` : ""}\n\n${order.deliveryDate ? `Gewünschtes Lieferdatum: ${order.deliveryDate}\n` : ""}${order.note ? `Nachricht: ${order.note}\n` : ""}Bestellnummer: ${order.orderNumber}\nAbsender: milot.mu@ez-buero.de\n\nMit freundlichen Grüßen\nPizzeria Ristorante Matteo GmbH`;
     }
 
     function currentSupplierOrder(){
@@ -3301,7 +3301,7 @@
         supplier:safe($("supplierOrderName").value),
         email:safe($("supplierOrderEmail").value),
         type:$("supplierOrderType").value || "arasco",
-        senderEmail:"milot@pizzeriamatteo.de",
+        senderEmail:"milot.mu@ez-buero.de",
         deliveryDate:$("supplierOrderDeliveryDate").value,
         note:safe($("supplierOrderNote").value),
         other:safe($("supplierOrderOther").value),
