@@ -1316,7 +1316,7 @@
             <div id="haccpDaySummary" class="item" style="margin-top:16px">Kontrollen werden geladen …</div>
             <div id="haccpSections" class="haccpSections"></div>
             <article id="haccpDeliveries" class="haccpSection hidden" style="margin-top:16px">
-              <strong>Wareneingang – Lieferanten</strong>
+              <div class="row"><strong>Wareneingang – Lieferanten</strong><button id="btnPrintHaccpDeliveries" class="btnWarn right" type="button">Anlieferungen: Monat drucken</button></div>
               <div class="tiny muted">Nur Admin / SuperAdmin · LKW-Temperatur bei Anlieferung erfassen.</div>
               <div class="haccpDeviceGrid">
                 <div><label class="label" for="haccpSupplier">Lieferant</label><select id="haccpSupplier" class="input"><option value="Arasko">Arasko</option><option value="Gemüse">Gemüse</option><option value="other">Andere</option></select></div>
@@ -3929,6 +3929,34 @@ ${lastHoursPayload.details.join("\n")}`;
         history.innerHTML=rows.length?rows.map(row=>`<div class="item"><strong>${htmlEscape(row.supplier)}</strong> · ${htmlEscape(row.time)} · <strong>${htmlEscape(row.temperature)} °C</strong><div class="tiny muted">Erfasst von ${htmlEscape(row.createdByName)}</div>${row.note?`<div>${htmlEscape(row.note)}</div>`:""}</div>`).join(""):'<div class="tiny muted">Keine Anlieferungen für diesen Tag.</div>';
       }catch(err){
         if(loadId===haccpDeliveryLoadId&&isAdmin()) history.textContent="Anlieferungen konnten nicht geladen werden: "+err.message;
+      }
+    }
+
+    function haccpDeliveryPrintRows(rows){
+      return rows.length?rows.map(row=>`<tr><td>${htmlEscape(safe(row.date).split("-").reverse().join("."))}</td><td>${htmlEscape(row.time||"")}</td><td>${htmlEscape(row.supplier||"")}</td><td>${htmlEscape(row.temperature||"")} °C</td><td>${htmlEscape(row.createdByName||"")}</td><td>${htmlEscape(row.note||"")}</td></tr>`).join(""):'<tr><td colspan="6">Keine Anlieferungen in diesem Monat erfasst.</td></tr>';
+    }
+
+    async function printHaccpDeliveries(){
+      if(!isAdmin()) return;
+      const month=($("haccpDate").value||todayStr()).slice(0,7);
+      const w=window.open("","_blank");
+      if(!w) return showMsg("Das Druckfenster wurde blockiert. Bitte Pop-ups für diese Seite erlauben.");
+      w.document.write('<html><head><title>Anlieferungen</title></head><body><p>Monatsbericht wird geladen …</p></body></html>');
+      w.document.close();
+      try{
+        const [year,monthNumber]=month.split("-").map(Number);
+        const nextMonth=monthNumber===12?`${year+1}-01`:`${year}-${String(monthNumber+1).padStart(2,"0")}`;
+        const qs=await getDocs(query(collection(db,"haccpDeliveries"),where("date",">=",month+"-01"),where("date","<",nextMonth+"-01")));
+        if(!isAdmin()){w.close();return;}
+        const rows=qs.docs.map(d=>d.data()).sort((a,b)=>(safe(a.date)+safe(a.time)).localeCompare(safe(b.date)+safe(b.time)));
+        if(w.closed) return;
+        w.document.open();
+        w.document.write(`<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HACCP Anlieferungen ${htmlEscape(month)}</title><style>@page{size:A4 landscape;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#111;margin:0}.toolbar{padding:12px;background:#102239;display:flex;gap:10px}.toolbar button{padding:12px 16px;border:0;border-radius:8px;cursor:pointer;font-size:15px}.sheet{padding:18px}h1{font-size:20px;margin:0 0 8px}p{font-size:13px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #777;padding:7px;font-size:11px;text-align:left;vertical-align:top;overflow-wrap:anywhere;white-space:pre-wrap}th{background:#eee}thead{display:table-header-group}tr{break-inside:avoid}th:nth-child(1){width:11%}th:nth-child(2){width:8%}th:nth-child(3){width:18%}th:nth-child(4){width:12%}th:nth-child(5){width:18%}@media print{.toolbar{display:none}.sheet{padding:0}}</style></head><body><div class="toolbar"><button onclick="window.close()">← Zurück</button><button onclick="window.print()">Drucken / Als PDF speichern</button></div><div class="sheet"><h1>Pizzeria Ristorante Matteo GmbH</h1><p>HACCP · Wareneingang – Lieferanten · Monat: ${htmlEscape(month)} · ${rows.length} Anlieferung(en)</p><table><thead><tr><th>Datum</th><th>Uhrzeit</th><th>Lieferant</th><th>LKW-Temperatur</th><th>Erfasst von</th><th>Bemerkung / Maßnahme</th></tr></thead><tbody>${haccpDeliveryPrintRows(rows)}</tbody></table></div></body></html>`);
+        w.document.close();w.focus();
+      }catch(err){
+        if(w.closed) return;
+        w.document.open();w.document.write('<html><body><p>Bericht konnte nicht geladen werden. Bitte schließen und erneut versuchen.</p><button onclick="window.close()">Zurück</button></body></html>');w.document.close();
+        showMsg("Anlieferungsbericht fehlgeschlagen: "+err.message);
       }
     }
 
@@ -6754,6 +6782,7 @@ bruchCache.sort((a, b) => {
 
     $("haccpSupplier").addEventListener("change",()=>$("haccpSupplierOtherField").classList.toggle("hidden",$("haccpSupplier").value!=="other"));
     $("btnSaveHaccpDelivery").addEventListener("click",saveHaccpDelivery);
+    $("btnPrintHaccpDeliveries").addEventListener("click",printHaccpDeliveries);
     $("btnTruckTemperatureSign").addEventListener("click",()=>{
       $("haccpTruckTemperature").value=toggleHaccpTemperatureSign($("haccpTruckTemperature").value);
       $("haccpTruckTemperature").focus();
