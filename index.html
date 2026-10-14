@@ -1315,6 +1315,19 @@
             </div>
             <div id="haccpDaySummary" class="item" style="margin-top:16px">Kontrollen werden geladen …</div>
             <div id="haccpSections" class="haccpSections"></div>
+            <article id="haccpDeliveries" class="haccpSection hidden" style="margin-top:16px">
+              <strong>Wareneingang – Lieferanten</strong>
+              <div class="tiny muted">Nur Admin / SuperAdmin · LKW-Temperatur bei Anlieferung erfassen.</div>
+              <div class="haccpDeviceGrid">
+                <div><label class="label" for="haccpSupplier">Lieferant</label><select id="haccpSupplier" class="input"><option value="Arasko">Arasko</option><option value="Gemüse">Gemüse</option><option value="other">Andere</option></select></div>
+                <div id="haccpSupplierOtherField" class="hidden"><label class="label" for="haccpSupplierOther">Name des Lieferanten</label><input id="haccpSupplierOther" class="input" maxlength="100" /></div>
+                <div><label class="label" for="haccpTruckTemperature">LKW-Temperatur °C</label><div class="haccpTemperatureInput"><input id="haccpTruckTemperature" class="input" type="text" inputmode="decimal" placeholder="z. B. 4,5 oder -18" /><button id="btnTruckTemperatureSign" class="ghost" type="button" aria-label="Temperatur-Vorzeichen wechseln">+/−</button></div></div>
+                <div><label class="label" for="haccpDeliveryTime">Uhrzeit der Anlieferung</label><input id="haccpDeliveryTime" class="input" type="time" /></div>
+              </div>
+              <label class="label" for="haccpDeliveryNote">Bemerkung / Maßnahme (optional)</label><textarea id="haccpDeliveryNote" class="textarea" maxlength="1000"></textarea>
+              <button id="btnSaveHaccpDelivery" class="btn" type="button" style="margin-top:12px">Anlieferung speichern</button>
+              <div id="haccpDeliveryHistory" style="margin-top:12px"></div>
+            </article>
 
             <div class="item ownerOnly" style="margin-top:12px">
               <strong>Verlauf der letzten 31 Tage</strong>
@@ -3896,6 +3909,47 @@ ${lastHoursPayload.details.join("\n")}`;
       const snap=await getDoc(doc(db,"haccpDaily",date));
       renderHaccpSections(snap.exists()?snap.data():{});
       await loadHaccpHistory();
+      await loadHaccpDeliveries();
+    }
+
+    let haccpDeliveryLoadId=0;
+    async function loadHaccpDeliveries(){
+      const loadId=++haccpDeliveryLoadId;
+      const panel=$("haccpDeliveries"),history=$("haccpDeliveryHistory");
+      panel.classList.toggle("hidden",!isAdmin());
+      history.innerHTML="";
+      if(!isAdmin()) return;
+      const date=$("haccpDate").value||todayStr();
+      if(!$("haccpDeliveryTime").value) $("haccpDeliveryTime").value=new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Berlin"});
+      history.textContent="Anlieferungen werden geladen …";
+      try{
+        const qs=await getDocs(query(collection(db,"haccpDeliveries"),where("date","==",date)));
+        if(loadId!==haccpDeliveryLoadId||!isAdmin()) return;
+        const rows=qs.docs.map(d=>d.data()).sort((a,b)=>safe(a.time).localeCompare(safe(b.time)));
+        history.innerHTML=rows.length?rows.map(row=>`<div class="item"><strong>${htmlEscape(row.supplier)}</strong> · ${htmlEscape(row.time)} · <strong>${htmlEscape(row.temperature)} °C</strong><div class="tiny muted">Erfasst von ${htmlEscape(row.createdByName)}</div>${row.note?`<div>${htmlEscape(row.note)}</div>`:""}</div>`).join(""):'<div class="tiny muted">Keine Anlieferungen für diesen Tag.</div>';
+      }catch(err){
+        if(loadId===haccpDeliveryLoadId&&isAdmin()) history.textContent="Anlieferungen konnten nicht geladen werden: "+err.message;
+      }
+    }
+
+    async function saveHaccpDelivery(){
+      if(!isAdmin()) return showMsg("Nur Admin / SuperAdmin.");
+      const supplier=$("haccpSupplier").value==="other"?safe($("haccpSupplierOther").value):$("haccpSupplier").value;
+      const temperature=normalizeHaccpTemperature($("haccpTruckTemperature").value);
+      const time=$("haccpDeliveryTime").value,date=$("haccpDate").value||todayStr();
+      if(!supplier) return showMsg("Bitte den Lieferanten angeben.");
+      if(!validHaccpTemperature(temperature)) return showMsg("Bitte eine gültige LKW-Temperatur eingeben, z. B. 4,5 oder -18.");
+      if(!/^\d{2}:\d{2}$/.test(time)) return showMsg("Bitte die Uhrzeit der Anlieferung angeben.");
+      const button=$("btnSaveHaccpDelivery");
+      if(button.disabled) return;
+      button.disabled=true;
+      try{
+        await addDoc(collection(db,"haccpDeliveries"),{date,time,supplier,temperature,note:safe($("haccpDeliveryNote").value),createdBy:currentUser.uid,createdByName:currentProfile.name||currentUser.email,createdAt:serverTimestamp()});
+        $("haccpTruckTemperature").value="";$("haccpDeliveryNote").value="";
+        await loadHaccpDeliveries();
+        showMsg("Anlieferung gespeichert.");
+      }catch(err){showMsg("Speichern fehlgeschlagen: "+err.message);}
+      finally{button.disabled=false;}
     }
 
     async function loadHaccpHistory(){
@@ -6596,6 +6650,9 @@ bruchCache.sort((a, b) => {
     function showSignedOutScreen(){
       currentUser = null;
       currentProfile = null;
+      ++haccpDeliveryLoadId;
+      $("haccpDeliveries").classList.add("hidden");
+      $("haccpDeliveryHistory").innerHTML="";
       $("appShell").classList.add("hidden");
       $("authScreen").classList.remove("hidden");
       $("loginPassword").value = "";
@@ -6695,6 +6752,12 @@ bruchCache.sort((a, b) => {
     $("btnShareWhatsApp").addEventListener("click", shareHoursWhatsApp);
     $("hoursStaffSelect").addEventListener("change", loadHours);
 
+    $("haccpSupplier").addEventListener("change",()=>$("haccpSupplierOtherField").classList.toggle("hidden",$("haccpSupplier").value!=="other"));
+    $("btnSaveHaccpDelivery").addEventListener("click",saveHaccpDelivery);
+    $("btnTruckTemperatureSign").addEventListener("click",()=>{
+      $("haccpTruckTemperature").value=toggleHaccpTemperatureSign($("haccpTruckTemperature").value);
+      $("haccpTruckTemperature").focus();
+    });
     $("btnLoadHaccp").addEventListener("click", loadHaccp);
     $("btnSaveHaccp").addEventListener("click", saveHaccp);
     $("haccpSections").addEventListener("click",event=>{
@@ -7052,6 +7115,9 @@ bruchCache.sort((a, b) => {
         vacationNotificationReady = false;
         vacationPopupShown = false;
         currentProfile = null;
+      ++haccpDeliveryLoadId;
+      $("haccpDeliveries").classList.add("hidden");
+      $("haccpDeliveryHistory").innerHTML="";
         $("authScreen").classList.remove("hidden");
         $("appShell").classList.add("hidden");
         return;
