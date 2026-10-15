@@ -4382,13 +4382,17 @@ bruchCache.sort((a, b) => {
       const rows = bruchVisibleRows().filter(x => (x.date || "").startsWith(month)).sort((a,b)=> (a.date || "").localeCompare(b.date || ""));
 
       let html = `<html><head><title>Bruchliste ${month}</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+        @page{size:A4 portrait;margin:10mm}
         *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;color:#111}
         .toolbar{position:sticky;top:0;z-index:2;display:flex;gap:10px;padding:12px;background:#0b1727}
         .toolbar button{border:0;border-radius:9px;padding:11px 16px;font-size:16px;font-weight:bold;cursor:pointer}
         .back{background:#e5e7eb;color:#111}.print{background:#22b873;color:#04150e}
-        .sheet{padding:20px}
-        table{width:100%;border-collapse:collapse}
-        th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:12px}
+        .sheet{padding:12px}
+        h2{font-size:14px;line-height:1.25;margin:0 0 10px}
+        table{width:100%;border-collapse:collapse;table-layout:fixed}
+        th,td{border:1px solid #ccc;padding:3px 4px;text-align:left;font-size:10px;line-height:1.2;vertical-align:top;overflow-wrap:break-word}
+        th:nth-child(1){width:16%}th:nth-child(2){width:26%}th:nth-child(3){width:12%}th:nth-child(4){width:25%}th:nth-child(5){width:21%}
+        thead{display:table-header-group}tr{break-inside:avoid;page-break-inside:avoid}
         th{background:#f4f4f4}
         @media print{.toolbar{display:none}.sheet{padding:0}}
       </style></head><body>
