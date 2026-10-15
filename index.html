@@ -4292,24 +4292,28 @@ await addDoc(collection(db, "bruchliste"), {
   }
 }
 
-    const BRUCH_SECTORS = ["Küche", "Pizza", "Service", "Kasse"];
+    const BRUCH_SHARED_SECTOR = "Pizza / Service / Kasse";
+    const BRUCH_SECTORS = ["Küche", BRUCH_SHARED_SECTOR];
+    function bruchSectorGroup(value){
+      const sector = safe(value).toLowerCase();
+      if(sector.includes("küche") || sector.includes("kuche")) return "Küche";
+      if(sector.includes("pizza") || sector.includes("service") || sector.includes("kellner") || sector.includes("kasse")) return BRUCH_SHARED_SECTOR;
+      return "";
+    }
     function bruchAllowedSectors(){
       if(isAdmin()) return BRUCH_SECTORS;
-      const department = safe(currentProfile?.department).toLowerCase();
-      if(department.includes("küche") || department.includes("kuche")) return ["Küche"];
-      if(department.includes("pizza")) return ["Pizza"];
-      if(department.includes("service") || department.includes("kellner")) return ["Service"];
-      if(department.includes("kasse")) return ["Kasse"];
-      return [];
+      const group = bruchSectorGroup(currentProfile?.department);
+      return group ? [group] : [];
     }
     function parseBruchQty(value){
       const text = String(value || "").trim().replace(",", ".");
       return /^\d+(?:\.\d+)?$/.test(text) ? Number(text) : NaN;
     }
     function bruchEntrySector(entry){
-      if(BRUCH_SECTORS.includes(entry.sector)) return entry.sector;
+      const group = bruchSectorGroup(entry.sector);
+      if(group) return group;
       const author = staffCache.find(person => (person.uid || person.id) === entry.byUid);
-      return BRUCH_SECTORS.includes(author?.department) ? author.department : "Nicht zugeordnet";
+      return bruchSectorGroup(author?.department) || "Nicht zugeordnet";
     }
     function bruchVisibleRows(){
       const sector = $("bruchSector").value;
@@ -4344,7 +4348,8 @@ bruchCache.sort((a, b) => {
       const allowed = bruchAllowedSectors();
       const sectors = isAdmin() ? [...allowed, "Nicht zugeordnet"] : allowed;
       select.innerHTML = sectors.map(sector => `<option>${htmlEscape(sector)}</option>`).join("");
-      select.value = sectors.includes(selected) ? selected : (allowed.includes(currentProfile?.department) ? currentProfile.department : sectors[0] || "");
+      const preferred = bruchSectorGroup(selected) || bruchSectorGroup(currentProfile?.department);
+      select.value = sectors.includes(preferred) ? preferred : (sectors.includes(selected) ? selected : sectors[0] || "");
       renderBruchList();
     }
 
