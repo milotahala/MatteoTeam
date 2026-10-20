@@ -3618,8 +3618,8 @@
           }
           row.append(name);
           const rowKey = `${person.id}::${department}`;
-          let legacyDays = {};
-          try {legacyDays = personDays(data.entries || {}, person.accountId || person.id, planningPeople);} catch(err) {showMsg(err.message);}
+          let legacyDays = {}, canonicalDays = {};
+          try {legacyDays = personDays(data.entries || {}, person.accountId || person.id, planningPeople); canonicalDays = personDays(data.sectorCanonical || {}, person.accountId || person.id, planningPeople);} catch(err) {showMsg(err.message);}
           for(let day=0;day<7;day++){
             const cell = document.createElement('td');
             const input = document.createElement('input');
@@ -3629,7 +3629,7 @@
             // Imported sector data wins only if the canonical day has not since been
             // changed by sick-leave / vacation modules or another older app client.
             const sector = data.sectorEntries?.[rowKey]?.[day];
-            const snapshotDay = data.sectorCanonical?.[person.accountId || person.id]?.[day] || '';
+            const snapshotDay = canonicalDays[day] || '';
             const legacy = legacyDays[day] || '';
             const useSectors = data.sectorEntries && snapshotDay === legacy;
             input.value = useSectors ? sector || '' : (department === person.departments[0] ? legacy : '');

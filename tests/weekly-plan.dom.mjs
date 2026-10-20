@@ -63,6 +63,14 @@ try{
  assert.equal(await page.evaluate(()=>{
  const p=weeklyTest.state().planningPeople.find(p=>p.name==='Alex');return weeklyTest.personDays({[p.id]:{0:'9-18'}},'uid-milot',weeklyTest.state().planningPeople)[0];
  }),'9-18');
+ // Account links must retain sector rows in older weeks keyed by planning ID.
+ await page.evaluate(()=>{
+  const p=weeklyTest.state().planningPeople.find(p=>p.name==='Alex');
+  weeklyTest.renderWeeklyTable({entries:{[p.id]:{0:'11-19'}},sectorCanonical:{[p.id]:{0:'11-19'}},sectorEntries:{[p.id+'::Kasse']:{0:'11-19'}}});
+ });
+ assert.equal(await page.evaluate(()=>{
+  const p=weeklyTest.state().weeklyPeople.find(p=>p.name==='Alex');return [...document.querySelectorAll('#weekBody input')].find(i=>i.dataset.row===p.id+'::Kasse'&&i.dataset.day==='0').value;
+ }),'11-19');
  // A sick-leave writer using canonical entries must override stale sector data.
  await page.evaluate(async()=>{const r=weeklyTest.records.get('weeklyPlans/2026-10-19');r.entries['uid-milot'][6]='Krank';await weeklyTest.loadWeekly()});
  assert.equal(await page.evaluate(()=>{
