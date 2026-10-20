@@ -859,6 +859,29 @@
               </div>
             </div>
 
+            <div id="weeklyStatus" class="sectionSub" role="status" style="margin:12px 0"></div>
+            <div id="weeklyTools" class="adminOnly noPrint" style="margin:12px 0">
+              <div class="row">
+                <label class="ghost" style="cursor:pointer">Plan importieren (Foto / Datei)<input id="weeklyPhotoFile" class="hidden" type="file" accept="image/*,.json,application/json" /></label>
+              </div>
+              <details style="margin-top:12px"><summary>Mitarbeiter ohne Konto / weiteren Bereich hinzufügen</summary>
+                <div class="row" style="margin-top:10px"><input id="weeklyNewName" class="input" placeholder="Name" aria-label="Mitarbeitername" style="max-width:220px"/><select id="weeklyNewDepartment" class="input" aria-label="Bereich" style="max-width:170px"><option>Pizza</option><option>Kasse</option><option>Service</option><option>Küche</option></select><button id="weeklyAddPerson" class="ghost" type="button">Hinzufügen</button></div>
+                <div class="tiny muted">Gleicher Name = gleiche Person in weiterem Bereich. Für verschiedene Personen bitte vollständige Namen verwenden. Es wird kein Login erstellt.</div>
+              </details>
+              <div id="weeklyImportPanel" class="item hidden" style="margin-top:12px">
+                <h3>Foto prüfen und zuordnen</h3>
+                <div id="weeklyOcrStatus" role="status" class="tiny muted"></div>
+                <img id="weeklyPhotoPreview" class="hidden" alt="Dienstplan zum Vergleichen" style="max-width:100%;max-height:400px;object-fit:contain;background:white;margin:10px 0"/>
+                <div id="weeklyReview" class="hidden">
+                  <p id="weeklyReviewDates" class="tiny"></p>
+                  <div class="tableWrap"><table style="min-width:1200px"><thead><tr><th>Name / Konto</th><th>Bereich</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th></tr></thead><tbody id="weeklyReviewBody"></tbody></table></div>
+                  <p class="tiny muted">Rote Felder brauchen ein vollständiges Zeitintervall. 18/19 endet um 04:00, Freitag/Samstag um 06:00 am Folgetag. Leere Zellen überschreiben keine vorhandenen Einträge. Neue Namen bleiben ohne Konto; doppelte Namen in verschiedenen Bereichen werden einer Person zugeordnet.</p>
+                  <label class="row"><input id="weeklyReviewed" type="checkbox"/> Ich habe Zielwoche, Namen, Zuordnung und Zeiten mit dem Foto geprüft.</label>
+                  <button id="weeklyApplyImport" class="btn" type="button" style="margin-top:10px">In Planentwurf übernehmen</button>
+                </div>
+                <button id="weeklyCancelImport" class="ghost" type="button" style="margin-top:10px">Schließen</button>
+              </div>
+            </div>
             <div class="tableWrap">
               <table class="weekTable">
                 <thead>
@@ -1653,6 +1676,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script type="module">
+    import {DEPARTMENTS, normalizeName, shiftIntervals, shiftTotals, expandStart, combineSectorDays, personDays, parsePhotoWords, preparePhoto} from './weekly-plan.mjs';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
       getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword
@@ -3531,86 +3555,334 @@
       }
     }
 
-    async function buildWeeklyTable(){
-      const head = $("weekHeadRow");
-      const body = $("weekBody");
-      const weekStart = weekKeyFrom($("weekPicker").value || todayStr());
-      $("weekPicker").value = weekStart;
+    let planningPeople = [];
+    let weeklyPeople = [];
+    let weeklyLoaded = {};
+    let weeklyRegistryLoaded = [];
+    let weeklyDirty = false;
+    let weeklyLoadId = 0;
+    let weeklyLoadedStart = '';
+    let weeklyPreviewRows = [];
+    let weeklyPreviewDates = [];
+    let weeklyPhotoUrl = '';
 
-      head.innerHTML = `<th style="min-width:200px">Mitarbeiter</th>`;
-      for(let i=0;i<7;i++){
-        const date = addDays(weekStart, i);
-        const th = document.createElement("th");
-        th.textContent = formatDayHeader(date);
-        head.appendChild(th);
-      }
-
-      body.innerHTML = "";
-      const departmentOrder = ["Pizza", "Kasse", "Service", "Küche"];
-      const grouped = new Map();
-      staffCache.forEach(staff => {
-        const department = departmentOrder.includes(staff.department) ? staff.department : "Küche";
-        if(!grouped.has(department)) grouped.set(department, []);
-        grouped.get(department).push(staff);
+    function collectWeeklySectors(){
+      const sectors = {};
+      document.querySelectorAll('#weekBody input[data-staff]').forEach(input => {
+        const key = input.dataset.row;
+        (sectors[key] ||= {})[input.dataset.day] = safe(input.value);
       });
-      const departments = [...departmentOrder.filter(department => grouped.has(department)), ...[...grouped.keys()].filter(department => !departmentOrder.includes(department))];
-
-      departments.forEach(department => {
-        const departmentRow = document.createElement("tr");
-        departmentRow.className = "departmentRow";
-        departmentRow.dataset.department = department;
-        departmentRow.innerHTML = `<th>${htmlEscape(department)}</th>${Array.from({length:7}, (_, i) => `<th>${htmlEscape(formatDayHeader(addDays(weekStart, i)))}</th>`).join("")}`;
-        body.appendChild(departmentRow);
-
-        grouped.get(department).forEach(s => {
-        const tr = document.createElement("tr");
-        const nameTd = document.createElement("td");
-        nameTd.className = "staffNameCell";
-        nameTd.innerHTML = `<strong>${htmlEscape(s.name || "-")}</strong><div class="tiny muted">${htmlEscape(s.department || "")}</div>`;
-        tr.appendChild(nameTd);
-
-        for(let i=0;i<7;i++){
-          const td = document.createElement("td");
-          td.dataset.label = formatDayHeader(addDays(weekStart, i));
-          td.innerHTML = `<input data-staff="${s.id}" data-day="${i}" placeholder="9-18 / Frei / U" />`;
-          td.querySelector("input").addEventListener("input", event => styleWeekInput(event.target));
-          tr.appendChild(td);
-        }
-        body.appendChild(tr);
-        });
-      });
-
-      if(!staffCache.length){
-        body.innerHTML = `<tr><td colspan="8" class="muted">Keine Mitarbeiter.</td></tr>`;
-      }
-
-      await loadWeekly();
+      return sectors;
     }
 
+    function makeWeeklyPeople(){
+      const people = planningPeople.map(p => ({...p, departments:[...p.departments]}));
+      for(const staff of staffCache){
+        const existing = people.find(p => p.accountId === staff.id || p.id === staff.id);
+        const department = DEPARTMENTS.includes(staff.department) ? staff.department : 'Küche';
+        if(existing){
+          existing.accountId = staff.id;
+        }else people.push({id:staff.id, accountId:staff.id, name:staff.name || staff.email || '-', departments:[department]});
+      }
+      return people;
+    }
+
+    function renderWeeklyTable(data = weeklyLoaded){
+      const weekStart = weeklyLoadedStart;
+      weeklyPeople = makeWeeklyPeople();
+      $('weekHeadRow').innerHTML = '<th>Mitarbeiter</th>' + Array.from({length:7}, (_, i) => `<th>${htmlEscape(formatDayHeader(addDays(weekStart,i)))}</th>`).join('');
+      const body = $('weekBody');
+      body.innerHTML = '';
+      for(const department of DEPARTMENTS){
+        const people = weeklyPeople.filter(p => p.departments.includes(department));
+        if(!people.length) continue;
+        const header = document.createElement('tr');
+        header.className = 'departmentRow';
+        header.dataset.department = department;
+        header.innerHTML = `<th>${htmlEscape(department)}</th>` + Array.from({length:7}, (_,i) => `<th>${htmlEscape(formatDayHeader(addDays(weekStart,i)))}</th>`).join('');
+        body.append(header);
+        for(const person of people){
+          const row = document.createElement('tr');
+          const name = document.createElement('td');
+          name.className = 'staffNameCell';
+          const linked = staffCache.some(s => s.id === person.accountId);
+          name.innerHTML = `<strong>${htmlEscape(person.name)}</strong><div class="tiny muted">${linked ? htmlEscape(department) : 'Ohne Konto'}</div>`;
+          if(isAdmin() && !linked){
+            const select = document.createElement('select');
+            select.className = 'input noPrint'; select.style.marginTop = '6px';
+            select.setAttribute('aria-label', `Konto für ${person.name} verbinden`);
+            select.add(new Option('Konto verbinden …', ''));
+            staffCache.forEach(s => select.add(new Option(s.name || s.email, s.id)));
+            select.addEventListener('change', () => linkWeeklyPerson(person.id, select.value));
+            name.append(select);
+          }
+          row.append(name);
+          const rowKey = `${person.id}::${department}`;
+          let legacyDays = {};
+          try {legacyDays = personDays(data.entries || {}, person.accountId || person.id, planningPeople);} catch(err) {showMsg(err.message);}
+          for(let day=0;day<7;day++){
+            const cell = document.createElement('td');
+            const input = document.createElement('input');
+            input.dataset.staff = person.id; input.dataset.row = rowKey; input.dataset.day = day;
+            input.placeholder = '14-22 / Frei'; input.readOnly = !isAdmin();
+            input.setAttribute('aria-label', `${person.name}, ${department}, ${formatDayHeader(addDays(weekStart,day))}`);
+            // Imported sector data wins only if the canonical day has not since been
+            // changed by sick-leave / vacation modules or another older app client.
+            const sector = data.sectorEntries?.[rowKey]?.[day];
+            const snapshotDay = data.sectorCanonical?.[person.accountId || person.id]?.[day] || '';
+            const legacy = legacyDays[day] || '';
+            const useSectors = data.sectorEntries && snapshotDay === legacy;
+            input.value = useSectors ? sector || '' : (department === person.departments[0] ? legacy : '');
+            styleWeekInput(input);
+            input.addEventListener('input', () => {weeklyDirty=true; styleWeekInput(input); $('weeklyStatus').textContent='Ungespeicherte Änderungen';});
+            cell.append(input); row.append(cell);
+          }
+          body.append(row);
+        }
+      }
+      if(!weeklyPeople.length) body.innerHTML = '<tr><td colspan="8">Noch keine Mitarbeiter. Plan aus Foto importieren oder Namen hinzufügen.</td></tr>';
+      $('btnSaveWeekly').classList.toggle('hidden',!isAdmin());
+      $('weeklyTools').classList.toggle('hidden',!isAdmin());
+    }
+
+    async function buildWeeklyTable(){ await loadWeekly(); }
+
     function styleWeekInput(input){
-      const value = safe(input.value).toLowerCase();
-      input.classList.remove("shiftWork", "shiftFree", "shiftVacation", "shiftSick", "shiftInvalid");
+      const value=safe(input.value);
+      input.classList.remove('shiftWork','shiftFree','shiftVacation','shiftSick','shiftInvalid');
       if(!value) return;
-      if(value === "frei" || value === "fre") input.classList.add("shiftFree");
-      else if(value === "u" || value === "urlaub") input.classList.add("shiftVacation");
-      else if(value === "krank" || value === "k") input.classList.add("shiftSick");
-      else input.classList.add("shiftWork");
+      if(/^(frei|fre)$/i.test(value)) input.classList.add('shiftFree');
+      else if(/^(u|urlaub)$/i.test(value)) input.classList.add('shiftVacation');
+      else if(/^(krank|k)$/i.test(value)) input.classList.add('shiftSick');
+      else {try{shiftIntervals(value);input.classList.add('shiftWork');}catch{input.classList.add('shiftInvalid');}}
     }
 
     async function loadWeekly(){
-      const weekStart = weekKeyFrom($("weekPicker").value || todayStr());
-      $("weekPicker").value = weekStart;
-      $("hoursWeekPicker").value = weekStart;
+      const weekStart=weekKeyFrom($('weekPicker').value || todayStr());
+      if(weeklyDirty && !confirm('Ungespeicherte Planänderungen verwerfen und neu laden?')) { $('weekPicker').value=weeklyLoadedStart; return; }
+      const loadId=++weeklyLoadId;
+      $('weeklyStatus').textContent='Plan wird geladen …';
+      $('btnSaveWeekly').disabled=true;
+      try{
+        const [plan,registry]=await Promise.all([getDoc(doc(db,'weeklyPlans',weekStart)),getDoc(doc(db,'weeklyPlans','_people'))]);
+        if(loadId!==weeklyLoadId) return;
+        planningPeople=registry.exists() ? registry.data().people || [] : [];
+        weeklyRegistryLoaded=JSON.parse(JSON.stringify(planningPeople));
+        weeklyLoaded=plan.exists() ? plan.data() : {};
+        // Keep names for a saved week even when its account was removed later.
+        for(const p of weeklyLoaded.people || []) if(!planningPeople.some(x=>x.id===p.id)) planningPeople.push(p);
+        weeklyLoadedStart=weekStart; weeklyDirty=false;
+        $('weekPicker').value=weekStart; $('hoursWeekPicker').value=weekStart;
+        $('weeklyStatus').textContent='Soll = geplanter Dienst. Ist = tatsächliche Buchungen in Stempeluhr. Änderungen hier ändern keine Stempelzeiten.';
+        $('weeklyImportPanel').classList.add('hidden');
+        renderWeeklyTable();
+      }catch(err){$('weeklyStatus').textContent='Plan konnte nicht geladen werden: '+err.message;}
+      finally{if(loadId===weeklyLoadId) $('btnSaveWeekly').disabled=!weeklyLoadedStart || weeklyLoadedStart!==weekStart;}
+    }
 
-      const snap = await getDoc(doc(db, "weeklyPlans", weekStart));
-      const data = snap.exists() ? (snap.data().entries || {}) : {};
+    function markWeeklyDraft(sectors){
+      weeklyDirty=true;
+      // Render draft data with a matching canonical snapshot.
+      const entries=weeklyAggregate(sectors);
+      renderWeeklyTable({entries,sectorEntries:sectors,sectorCanonical:entries});
+      $('weeklyStatus').textContent='Entwurf – bitte prüfen und „Plan speichern“ drücken.';
+    }
 
-      document.querySelectorAll("#weekBody input").forEach(inp => {
-        const sid = inp.dataset.staff;
-        const day = inp.dataset.day;
-        inp.value = data[sid]?.[day] || "";
-        styleWeekInput(inp);
+    function weeklyAggregate(sectors){
+      const result={};
+      for(const p of makeWeeklyPeople()){
+        const id=p.accountId || p.id;
+        result[id] ||= {};
+        for(let day=0;day<7;day++){
+          try{result[id][day]=combineSectorDays(p.departments.map(d=>sectors[`${p.id}::${d}`]?.[day] || ''));}
+          catch(err){throw new Error(`${p.name}, ${formatDayHeader(addDays(weeklyLoadedStart,day))}: ${err.message}`);}
+        }
+      }
+      return result;
+    }
+
+    function linkWeeklyPerson(id,accountId){
+      if(!isAdmin() || !accountId) return;
+      const sectors=collectWeeklySectors();
+      const person=planningPeople.find(p=>p.id===id);
+      if(!person) return;
+      const other=makeWeeklyPeople().find(p=>p.id!==id && (p.accountId===accountId || p.id===accountId));
+      const previous=JSON.parse(JSON.stringify(planningPeople));
+      if(other){
+        // Preserve existing account shifts; overlapping work must be resolved first.
+        for(const d of other.departments){
+          if(!person.departments.includes(d)) person.departments.push(d);
+          const target=sectors[`${id}::${d}`] ||= {};
+          for(let day=0;day<7;day++){
+            const value=sectors[`${other.id}::${d}`]?.[day];
+            if(value && target[day] && value!==target[day]){planningPeople=previous;showMsg('Beide Namen haben unterschiedliche Schichten. Bitte die Einträge zuerst abgleichen.');return;}
+            if(value) target[day]=value;
+          }
+        }
+        person.aliases=[...new Set([...(person.aliases || []),other.id,...(other.aliases || [])])].filter(alias=>alias!==id && alias!==accountId);
+        planningPeople=planningPeople.filter(p=>p.id!==other.id);
+      }
+      person.accountId=accountId;
+      try{markWeeklyDraft(sectors);}catch(err){planningPeople=previous;showMsg(err.message);}
+    }
+
+    function addWeeklyPerson(){
+      if(!isAdmin()) return;
+      const name=safe($('weeklyNewName').value), department=$('weeklyNewDepartment').value;
+      if(!name) return showMsg('Bitte Namen eingeben.');
+      const sectors=collectWeeklySectors();
+      const matches=makeWeeklyPeople().filter(p=>normalizeName(p.name)===normalizeName(name));
+      if(matches.length>1) return showMsg('Mehrere Personen mit diesem Namen. Bitte im Import gezielt zuordnen.');
+      let person=matches[0];
+      if(person){
+        if(!planningPeople.some(p=>p.id===person.id)) planningPeople.push(person);
+        else person=planningPeople.find(p=>p.id===person.id);
+        if(!person.departments.includes(department)) person.departments.push(department);
+      }else planningPeople.push({id:'plan_'+crypto.randomUUID(),name,departments:[department],accountId:''});
+      markWeeklyDraft(sectors); $('weeklyNewName').value='';
+    }
+
+    async function saveWeekly(){
+      if(!isAdmin()) return showMsg('Nur Admin.');
+      if(!weeklyLoadedStart || weeklyLoadedStart!==weekKeyFrom($('weekPicker').value || todayStr())) return showMsg('Bitte zuerst die Woche laden.');
+      const weekStart=weeklyLoadedStart;
+      let entries,sectorEntries;
+      try{sectorEntries=collectWeeklySectors();entries=weeklyAggregate(sectorEntries);}
+      catch(err){return showMsg(err.message);}
+      $('btnSaveWeekly').disabled=true;
+      $('viewWeekly').inert=true;
+      try{
+        const people=makeWeeklyPeople();
+        const registryPeople=JSON.parse(JSON.stringify(planningPeople));
+        await runTransaction(db,async transaction=>{
+          const planRef=doc(db,'weeklyPlans',weekStart), peopleRef=doc(db,'weeklyPlans','_people');
+          const plan=await transaction.get(planRef), registry=await transaction.get(peopleRef);
+          const latest=plan.exists()?plan.data():{};
+          const version=d=>JSON.stringify([d.entries||{},d.sectorEntries||{},d.people||[]]);
+          if(version(latest)!==version(weeklyLoaded)) throw new Error('Der Plan wurde inzwischen geändert. Bitte neu laden und die Änderungen erneut prüfen.');
+          const latestPeople=registry.exists()?registry.data().people || []:[];
+          if(JSON.stringify(latestPeople)!==JSON.stringify(weeklyRegistryLoaded)) throw new Error('Die Mitarbeiterzuordnung wurde inzwischen geändert. Bitte neu laden.');
+          // Retain entries not represented in the visible roster (e.g. deleted accounts).
+          const preserved={...(latest.entries || {})};
+          for(const p of people){delete preserved[p.id];if(p.accountId) delete preserved[p.accountId];for(const alias of p.aliases || []) delete preserved[alias];}
+          transaction.set(planRef,{...latest,weekStart,entries:{...preserved,...entries},sectorEntries,sectorCanonical:entries,people,updatedBy:currentUser.uid,updatedAt:serverTimestamp()});
+          transaction.set(peopleRef,{people:registryPeople,updatedBy:currentUser.uid,updatedAt:serverTimestamp()},{merge:true});
+        });
+        weeklyDirty=false; await loadWeekly(); showMsg('Wochenplan gespeichert. Stempelzeiten bleiben separat.');
+      }catch(err){showMsg('Plan nicht gespeichert: '+err.message);}
+      finally{$('btnSaveWeekly').disabled=false;$('viewWeekly').inert=false;}
+    }
+
+    function parseShiftHours(value){
+      try{return shiftTotals(value);}catch{return {total:0,night:0,breakHours:0,label:value || '-'};}
+    }
+
+    function showWeeklyReview(rows,dates=[]){
+      if(!isAdmin()) return;
+      weeklyPreviewRows=rows.map(r=>({...r,days:r.days.map(expandStart)}));
+      weeklyPreviewDates=dates;
+      $('weeklyImportPanel').classList.remove('hidden');
+      const people=makeWeeklyPeople();
+      const options=people.map(p=>`<option value="${htmlEscape(p.id)}">${htmlEscape(p.name)}${p.accountId?'':' (ohne Konto)'}</option>`).join('');
+      $('weeklyReviewBody').innerHTML=weeklyPreviewRows.map((r,index)=>{
+        return `<tr data-import-row="${index}"><td><input class="input" data-import-name value="${htmlEscape(r.name)}" aria-label="Name"/><select class="input" data-import-person aria-label="Person zuordnen"><option value="">Neue Planperson</option>${options}<option value="skip">Zeile überspringen</option></select></td><td><select class="input" data-import-department aria-label="Bereich">${DEPARTMENTS.map(d=>`<option${d===r.department?' selected':''}>${htmlEscape(d)}</option>`).join('')}</select></td>${r.days.map((v,day)=>`<td><input class="input" data-import-day="${day}" value="${htmlEscape(v)}" aria-label="${htmlEscape(r.name)} Tag ${day+1}"/></td>`).join('')}</tr>`;
+      }).join('');
+      $('weeklyReviewBody').querySelectorAll('tr').forEach((tr,index)=>{
+        const matches=people.filter(p=>normalizeName(p.name)===normalizeName(weeklyPreviewRows[index].name));
+        if(matches.length===1) tr.querySelector('[data-import-person]').value=matches[0].id;
+        tr.querySelectorAll('[data-import-day]').forEach(input=>{styleWeekInput(input);input.addEventListener('input',()=>styleWeekInput(input));});
       });
+      $('weeklyReviewDates').textContent=`Zielwoche: ${weeklyLoadedStart} bis ${addDays(weeklyLoadedStart,6)}${dates.length ? ' · Foto: '+dates.join(', ') : ''}. Namen, Bereiche und alle Zeiten prüfen. 12 bitte durch 12-17 oder 12-22 ersetzen.`;
+      $('weeklyReviewed').checked=false;
+      $('weeklyReview').classList.remove('hidden');
+    }
+
+    function applyWeeklyReview(){
+      if(!isAdmin()) return;
+      if(!$('weeklyReviewed').checked) return showMsg('Bitte zuerst Namen, Woche und Zeiten prüfen und das Kontrollkästchen bestätigen.');
+      if(weeklyPreviewDates.length && weeklyPreviewDates.some((date,i)=>{
+        const parts=date.split('.').map(Number), actual=addDays(weeklyLoadedStart,i).split('-').map(Number);
+        return parts[0]!==actual[2] || parts[1]!==actual[1];
+      })) return showMsg('Die Datumsangaben im Foto passen nicht zur Zielwoche. Bitte richtige Woche laden und Foto erneut importieren.');
+      const previous=JSON.parse(JSON.stringify(planningPeople));
+      const sectors=collectWeeklySectors(), imported=new Set(), nameIds=new Map();
+      try{
+        for(const tr of $('weeklyReviewBody').querySelectorAll('tr')){
+          const selected=tr.querySelector('[data-import-person]').value;
+          if(selected==='skip') continue;
+          const name=safe(tr.querySelector('[data-import-name]').value);
+          const department=tr.querySelector('[data-import-department]').value;
+          if(!name) throw new Error('Ein Mitarbeitername fehlt.');
+          let person=makeWeeklyPeople().find(p=>p.id===selected);
+          if(!person){
+            const key=normalizeName(name);
+            const reused=nameIds.get(key);
+            person=reused ? planningPeople.find(p=>p.id===reused) : null;
+            if(!person){person={id:'plan_'+crypto.randomUUID(),name,departments:[],accountId:''};planningPeople.push(person);nameIds.set(key,person.id);}
+          }
+          if(!planningPeople.some(p=>p.id===person.id)) planningPeople.push(person);
+          person=planningPeople.find(p=>p.id===person.id);
+          if(!person.departments.includes(department)) person.departments.push(department);
+          const rowKey=`${person.id}::${department}`;
+          if(imported.has(rowKey)) throw new Error(`${name}: doppelte Zeile im Bereich ${department}. Bitte zuordnen oder überspringen.`);
+          imported.add(rowKey);
+          const target=sectors[rowKey] ||= {};
+          tr.querySelectorAll('[data-import-day]').forEach(input=>{
+            const value=safe(input.value), day=Number(input.dataset.importDay);
+            if(!value) return; // Blanks never silently erase an existing shift.
+            shiftIntervals(value);
+            if(target[day] && target[day]!==value) throw new Error(`${name}, Tag ${day+1}: Im Zielplan steht bereits „${target[day]}“. Bitte bestehende Schicht zuerst im Plan abgleichen.`);
+            target[day]=value;
+          });
+        }
+        if(!imported.size) throw new Error('Keine Zeile zum Übernehmen ausgewählt.');
+        markWeeklyDraft(sectors);
+        $('weeklyImportPanel').classList.add('hidden');
+        showMsg('In den Entwurf übernommen. Bitte den Plan kontrollieren und speichern.');
+      }catch(err){planningPeople=previous;showMsg(err.message);}
+    }
+
+    async function importWeeklyPhoto(file){
+      if(!isAdmin() || !file) return;
+      if(!weeklyLoadedStart) return showMsg('Bitte zuerst eine Woche laden.');
+      if(/\.json$/i.test(file.name) || file.type==='application/json'){
+        try{
+          if(file.size>1024*1024) throw new Error('Importdatei ist zu groß.');
+          const payload=JSON.parse(await file.text());
+          if(payload.format!=='matteoteam-plan-v1' || !Array.isArray(payload.rows) || payload.rows.length>100 || !/^\d{4}-\d{2}-\d{2}$/.test(payload.weekStart || '') || weekKeyFrom(payload.weekStart)!==payload.weekStart) throw new Error('Ungültige Planimportdatei.');
+          if(!payload.rows.length || payload.rows.some(r=>typeof r.name!=='string' || r.name.length>120 || !DEPARTMENTS.includes(r.department) || !Array.isArray(r.days) || r.days.length!==7 || r.days.some(v=>typeof v!=='string' || v.length>80))) throw new Error('Ungültige Planzeilen.');
+          if(weeklyLoadedStart!==payload.weekStart){$('weekPicker').value=payload.weekStart;await loadWeekly();if(weeklyLoadedStart!==payload.weekStart) return;}
+          $('weeklyPhotoPreview').classList.add('hidden');
+          $('weeklyOcrStatus').textContent='Importdatei geladen. Bitte alle Angaben vor dem Übernehmen prüfen.';
+          showWeeklyReview(payload.rows,Array.from({length:7},(_,i)=>{const d=addDays(payload.weekStart,i).split('-');return `${Number(d[2])}.${Number(d[1])}`;}));
+        }catch(err){showMsg('Import nicht möglich: '+err.message);}
+        finally{$('weeklyPhotoFile').value='';}
+        return;
+      }
+      if(file.size>20*1024*1024) return showMsg('Bitte ein Foto unter 20 MB verwenden.');
+      const status=$('weeklyOcrStatus');
+      $('weeklyImportPanel').classList.remove('hidden');$('weeklyReview').classList.add('hidden');
+      if(weeklyPhotoUrl) URL.revokeObjectURL(weeklyPhotoUrl);
+      weeklyPhotoUrl=URL.createObjectURL(file);
+      $('weeklyPhotoPreview').src=weeklyPhotoUrl;$('weeklyPhotoPreview').classList.remove('hidden');
+      status.textContent='Foto wird auf diesem Gerät gelesen …';
+      $('weeklyPhotoFile').disabled=true;
+      let worker;
+      const loadId=weeklyLoadId;
+      try{
+        if(!window.Tesseract) await new Promise((resolve,reject)=>{
+          const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+          script.onload=resolve;script.onerror=()=>{script.remove();reject(new Error('Texterkennung konnte nicht geladen werden. Bitte Internetverbindung prüfen.'));};document.head.append(script);
+        });
+        worker=await window.Tesseract.createWorker('deu+eng',1,{logger:m=>{status.textContent=`Texterkennung: ${m.status} ${Math.round((m.progress || 0)*100)} %`;}});
+        await worker.setParameters({tessedit_pageseg_mode:'6'});
+        const result=await worker.recognize(await preparePhoto(file));
+        if(loadId!==weeklyLoadId || !isAdmin()) return;
+        const parsed=parsePhotoWords(result.data.words || []);
+        showWeeklyReview(parsed.rows,parsed.dates);
+        status.textContent='Erkennung fertig. Jede Zeile mit dem Foto vergleichen; Lesefehler sind möglich.';
+      }catch(err){status.textContent='Import nicht möglich: '+err.message+' Namen können auch manuell zum Plan hinzugefügt werden.';}
+      finally{if(worker) await worker.terminate();$('weeklyPhotoFile').disabled=false;$('weeklyPhotoFile').value='';}
     }
 
     async function moveWeek(days){
@@ -3639,60 +3911,6 @@
       }, err => console.warn("Wochenplan-Benachrichtigung",err));
     }
 
-    async function saveWeekly(){
-      if(!isAdmin()) return showMsg("Nur Admin.");
-      const weekStart = weekKeyFrom($("weekPicker").value || todayStr());
-      const entries = {};
-      document.querySelectorAll("#weekBody input").forEach(inp => {
-        const sid = inp.dataset.staff;
-        const day = inp.dataset.day;
-        entries[sid] = entries[sid] || {};
-        entries[sid][day] = safe(inp.value);
-      });
-      await setDoc(doc(db, "weeklyPlans", weekStart), {
-        weekStart,
-        entries,
-        updatedBy: currentUser.uid,
-        updatedAt: serverTimestamp()
-      });
-      showMsg("Weekly Plan gespeichert.");
-    }
-
-    function parseShiftHours(value){
-      const raw = safe(value).toLowerCase().replace(/\s/g,"");
-      if(!raw || raw === "frei" || raw === "u" || raw === "krank" || raw === "k") return { total:0, night:0, label: raw === "krank" || raw === "k" ? "Krank" : (raw.toUpperCase() || "-") };
-
-      const match = raw.match(/^(\d{1,2})(?::?(\d{2}))?-(\d{1,2})(?::?(\d{2}))?$/);
-      if(!match) return { total:0, night:0, label:value || "-" };
-
-      let sh = Number(match[1]), sm = Number(match[2] || 0);
-      let eh = Number(match[3]), em = Number(match[4] || 0);
-
-      let start = sh*60 + sm;
-      let end = eh*60 + em;
-      if(end <= start) end += 24*60;
-
-      let totalMin = end - start;
-      let breakMin = 0;
-      if(totalMin >= 240){
-        totalMin -= 30;
-        breakMin = 30;
-      }
-
-      let nightMin = 0;
-      for(let t = start; t < end; t += 15){
-        const mod = ((t % (24*60)) + (24*60)) % (24*60);
-        if(mod < 60) nightMin += 15;
-      }
-
-      return {
-        total: Math.max(0, totalMin / 60),
-        night: Math.max(0, nightMin / 60),
-        breakHours: breakMin / 60,
-        label: value
-      };
-    }
-
     let lastHoursPayload = null;
 
     async function loadHours(){
@@ -3703,7 +3921,7 @@
 
       const snap = await getDoc(doc(db, "weeklyPlans", weekStart));
       const entries = snap.exists() ? (snap.data().entries || {}) : {};
-      const days = entries[staffId] || {};
+      const days = personDays(entries,staffId,planningPeople);
       const profile = staffCache.find(x => x.id === staffId) || currentProfile;
 
       let total = 0, night = 0, breakHours = 0;
@@ -6270,7 +6488,7 @@ bruchCache.sort((a, b) => {
       const days = {};
       snapshots.forEach((snapshot, index) => {
         const week = [...weeks][index];
-        const entries = snapshot.exists() ? snapshot.data().entries?.[userId] || {} : {};
+        const entries = snapshot.exists() ? personDays(snapshot.data().entries || {},userId,planningPeople) : {};
         for(let i=0;i<7;i++){
           const date = addDays(week, i);
           if(date < first || date > last) continue;
@@ -6794,6 +7012,12 @@ bruchCache.sort((a, b) => {
     $("btnReloadSupplierOrders").addEventListener("click", loadSupplierOrders);
     $("btnDeleteAllSupplierOrders").addEventListener("click", deleteAllSupplierOrders);
 
+    $('weeklyAddPerson').addEventListener('click',addWeeklyPerson);
+    $('weeklyApplyImport').addEventListener('click',applyWeeklyReview);
+    $('weeklyCancelImport').addEventListener('click',()=>$('weeklyImportPanel').classList.add('hidden'));
+    $('weeklyPhotoFile').addEventListener('change',event=>importWeeklyPhoto(event.target.files[0]));
+    $('weekPicker').addEventListener('change',loadWeekly);
+    window.addEventListener('beforeunload',event=>{if(weeklyDirty){event.preventDefault();event.returnValue='';}});
     $("btnLoadWeekly").addEventListener("click", buildWeeklyTable);
     $("btnSaveWeekly").addEventListener("click", saveWeekly);
     $("btnPrevWeek").addEventListener("click", ()=> moveWeek(-7));
@@ -7140,6 +7364,8 @@ bruchCache.sort((a, b) => {
           announcementUnsubscribe();
           announcementUnsubscribe = null;
         }
+        planningPeople=[]; weeklyPeople=[]; weeklyLoaded={}; weeklyRegistryLoaded=[]; weeklyDirty=false; weeklyLoadedStart=''; weeklyLoadId++;
+        if(weeklyPhotoUrl){URL.revokeObjectURL(weeklyPhotoUrl);weeklyPhotoUrl='';}
         if(weeklyPlanNotificationUnsubscribe){
           weeklyPlanNotificationUnsubscribe();
           weeklyPlanNotificationUnsubscribe = null;

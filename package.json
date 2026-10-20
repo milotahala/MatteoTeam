@@ -1,0 +1,10 @@
+{
+  "name": "matteoteam-checks",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/weekly-plan.test.mjs && node tests/weekly-plan.dom.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "30.1.3"
+  }
+}
