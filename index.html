@@ -681,6 +681,28 @@
     .recipeAllergenGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.recipeAllergenOption{display:flex;align-items:center;gap:9px;min-height:46px;padding:9px 11px;border:1px solid #536988;border-radius:12px;background:#202e49;color:#f7faff;cursor:pointer}.recipeAllergenOption:has(input:checked){border-color:#2dd486;background:#123b32}.recipeAllergenOption input{width:20px;height:20px;accent-color:#2dd486}@media(max-width:600px){.recipeAllergenGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .recipeDetails{margin-top:12px;padding-top:12px;border-top:1px solid #405578}.recipeDetails summary{cursor:pointer;font-weight:850;color:#fff}.recipeSteps{white-space:pre-wrap;line-height:1.55;color:#dce7f5}
     @media(max-width:760px){.recipeToolbar{grid-template-columns:1fr}.recipeGrid{grid-template-columns:1fr}.recipeCost{grid-template-columns:repeat(2,1fr)}.ingredientRow{grid-template-columns:minmax(0,1fr) 110px 44px;padding:12px}.ingredientRow .ingredientName{grid-column:1/-1}.ingredientRow .field:nth-child(2){grid-column:1}.ingredientRow .field:nth-child(3){grid-column:2}.ingredientRow .field:nth-child(4){grid-column:1/3}.ingredientRow .ingredientRemove{grid-column:3;grid-row:3}}
+    /* Compact photo review: one visible identity cell and seven shift cells. */
+    #weeklyImportPanel{min-width:0}
+    #weeklyImportPanel h3{font-size:18px;margin:0 0 8px}
+    #weeklyReview .weeklyReviewTable{table-layout:fixed;min-width:632px;width:100%}
+    #weeklyReview .weeklyReviewTable th,#weeklyReview .weeklyReviewTable td{padding:5px 3px;vertical-align:middle;text-align:center;font-size:12px}
+    #weeklyReview .weeklyReviewTable th:first-child,#weeklyReview .weeklyReviewTable td:first-child{position:sticky;left:0;width:128px;text-align:left;background:#102239;z-index:2;border-right:1px solid #2b4563}
+    #weeklyReview .weeklyReviewTable thead th:first-child{z-index:3;background:#172d47}
+    #weeklyReview .weeklyReviewTable input[data-import-day]{width:100%;min-width:0;min-height:38px;height:38px;padding:4px 2px;font-size:16px;letter-spacing:-.4px;border-radius:7px;text-align:center}
+    #weeklyReview .weeklyReviewWrap{margin:8px 0;border:1px solid #2b4563;border-radius:10px}
+    #weeklyReview .weeklyPersonEditor summary{cursor:pointer;list-style:none;min-height:54px;padding:3px 5px;line-height:1.25}
+    #weeklyReview .weeklyPersonEditor summary::-webkit-details-marker{display:none}
+    #weeklyReview .weeklyPersonEditor strong{display:block;font-size:13px;overflow-wrap:anywhere}
+    #weeklyReview .weeklyPersonMeta{display:block;margin-top:3px;font-size:10px;color:var(--muted);line-height:1.3}
+    #weeklyReview .weeklyEditHint{display:block;font-size:10px;color:#80caff;margin-top:3px}
+    #weeklyReview .weeklyPersonFields{display:grid;gap:7px;padding:7px 3px;border-top:1px solid #2b4563}
+    #weeklyReview .weeklyPersonFields label{font-size:11px;color:var(--muted)}
+    #weeklyReview .weeklyPersonFields .input{min-width:0;min-height:38px;padding:5px 3px;font-size:16px;border-radius:7px}
+    #weeklyReview .weeklySkipRow{opacity:.5}
+    #weeklyImportPanel .weeklyReference,#weeklyImportPanel .weeklyImportHelp{font-size:12px;margin:10px 0;color:var(--muted)}
+    #weeklyImportPanel .weeklyReference summary,#weeklyImportPanel .weeklyImportHelp summary{cursor:pointer;padding:6px 0}
+    #weeklyImportPanel .weeklyScrollHint{font-size:11px;margin-top:10px}
+    #weeklyReviewDates{font-size:12px;line-height:1.4;margin:10px 0}
 </style>
 </head>
 <body>
@@ -871,11 +893,11 @@
               <div id="weeklyImportPanel" class="item hidden" style="margin-top:12px">
                 <h3>Foto prüfen und zuordnen</h3>
                 <div id="weeklyOcrStatus" role="status" class="tiny muted"></div>
-                <img id="weeklyPhotoPreview" class="hidden" alt="Dienstplan zum Vergleichen" style="max-width:100%;max-height:400px;object-fit:contain;background:white;margin:10px 0"/>
+                <details id="weeklyPhotoReference" class="hidden weeklyReference"><summary>Originalfoto anzeigen</summary><img id="weeklyPhotoPreview" class="hidden" alt="Dienstplan zum Vergleichen" style="max-width:100%;max-height:280px;object-fit:contain;background:white;margin:10px 0"/></details>
                 <div id="weeklyReview" class="hidden">
                   <p id="weeklyReviewDates" class="tiny"></p>
-                  <div class="tableWrap"><table style="min-width:1200px"><thead><tr><th>Name / Konto</th><th>Bereich</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th></tr></thead><tbody id="weeklyReviewBody"></tbody></table></div>
-                  <p class="tiny muted">Rote Felder brauchen ein vollständiges Zeitintervall. 18/19 endet um 04:00, Freitag/Samstag um 06:00 am Folgetag. Leere Zellen überschreiben keine vorhandenen Einträge. Neue Namen bleiben ohne Konto; doppelte Namen in verschiedenen Bereichen werden einer Person zugeordnet.</p>
+                  <div class="tiny muted weeklyScrollHint">↔ Weitere Tage nach rechts · Name antippen zum Ändern</div><div class="tableWrap weeklyReviewWrap"><table class="weeklyReviewTable"><thead><tr><th>Mitarbeiter</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th></tr></thead><tbody id="weeklyReviewBody"></tbody></table></div>
+                  <details class="weeklyImportHelp"><summary>Hinweise zu Zeiten und Zuordnung</summary><p class="tiny muted">Rote Felder brauchen ein vollständiges Zeitintervall. 18/19 endet um 04:00, Freitag/Samstag um 06:00 am Folgetag. Leere Zellen überschreiben keine vorhandenen Einträge. Neue Namen bleiben ohne Konto; doppelte Namen in verschiedenen Bereichen werden einer Person zugeordnet.</p></details>
                   <label class="row"><input id="weeklyReviewed" type="checkbox"/> Ich habe Zielwoche, Namen, Zuordnung und Zeiten mit dem Foto geprüft.</label>
                   <button id="weeklyApplyImport" class="btn" type="button" style="margin-top:10px">In Planentwurf übernehmen</button>
                 </div>
@@ -3785,14 +3807,24 @@
       const people=makeWeeklyPeople();
       const options=people.map(p=>`<option value="${htmlEscape(p.id)}">${htmlEscape(p.name)}${p.accountId?'':' (ohne Konto)'}</option>`).join('');
       $('weeklyReviewBody').innerHTML=weeklyPreviewRows.map((r,index)=>{
-        return `<tr data-import-row="${index}"><td><input class="input" data-import-name value="${htmlEscape(r.name)}" aria-label="Name"/><select class="input" data-import-person aria-label="Person zuordnen"><option value="">Neue Planperson</option>${options}<option value="skip">Zeile überspringen</option></select></td><td><select class="input" data-import-department aria-label="Bereich">${DEPARTMENTS.map(d=>`<option${d===r.department?' selected':''}>${htmlEscape(d)}</option>`).join('')}</select></td>${r.days.map((v,day)=>`<td><input class="input" data-import-day="${day}" value="${htmlEscape(v)}" aria-label="${htmlEscape(r.name)} Tag ${day+1}"/></td>`).join('')}</tr>`;
+        return `<tr data-import-row="${index}"><td><details class="weeklyPersonEditor"><summary aria-label="${htmlEscape(r.name)} ändern"><strong data-review-name>${htmlEscape(r.name)}</strong><span class="weeklyPersonMeta"><span data-review-department>${htmlEscape(r.department)}</span> · <span data-review-account>Ohne Konto</span></span><span class="weeklyEditHint">Ändern</span></summary><div class="weeklyPersonFields"><label>Name<input class="input" data-import-name value="${htmlEscape(r.name)}" aria-label="Name"/></label><label>Konto<select class="input" data-import-person aria-label="Person zuordnen"><option value="">Neue Planperson</option>${options}<option value="skip">Zeile überspringen</option></select></label><label>Bereich<select class="input" data-import-department aria-label="Bereich">${DEPARTMENTS.map(d=>`<option${d===r.department?' selected':''}>${htmlEscape(d)}</option>`).join('')}</select></label></div></details></td>${r.days.map((v,day)=>`<td><input class="input" data-import-day="${day}" value="${htmlEscape(v)}" aria-label="${htmlEscape(r.name)} Tag ${day+1}"/></td>`).join('')}</tr>`;
       }).join('');
       $('weeklyReviewBody').querySelectorAll('tr').forEach((tr,index)=>{
         const matches=people.filter(p=>normalizeName(p.name)===normalizeName(weeklyPreviewRows[index].name));
         if(matches.length===1) tr.querySelector('[data-import-person]').value=matches[0].id;
+        const refreshPersonSummary=()=>{
+          const person=tr.querySelector('[data-import-person]');
+          tr.querySelector('[data-review-name]').textContent=tr.querySelector('[data-import-name]').value || 'Name fehlt';
+          tr.querySelector('[data-review-department]').textContent=tr.querySelector('[data-import-department]').value;
+          const linked=people.find(p=>p.id===person.value);
+          tr.querySelector('[data-review-account]').textContent=person.value==='skip' ? 'Überspringen' : linked?.accountId ? 'Konto verbunden' : 'Ohne Konto';
+          tr.classList.toggle('weeklySkipRow',person.value==='skip');
+        };
+        refreshPersonSummary();
+        tr.querySelectorAll('[data-import-name],[data-import-person],[data-import-department]').forEach(input=>input.addEventListener('input',refreshPersonSummary));
         tr.querySelectorAll('[data-import-day]').forEach(input=>{styleWeekInput(input);input.addEventListener('input',()=>styleWeekInput(input));});
       });
-      $('weeklyReviewDates').textContent=`Zielwoche: ${weeklyLoadedStart} bis ${addDays(weeklyLoadedStart,6)}${dates.length ? ' · Foto: '+dates.join(', ') : ''}. Namen, Bereiche und alle Zeiten prüfen. 12 bitte durch 12-17 oder 12-22 ersetzen.`;
+      $('weeklyReviewDates').textContent=`Zielwoche: ${weeklyLoadedStart} bis ${addDays(weeklyLoadedStart,6)}${dates.length ? ' · Foto: '+dates[0]+'–'+dates[6] : ''}. 12:00: Ende wählen (12–17 / 12–22).`;
       $('weeklyReviewed').checked=false;
       $('weeklyReview').classList.remove('hidden');
     }
@@ -3852,7 +3884,7 @@
           if(payload.format!=='matteoteam-plan-v1' || !Array.isArray(payload.rows) || payload.rows.length>100 || !/^\d{4}-\d{2}-\d{2}$/.test(payload.weekStart || '') || weekKeyFrom(payload.weekStart)!==payload.weekStart) throw new Error('Ungültige Planimportdatei.');
           if(!payload.rows.length || payload.rows.some(r=>typeof r.name!=='string' || r.name.length>120 || !DEPARTMENTS.includes(r.department) || !Array.isArray(r.days) || r.days.length!==7 || r.days.some(v=>typeof v!=='string' || v.length>80))) throw new Error('Ungültige Planzeilen.');
           if(weeklyLoadedStart!==payload.weekStart){$('weekPicker').value=payload.weekStart;await loadWeekly();if(weeklyLoadedStart!==payload.weekStart) return;}
-          $('weeklyPhotoPreview').classList.add('hidden');
+          $('weeklyPhotoPreview').classList.add('hidden');$('weeklyPhotoReference').classList.add('hidden');
           $('weeklyOcrStatus').textContent='Importdatei geladen. Bitte alle Angaben vor dem Übernehmen prüfen.';
           showWeeklyReview(payload.rows,Array.from({length:7},(_,i)=>{const d=addDays(payload.weekStart,i).split('-');return `${Number(d[2])}.${Number(d[1])}`;}));
         }catch(err){showMsg('Import nicht möglich: '+err.message);}
@@ -3864,7 +3896,7 @@
       $('weeklyImportPanel').classList.remove('hidden');$('weeklyReview').classList.add('hidden');
       if(weeklyPhotoUrl) URL.revokeObjectURL(weeklyPhotoUrl);
       weeklyPhotoUrl=URL.createObjectURL(file);
-      $('weeklyPhotoPreview').src=weeklyPhotoUrl;$('weeklyPhotoPreview').classList.remove('hidden');
+      $('weeklyPhotoPreview').src=weeklyPhotoUrl;$('weeklyPhotoPreview').classList.remove('hidden');$('weeklyPhotoReference').classList.remove('hidden');$('weeklyPhotoReference').open=false;
       status.textContent='Foto wird auf diesem Gerät gelesen …';
       $('weeklyPhotoFile').disabled=true;
       let worker;
