@@ -1453,6 +1453,11 @@
     </div>
   </div>
 
+  <div class="field adminOnly hiddenByRole">
+    <label class="label" for="bruchReportedBy">Gemeldet von</label>
+    <input id="bruchReportedBy" class="input" type="text" maxlength="120" />
+  </div>
+
  <button id="btnSaveBruch" type="button" class="btn">Eintrag speichern</button>
 </div>
               <div class="item">
@@ -4535,7 +4540,8 @@ ${lastHoursPayload.details.join("\n")}`;
     if (!reason) return showMsg("Bitte einen Grund auswählen.");
 
     const uid = currentUser?.uid || auth.currentUser?.uid;
-    const name = currentProfile?.name || auth.currentUser?.email || "Unknown";
+    const reporterField = $("bruchReportedBy");
+    const reporterName = isAdmin() ? safe(reporterField.value).slice(0, 120) : "";
 
     if (!uid) {
       return showMsg("User nicht eingeloggt.");
@@ -4563,12 +4569,13 @@ await addDoc(collection(db, "bruchliste"), {
   sector,
   reason: reason || "-",
   byUid: user.uid,
-  byName: userName || user.email || "Milot",
+  byName: reporterName || userName || user.email || "Milot",
   user: user.email || "Milot",
   createdAt: serverTimestamp()
 });
     elProduct.value = "";
     elQty.value = "";
+    reporterField.value = isAdmin() ? currentProfile.name || user.email || "" : "";
     document.querySelectorAll('input[name="bruchReason"]').forEach(input => { input.checked = false; });
 
     await loadBruch();
@@ -6900,6 +6907,7 @@ bruchCache.sort((a, b) => {
       $("urlaubFrom").value = todayStr();
       $("urlaubTo").value = todayStr();
       $("bruchDate").value = todayStr();
+      $("bruchReportedBy").value = isAdmin() ? currentProfile.name || currentUser.email || "" : "";
       $("bruchMonth").value = monthStr();
       $("timeClockMonth").value = monthStr();
       $("timeClockAdminMonth").value = monthStr();
