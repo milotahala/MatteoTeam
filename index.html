@@ -4012,32 +4012,32 @@ ${lastHoursPayload.details.join("\n")}`;
 
     const HACCP_SECTIONS = {
       kitchen:{title:"Küche & 3. OG",responsibility:"Küche",devices:[
-        ["tkFisch","TK 3. OG – Fisch","Soll: −18 °C oder kälter"],
-        ["tkFleisch","TK 3. OG – Fleisch","Soll: −18 °C oder kälter"],
-        ["tkGemuese","TK 3. OG – Gemüse","Soll: −18 °C oder kälter"],
-        ["kuehlhaus","Küche – Kühlhaus","Soll: +2 bis +7 °C"],
-        ["kuehlschrank1","Küche – Kühlschrank 1","Soll: +2 bis +7 °C"],
-        ["kuehlschrank2","Küche – Kühlschrank 2","Soll: +2 bis +7 °C"],
-        ["meeresfruechte","Küche – Kühlschrank Meeresfrüchte","Soll: 0 bis +2 °C"]
+        ["tkFisch","TK 3. OG – Fisch","Soll: −18 °C oder kälter",null,-18],
+        ["tkFleisch","TK 3. OG – Fleisch","Soll: −18 °C oder kälter",null,-18],
+        ["tkGemuese","TK 3. OG – Gemüse","Soll: −18 °C oder kälter",null,-18],
+        ["kuehlhaus","Küche – Kühlhaus","Soll: +2 bis +7 °C",2,7],
+        ["kuehlschrank1","Küche – Kühlschrank 1","Soll: +2 bis +7 °C",2,7],
+        ["kuehlschrank2","Küche – Kühlschrank 2","Soll: +2 bis +7 °C",2,7],
+        ["meeresfruechte","Küche – Kühlschrank Meeresfrüchte","Soll: 0 bis +2 °C",0,2]
       ],cleaning:[
         ["arbeitsflaechen","Arbeitsflächen sauber/desinfiziert"],["boden","Boden sauber"],
         ["geraete","Küchengeräte sauber"],["kuehlung","Kühlgeräte innen/außen sauber"],
         ["abfall","Abfallbehälter geleert/sauber"],["handwaschplatz","Handwaschplatz, Seife und Papier vorhanden"]
       ]},
       pizza:{title:"Pizza & Keller",responsibility:"Pizzabäcker",devices:[
-        ["grossesKuehlhaus","Pizza – großes Kühlhaus","Soll: +2 bis +7 °C"],
-        ["saladette","Saladette – Rucola/Parmesan","Soll: +2 bis +7 °C"],
-        ["tageskuehlschrank","Pizza – Tageskühlschrank","Soll: +2 bis +7 °C"],
-        ["fleischKuehlschrank","Pizza – Kühlschublade","Soll: 0 bis +4 °C"],
-        ["kellerKuehlhaus","Keller – Käse/Salami Kühlhaus","Soll: +2 bis +7 °C"]
+        ["grossesKuehlhaus","Pizza – großes Kühlhaus","Soll: +2 bis +7 °C",2,7],
+        ["saladette","Saladette – Rucola/Parmesan","Soll: +2 bis +7 °C",2,7],
+        ["tageskuehlschrank","Pizza – Tageskühlschrank","Soll: +2 bis +7 °C",2,7],
+        ["fleischKuehlschrank","Pizza – Kühlschublade","Soll: 0 bis +4 °C",0,4],
+        ["kellerKuehlhaus","Keller – Käse/Salami Kühlhaus","Soll: +2 bis +7 °C",2,7]
       ],cleaning:[
         ["pizzaArbeitsplatz","Pizza-Arbeitsplatz sauber/desinfiziert"],["pizzaOfenBereich","Ofen- und Bodenbereich sauber"],
         ["saladetteSauber","Saladette und Behälter sauber"],["kellerSauber","Kellerbereich ordentlich/sauber"],
         ["toiletten","Toiletten kontrolliert und sauber"],["toilettenMaterial","Seife, Papier und Desinfektion aufgefüllt"]
       ]},
       service:{title:"Service & Kellner",responsibility:"Kellner/Service",devices:[
-        ["getraenkeKuehlschrank","Service – Getränkekühlschrank","Soll: +2 bis +8 °C"],
-        ["bierfass","Keller – Bierfass-Kühlschrank","Soll: +2 bis +8 °C"]
+        ["getraenkeKuehlschrank","Service – Getränkekühlschrank","Soll: +2 bis +8 °C",2,8],
+        ["bierfass","Keller – Bierfass-Kühlschrank","Soll: +2 bis +8 °C",2,8]
       ],cleaning:[
         ["tische","Tische und Stühle sauber"],["kaffeemaschine","Kaffeemaschine gereinigt"],
         ["theke","Theke/Servicebereich sauber"],["serviceBoden","Boden im Gästebereich sauber"],
@@ -4074,6 +4074,15 @@ ${lastHoursPayload.details.join("\n")}`;
       return /^-?\d+(?:\.\d+)?$/.test(text) && Number.isFinite(Number(text));
     }
 
+    function haccpDeviations(sectionKey, section){
+      return HACCP_SECTIONS[sectionKey].devices.filter(([key, , , min, max]) => {
+        const value = section.temperatures?.[key]?.value;
+        if(!validHaccpTemperature(value)) return false;
+        const temperature = Number(normalizeHaccpTemperature(value));
+        return (min !== null && temperature < min) || temperature > max;
+      });
+    }
+
     function haccpMissingFields(sectionKey, section){
       const missing = [];
       const definition = HACCP_SECTIONS[sectionKey];
@@ -4087,27 +4096,33 @@ ${lastHoursPayload.details.join("\n")}`;
         if(section.cleaning?.[key] !== true)
           missing.push({label, selector:`[data-haccp-clean="${sectionKey}:${key}"]`});
       });
+      const deviations = haccpDeviations(sectionKey, section);
+      if(deviations.length && !safe(section.correctiveAction)){
+        missing.push({
+          label:"Korrekturmaßnahme für " + deviations.map(([, label]) => label).join(", "),
+          selector:`[data-haccp-action="${sectionKey}"]`
+        });
+      }
       return missing;
     }
 
     function haccpSectionComplete(sectionKey,section){
       const definition=HACCP_SECTIONS[sectionKey];
       if(!definition||!section) return false;
-      const tempsOk=definition.devices.every(([key])=>validHaccpTemperature(section.temperatures?.[key]?.value)&&section.temperatures?.[key]?.clean===true);
-      const cleaningOk=definition.cleaning.every(([key])=>section.cleaning?.[key]===true);
-      return tempsOk&&cleaningOk;
+      return haccpMissingFields(sectionKey, section).length === 0;
     }
 
     function renderHaccpSections(data={}){
       const allowed=haccpAllowedSections();
       $("haccpSections").innerHTML=allowed.length?allowed.map(sectionKey=>{
         const definition=HACCP_SECTIONS[sectionKey],section=data[sectionKey]||{};
-        const done=section.complete===true&&haccpSectionComplete(sectionKey,section);
+        const done=section.complete===true;
+        const deviations=haccpDeviations(sectionKey,section);
         const completionLabel=($("haccpDate").value||todayStr())===todayStr()?"für heute erledigt":"für diesen Tag erledigt";
         const devices=definition.devices.map(([key,label,target])=>`<div class="haccpDevice"><strong>${label}</strong><div class="tiny muted">${target}</div><div class="haccpDeviceRow"><div><label class="label">Temperatur °C</label><div class="haccpTemperatureInput"><input class="input" type="text" inputmode="decimal" placeholder="z. B. 4,5 oder -18" data-haccp-temp="${sectionKey}:${key}" value="${htmlEscape(section.temperatures?.[key]?.value??"")}" /><button class="ghost" type="button" data-haccp-sign aria-label="Temperatur-Vorzeichen wechseln">+/−</button></div></div><label class="haccpCheck"><input type="checkbox" data-haccp-device-clean="${sectionKey}:${key}" ${section.temperatures?.[key]?.clean===true?"checked":""}/> ✅ Sauber</label></div></div>`).join("");
         const cleaning=definition.cleaning.map(([key,label])=>`<label class="haccpCheck"><input type="checkbox" data-haccp-clean="${sectionKey}:${key}" ${section.cleaning?.[key]===true?"checked":""}/> ✅ ${label}</label>`).join("");
         const checkerField=isAdmin()? `<div class="field" style="margin-top:12px"><label class="label" for="haccp-checker-${sectionKey}">Kontrolliert von</label><input class="input" id="haccp-checker-${sectionKey}" type="text" maxlength="120" value="${htmlEscape(section.completedByName||currentProfile.name||currentUser.email)}"><div class="tiny muted">Name der Person, die die Kontrolle durchgeführt hat.</div></div>`:"";
-        return `<article class="haccpSection ${done?"complete":"incomplete"}" data-haccp-section="${sectionKey}"><div class="row"><div><strong>${definition.title}</strong><div class="tiny muted">Verantwortlich: ${definition.responsibility}</div></div><span class="pill ${done?"ok":"warn"} right">${done?`✅ ${completionLabel}`:"Offen"}</span></div>${done?`<details class="haccpCompletedDetails"><summary>Kontrolle anzeigen / bearbeiten</summary>`:""}${devices?`<div class="haccpDeviceGrid">${devices}</div>`:""}<div class="haccpCleaning">${cleaning}</div><div class="field" style="margin-top:12px"><label class="label">Bemerkung / Abweichung / Defekt</label><textarea class="textarea" data-haccp-note="${sectionKey}" placeholder="Optional, z. B. Temperatur zu hoch – Maßnahme notieren">${htmlEscape(section.note||"")}</textarea></div>${checkerField}<div class="haccpResponsible">${section.completedByName?`Zuletzt kontrolliert von <strong>${htmlEscape(section.completedByName)}</strong> · ${htmlEscape(taskDate(section.completedAt))}`:"Noch nicht bestätigt."}</div><button class="btn" type="button" data-haccp-confirm="${sectionKey}" style="margin-top:12px;width:100%">${done?"Kontrolle erneut speichern":"Kontrolle bestätigen"}</button>${done?"</details>":""}</article>`;
+        return `<article class="haccpSection ${done?"complete":"incomplete"}" data-haccp-section="${sectionKey}"><div class="row"><div><strong>${definition.title}</strong><div class="tiny muted">Verantwortlich: ${definition.responsibility}</div></div><span class="pill ${done?"ok":"warn"} right">${done?`✅ ${completionLabel}`:"Offen"}</span></div>${done?`<details class="haccpCompletedDetails"><summary>Kontrolle anzeigen / bearbeiten</summary>`:""}${devices?`<div class="haccpDeviceGrid">${devices}</div>`:""}<div class="haccpCleaning">${cleaning}</div>${deviations.length?`<div class="pill warn">Abweichung: ${deviations.map(([,label])=>htmlEscape(label)).join(", ")}</div>`:""}<div class="field" style="margin-top:12px"><label class="label">Bemerkung / Abweichung / Defekt</label><textarea class="textarea" data-haccp-note="${sectionKey}" placeholder="Optional, z. B. Temperatur zu hoch – Maßnahme notieren">${htmlEscape(section.note||"")}</textarea></div><div class="field"><label class="label" for="haccp-action-${sectionKey}">Korrekturmaßnahme bei Temperaturabweichung</label><textarea id="haccp-action-${sectionKey}" class="textarea" data-haccp-action="${sectionKey}" placeholder="Betroffenes Gerät und durchgeführte Maßnahme angeben">${htmlEscape(section.correctiveAction||"")}</textarea></div>${checkerField}<div class="haccpResponsible">${section.completedByName?`Zuletzt kontrolliert von <strong>${htmlEscape(section.completedByName)}</strong> · ${htmlEscape(taskDate(section.completedAt))}`:"Noch nicht bestätigt."}</div><button class="btn" type="button" data-haccp-confirm="${sectionKey}" style="margin-top:12px;width:100%">${done?"Kontrolle erneut speichern":"Kontrolle bestätigen"}</button>${done?"</details>":""}</article>`;
       }).join(""):`<div class="item muted">Deinem Mitarbeiterbereich ist noch keine HACCP-Verantwortung zugeordnet. Bitte Admin informieren.</div>`;
       const allDone=Object.keys(HACCP_SECTIONS).filter(key=>haccpSectionDone(data[key])).length;
       $("haccpDaySummary").innerHTML=`<div class="row"><strong>Tagesstatus</strong><span class="pill ${allDone===3?"ok":"warn"} right">${allDone}/3 komplett</span></div><div class="tiny muted" style="margin-top:6px">Küche, Pizza/Keller und Service müssen täglich vollständig bestätigt werden.</div>`;
@@ -4122,7 +4137,8 @@ ${lastHoursPayload.details.join("\n")}`;
       });
       HACCP_SECTIONS[sectionKey].cleaning.forEach(([key])=>{cleaning[key]=document.querySelector(`[data-haccp-clean="${sectionKey}:${key}"]`)?.checked===true;});
       const checkerName=isAdmin()?safe($(`haccp-checker-${sectionKey}`)?.value):"";
-      const section={temperatures,cleaning,note:safe(document.querySelector(`[data-haccp-note="${sectionKey}"]`)?.value),completedBy:currentUser.uid,completedByName:checkerName||currentProfile.name||currentUser.email,completedAt:serverTimestamp()};
+      const correctiveAction=safe(document.querySelector(`[data-haccp-action="${sectionKey}"]`)?.value);
+      const section={temperatures,cleaning,correctiveAction,note:safe(document.querySelector(`[data-haccp-note="${sectionKey}"]`)?.value),completedBy:currentUser.uid,completedByName:checkerName||currentProfile.name||currentUser.email,completedAt:serverTimestamp()};
       section.complete=haccpSectionComplete(sectionKey,section);
       return section;
     }
@@ -4258,7 +4274,7 @@ ${lastHoursPayload.details.join("\n")}`;
           const item=section.temperatures?.[key]||{};
           return safe(item.value)!==""?`${item.value}° / ${item.clean===true?"OK":"–"}`:"";
         });
-        return [date,...devices,cleaningText,section.completedByName||"",section.note||""];
+        return [date,...devices,cleaningText,section.completedByName||"",[section.note,...(haccpDeviations(sectionKey,section).length?[`Abweichung: ${haccpDeviations(sectionKey,section).map(([key])=>shortNames[key]||key).join(", ")}`]:[]),section.correctiveAction && `Maßnahme: ${section.correctiveAction}`].filter(Boolean).join("\n")];
       });
 
       const deviceWidth=(194-14-17-26-29)/definition.devices.length;
