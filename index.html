@@ -4328,6 +4328,15 @@ ${lastHoursPayload.details.join("\n")}`;
     function addHaccpPdfTable(doc,sectionKey,rows,month){
       const definition=HACCP_SECTIONS[sectionKey];
       const shortNames={tkFisch:"TK Fisch",tkFleisch:"TK Fleisch",tkGemuese:"TK Gemüse",kuehlhaus:"Kühlhaus",kuehlschrank1:"Kühlschrank 1",kuehlschrank2:"Kühlschrank 2",meeresfruechte:"Meeresfrüchte",grossesKuehlhaus:"Kühlhaus groß",saladette:"Saladette",tageskuehlschrank:"Tageskühlschrank",fleischKuehlschrank:"Fleisch/Geflügel",kellerKuehlhaus:"Keller Kühlhaus",bierfass:"Bierfass",getraenkeKuehlschrank:"Getränkekühlschrank"};
+      const compact = sectionKey === "kitchen";
+      if(compact) Object.assign(shortNames,{kuehlschrank1:"Kühlschr. 1",kuehlschrank2:"Kühlschr. 2",meeresfruechte:"Meeresfr."});
+      const deviceWidth=(194-14-17-26-29)/definition.devices.length;
+      const widths=compact?[12,14,14,14,14,14,14,14,16,27,41]:[14,...definition.devices.map(()=>deviceWidth),17,26,29];
+      const details=[];
+      const fontSize=compact?7.2:8;
+      const padding=compact?0.65:0.9;
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(fontSize);
       const header=["Datum",...definition.devices.map(([key])=>`${shortNames[key]||key}\n°C / sauber`),"Reinigung\nerledigt","Kontrolliert von","Bemerkung"];
       const body=rows.map(row=>{
         const section=row[sectionKey]||{};
@@ -4335,23 +4344,29 @@ ${lastHoursPayload.details.join("\n")}`;
         const cleanCount=definition.cleaning.filter(([key])=>section.cleaning?.[key]===true).length;
         const cleaningText=hasEntry?`${cleanCount}/${definition.cleaning.length}${cleanCount===definition.cleaning.length?" OK":""}`:"";
         const date=row.id.slice(8,10)+"."+row.id.slice(5,7)+".";
+        const deviations=haccpDeviations(sectionKey,section);
+        const affected=new Set(deviations.map(([key])=>key));
         const devices=definition.devices.map(([key])=>{
           const item=section.temperatures?.[key]||{};
-          return safe(item.value)!==""?`${item.value}° / ${item.clean===true?"OK":"–"}`:"";
+          return safe(item.value)!==""?`${item.value}${compact?(affected.has(key)?"*":""):"°"} / ${item.clean===true?"OK":"–"}`:"";
         });
-        return [date,...devices,cleaningText,section.completedByName||"",[section.note,...(haccpDeviations(sectionKey,section).length?[`Abweichung: ${haccpDeviations(sectionKey,section).map(([key])=>shortNames[key]||key).join(", ")}`]:[]),section.correctiveAction && `Maßnahme: ${section.correctiveAction}`].filter(Boolean).join("\n")];
+        const cells=[date,...devices,cleaningText,section.completedByName||"",[section.note,...(!compact&&deviations.length?[`Abweichung: ${deviations.map(([key])=>shortNames[key]||key).join(", ")}`]:[]),section.correctiveAction && `Maßnahme: ${section.correctiveAction}`].filter(Boolean).join("\n")];
+        if(!compact) return cells;
+        const overflow=[];
+        const fitted=cells.map((cell,index)=>{
+          if(!cell||doc.splitTextToSize(String(cell),widths[index]-2*padding-0.3).length<=2) return cell;
+          overflow.push(`${header[index].split("\n")[0]}: ${cell}`);
+          return "Anlage";
+        });
+        if(overflow.length) details.push([date,overflow.join("\n")]);
+        return fitted;
       });
-
-      const deviceWidth=(194-14-17-26-29)/definition.devices.length;
-      const widths=[14,...definition.devices.map(()=>deviceWidth),17,26,29];
-      doc.autoTable({
-        head:[header],body,
-        margin:{top:24,right:8,bottom:13,left:8},
+      const options={
+        margin:{top:24,right:8,bottom:compact?16:13,left:8},
         theme:"grid",
         rowPageBreak:"avoid",
-        styles:{font:"helvetica",fontSize:8,cellPadding:0.9,minCellHeight:7,overflow:"linebreak",valign:"middle",textColor:20,lineColor:125,lineWidth:0.2},
-        headStyles:{fillColor:235,textColor:20,halign:"center",fontSize:7.5},
-        columnStyles:Object.fromEntries(widths.map((cellWidth,index)=>[index,{cellWidth}])),
+        styles:{font:"helvetica",fontSize,cellPadding:padding,minCellHeight:compact?5.5:7,overflow:"linebreak",valign:"middle",textColor:20,lineColor:125,lineWidth:0.2},
+        headStyles:{fillColor:235,textColor:20,halign:"center",fontSize:compact?7:7.5},
         didDrawPage(){
           doc.setFont("helvetica","bold");
           doc.setFontSize(11);
@@ -4362,9 +4377,15 @@ ${lastHoursPayload.details.join("\n")}`;
           doc.text(`HACCP Monatskontrolle ${month}`,8,17);
           doc.text(`Verantwortlich: ${definition.responsibility}`,202,17,{align:"right"});
           doc.setFontSize(7.5);
+          if(compact) doc.text("* = Temperaturabweichung. Anlage = vollständiger Eintrag im Zusatzblatt.",8,285);
           doc.text("OK = sauber bzw. vollständig. Reinigung: erledigte Punkte / Gesamtpunkte.",8,289);
         }
-      });
+      };
+      doc.autoTable({...options,head:[header],body,columnStyles:Object.fromEntries(widths.map((cellWidth,index)=>[index,{cellWidth}]))});
+      if(details.length){
+        doc.addPage();
+        doc.autoTable({...options,head:[["Datum","Zusatzblatt: vollständige Einträge"]],body:details,columnStyles:{0:{cellWidth:14},1:{cellWidth:180}}});
+      }
     }
 
     async function printMonthHaccp(){
