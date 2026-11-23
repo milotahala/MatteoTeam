@@ -4331,9 +4331,9 @@ ${lastHoursPayload.details.join("\n")}`;
       const compact = sectionKey === "kitchen";
       if(compact) Object.assign(shortNames,{kuehlschrank1:"Kühlschr. 1",kuehlschrank2:"Kühlschr. 2",meeresfruechte:"Meeresfr."});
       const deviceWidth=(194-14-17-26-29)/definition.devices.length;
-      const widths=compact?[12,15,15,15,14,14,14,14,16,29,36]:[14,...definition.devices.map(()=>deviceWidth),17,26,29];
+      const widths=compact?[12,16,16,16,15,15,15,15,16,33,25]:[14,...definition.devices.map(()=>deviceWidth),17,26,29];
       const details=[];
-      const fontSize=compact?7.2:8;
+      const fontSize=8;
       const padding=compact?0.65:0.9;
       doc.setFont("helvetica","normal");
       doc.setFontSize(fontSize);
@@ -4365,8 +4365,8 @@ ${lastHoursPayload.details.join("\n")}`;
         margin:{top:24,right:8,bottom:compact?16:13,left:8},
         theme:"grid",
         rowPageBreak:"avoid",
-        styles:{font:"helvetica",fontSize,cellPadding:padding,minCellHeight:compact?5.5:7,overflow:"linebreak",valign:"middle",textColor:20,lineColor:125,lineWidth:0.2},
-        headStyles:{fillColor:235,textColor:20,halign:"center",fontSize:compact?7:7.5},
+        styles:{font:"helvetica",fontSize,cellPadding:padding,minCellHeight:compact?7.5:7,overflow:"linebreak",valign:"middle",textColor:20,lineColor:125,lineWidth:0.2},
+        headStyles:{fillColor:235,textColor:20,halign:"center",fontSize:7.5},
         didDrawPage(){
           doc.setFont("helvetica","bold");
           doc.setFontSize(11);
