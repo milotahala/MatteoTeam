@@ -4331,7 +4331,7 @@ ${lastHoursPayload.details.join("\n")}`;
       const compact = sectionKey === "kitchen";
       if(compact) Object.assign(shortNames,{kuehlschrank1:"Kühlschr. 1",kuehlschrank2:"Kühlschr. 2",meeresfruechte:"Meeresfr."});
       const deviceWidth=(194-14-17-26-29)/definition.devices.length;
-      const widths=compact?[12,15,15,15,15,15,15,15,16,27,34]:[14,...definition.devices.map(()=>deviceWidth),17,26,29];
+      const widths=compact?[12,15,15,15,14,14,14,14,16,29,36]:[14,...definition.devices.map(()=>deviceWidth),17,26,29];
       const details=[];
       const fontSize=compact?7.2:8;
       const padding=compact?0.65:0.9;
