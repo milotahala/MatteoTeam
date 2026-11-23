@@ -2282,6 +2282,7 @@
       const view = document.getElementById(id);
       if(view) view.classList.remove("hidden");
       document.querySelectorAll(".navBtn").forEach(b => b.classList.toggle("active", b.dataset.view === id));
+      if(id === "viewHaccp" && haccpLoadedDate !== ($("haccpDate").value || todayStr())) loadHaccp();
     }
 
     function setAuthTab(mode){
@@ -4048,9 +4049,9 @@ ${lastHoursPayload.details.join("\n")}`;
     function haccpAllowedSections(){
       if(isSuperAdmin()) return Object.keys(HACCP_SECTIONS);
       const department=safe(currentProfile?.department).toLowerCase();
-      if(department.includes("küche")||department.includes("kuche")) return ["kitchen"];
+      if(/küche|kueche|kuche/.test(department)) return ["kitchen"];
       if(department.includes("pizza")) return ["pizza"];
-      if(department.includes("service")||department.includes("kellner")||department.includes("kasse")) return ["service"];
+      if(/service|kellner|kasse|theke/.test(department)) return ["service"];
       return [];
     }
 
@@ -4178,12 +4179,40 @@ ${lastHoursPayload.details.join("\n")}`;
       }
     }
 
+    let haccpLoadId = 0;
+    let haccpLoadedDate = "";
+
     async function loadHaccp(){
-      const date=$("haccpDate").value||todayStr(); $("haccpDate").value=date;
-      const snap=await getDoc(doc(db,"haccpDaily",date));
-      renderHaccpSections(snap.exists()?snap.data():{});
-      await loadHaccpHistory();
-      await loadHaccpDeliveries();
+      const profile = currentProfile;
+      if(!profile) return;
+      const loadId = ++haccpLoadId;
+      const date = $("haccpDate").value || todayStr();
+      const summary = $("haccpDaySummary");
+      const saveButton = $("btnSaveHaccp");
+      $("haccpDate").value = date;
+      haccpLoadedDate = "";
+      $("haccpSections").replaceChildren();
+      $("haccpDeliveries").classList.add("hidden");
+      ++haccpDeliveryLoadId;
+      summary.textContent = "Kontrollen werden geladen …";
+      saveButton.disabled = true;
+
+      try{
+        const snap = await getDoc(doc(db,"haccpDaily",date));
+        if(loadId !== haccpLoadId || currentProfile !== profile) return;
+        renderHaccpSections(snap.exists() ? snap.data() : {});
+        haccpLoadedDate = date;
+        saveButton.disabled = !haccpAllowedSections().length;
+      }catch(err){
+        if(loadId !== haccpLoadId || currentProfile !== profile) return;
+        console.error("HACCP daily load failed", err);
+        summary.textContent = err.code === "permission-denied"
+          ? "Kein Zugriff auf die Tageskontrolle. Bitte Admin informieren."
+          : "Kontrollen konnten nicht geladen werden. Bitte auf „Anzeigen“ tippen.";
+      }
+
+      if(isSuperAdmin()) loadHaccpHistory();
+      if(isAdmin()) loadHaccpDeliveries();
     }
 
     let haccpDeliveryLoadId=0;
@@ -4255,9 +4284,18 @@ ${lastHoursPayload.details.join("\n")}`;
     }
 
     async function loadHaccpHistory(){
-      const qs=await getDocs(collection(db,"haccpDaily"));
-      const rows=qs.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.id.localeCompare(a.id)).slice(0,31);
-      $("haccpHistory").innerHTML=rows.length?rows.map(row=>`<div class="item"><div class="row"><strong>${htmlEscape(row.id.split("-").reverse().join("."))}</strong>${Object.entries(HACCP_SECTIONS).map(([key,definition])=>`<span class="pill ${haccpSectionDone(row[key])?"ok":"warn"}">${definition.responsibility}: ${haccpSectionDone(row[key])?"OK":"Offen"}</span>`).join("")}</div></div>`).join(""):`<div class="tiny muted">Noch keine Einträge.</div>`;
+      const history = $("haccpHistory");
+      const profile = currentProfile;
+      try{
+        const qs = await getDocs(collection(db,"haccpDaily"));
+        if(currentProfile !== profile) return;
+        const rows=qs.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.id.localeCompare(a.id)).slice(0,31);
+        history.innerHTML=rows.length?rows.map(row=>`<div class="item"><div class="row"><strong>${htmlEscape(row.id.split("-").reverse().join("."))}</strong>${Object.entries(HACCP_SECTIONS).map(([key,definition])=>`<span class="pill ${haccpSectionDone(row[key])?"ok":"warn"}">${definition.responsibility}: ${haccpSectionDone(row[key])?"OK":"Offen"}</span>`).join("")}</div></div>`).join(""):`<div class="tiny muted">Noch keine Einträge.</div>`;
+      }catch(err){
+        if(currentProfile !== profile) return;
+        console.error("HACCP history load failed", err);
+        history.textContent = "Verlauf konnte nicht geladen werden.";
+      }
     }
 
     function addHaccpPdfTable(doc,sectionKey,rows,month){
@@ -6918,6 +6956,7 @@ bruchCache.sort((a, b) => {
 
       $("weekPicker").value = mondayOf(todayStr());
       $("hoursWeekPicker").value = mondayOf(todayStr());
+      haccpLoadedDate = "";
       $("haccpDate").value = todayStr();
       $("usageDate").value = todayStr();
       $("urlaubFrom").value = todayStr();
@@ -6945,7 +6984,6 @@ bruchCache.sort((a, b) => {
       await loadSupplierOrders();
       await buildWeeklyTable();
       await loadWeekly();
-      await loadHaccp();
       await loadUrlaub();
       startVacationNotifications();
       await loadBruch();
@@ -7127,6 +7165,7 @@ bruchCache.sort((a, b) => {
       $("haccpTruckTemperature").focus();
     });
     $("btnLoadHaccp").addEventListener("click", loadHaccp);
+    $("haccpDate").addEventListener("change", loadHaccp);
     $("btnSaveHaccp").addEventListener("click", saveHaccp);
     $("haccpSections").addEventListener("click",event=>{
       const signButton=event.target.closest("[data-haccp-sign]");
