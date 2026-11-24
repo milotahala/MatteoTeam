@@ -2282,6 +2282,7 @@
       const view = document.getElementById(id);
       if(view) view.classList.remove("hidden");
       document.querySelectorAll(".navBtn").forEach(b => b.classList.toggle("active", b.dataset.view === id));
+      if(id === "viewDashboard") refreshDashboardHaccpIfVisible();
       if(id === "viewHaccp" && haccpLoadedDate !== ($("haccpDate").value || todayStr())) loadHaccp();
     }
 
@@ -4192,7 +4193,7 @@ ${lastHoursPayload.details.join("\n")}`;
         const date=$("haccpDate").value||todayStr();
         await setDoc(doc(db,"haccpDaily",date),{date,[sectionKey]:section,updatedBy:currentUser.uid,updatedAt:serverTimestamp()},{merge:true});
         if(($("haccpDate").value || todayStr()) === date) await loadHaccp();
-        loadDashboard().catch(err => console.error("HACCP dashboard refresh failed", err));
+        loadDashboardHaccp().catch(err => console.error("HACCP dashboard refresh failed", err));
         if(missingActionOnly){
           showMsg("Messwerte gespeichert. Die Kontrolle bleibt offen, bis die Korrekturmaßnahme eingetragen ist.");
           if(haccpLoadedDate === date) document.querySelector(actionSelector)?.focus();
@@ -6937,13 +6938,34 @@ bruchCache.sort((a, b) => {
       }
     }
 
+    function refreshDashboardHaccpIfVisible(){
+      if(!currentProfile || document.hidden || $("viewDashboard").classList.contains("hidden")) return;
+      loadDashboardHaccp().catch(err => console.error("HACCP dashboard refresh failed", err));
+    }
+
+    document.addEventListener("visibilitychange", refreshDashboardHaccpIfVisible);
+
     async function loadDashboard(){
       $("statStaff").textContent = String(staffCache.length);
       $("statInventory").textContent = String(inventoryCache.length);
       $("statUrlaub").textContent = String(urlaubCache.filter(x => x.status === "pending").length);
 
+      const pending = urlaubCache.filter(x => x.status === "pending").slice(0,5);
+      $("dashUrlaubList").innerHTML = pending.length
+        ? pending.map(r => `<div class="item">${htmlEscape(r.staffName || "-")} · ${htmlEscape(r.from || "")} → ${htmlEscape(r.to || "")}</div>`).join("")
+        : `<div class="item">Keine offenen Anträge.</div>`;
+
+      await loadDashboardHaccp();
+    }
+
+    let dashboardHaccpRequest = 0;
+
+    async function loadDashboardHaccp(){
+      const request = ++dashboardHaccpRequest;
+      const profile = currentProfile;
       const today = todayStr();
       const snap = await getDoc(doc(db, "haccpDaily", today));
+      if(request !== dashboardHaccpRequest || currentProfile !== profile) return;
       let p = false, k = false, s = false;
       if(snap.exists()){
         const d = snap.data();
@@ -6985,10 +7007,6 @@ bruchCache.sort((a, b) => {
         }
       }
 
-      const pending = urlaubCache.filter(x => x.status === "pending").slice(0,5);
-      $("dashUrlaubList").innerHTML = pending.length
-        ? pending.map(r => `<div class="item">${htmlEscape(r.staffName || "-")} · ${htmlEscape(r.from || "")} → ${htmlEscape(r.to || "")}</div>`).join("")
-        : `<div class="item">Keine offenen Anträge.</div>`;
     }
 
     async function bootstrapApp(){
