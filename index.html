@@ -804,6 +804,7 @@
           <button class="navBtn" data-view="viewSickLeave" type="button"><i data-lucide="heart-pulse" aria-hidden="true"></i><span>Krankmeldung</span></button>
           <button class="navBtn" data-view="viewHaccp" type="button"><i data-lucide="clipboard-check" aria-hidden="true"></i><span>HACCP <span id="haccpNavBadge" class="urgentBadge hidden">0</span></span></button>
           <button class="navBtn" data-view="viewOrders" type="button"><i data-lucide="notebook-tabs" aria-hidden="true"></i><span>Bestellung <span id="customerOrderNavBadge" class="urgentBadge hidden">0</span></span></button>
+          <button class="navBtn" data-view="viewDailyMenu" type="button"><i data-lucide="notebook-pen" aria-hidden="true"></i><span>Tageskarte</span></button>
           <button class="navBtn" data-view="viewRestaurantMenu" type="button"><i data-lucide="utensils" aria-hidden="true"></i><span>Speisekarte</span></button>
           <button class="navBtn" data-view="viewToGoMenu" type="button"><i data-lucide="pizza" aria-hidden="true"></i><span>To Go</span></button>
           <button class="navBtn" data-view="viewUrlaub" type="button"><i data-lucide="palmtree" aria-hidden="true"></i><span>Urlaub</span></button>
@@ -833,6 +834,7 @@
               <button class="dashboardApp" data-dashboard-view="viewSickLeave" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/><path d="M3 12h5l2-3 3 6 2-3h6"/></svg></span><span>Krankmeldung <span id="sickUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewHaccp" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2M8 14l3 3 5-6"/></svg></span><span>HACCP <span id="haccpDashboardBadge" class="urgentBadge hidden">0 Offen</span></span></button>
               <button class="dashboardApp" data-dashboard-view="viewOrders" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4M2 7h3M2 12h3M2 17h3"/></svg></span><span>Bestellung <span id="customerOrderDashboardBadge" class="urgentBadge hidden">0</span></span></button>
+              <button class="dashboardApp" data-dashboard-view="viewDailyMenu" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span>Tageskarte</span></button>
               <button class="dashboardApp" data-dashboard-view="viewRestaurantMenu" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M4 3v7a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-4 3-4 8 0 10h3V3"/></svg></span><span>Speisekarte</span></button>
               <button class="dashboardApp" data-dashboard-view="viewToGoMenu" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 22 2 3c6-3 14-3 20 0L12 22ZM5 9c4-2 10-2 14 0"/><circle cx="10" cy="12" r="1"/><circle cx="15" cy="8" r="1"/></svg></span><span>To Go</span></button>
               <button class="dashboardApp" data-dashboard-view="viewUrlaub" type="button"><span class="dashboardAppIcon"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M12 22c1-5 1-10 0-14M12 8c-3-4-6-4-9-2 4 0 6 2 9 2ZM12 8c3-4 6-4 9-2-4 0-6 2-9 2ZM12 8c-3 0-5 2-6 5 3-2 5-2 6-5ZM12 8c3 0 5 2 6 5-3-2-5-2-6-5Z"/></svg></span><span>Urlaub Antrag <span id="urlaubUnreadBadge" class="urgentBadge hidden">0 Wichtig</span></span></button>
@@ -1465,6 +1467,30 @@
                 <div class="divider"></div>
                 <div id="bruchList"></div>
               </div>
+            </div>
+          </section>
+
+
+          <section id="viewDailyMenu" class="view card hidden">
+            <h2 class="sectionTitle">Tageskarte</h2>
+            <style>
+              .dailyEditor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+              .dailyEditor label{display:grid;gap:4px;margin-bottom:8px}
+              .dailyEditor fieldset{min-width:0;border:1px solid #8994a45c;border-radius:10px;margin:0 0 10px;padding:10px}
+              @media(max-width:850px){.dailyEditor{grid-template-columns:minmax(0,1fr)}}
+            </style>
+            <div class="dailyEditor">
+              <form id="dailyMenuForm">
+                <label>Titel <input name="title" maxlength="80" required></label>
+                <label>Design <select name="design"><option>Matteo Rot</option><option>Trattoria Grün</option><option>Schwarz-Weiß</option></select></label>
+                <label>Schriftart <select name="font"><option>Georgia</option><option>Arial</option><option>Times New Roman</option></select></label>
+                <div id="dailyMenuDishes"></div>
+                <button class="btn" id="dailyMenuAdd" type="button">Gericht hinzufügen</button>
+                <button class="btn" type="submit">Entwurf speichern</button>
+                <button class="btn" id="dailyMenuPrint" type="button">Drucken / PDF</button>
+                <p id="dailyMenuStatus" class="tiny muted" role="status">Der Entwurf wird auf diesem Gerät gespeichert.</p>
+              </form>
+              <div id="dailyMenuPreview" aria-label="Vorschau"></div>
             </div>
           </section>
 
@@ -2283,8 +2309,113 @@
       if(view) view.classList.remove("hidden");
       document.querySelectorAll(".navBtn").forEach(b => b.classList.toggle("active", b.dataset.view === id));
       if(id === "viewDashboard") refreshDashboardHaccpIfVisible();
+      if(id === "viewDailyMenu" && dailyMenuOwner !== auth.currentUser?.uid) loadDailyMenu();
       if(id === "viewHaccp" && haccpLoadedDate !== ($("haccpDate").value || todayStr())) loadHaccp();
     }
+
+
+    let dailyMenuOwner = null;
+    const dailyMenuForm = $("dailyMenuForm");
+    const dailyMenuThemes = new Map([["Matteo Rot", ["#8c201e", "#fff7e9", "double"]], ["Trattoria Grün", ["#254d3a", "#f4f6ee", "solid"]], ["Schwarz-Weiß", ["#171717", "#fff", "none"]]]);
+    const dailyMenuFonts = new Set(["Georgia", "Arial", "Times New Roman"]);
+    const dailyMenuPrice = new Intl.NumberFormat("de-DE", {style:"currency",currency:"EUR"});
+    const dailyMenuCss = `
+      .dailyPaper{box-sizing:border-box;padding:clamp(14px,4vw,34px);color:var(--ink);background:var(--paper);border:4px var(--border) var(--ink);font-family:var(--font);overflow-wrap:anywhere}
+      .dailyPaper header{text-align:center;border-bottom:1px solid var(--ink);padding-bottom:16px;margin-bottom:12px}
+      .dailyPaper h1{font-size:clamp(26px,5vw,42px);margin:8px 0 0}
+      .dailyPaper article{padding:9px 0;break-inside:avoid}
+      .dailyPaper article div{display:flex;justify-content:space-between;gap:12px}
+      .dailyPaper article span{white-space:nowrap}
+      .dailyPaper p{margin:5px 0 0}
+    `;
+    const dailyMenuStyle = document.createElement("style");
+    dailyMenuStyle.textContent = dailyMenuCss;
+    document.head.append(dailyMenuStyle);
+
+    function addDailyMenuDish(dish = {}){
+      const row = document.createElement("fieldset");
+      row.innerHTML = '<legend>Gericht</legend><label>Name <input data-dish="name" maxlength="100"></label><label>Beschreibung <input data-dish="description" maxlength="240"></label><label>Preis (€) <input data-dish="price" inputmode="decimal" maxlength="9" pattern="[0-9]{1,6}([.,][0-9]{1,2})?"></label><button class="btn" type="button">Entfernen</button>';
+      row.querySelectorAll("[data-dish]").forEach(input => input.value = dish[input.dataset.dish] ?? "");
+      row.querySelector("button").onclick = () => {
+        row.remove();
+        updateDailyMenuPreview();
+        $("dailyMenuAdd").focus();
+      };
+      $("dailyMenuDishes").append(row);
+      return row.querySelector("input");
+    }
+
+    function dailyMenuValues(){
+      return {
+        ...Object.fromEntries(new FormData(dailyMenuForm)),
+        dishes: Array.from($("dailyMenuDishes").children, row =>
+          Object.fromEntries(Array.from(row.querySelectorAll("[data-dish]"), input => [input.dataset.dish, input.value.trim()]))
+        )
+      };
+    }
+
+    function dailyMenuMarkup(menu){
+      const [ink, paper, border] = dailyMenuThemes.get(menu.design) || dailyMenuThemes.get("Matteo Rot");
+      const font = dailyMenuFonts.has(menu.font) ? menu.font : "Georgia";
+      const dishes = menu.dishes.filter(dish => dish.name).map(({name, description, price:rawPrice}) => {
+          const price = /^[0-9]{1,6}([.,][0-9]{1,2})?$/.test(rawPrice) ? dailyMenuPrice.format(Number(rawPrice.replace(",", "."))) : rawPrice;
+          return `<article><div><strong>${htmlEscape(name)}</strong><span>${htmlEscape(price)}</span></div>${description ? `<p>${htmlEscape(description)}</p>` : ""}</article>`;
+        }).join("");
+      return `<div class="dailyPaper" style="--ink:${ink};--paper:${paper};--border:${border};--font:'${font}'"><header>Pizzeria Ristorante Matteo<h1>${htmlEscape(menu.title.trim() || "Tageskarte")}</h1></header>${dishes}</div>`;
+    }
+
+    function updateDailyMenuPreview(){
+      $("dailyMenuPreview").innerHTML = dailyMenuMarkup(dailyMenuValues());
+    }
+
+    function loadDailyMenu(){
+      if(!auth.currentUser) return;
+      dailyMenuOwner = auth.currentUser.uid;
+      dailyMenuForm.reset();
+      let saved;
+      $("dailyMenuStatus").textContent = "Der Entwurf wird auf diesem Gerät gespeichert.";
+      try{
+        saved = JSON.parse(localStorage.getItem("matteoteam.dailyMenu." + dailyMenuOwner));
+      }catch(error){
+        $("dailyMenuStatus").textContent = "Der Entwurf konnte nicht geladen werden.";
+      }
+      for(const [name, fallback] of Object.entries({title:"Tageskarte", design:"Matteo Rot", font:"Georgia"})){
+        dailyMenuForm.elements.namedItem(name).value = typeof saved?.[name] === "string" ? saved[name] : fallback;
+      }
+      $("dailyMenuDishes").replaceChildren();
+      (Array.isArray(saved?.dishes) ? saved.dishes : [{}]).forEach(dish => addDailyMenuDish(dish));
+      updateDailyMenuPreview();
+    }
+
+    $("dailyMenuAdd").onclick = () => addDailyMenuDish().focus();
+    dailyMenuForm.addEventListener("input", updateDailyMenuPreview);
+    dailyMenuForm.addEventListener("submit", event => {
+      event.preventDefault();
+      if(!isSuperAdmin() || !auth.currentUser) return;
+      try{
+        localStorage.setItem("matteoteam.dailyMenu." + auth.currentUser.uid, JSON.stringify(dailyMenuValues()));
+        $("dailyMenuStatus").textContent = "Entwurf auf diesem Gerät gespeichert.";
+      }catch(error){
+        $("dailyMenuStatus").textContent = "Der Entwurf konnte nicht gespeichert werden.";
+      }
+    });
+    $("dailyMenuPrint").onclick = () => {
+      if(!isSuperAdmin() || !dailyMenuForm.reportValidity()) return;
+      const menu = dailyMenuValues();
+      if(!menu.dishes.some(dish => dish.name)){
+        $("dailyMenuStatus").textContent = "Bitte mindestens ein Gericht eingeben.";
+        return;
+      }
+      const printWindow = window.open("", "_blank");
+      if(!printWindow){
+        $("dailyMenuStatus").textContent = "Bitte Pop-ups für die Druckvorschau zulassen.";
+        return;
+      }
+      printWindow.opener = null;
+      printWindow.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${htmlEscape(menu.title)}</title><style>@page{size:A4;margin:12mm}${dailyMenuCss}body{margin:0}button{margin:12px}@media print{button{display:none}.dailyPaper{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body><button type="button">Drucken / PDF speichern</button>${dailyMenuMarkup(menu)}</body></html>`);
+      printWindow.document.close();
+      printWindow.document.querySelector("button").onclick = () => printWindow.print();
+    };
 
     function setAuthTab(mode){
       $("loginForm").classList.toggle("hidden", mode !== "login");
@@ -7114,7 +7245,7 @@ bruchCache.sort((a, b) => {
 
     function showSignedOutScreen(){
       currentUser = null;
-      currentProfile = null;
+      currentProfile = null;      dailyMenuOwner = null;
       ++haccpDeliveryLoadId;
       $("haccpDeliveries").classList.add("hidden");
       $("haccpDeliveryHistory").innerHTML="";
@@ -7592,7 +7723,7 @@ bruchCache.sort((a, b) => {
         closeVacationNotification();
         vacationNotificationReady = false;
         vacationPopupShown = false;
-        currentProfile = null;
+        currentProfile = null;        dailyMenuOwner = null;
       ++haccpDeliveryLoadId;
       $("haccpDeliveries").classList.add("hidden");
       $("haccpDeliveryHistory").innerHTML="";
