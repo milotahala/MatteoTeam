@@ -1484,6 +1484,7 @@
                 <label>Titel <input name="title" maxlength="80" required></label>
                 <label>Design <select name="design"><option>Matteo Rot</option><option>Trattoria Grün</option><option>Schwarz-Weiß</option></select></label>
                 <label>Schriftart <select name="font"><option>Georgia</option><option>Arial</option><option>Times New Roman</option></select></label>
+                <label>Rahmen <select name="frame"><option value="classic">Klassisch · Doppellinie</option><option value="bistro">Bistro · Runde Ecken</option><option value="modern">Modern · Klare Linien</option></select></label>
                 <div id="dailyMenuDishes"></div>
                 <button class="btn" id="dailyMenuAdd" type="button">Gericht hinzufügen</button>
                 <button class="btn" type="submit">Entwurf speichern</button>
@@ -2316,17 +2317,33 @@
 
     let dailyMenuOwner = null;
     const dailyMenuForm = $("dailyMenuForm");
-    const dailyMenuThemes = new Map([["Matteo Rot", ["#8c201e", "#fff7e9", "double"]], ["Trattoria Grün", ["#254d3a", "#f4f6ee", "solid"]], ["Schwarz-Weiß", ["#171717", "#fff", "none"]]]);
+    const dailyMenuThemes = new Map([["Matteo Rot", ["#8c201e", "#fff7e9"]], ["Trattoria Grün", ["#254d3a", "#f4f6ee"]], ["Schwarz-Weiß", ["#171717", "#fff"]]]);
     const dailyMenuFonts = new Set(["Georgia", "Arial", "Times New Roman"]);
     const dailyMenuPrice = new Intl.NumberFormat("de-DE", {style:"currency",currency:"EUR"});
     const dailyMenuCss = `
-      .dailyPaper{box-sizing:border-box;padding:clamp(14px,4vw,34px);color:var(--ink);background:var(--paper);border:4px var(--border) var(--ink);font-family:var(--font);overflow-wrap:anywhere}
-      .dailyPaper header{text-align:center;border-bottom:1px solid var(--ink);padding-bottom:16px;margin-bottom:12px}
-      .dailyPaper h1{font-size:clamp(26px,5vw,42px);margin:8px 0 0}
-      .dailyPaper article{padding:9px 0;break-inside:avoid}
-      .dailyPaper article div{display:flex;justify-content:space-between;gap:12px}
-      .dailyPaper article span{white-space:nowrap}
+      .dailyPaper{box-sizing:border-box;padding:clamp(14px,4vw,34px);color:var(--ink);background:var(--paper);border:2px solid var(--ink);font-family:var(--font);overflow-wrap:anywhere}
+      .dailyPaper[data-frame="classic"]{border:6px double var(--ink)}
+      .dailyPaper[data-frame="bistro"]{border-radius:24px}
+      .dailyPaper[data-frame="modern"]{border-width:5px 1px 5px}
+      .dailyPaper header{text-align:center;border-bottom:1px solid var(--ink);padding-bottom:18px;margin-bottom:18px}
+      .dailyPaper .dailyBrand{font-size:.78em;letter-spacing:.13em;text-transform:uppercase}
+      .dailyPaper h1{font:700 clamp(26px,5vw,42px)/1.12 var(--font);margin:8px 0 0}
+      .dailyPaper article{padding:12px 0;border-bottom:1px solid var(--ink);break-inside:avoid}
+      .dailyPaper article:last-child{border-bottom:0}
+      .dailyPaper .dailyDishHeading{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+      .dailyPaper .dailyDishPrice{white-space:nowrap}
       .dailyPaper p{margin:5px 0 0}
+      .dailyPaper .dailyAllergens{font-size:.83em}
+      .dailyPaperShort header{margin-bottom:clamp(16px,4vw,32px)}
+      .dailyPaperShort .dailyDishes{display:grid;gap:clamp(12px,3vw,24px)}
+      .dailyPaperShort article,.dailyPaperShort article:last-child{padding:clamp(14px,4vw,30px);border:1px solid var(--ink);text-align:center}
+      .dailyPaperShort[data-frame="bistro"] article{border-radius:16px}
+      .dailyPaperShort[data-frame="modern"] article{border-width:1px 0}
+      .dailyPaperShort .dailyDishHeading{display:grid;justify-content:center;gap:5px}
+      .dailyPaperShort .dailyDishHeading strong{font-size:clamp(20px,4vw,30px)}
+      .dailyPaperShort h1,.dailyPaperShort article{break-inside:avoid}
+      @media print{.dailyPaperShort{padding:12mm}.dailyPaperShort article,.dailyPaperShort article:last-child{padding:9mm}.dailyPaperShort .dailyDishes{gap:6mm}}
+
     `;
     const dailyMenuStyle = document.createElement("style");
     dailyMenuStyle.textContent = dailyMenuCss;
@@ -2334,7 +2351,7 @@
 
     function addDailyMenuDish(dish = {}){
       const row = document.createElement("fieldset");
-      row.innerHTML = '<legend>Gericht</legend><label>Name <input data-dish="name" maxlength="100"></label><label>Beschreibung <input data-dish="description" maxlength="240"></label><label>Preis (€) <input data-dish="price" inputmode="decimal" maxlength="9" pattern="[0-9]{1,6}([.,][0-9]{1,2})?"></label><button class="btn" type="button">Entfernen</button>';
+      row.innerHTML = '<legend>Gericht</legend><label>Name <input data-dish="name" maxlength="100"></label><label>Beschreibung <input data-dish="description" maxlength="240"></label><label>Allergene <input data-dish="allergens" maxlength="240" placeholder="z. B. Weizen, Milch"></label><label>Preis (€) <input data-dish="price" inputmode="decimal" maxlength="9" pattern="[0-9]{1,6}([.,][0-9]{1,2})?"></label><button class="btn" type="button">Entfernen</button>';
       row.querySelectorAll("[data-dish]").forEach(input => input.value = dish[input.dataset.dish] ?? "");
       row.querySelector("button").onclick = () => {
         row.remove();
@@ -2355,13 +2372,23 @@
     }
 
     function dailyMenuMarkup(menu){
-      const [ink, paper, border] = dailyMenuThemes.get(menu.design) || dailyMenuThemes.get("Matteo Rot");
+      const [ink, paper] = dailyMenuThemes.get(menu.design) || dailyMenuThemes.get("Matteo Rot");
       const font = dailyMenuFonts.has(menu.font) ? menu.font : "Georgia";
-      const dishes = menu.dishes.filter(dish => dish.name).map(({name, description, price:rawPrice}) => {
+      const frame = ["classic", "bistro", "modern"].includes(menu.frame) ? menu.frame : "classic";
+      const namedDishes = menu.dishes.filter(dish => dish.name);
+      const layout = namedDishes.length > 0 && namedDishes.length <= 2 ? " dailyPaperShort" : "";
+      const dishes = namedDishes.map(({name, description, allergens, price:rawPrice}) => {
           const price = /^[0-9]{1,6}([.,][0-9]{1,2})?$/.test(rawPrice) ? dailyMenuPrice.format(Number(rawPrice.replace(",", "."))) : rawPrice;
-          return `<article><div><strong>${htmlEscape(name)}</strong><span>${htmlEscape(price)}</span></div>${description ? `<p>${htmlEscape(description)}</p>` : ""}</article>`;
+          return `<article>
+            <div class="dailyDishHeading"><strong>${htmlEscape(name)}</strong>${price ? `<span class="dailyDishPrice">${htmlEscape(price)}</span>` : ""}</div>
+            ${description ? `<p>${htmlEscape(description)}</p>` : ""}
+            ${allergens ? `<p class="dailyAllergens">Allergene: ${htmlEscape(allergens)}</p>` : ""}
+          </article>`;
         }).join("");
-      return `<div class="dailyPaper" style="--ink:${ink};--paper:${paper};--border:${border};--font:'${font}'"><header>Pizzeria Ristorante Matteo<h1>${htmlEscape(menu.title.trim() || "Tageskarte")}</h1></header>${dishes}</div>`;
+      return `<div class="dailyPaper${layout}" data-frame="${frame}" style="--ink:${ink};--paper:${paper};--font:'${font}'">
+        <header><span class="dailyBrand">Pizzeria Ristorante Matteo</span><h1>${htmlEscape(menu.title.trim() || "Tageskarte")}</h1></header>
+        <div class="dailyDishes">${dishes}</div>
+      </div>`;
     }
 
     function updateDailyMenuPreview(){
@@ -2379,7 +2406,7 @@
       }catch(error){
         $("dailyMenuStatus").textContent = "Der Entwurf konnte nicht geladen werden.";
       }
-      for(const [name, fallback] of Object.entries({title:"Tageskarte", design:"Matteo Rot", font:"Georgia"})){
+      for(const [name, fallback] of Object.entries({title:"Tageskarte", design:"Matteo Rot", font:"Georgia", frame:"classic"})){
         dailyMenuForm.elements.namedItem(name).value = typeof saved?.[name] === "string" ? saved[name] : fallback;
       }
       $("dailyMenuDishes").replaceChildren();
