@@ -1493,6 +1493,11 @@
                 <button class="btn" id="dailyMenuPrint" type="button">Drucken / PDF</button>
                 <p id="dailyMenuStatus" class="tiny muted" role="status">Der Entwurf wird auf diesem Gerät gespeichert.</p>
               </form>
+              <div class="item noPrint" style="margin:14px 0;text-align:center">
+                <strong>QR-Code Restaurant</strong>
+                <img src="./speisekarte-restaurant-qr.svg" alt="QR-Code Speisekarte Restaurant" width="144" height="144" style="display:block;margin:10px auto;background:#fff;padding:8px;border-radius:12px" />
+                <button class="btn" id="printDailyMenuQr" type="button">QR-Code drucken</button>
+              </div>
               <div id="dailyMenuPreview" aria-label="Vorschau"></div>
             </div>
           </section>
@@ -7468,7 +7473,7 @@ bruchCache.sort((a, b) => {
       if(deleteButton) removeMenuItem(deleteButton.dataset.menuDelete);
     });
     $("btnToggleMenuEditor").addEventListener("click", ()=> openMenuEditor());
-    $("printRestaurantQr").addEventListener("click", () => {
+    function printRestaurantMenuQr(){
       const printWindow = window.open("", "_blank");
       if(!printWindow){
         showMsg("Bitte Pop-ups für die Druckvorschau zulassen.");
@@ -7493,7 +7498,9 @@ bruchCache.sort((a, b) => {
         () => printWindow.print(),
         () => showMsg("QR-Code konnte nicht geladen werden.")
       );
-    });
+    }
+    $("printRestaurantQr").addEventListener("click", printRestaurantMenuQr);
+    $("printDailyMenuQr").addEventListener("click", printRestaurantMenuQr);
 
     $("btnSaveMenuItem").addEventListener("click", saveMenuItem);
     $("btnCancelMenuEdit").addEventListener("click", ()=>{
