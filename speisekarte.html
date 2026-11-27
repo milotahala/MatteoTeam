@@ -25,6 +25,7 @@
     <div id="serviceCallMessage" class="serviceCallMessage" role="status"></div>
     <nav class="tabs" aria-label="Speisekarten"><button class="tab active" data-mode="restaurant">Restaurant</button><button class="tab" data-mode="togo">To Go</button></nav>
     <input id="search" class="search" type="search" placeholder="Gericht oder Zutat suchen …" />
+    <section id="daily-menu" class="category" hidden></section>
     <div id="chips" class="chips"></div>
     <div id="menu"><div class="empty">Speisekarte wird geladen …</div></div>
     <details><summary>Allergene & Zusatzstoffe</summary><div class="legend">
@@ -71,7 +72,7 @@
     const lockedMode=requestedMode==="restaurant"||requestedMode==="togo"?requestedMode:"";
     const tableName=String(params.get("tisch")||"").trim().slice(0,30);
     const orderingEnabled=Boolean(tableName)&&lockedMode!=="togo";
-    const state={mode:lockedMode||"restaurant",category:"Alle",restaurant:[],togo:[],restaurantCategories:[],togoCategories:[],cart:[],db:null,auth:null,submitting:false};
+    const state={mode:lockedMode||"restaurant",category:"Alle",restaurant:[],togo:[],dailyMenu:null,restaurantCategories:[],togoCategories:[],cart:[],db:null,auth:null,submitting:false};
     const esc=value=>String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
     const norm=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     const euro=value=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(Number(value||0));
@@ -114,6 +115,10 @@
         for(const [collectionName,key] of [["restaurantMenu","restaurant"],["toGoMenu","togo"]]){
           const snapshot=await getDocs(collection(db,collectionName));
           const overrides=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+          if(key==="restaurant"){
+            const dailyMenu=overrides.find(item=>item.id==="__dailyMenu");
+            if(dailyMenu?.published && Array.isArray(dailyMenu.dishes)) state.dailyMenu=dailyMenu;
+          }
           const map=new Map(overrides.map(item=>[item.id,item]));
           const defaults=state[key].map(item=>({...item,...(map.get(item.id)||{})}));
           const ids=new Set(defaults.map(item=>item.id));
@@ -122,7 +127,18 @@
       }catch(error){console.info("Öffentliche Karte nutzt gespeicherte Standarddaten.",error?.message||error)}
     }
 
+    function renderDailyMenu(){
+      const section=document.getElementById("daily-menu");
+      const menu=state.mode==="restaurant" ? state.dailyMenu : null;
+      section.hidden=!menu?.dishes.length;
+      section.innerHTML=section.hidden ? "" : `<h2>${esc(menu.title || "Tageskarte")}</h2><div class="grid">${menu.dishes.map(dish=>card({
+        ...dish,
+        priceLabel:dish.price ? euro(Number(dish.price.replace(",", "."))) : "–"
+      },false)).join("")}</div>`;
+    }
+
     function render(){
+      renderDailyMenu();
       const categories=state.mode==="restaurant"?state.restaurantCategories:state.togoCategories;
       const items=state.mode==="restaurant"?state.restaurant:state.togo;
       document.querySelectorAll(".tab").forEach(button=>button.classList.toggle("active",button.dataset.mode===state.mode));
@@ -133,11 +149,11 @@
       document.getElementById("menu").innerHTML=shownCategories.map(category=>{
         const rows=visible.filter(item=>item.category===category);
         if(!rows.length)return "";
-        return `<section class="category" id="${esc(category)}"><h2>${esc(category)}</h2><div class="grid">${rows.map(card).join("")}</div></section>`;
+        return `<section class="category" id="${esc(category)}"><h2>${esc(category)}</h2><div class="grid">${rows.map(item=>card(item)).join("")}</div></section>`;
       }).join("")||'<div class="empty">Keine passenden Gerichte gefunden.</div>';
     }
 
-    function card(item){return `<article class="card"><div class="head"><div><div class="name">${esc(item.name||"-")}</div>${item.size?`<div class="muted">${esc(item.size)}</div>`:""}</div><div class="price">${item.priceLabel?esc(item.priceLabel):euro(item.price)}</div></div>${item.description?`<div class="desc">${esc(item.description)}</div>`:""}<div class="meta">${item.vegetarian?'<span class="badge veg">🌿 Vegetarisch</span>':""}${item.allergens?`<span class="badge">Allergene: ${esc(item.allergens)}</span>`:""}</div>${orderingEnabled?`<button class="add" type="button" data-add="${esc(item.id)}">+ Zur Bestellung</button>`:""}</article>`}
+    function card(item, canOrder=orderingEnabled){return `<article class="card"><div class="head"><div><div class="name">${esc(item.name||"-")}</div>${item.size?`<div class="muted">${esc(item.size)}</div>`:""}</div><div class="price">${item.priceLabel?esc(item.priceLabel):euro(item.price)}</div></div>${item.description?`<div class="desc">${esc(item.description)}</div>`:""}<div class="meta">${item.vegetarian?'<span class="badge veg">🌿 Vegetarisch</span>':""}${item.allergens?`<span class="badge">Allergene: ${esc(item.allergens)}</span>`:""}</div>${canOrder?`<button class="add" type="button" data-add="${esc(item.id)}">+ Zur Bestellung</button>`:""}</article>`}
 
     function cartTotal(){return state.cart.reduce((sum,row)=>sum+Number(row.price||0)*row.qty,0)}
     function renderCart(){

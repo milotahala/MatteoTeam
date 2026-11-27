@@ -1488,6 +1488,8 @@
                 <div id="dailyMenuDishes"></div>
                 <button class="btn" id="dailyMenuAdd" type="button">Gericht hinzufügen</button>
                 <button class="btn" type="submit">Entwurf speichern</button>
+                <button class="btn" id="dailyMenuPublish" type="button">Online veröffentlichen</button>
+                <button class="btn" id="dailyMenuUnpublish" type="button">Online ausblenden</button>
                 <button class="btn" id="dailyMenuPrint" type="button">Drucken / PDF</button>
                 <p id="dailyMenuStatus" class="tiny muted" role="status">Der Entwurf wird auf diesem Gerät gespeichert.</p>
               </form>
@@ -2426,6 +2428,37 @@
         $("dailyMenuStatus").textContent = "Der Entwurf konnte nicht gespeichert werden.";
       }
     });
+    async function setDailyMenuPublication(published){
+      if(!isSuperAdmin() || !auth.currentUser) return;
+      if(published && !dailyMenuForm.reportValidity()) return;
+      const {title, dishes} = dailyMenuValues();
+      const namedDishes = dishes.filter(dish => dish.name);
+      const status = $("dailyMenuStatus");
+      if(published && !namedDishes.length){
+        status.textContent = "Bitte mindestens ein Gericht eingeben.";
+        return;
+      }
+      const buttons = [$("dailyMenuPublish"), $("dailyMenuUnpublish")];
+      buttons.forEach(button => button.disabled = true);
+      try{
+        await setDoc(doc(db, "restaurantMenu", "__dailyMenu"), {
+          active:false,
+          published,
+          title:published ? title.trim() || "Tageskarte" : "",
+          dishes:published ? namedDishes : [],
+          updatedAt:serverTimestamp(),
+          updatedBy:auth.currentUser.uid
+        });
+        status.textContent = published ? "In der Restaurant-Speisekarte veröffentlicht." : "In der Restaurant-Speisekarte ausgeblendet.";
+      }catch(error){
+        console.error(error);
+        status.textContent = "Online-Änderung fehlgeschlagen. Bitte erneut versuchen.";
+      }finally{
+        buttons.forEach(button => button.disabled = false);
+      }
+    }
+    $("dailyMenuPublish").onclick = () => setDailyMenuPublication(true);
+    $("dailyMenuUnpublish").onclick = () => setDailyMenuPublication(false);
     $("dailyMenuPrint").onclick = () => {
       if(!isSuperAdmin() || !dailyMenuForm.reportValidity()) return;
       const menu = dailyMenuValues();
