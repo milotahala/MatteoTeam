@@ -1515,7 +1515,9 @@
                 <a class="btn right" href="./speisekarte.html?karte=restaurant" target="_blank" rel="noopener">Restaurant öffnen</a>
               </div>
               <div style="margin-top:12px;text-align:center">
-                <img src="./speisekarte-restaurant-qr.svg" alt="QR-Code Speisekarte Restaurant" style="width:180px;height:180px;background:#fff;border-radius:14px;padding:9px" />
+                <button class="btn" id="printRestaurantQr" type="button">QR-Code drucken</button>
+                <div style="margin-top:8px"></div>
+                <img id="restaurantMenuQr" src="./speisekarte-restaurant-qr.svg" alt="QR-Code Speisekarte Restaurant" style="width:180px;height:180px;background:#fff;border-radius:14px;padding:9px" />
               </div>
             </div>
 
@@ -7466,6 +7468,33 @@ bruchCache.sort((a, b) => {
       if(deleteButton) removeMenuItem(deleteButton.dataset.menuDelete);
     });
     $("btnToggleMenuEditor").addEventListener("click", ()=> openMenuEditor());
+    $("printRestaurantQr").addEventListener("click", () => {
+      const printWindow = window.open("", "_blank");
+      if(!printWindow){
+        showMsg("Bitte Pop-ups für die Druckvorschau zulassen.");
+        return;
+      }
+      const qrUrl = htmlEscape($("restaurantMenuQr").src);
+      printWindow.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1"><title>Matteo – QR-Code Speisekarte</title>
+        <style>
+          body{font:16px system-ui,sans-serif;margin:12mm}
+          article{width:55mm;border:1px dashed #888;text-align:center;padding:4mm;box-sizing:border-box}
+          img{display:block;width:36mm;height:36mm;margin:2mm auto}
+          strong{display:block} button{margin-top:5mm}
+          @media print{button{display:none}}
+        </style></head><body>
+        <article><strong>MATTEO</strong><img src="${qrUrl}" alt="QR-Code">Speisekarte scannen</article>
+        <button type="button">Drucken</button></body></html>`);
+      printWindow.document.close();
+      printWindow.document.querySelector("button").onclick = () => printWindow.print();
+      // Keep the preview button available on browsers that require a tap to print.
+      printWindow.document.querySelector("img").decode().then(
+        () => printWindow.print(),
+        () => showMsg("QR-Code konnte nicht geladen werden.")
+      );
+    });
+
     $("btnSaveMenuItem").addEventListener("click", saveMenuItem);
     $("btnCancelMenuEdit").addEventListener("click", ()=>{
       clearMenuForm();
