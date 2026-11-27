@@ -1494,9 +1494,10 @@
                 <p id="dailyMenuStatus" class="tiny muted" role="status">Der Entwurf wird auf diesem Gerät gespeichert.</p>
               </form>
               <div class="item noPrint" style="margin:14px 0;text-align:center">
-                <strong>QR-Code Restaurant</strong>
-                <img src="./speisekarte-restaurant-qr.svg" alt="QR-Code Speisekarte Restaurant" width="144" height="144" style="display:block;margin:10px auto;background:#fff;padding:8px;border-radius:12px" />
+                <strong>QR-Code Tageskarte</strong>
+                <img id="dailyMenuQr" src="./tageskarte-qr.svg" alt="QR-Code Tageskarte" width="144" height="144" style="display:block;margin:10px auto;background:#fff;padding:8px;border-radius:12px" />
                 <button class="btn" id="printDailyMenuQr" type="button">QR-Code drucken</button>
+                <a class="btn" href="./tageskarte.html" target="_blank" rel="noopener">Tageskarte öffnen</a>
               </div>
               <div id="dailyMenuPreview" aria-label="Vorschau"></div>
             </div>
@@ -2438,7 +2439,7 @@
     async function setDailyMenuPublication(published){
       if(!isSuperAdmin() || !auth.currentUser) return;
       if(published && !dailyMenuForm.reportValidity()) return;
-      const {title, dishes} = dailyMenuValues();
+      const {title, design, font, frame, dishes} = dailyMenuValues();
       const namedDishes = dishes.filter(dish => dish.name);
       const status = $("dailyMenuStatus");
       if(published && !namedDishes.length){
@@ -2452,6 +2453,9 @@
           active:false,
           published,
           title:published ? title.trim() || "Tageskarte" : "",
+          design,
+          font,
+          frame,
           dishes:published ? namedDishes : [],
           updatedAt:serverTimestamp(),
           updatedBy:auth.currentUser.uid
@@ -7473,15 +7477,15 @@ bruchCache.sort((a, b) => {
       if(deleteButton) removeMenuItem(deleteButton.dataset.menuDelete);
     });
     $("btnToggleMenuEditor").addEventListener("click", ()=> openMenuEditor());
-    function printRestaurantMenuQr(){
+    function printMenuQr(image, label){
       const printWindow = window.open("", "_blank");
       if(!printWindow){
         showMsg("Bitte Pop-ups für die Druckvorschau zulassen.");
         return;
       }
-      const qrUrl = htmlEscape($("restaurantMenuQr").src);
+      const qrUrl = htmlEscape(image.src);
       printWindow.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1"><title>Matteo – QR-Code Speisekarte</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1"><title>Matteo – QR-Code ${label}</title>
         <style>
           body{font:16px system-ui,sans-serif;margin:12mm}
           article{width:55mm;border:1px dashed #888;text-align:center;padding:4mm;box-sizing:border-box}
@@ -7489,7 +7493,7 @@ bruchCache.sort((a, b) => {
           strong{display:block} button{margin-top:5mm}
           @media print{button{display:none}}
         </style></head><body>
-        <article><strong>MATTEO</strong><img src="${qrUrl}" alt="QR-Code">Speisekarte scannen</article>
+        <article><strong>MATTEO</strong><img src="${qrUrl}" alt="QR-Code">${label} scannen</article>
         <button type="button">Drucken</button></body></html>`);
       printWindow.document.close();
       printWindow.document.querySelector("button").onclick = () => printWindow.print();
@@ -7499,8 +7503,8 @@ bruchCache.sort((a, b) => {
         () => showMsg("QR-Code konnte nicht geladen werden.")
       );
     }
-    $("printRestaurantQr").addEventListener("click", printRestaurantMenuQr);
-    $("printDailyMenuQr").addEventListener("click", printRestaurantMenuQr);
+    $("printRestaurantQr").addEventListener("click", () => printMenuQr($("restaurantMenuQr"), "Speisekarte"));
+    $("printDailyMenuQr").addEventListener("click", () => printMenuQr($("dailyMenuQr"), "Tageskarte"));
 
     $("btnSaveMenuItem").addEventListener("click", saveMenuItem);
     $("btnCancelMenuEdit").addEventListener("click", ()=>{
